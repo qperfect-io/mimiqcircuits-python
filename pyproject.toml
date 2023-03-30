@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mimiqlink"
+authors = [
+    {name = "Vase Moeini", email = "v.moeini@unistra.fr"},
+    {name = "Guido Masella", email = "guido.masella@gmail"},
+]
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dynamic = ["version"]
+dependencies = [
+    "requests"
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "circuits.__version__"}
