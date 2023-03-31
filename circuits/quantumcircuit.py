@@ -4,7 +4,7 @@
 #
 
 import numpy as np
-from .gates import Gate
+from gates import Gate
 
 class CircuitGate:
     """
@@ -37,7 +37,7 @@ class CircuitGate:
 
     @property
     def gate(self):
-        self._gate
+        return self._gate
 
     @gate.setter
     def gate(self, _):
@@ -45,11 +45,12 @@ class CircuitGate:
 
     @property
     def qubits(self):
-        self._qubits
+        return self._qubits
 
     @qubits.setter
     def qubits(self, _):
         raise AttributeError("qubits is a read-only attribute")
+
 
 
 class Circuit:
@@ -109,6 +110,7 @@ class Circuit:
         Args:
         index (int): The index of the gate to get.
         """
+    
         return self.gates[index]
 
     def __len__(self):
@@ -119,4 +121,26 @@ class Circuit:
 
     def __getitem__(self, index):
         return self.gates[index]
+    def __str__(self):
+        """Generate a string representation of the circuit."""
+        qubits = set(qubit for gate in self.gates for qubit in gate.qubits)
+        num_qubits = max(qubits) + 1
 
+        # Initialize an empty matrix representing the circuit
+        matrix = np.empty((num_qubits, len(self.gates)), dtype=object)
+        matrix[:, :] = ' '
+
+        # Fill in the matrix with the gates
+        for i, gate in enumerate(self.gates):
+            for qubit in gate.qubits:
+                matrix[qubit, i] = str(gate.gate)
+
+        # Generate the string representation of the circuit
+        output = ''
+        for row in matrix:
+            output += '|'
+            for entry in row:
+                output += f'{entry:^3}|'
+            output += '\n'
+
+        return output
