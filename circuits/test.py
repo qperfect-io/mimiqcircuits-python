@@ -1,6 +1,6 @@
 import unittest
-from .gates import GateX
-from .quantumcircuit import Circuit, CircuitGate
+from circuits.gates import GateX
+from circuits.quantumcircuit import Circuit, CircuitGate
 
 class TestCircuit(unittest.TestCase):
 
