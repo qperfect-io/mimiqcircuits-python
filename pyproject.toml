@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "circuits"
 authors = [
     {name = "Vase Moeini", email = "vmoeini@unistra.fr"},
-    {name = "Guido Masella", email = "guido.masella@gmail"},
+    {name = "Guido Masella", email = "guido.masella@gmail.com"},
 ]
 readme = "README.md"
 requires-python = ">=3.6"

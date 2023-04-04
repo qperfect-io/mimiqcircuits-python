@@ -290,16 +290,17 @@ class GateU3(Gate):
     def __str__(self):
         return 'U3'
 
-
 class GateCustom(Gate):
     """
-    Class for the custom gate.
+    Class for a custom quantum gate with a user-defined matrix.
     """
     def __init__(self, matrix):
         if not isinstance(matrix, np.ndarray):
             raise TypeError("matrix must be a NumPy array")
         if len(matrix.shape) != 2 or matrix.shape[0] != matrix.shape[1]:
             raise ValueError("matrix must be a square array")
-        self.matrix = matrix
-        self.num_qubits = int(np.log2(matrix.shape[0]))
-        super().__init__(matrix, self.num_qubits)
+        num_qubits = int(np.log2(matrix.shape[0]))
+        super().__init__(matrix, num_qubits)
+    def __str__(self):
+        return 'Custom'
+    

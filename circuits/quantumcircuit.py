@@ -121,6 +121,8 @@ class Circuit:
 
     def __getitem__(self, index):
         return self.gates[index]
+    
+
     def __str__(self):
         """Generate a string representation of the circuit."""
         qubits = set(qubit for gate in self.gates for qubit in gate.qubits)
@@ -144,3 +146,29 @@ class Circuit:
             output += '\n'
 
         return output
+
+    def depth(self):
+        """
+        Compute the depth of the circuit.
+        Returns:
+        int: The depth of the circuit.
+        """
+        # Initialize an empty list of qubits for each time step
+        time_steps = [[] for _ in range(len(self.gates))]
+
+        # Fill in the list of qubits for each time step
+        for i, gate in enumerate(self.gates):
+            time_steps[i] = list(gate.qubits)
+
+        # Compute the maximum number of qubits at each time step
+        max_qubits = max(len(qubits) for qubits in time_steps)
+
+        # Compute the depth of the circuit
+        depth = 0
+        for qubits in time_steps:
+            depth += max_qubits - len(qubits)
+
+        return depth
+
+#This method creates a list time_steps where each element
+
