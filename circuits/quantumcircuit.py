@@ -4,7 +4,7 @@
 #
 
 import numpy as np
-from gates import Gate
+from .gates import Gate
 
 class CircuitGate:
     """

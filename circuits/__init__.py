@@ -5,6 +5,6 @@
 
 from .quantumcircuit import Circuit, CircuitGate
 
-from .gates import Gate, GateX, GateRX,GateRY,GateRZ,GateY,GateZ,GateR,GateCR,GateH,GateU,GateCU,GateCustom,GateU1,GateU2,GateU3,GateP,GateCP,GateCRX,GateCRY,GateCRZ
+from .gates import Gate, GateX, GateRX,GateRY,GateRZ,GateY,GateZ,GateR,GateH,GateU,GateCU,GateCustom,GateU1,GateU2,GateU3,GateP,GateCP,GateCRX,GateCRY,GateCRZ
 
 __version__ = "0.1.0"
