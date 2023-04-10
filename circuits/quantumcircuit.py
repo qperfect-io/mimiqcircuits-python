@@ -1,10 +1,10 @@
-#
+
 # Copyright © 2023 University of Strasbourg. All Rights Reserved.
 # See AUTHORS.md for the list of authors.
-#
 
 import numpy as np
-from circuits.gates import Gate
+from .gates import Gate
+
 
 class CircuitGate:
     """
@@ -50,7 +50,15 @@ class CircuitGate:
     @qubits.setter
     def qubits(self, _):
         raise AttributeError("qubits is a read-only attribute")
+        
+    def get_inverse_gate(self):
+        """
+        Get a CircuitGate object representing the inverse of this gate.
 
+        Returns:
+        CircuitGate: A new CircuitGate object with the inverse gate and the same qubits.
+        """
+        return CircuitGate(self.gate.get_inverse(), self.qubits)
 
 
 class Circuit:
@@ -110,7 +118,6 @@ class Circuit:
         Args:
         index (int): The index of the gate to get.
         """
-    
         return self.gates[index]
 
     def __len__(self):
@@ -122,7 +129,6 @@ class Circuit:
     def __getitem__(self, index):
         return self.gates[index]
     
-
     def __str__(self):
         """Generate a string representation of the circuit."""
         qubits = set(qubit for gate in self.gates for qubit in gate.qubits)
@@ -146,7 +152,7 @@ class Circuit:
             output += '\n'
 
         return output
-
+    
     def depth(self):
         """
         Compute the depth of the circuit.
@@ -167,8 +173,4 @@ class Circuit:
         depth = 0
         for qubits in time_steps:
             depth += max_qubits - len(qubits)
-
         return depth
-
-#This method creates a list time_steps where each element
-
