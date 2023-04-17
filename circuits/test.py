@@ -1,5 +1,5 @@
 import unittest
-from .gates import GateX
+from .gates import Gate,GateR, GateX, GateY, GateZ, GateH,GateID,GateCustom,GateRY,GateRZ,GateCRX,GateCRY,GateCRZ,GateCH,GateU2,GateCX,GateID,GateSX,GateSWAP,GateSXDG,GateCCX,GateCSWAP,GateISWAPDG,GateISWAP,GateU3,GateU1,GateISWAPDG,GateCX,GateRX,GateP,GateCP,GateU,GateCU,GateS,GateSDG,GateT,GateTDG,GateCY,GateCZ
 from .quantumcircuit import Circuit, CircuitGate
 
 
