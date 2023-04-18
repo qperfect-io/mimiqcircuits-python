@@ -92,5 +92,5 @@ def fromjson(json_str):
         else:
             gate_params = gate.pop("params", [])
             gate_obj = gate_class(*gate_params)
-        gates.append(CircuitGate(gate_obj, tuple(targets)))
+        gates.append(CircuitGate(gate_obj, *tuple(targets)))
     return Circuit(gates)

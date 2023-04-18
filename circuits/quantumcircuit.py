@@ -1,8 +1,11 @@
+
 # Copyright © 2023 University of Strasbourg. All Rights Reserved.
 # See AUTHORS.md for the list of authors.
+#
 
 import numpy as np
 from .gates import Gate
+
 
 class CircuitGate:
     """
@@ -12,7 +15,7 @@ class CircuitGate:
     gate (Gate): The gate to apply.
     qubits (tuple of int): The qubits to apply the gate to.
     """
-    def __init__(self, gate, qubits):
+    def __init__(self, gate, *args):
         """
         Initializes a CircuitGate object.
         Args:
@@ -23,14 +26,14 @@ class CircuitGate:
         TypeError: If gate is not a subclass of Gate or qubits is not a tuple.
         ValueError: If qubits contains less than 1 or more than 2 elements.
         """
-        if not issubclass(type(gate), Gate):
+        if not isinstance(gate, Gate):
             raise TypeError("gate must be a subclass of Gate")
-        if not isinstance(qubits, tuple):
-            raise TypeError("qubits must be a tuple")
-        if len(qubits) < 1 or len(qubits) > 2:
-            raise ValueError("qubits must contain 1 or 2 elements")
+        
+        if len(args) != gate.num_qubits:
+            raise ValueError("Wrong number of target qubits")
+        
         self._gate = gate
-        self._qubits = qubits
+        self._qubits = args
     
     @property
     def gate(self):
@@ -102,7 +105,7 @@ class Circuit:
                 self.gates.append(gate)
 
 
-    def add_gate(self, gate, qubits=None):
+    def add_gate(self, gate, *args):
         """
         Adds a gate to the end of the circuit.
 
@@ -114,20 +117,18 @@ class Circuit:
         TypeError: If gate is not a Gate or CircuitGate object or qubits is not a tuple or int.
         ValueError: If qubits contains less than 1 or more than 2 elements.
         """
-        if isinstance(gate, Gate):
-            if not isinstance(qubits, tuple) and not isinstance(qubits, int):
-                raise TypeError("qubits must be a tuple or int")
-            if isinstance(qubits, int):
-                qubits = (qubits,)
-            if len(qubits) < 1 or len(qubits) > 2:
-                raise ValueError("qubits must contain 1 or 2 elements")
-            circuit_gate = CircuitGate(gate, qubits)
-            self.gates.append(circuit_gate)
-        elif isinstance(gate, CircuitGate):
-            self.gates.append(gate)
-        else:
-            raise TypeError("gate must be a Gate or CircuitGate object")
+        if not isinstance(gate, Gate):
+            raise TypeError("acceps only a Gate")
+
+        circuit_gate = CircuitGate(gate, *args)
+        self.gates.append(circuit_gate)
         
+    def  add_circuitgate(self, circuitgate):
+        if not isinstance(circuitgate, CircuitGate):
+            raise TypeError("accepts only a CircuitGate")
+        
+        self.gates.append(circuitgate)
+
 
     def remove_gate(self, index):
         """
@@ -151,11 +152,14 @@ class Circuit:
         """
         return self.gates[index]
 
+
     def __len__(self):
         return len(self.gates)
 
+
     def __iter__(self):
         return iter(self.gates)
+
 
     def __getitem__(self, index):
         return self.gates[index]
@@ -182,6 +186,7 @@ class Circuit:
 
         return output
     
+    
     def depth(self):
         time_steps = [[] for _ in range(len(self.gates))]
         for i, gate in enumerate(self.gates):
@@ -194,18 +199,3 @@ class Circuit:
         for qubits in time_steps:
             depth += max_qubits - len(qubits)
         return depth
-
-    def get_inverse_circuit(self):
-        
-        gate_name = " "
-        inverse_gates = []
-
-        for gate in reversed(self.gates):
-            if gate.gate.__class__.__name__ == gate_name:
-                inverse_gate = CircuitGate(gate.gate.get_inverse(), gate.qubits)
-            else:
-                inverse_gate = CircuitGate(gate.gate, gate.qubits)
-
-            inverse_gates.append(inverse_gate)
-
-        return Circuit(inverse_gates)

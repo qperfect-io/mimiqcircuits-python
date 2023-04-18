@@ -13,6 +13,7 @@ def _decomplex(m):
     else:
         return m
 
+
 def ctrl(mat):
     """
     Returns the controlled version of a given 2x2 matrix.
@@ -26,14 +27,17 @@ def ctrl(mat):
     dim = mat.shape[0]
     return np.block([[mat, np.zeros((dim, dim))], [np.zeros((dim, dim)), np.identity(dim)]])
 
+
 def gphase(theta):
     return np.array([[1, 0], [0, np.exp(1j * theta)]])
+
 
 def rxmatrix(theta):
     return np.array([
         [np.cos(theta/2), -1j*np.sin(theta/2)],
         [-1j*np.sin(theta/2), np.cos(theta/2)]
     ])
+
 
 def umatrixpi(theta, phi, lmbda):
     return np.array([
@@ -811,8 +815,14 @@ class GateCustom(Gate):
             super().__init__(None, 1)
 
     def __str__(self):
-        return 'Custom' 
-          
+        return 'Custom'
+
+    def to_dict(self):
+        gate_dict = {}
+        if self.matrix is not None:
+            gate_dict['matrix'] = self.matrix.tolist()
+        return gate_dict
+
     @classmethod
     def from_dict(cls, gate_dict):
         matrix = gate_dict.get("matrix", None)
