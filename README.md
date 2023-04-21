@@ -9,16 +9,18 @@ pip install circuits or pip install .
 
 ```python
 
-import circuits
-from circuits import gates, quantumcircuit, test, jsonschema
+from circuits import *
+from circuits.quantumcircuit import *
+from circuits.gates import *
+from circuits.jsonschema import *
 
-circuit=quantumcircuit.Circuit()
+circuit=Circuit()
 
-circuit.add_gate(gates.GateH(),0)
+circuit.add_gate(GateH(),0)
 
-circuit.add_gate(gates.GateCH(),0,2)
+circuit.add_gate(GateCH(),0,2)
 
-circuit.add_circuitgate(quantumcircuit.CircuitGate(gates.GateCSWAP(), 0,1,2))
+circuit.add_circuitgate(CircuitGate(GateCSWAP(), 0,1,2))
 
 import numpy as np
 
@@ -27,10 +29,18 @@ matrix = np.array([[1, 0, 0, 0],
                    [0, 0, 0, 1],
                    [0, 0, 1, 0]])
 
-circuit.add_circuitgate(quantumcircuit.CircuitGate(gates.GateCustom(matrix), 1,2))
-circuit.add_gate(gates.GateCustom(matrix), 3,4)
+circuit.add_circuitgate(CircuitGate(GateCustom(matrix), 1,2))
+circuit.add_gate(GateCustom(matrix), 3,4)
 
 print(circuit)
+
+print("......................................................")
+
+json_str = jsonschema.tojson(circuit)
+print(json_str)
+
+json_str2 = jsonschema.fromjson(json_str)
+print(json_str2)
 
 ```
 
