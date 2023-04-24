@@ -16,8 +16,6 @@ def test_allgates():
     json = c.to_json()
     c2_simple_1q = mc.Circuit.from_json(json)
 
-    print(c)
-    print(c2_simple_1q)
     assert c == c2_simple_1q
 
     params_1q_3p = [mc.GateU]
