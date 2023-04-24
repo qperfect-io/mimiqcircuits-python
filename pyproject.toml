@@ -1,33 +1,17 @@
-[build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "circuits"
-authors = [
-    {name = "Vase Moeini", email = "vmoeini@unistra.fr"},
-    {name = "Guido Masella", email = "guido.masella@gmail.com"},
-]
+[tool.poetry]
+name = "mimiqcircuits"
+version = "0.1.0"
+description = ""
+authors = ["Vase Moeini <vmoeini@unistra.fr>", "Guido Masella <guido.masella@qperfect.io>"]
 readme = "README.md"
-requires-python = ">=3.6"
-classifiers = [
-    "Programming Language :: Python :: 3",
-]
-dynamic = ["version"]
-dependencies = [
-    "numpy", "json"
-]
 
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.24.3"
 
-['project.urls']
-homepage = 'https://mimiq.qperfect.io'
-documentation = 'https://mimiq.qperfect.io/docs/python'
-repository = 'https://github.com/qperfect-io/circuits-python'
+[tool.poetry.group.test.dependencies]
+pytest = "^7.3.1"
 
-[project.optional-dependencies]
-test = ['pytest>=700']
-all = ['pytest>=700']
-
-[tool.setuptools.dynamic]
-version = {attr = "circuits.__version__"}
-
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

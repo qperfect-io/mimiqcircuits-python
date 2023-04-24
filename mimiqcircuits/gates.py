@@ -150,6 +150,9 @@ class Gate(ABC):
     def __str__(self):
         return self._name
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
 
 class GateX(Gate):
     """
@@ -590,3 +593,7 @@ class GateCP(Gate):
     def __str__(self):
         pars = f'(lmbda={self.lmbda})'
         return self.name + pars
+
+
+# export all the gates
+__all__ = [name for name in globals() if name.startswith('Gate')]

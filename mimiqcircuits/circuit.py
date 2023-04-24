@@ -1,9 +1,9 @@
-
+#
 # Copyright © 2023 University of Strasbourg. All Rights Reserved.
 # See AUTHORS.md for the list of authors.
 #
 
-from .gates import Gate
+from mimiqcircuits.gates import Gate
 
 
 class CircuitGate:
@@ -107,7 +107,7 @@ class Circuit:
         """
         Checks if the circuit is empty.
         """
-        self.gates.empty()
+        return len(self.gates) == 0
 
     def add_gate(self, gate: Gate, *args):
         """
@@ -193,3 +193,7 @@ class Circuit:
         for qubits in time_steps:
             depth += max_qubits - len(qubits)
         return depth
+
+
+# export the cirucit classes
+__all__ = ['CircuitGate', 'Circuit']
