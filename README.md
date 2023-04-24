@@ -1,47 +1,46 @@
-# Circuits (`circuits-python`)
+# Python interface to MIMIQ Circuits (`mimiqcircuits`)
 
 A library to handle quantum circuits for **QPerfect**'s MIMIQ Emulator.
 
 ## Installation
-pip install circuits or pip install .
+
+```
+pip install "mimiqcircuits @ git+https://github.com/qperfect-io/circuits-python.git
+````
 
 ## Usage
 
+### Handling circuits
+
 ```python
+import mimiqcircuits as mc
 
-from circuits import *
-from circuits.quantumcircuit import *
-from circuits.gates import *
-from circuits.jsonschema import *
+c = mc.Circuit()
 
-circuit=Circuit()
+print(c)
+# will print:
+# empty circuit
 
-circuit.add_gate(GateH(),0)
+c.add_gate(mc.GateX(), 4)
 
-circuit.add_gate(GateCH(),0,2)
+print(c)
+# will print:
+#5-qubit circuit with 1 gates
+# └── X @ q4
 
-circuit.add_circuitgate(CircuitGate(GateCSWAP(), 0,1,2))
+c.add_gate(mc.GateCX(), 1, 8)
 
-import numpy as np
+print(c)
+# will print:
+# 9-qubit circuit with 2 gates
+# ├── X @ q4
+# └── CX @ q1, q8
 
-matrix = np.array([[1, 0, 0, 0],
-                   [0, 1, 0, 0],
-                   [0, 0, 0, 1],
-                   [0, 0, 1, 0]])
+import json
 
-circuit.add_circuitgate(CircuitGate(GateCustom(matrix), 1,2))
-circuit.add_gate(GateCustom(matrix), 3,4)
-
-print(circuit)
-
-print("......................................................")
-
-json_str = jsonschema.tojson(circuit)
-print(json_str)
-
-json_str2 = jsonschema.fromjson(json_str)
-print(json_str2)
-
+json.dumps(c.to_json())
+# will give:
+# '{"gates": [{"name": "X", "targets": [5]}, {"name": "CX", "targets": [2, 9]}]}'
 ```
 
 # COPYRIGHT
