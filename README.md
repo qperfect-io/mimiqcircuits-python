@@ -5,7 +5,7 @@ A library to handle quantum circuits for **QPerfect**'s MIMIQ Emulator.
 ## Installation
 
 ```
-pip install "mimiqcircuits @ git+https://github.com/qperfect-io/circuits-python.git
+pip install "mimiqcircuits @ git+https://github.com/qperfect-io/mimiqcircuits-python.git
 ````
 
 ## Usage
