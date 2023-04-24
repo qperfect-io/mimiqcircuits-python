@@ -2,12 +2,13 @@
 name = "mimiqcircuits"
 version = "0.1.0"
 description = ""
-authors = ["Vase Moeini <vmoeini@unistra.fr>", "Guido Masella <guido.masella@qperfect.io>"]
+authors = ["Guido Masella <guido.masella@qperfect.io>", "Vase Moeini <vmoeini@unistra.fr>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
 numpy = "^1.24.3"
+mimiqlink = {git = "ssh://git@github.com/qperfect-io/mimiqlink-python.git"}
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.3.1"
