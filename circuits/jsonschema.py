@@ -1,6 +1,6 @@
 import json
 from .quantumcircuit import CircuitGate, Circuit
-from .gates import Gate,GateR, GateX, GateY, GateZ, GateH,GateID,GateCustom,GateRY,GateRZ,GateCRX,GateCRY,GateCRZ,GateCH,GateU2,GateCX,GateID,GateSX,GateSWAP,GateSXDG,GateCCX,GateCSWAP,GateISWAPDG,GateISWAP,GateU3,GateU1,GateISWAPDG,GateCX,GateRX,GateP,GateCP,GateU,GateCU,GateS,GateSDG,GateT,GateTDG,GateCY,GateCZ
+from .gates import *
 
 
 import inspect
@@ -54,9 +54,11 @@ def tojson(circuit):
 
     for g in circuit:
         if isinstance(g.gate, GateCustom):
-            gate_dict = {'gate_name': str(g.gate), 'qubits': list(g.qubits), 'matrix': g.gate.matrix.tolist()}
+            gate_dict = {'gate_name': str(g.gate), 'qubits': list(
+                g.qubits), 'matrix': g.gate.matrix.tolist()}
         elif isinstance(g.gate, Gate):
-            gate_dict = {'gate_name': g.gate.__class__.__name__, 'qubits': list(g.qubits)}
+            gate_dict = {'gate_name': g.gate.__class__.__name__,
+                         'qubits': list(g.qubits)}
             parnames_dict = parnames(g.gate)
             params = []
             for p in parnames_dict:
@@ -66,7 +68,8 @@ def tojson(circuit):
                     params.append(parnames_dict[p])
             gate_dict["params"] = params
         gates.append(gate_dict)
-    data = {"num_qubits": len(set(qubit for gate in circuit for qubit in gate.qubits)), 'gates': gates}
+    data = {"num_qubits": len(
+        set(qubit for gate in circuit for qubit in gate.qubits)), 'gates': gates}
 
     return json.dumps(data)
 
@@ -79,10 +82,10 @@ def fromjson(json_str):
                     "GateCY": GateCY, "GateCZ": GateCZ, "GateCCX": GateCCX, "GateSWAP": GateSWAP,
                     "GateISWAPDG": GateISWAP, "GateISWAP": GateISWAPDG, "GateP": GateP, "GateCP": GateCP,
                     "GateS": GateS, "GateCU": GateCU, "GateSDG": GateSDG, "GateT": GateT, "GateTDG": GateTDG,
-                    "GateSXDG": GateSXDG, "GateSX": GateSX, "GateID": GateID, "GateCSWAP": GateCSWAP,"GateCH": GateCH,
-                    "GateCX": GateCX,"GateCY": GateCY,"GateCZ": GateCZ,"GateRX": GateRX,"GateRY": GateRY,"GateRZ": GateRZ,
-                    "GateCRX": GateCRX,"GateCRY": GateCRY,"GateCRZ": GateCRZ, "Custom": GateCustom}
-                   
+                    "GateSXDG": GateSXDG, "GateSX": GateSX, "GateID": GateID, "GateCSWAP": GateCSWAP, "GateCH": GateCH,
+                    "GateCX": GateCX, "GateCY": GateCY, "GateCZ": GateCZ, "GateRX": GateRX, "GateRY": GateRY, "GateRZ": GateRZ,
+                    "GateCRX": GateCRX, "GateCRY": GateCRY, "GateCRZ": GateCRZ, "Custom": GateCustom}
+
     for gate in data["gates"]:
         gate_name = gate.pop("gate_name")
         gate_class = gate_classes[gate_name]

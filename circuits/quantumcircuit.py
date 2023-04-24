@@ -3,7 +3,6 @@
 # See AUTHORS.md for the list of authors.
 #
 
-import numpy as np
 from .gates import Gate
 
 
@@ -15,6 +14,7 @@ class CircuitGate:
     gate (Gate): The gate to apply.
     qubits (tuple of int): The qubits to apply the gate to.
     """
+
     def __init__(self, gate, *args):
         """
         Initializes a CircuitGate object.
@@ -28,13 +28,13 @@ class CircuitGate:
         """
         if not isinstance(gate, Gate):
             raise TypeError("gate must be a subclass of Gate")
-        
+
         if len(args) != gate.num_qubits:
             raise ValueError("Wrong number of target qubits")
-        
+
         self._gate = gate
         self._qubits = args
-    
+
     @property
     def gate(self):
         return self._gate
@@ -50,16 +50,18 @@ class CircuitGate:
     @qubits.setter
     def qubits(self, _):
         raise AttributeError("qubits is a read-only attribute")
-    
+
     def __str__(self):
-        return f"{self.gate.__class__.__name__}({self.qubits})"
+        base = f'{self.gate}'
+        targets = ', '.join(map(lambda q: f'q{q}', self.qubits))
+        return base + ' @ ' + targets
 
     def __repr__(self):
         return str(self)
 
-    def CircuitGate_inverse(self):
-       return CircuitGate(self.gate.get_inverse(), self.qubits)
-    
+    def inverse(self):
+        return CircuitGate(self.gate.inverse(), self.qubits)
+
 
 class Circuit:
     """
@@ -68,7 +70,8 @@ class Circuit:
     Attributes:
     gates (list of CircuitGate): The gates in the circuit.
     """
-    def __init__(self, gates=None):
+
+    def __init__(self, gates: list = []):
         """
         Initializes a Circuit object.
 
@@ -78,34 +81,35 @@ class Circuit:
         Raises:
         TypeError: If gates is not a list of CircuitGate objects.
         """
-        self.gates = []
-        if gates is None:
-            gates = []
         if not isinstance(gates, list):
             raise TypeError("gates must be a list of CircuitGate objects")
+
         for gate in gates:
             if not isinstance(gate, CircuitGate):
-                if isinstance(gate, tuple) and len(gate) == 2:
-                    if isinstance(gate[0], Gate):
-                        if not isinstance(gate[1], tuple) and not isinstance(gate[1], int):
-                            raise TypeError("qubits must be a tuple or int")
-                        if isinstance(gate[1], int):
-                            qubits = (gate[1],)
-                        else:
-                            qubits = gate[1]
-                        if len(qubits) < 1 or len(qubits) > 2:
-                            raise ValueError("qubits must contain 1 or 2 elements")
-                        circuit_gate = CircuitGate(gate[0], qubits)
-                        self.gates.append(circuit_gate)
-                    else:
-                        raise TypeError("gate must be a Gate object")
-                else:
-                    raise TypeError("gates must be a list of CircuitGate or (Gate, qubits) tuples")
-            else:
-                self.gates.append(gate)
+                raise TypeError(
+                    "`gates` must be a list of CircuitGate objects")
 
+        self.gates = gates
 
-    def add_gate(self, gate, *args):
+    def num_qubits(self):
+        """
+        Returns the number of qubits in the circuit.
+        """
+        n = -1
+        for gate in self.gates:
+            m = max(gate.qubits)
+            if m > n:
+                n = m
+
+        return n+1
+
+    def empty(self):
+        """
+        Checks if the circuit is empty.
+        """
+        self.gates.empty()
+
+    def add_gate(self, gate: Gate, *args):
         """
         Adds a gate to the end of the circuit.
 
@@ -122,15 +126,14 @@ class Circuit:
 
         circuit_gate = CircuitGate(gate, *args)
         self.gates.append(circuit_gate)
-        
-    def  add_circuitgate(self, circuitgate):
+
+    def add_circuitgate(self, circuitgate):
         if not isinstance(circuitgate, CircuitGate):
             raise TypeError("accepts only a CircuitGate")
-        
+
         self.gates.append(circuitgate)
 
-
-    def remove_gate(self, index):
+    def remove_gate(self, index: int):
         """
         Removes a gate at a specific index from the circuit.
 
@@ -142,8 +145,7 @@ class Circuit:
         """
         del self.gates[index]
 
-
-    def get_gate(self, index):
+    def get_gate(self, index: int):
         """
         Get a gate at a specific index from the circuit.
 
@@ -152,41 +154,33 @@ class Circuit:
         """
         return self.gates[index]
 
+    def inverse(self):
+        invgates = map(lambda x: x.inverse(), self.gates.reverse())
+        return Circuit(invgates)
 
     def __len__(self):
         return len(self.gates)
 
-
     def __iter__(self):
         return iter(self.gates)
 
-
     def __getitem__(self, index):
-        return self.gates[index]
-
+        return self.get_gate(index)
 
     def __str__(self):
-        """Generate a JSON string representation of the circuit."""
-        qubits = set(qubit for gate in self.gates for qubit in gate.qubits)
-        num_qubits = max(qubits) + 1
-        # Initialize an empty matrix representing the circuit
-        matrix = np.empty((num_qubits, len(self.gates)), dtype=object)
-        matrix[:, :] = ' '
-        # Fill in the matrix with the gates
-        for i, gate in enumerate(self.gates):
-            for qubit in gate.qubits:
-                matrix[qubit, i] = str(gate.gate)
-        # Generate the string representation of the circuit
-        output = ''
-        for row in matrix:
-            output += '|'
-            for entry in row:
-                output += f'{entry:^3}|'
-            output += '\n'
+        n = len(self)
+        nq = self.num_qubits()
+        output = f'{nq}-qubit circuit with {n} gates'
+
+        # iterate from the second gate
+        for g in self.gates[:-1]:
+            output += f'\n ├── {g}'
+
+        g = self.gates[-1]
+        output += f'\n └── {g}'
 
         return output
-    
-    
+
     def depth(self):
         time_steps = [[] for _ in range(len(self.gates))]
         for i, gate in enumerate(self.gates):

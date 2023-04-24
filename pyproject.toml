@@ -15,8 +15,19 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "numpy"
+    "numpy", "json"
 ]
+
+
+['project.urls']
+homepage = 'https://mimiq.qperfect.io'
+documentation = 'https://mimiq.qperfect.io/docs/python'
+repository = 'https://github.com/qperfect-io/circuits-python'
+
+[project.optional-dependencies]
+test = ['pytest>=700']
+all = ['pytest>=700']
 
 [tool.setuptools.dynamic]
 version = {attr = "circuits.__version__"}
+

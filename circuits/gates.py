@@ -2,7 +2,8 @@
 # See AUTHORS.md for the list of authors.
 
 import numpy as np
-import inspect
+from abc import ABC, abstractmethod
+
 
 def _decomplex(m):
     if np.iscomplexobj(m):
@@ -12,6 +13,22 @@ def _decomplex(m):
             return m
     else:
         return m
+
+
+def cis(x):
+    return np.exp(1j * x)
+
+
+def cispi(x):
+    return np.exp(1j * np.pi * x)
+
+
+def pmatrixpi(lmbda):
+    return np.array([[1, 0], [0, cispi(lmbda)]])
+
+
+def pmatrix(lmbda):
+    return np.array([[1, 0], [0, cis(lmbda)]])
 
 
 def ctrl(mat):
@@ -25,807 +42,551 @@ def ctrl(mat):
         numpy.ndarray: A 4x4 controlled matrix.
     """
     dim = mat.shape[0]
-    return np.block([[mat, np.zeros((dim, dim))], [np.zeros((dim, dim)), np.identity(dim)]])
-
-
-def gphase(theta):
-    return np.array([[1, 0], [0, np.exp(1j * theta)]])
-
-
-def rxmatrix(theta):
-    return np.array([
-        [np.cos(theta/2), -1j*np.sin(theta/2)],
-        [-1j*np.sin(theta/2), np.cos(theta/2)]
+    return np.block([
+        [np.identity(dim), np.zeros(mat.shape)],
+        [np.zeros(mat.shape), mat]
     ])
 
 
-def umatrixpi(theta, phi, lmbda):
+def gphase(lmbda):
+    return np.array([[1, 0], [0, cis(lmbda)]])
+
+
+def gphasepi(lmbda):
+    return np.array([[1, 0], [0, cis(lmbda)]])
+
+
+def umatrix(theta, phi, lmbda, gamma=0.0):
+    costheta2 = np.cos(theta / 2)
+    sintheta2 = np.sin(theta / 2)
     return np.array([
-        [np.exp(-1j*(phi+lmbda)/2)*np.cos(theta/2), -1j*np.exp(-1j*(phi-lmbda)/2)*np.sin(theta/2)],
-        [-1j*np.exp(1j*(phi-lmbda)/2)*np.sin(theta/2), np.exp(1j*(phi+lmbda)/2)*np.cos(theta/2)]
-    ])   
+        [cis(gamma) * costheta2, -cis(lmbda + gamma) * sintheta2],
+        [cis(phi + gamma) * sintheta2, cis(phi + lmbda + gamma) * costheta2]
+    ])
 
 
-class Gate:
-    """
-    Base class for quantum gates.
-    """
-    def __init__(self, matrix, num_qubits,gate_name=None):
-        if not isinstance(matrix, np.ndarray) or matrix.ndim != 2:
-            raise TypeError("matrix must be a 2D numpy array")
-        expected_dim = 2**num_qubits
-        if matrix.shape != (expected_dim, expected_dim):
-            raise ValueError(f"matrix must be of shape ({expected_dim}, {expected_dim})")
-        self._num_qubits = num_qubits
-        self._matrix = matrix
-        self.gate_name= gate_name 
+def umatrixpi(theta, phi, lmbda, gamma=0.0):
+    costheta2 = np.cospi(theta / 2)
+    sintheta2 = np.sinpi(theta / 2)
+    return np.array([
+        [cispi(gamma) * costheta2, -cispi(lmbda + gamma) * sintheta2],
+        [
+            cispi(phi + gamma) * sintheta2,
+            cispi(phi + lmbda + gamma) * costheta2
+        ]
+    ])
+
+
+def rmatrix(theta, phi):
+    costheta2 = np.cos(theta / 2)
+    sintheta2 = np.sin(theta / 2)
+    return np.array([
+        [costheta2, -1j*cis(-phi) * sintheta2],
+        [-1j*cis(phi)*sintheta2, costheta2]
+    ])
+
+
+def rmatrixpi(theta, phi):
+    costheta2 = np.cospi(theta / 2)
+    sintheta2 = np.sinpi(theta / 2)
+    return np.array([
+        [costheta2, -1j*cispi(-phi) * sintheta2],
+        [-1j*cispi(phi)*sintheta2, costheta2]
+    ])
+
+
+def rxmatrixpi(theta):
+    return umatrixpi(theta, -1/2, 1/2)
+
+
+def rxmatrix(theta):
+    return rxmatrixpi(theta / np.pi)
+
+
+def rymatrixpi(theta):
+    return umatrixpi(theta, 0, 0)
+
+
+def rymatrix(theta):
+    return rymatrixpi(theta / np.pi)
+
+
+def rzmatrixpi(lmbda):
+    return gphasepi(-lmbda / 2) * umatrixpi(0, 0, lmbda)
+
+
+def rzmatrix(lmbda):
+    return rzmatrixpi(lmbda / np.pi)
+
+
+class Gate(ABC):
+    _num_qubits = None
+    _name = None
+
+    @abstractmethod
+    def matrix(self):
+        pass
+
     @property
     def num_qubits(self):
         return self._num_qubits
 
     @num_qubits.setter
-    def num_qubits(self, _):
-        raise AttributeError("num_qubits is a read-only attribute")
+    def num_qubits(self, value):
+        raise ValueError('Cannot set num_qubits. Read only parameter.')
 
     @property
-    def matrix(self):
-        return self._matrix
+    def name(self):
+        return self._name
 
-    @matrix.setter
-    def matrix(self, _):
-        raise AttributeError("matrix is a read-only attribute")
+    @name.setter
+    def name(self, value):
+        raise ValueError('Cannot set name. Read only parameter.')
+
+    @ abstractmethod
+    def inverse(self):
+        pass
 
     def __str__(self):
-        return f"\n{self.matrix}\n"
-    
-    def parnames(self):
-        """
-        Return a list with the parameter names of the gate.
-        """
-        return list(inspect.signature(self.__class__).parameters.keys())[1:]
-    
-    def get_inverse(self):
-        """
-        Get the inverse of the gate.
-
-        Returns:
-        Gate: The inverse of the gate.
-        """
-        inverse_matrix = np.linalg.inv(self.matrix)
-        return Gate(inverse_matrix, self.num_qubits)
+        return self._name
 
 
 class GateX(Gate):
     """
     Class for the X gate.
     """
-    def __init__(self):
-        matrix = np.array([[0, 1],
-                           [1, 0]])
-        super().__init__(matrix, 1)
+    _num_qubits = 1
+    _name = 'X'
 
     def inverse(self):
         return self
-    
-    def __str__(self):
-        return 'X'
+
+    def matrix(self):
+        return np.array([[0, 1], [1, 0]])
+
+
+class GateY(Gate):
+    """
+    Class for the Y gate.
+    """
+    _num_qubits = 1
+    _name = 'Y'
+
+    def inverse(self):
+        return self
+
+    def matrix(self):
+        return np.array([[0, -1j], [1j, 0]])
+
+
+class GateZ(Gate):
+    """
+    Class for the Z gate.
+    """
+    _num_qubits = 1
+    _name = 'Z'
+
+    def inverse(self):
+        return self
+
+    def matrix(self):
+        return np.array([[1, 0], [0, -1]])
 
 
 class GateH(Gate):
     """
     Class for the H gate.
     """
-    def __init__(self):
-        matrix = np.array([[1, 1],
-                           [1, -1]]) / np.sqrt(2)
-        super().__init__(matrix, 1)
+    _num_qubits = 1
+    _name = 'H'
 
-    def inverse(self):
-        return GateH()
-    
-    def __str__(self):
-        return "H"
-        
-
-class GateCH(Gate):
-    """
-    Class for the controlled-Hadamard gate.
-    """
-    matrix = ctrl(GateH().matrix)
-
-    def __init__(self):
-        super().__init__(self.matrix, 2)
-
-    def __str__(self):
-        return 'CH'
-
-    def reverse(self):
-        return self
-
-
-class GateCX(Gate):
-    """
-    Class for the controlled-X gate.
-    """
-    matrix = ctrl(GateX().matrix)
-    
-    def __init__(self):
-        super().__init__(self.matrix, 2)
-    
-    def __str__(self):
-        return 'CX'
-    
-    def inverse(self):
-        return self  
-
-
-class GateY(Gate):
-    """
-    Class for the Pauli Y gate.
-    """
-    matrix = np.array([[0, -1j], [1j, 0]])
-
-    def __init__(self):
-        super().__init__(self.matrix, 1)
-
-    def __str__(self):
-        return 'Y'
-    
-    def inverse(self):
-        return self
-    
-
-class GateCY(Gate):
-    """
-    Class for the controlled-Y gate.
-    """
-    matrix = ctrl(GateY().matrix)
-    
-    def __init__(self):
-        super().__init__(self.matrix, 2)
-
-    def __str__(self):
-        return 'CY'
-    
     def inverse(self):
         return self
 
+    def matrix(self):
+        return 1/np.sqrt(2) * np.array([[1, 1], [1, -1]])
 
-class GateZ(Gate):
-    """
-    Class for the Pauli Z gate.
-    """
-    matrix = np.array([[1, 0], [0, -1]])
 
-    def __init__(self):
-        super().__init__(self.matrix, 1)
+class GateS(Gate):
+    _num_qubits = 1
+    _name = 'S'
 
-    def __str__(self):
-        return 'Z' 
-     
     def inverse(self):
-        return self 
-    
+        return GateSDG()
 
-class GateCZ(Gate):
-    """
-    Class for the controlled-Z gate.
-    """
-    matrix = ctrl(GateZ().matrix)
-    
-    def __init__(self):
-        super().__init__(self.matrix, 2)
+    def matrix(self):
+        # return np.array([[1, 0], [0, 1j]])
+        return _decomplex(pmatrixpi(1 / 2))
 
-    def __str__(self):
-        return 'CZ'
-    
+
+class GateSDG(Gate):
+    _num_qubits = 1
+    _name = 'SDG'
+
+    def inverse(self):
+        return GateS()
+
+    def matrix(self):
+        return _decomplex(pmatrixpi(-1 / 2))
+
+
+class GateT(Gate):
+    _num_qubits = 1
+    _name = 'T'
+
+    def inverse(self):
+        return GateTDG()
+
+    def matrix(self):
+        return _decomplex(pmatrixpi(1 / 4))
+
+
+class GateTDG(Gate):
+    _num_qubits = 1
+    _name = 'T'
+
+    def inverse(self):
+        return GateT()
+
+    def matrix(self):
+        return _decomplex(pmatrixpi(-1 / 4))
+
+
+class GateSX(Gate):
+    _num_qubits = 1
+    _name = 'SX'
+
+    def inverse(self):
+        return GateSXDG()
+
+    def matrix(self):
+        return _decomplex(gphasepi(1 / 4) * rxmatrixpi(1 / 4))
+
+
+class GateSXDG(Gate):
+    _num_qubits = 1
+    _name = 'SXDG'
+
+    def inverse(self):
+        return GateSX()
+
+    def matrix(self):
+        return _decomplex(gphase(-np.pi / 4) * rxmatrix(-np.pi / 2))
+
+
+class GateID(Gate):
+    _num_qubits = 1
+    _name = 'ID'
+
     def inverse(self):
         return self
+
+    def matrix(self):
+        return _decomplex(umatrixpi(0, 0, 0))
+
+
+class GateU(Gate):
+    _num_qubits = 1
+    _name = 'U'
+
+    def __init__(self, theta, phi, lmbda):
+        self.theta = theta
+        self.phi = phi
+        self.lmbda = lmbda
+
+    def matrix(self):
+        return umatrix(self.theta, self.phi, self.lmbda)
+
+    def inverse(self):
+        return GateU(-self.theta, -self.phi, -self.lmbda)
+
+    def __str__(self):
+        pars = f'(theta={self.theta}, phi={self.phi}, lmbda={self.lmbda})'
+        return self.name + pars
 
 
 class GateR(Gate):
-    """
-    Class for the R gate.
-    """
+    _num_qubits = 1
+    _name = 'R'
+
     def __init__(self, theta, phi):
-        if not isinstance(theta, (int, float)) or not isinstance(phi, (int, float)):
-            raise TypeError("theta and phi must be numbers")
-        matrix = np.array([[np.cos(theta/2), -np.exp(1j*phi)*np.sin(theta/2)],
-                           [np.exp(1j*phi)*np.sin(theta/2), np.cos(theta/2)]],
-                          dtype=np.complex128)
-        super().__init__(matrix, 1)
         self.theta = theta
         self.phi = phi
-        self.is_reversed = False
-        
+
+    def matrix(self):
+        return rmatrix(self.theta, self.phi)
+
     def inverse(self):
-        inverse_gate = GateR(-self.theta, self.phi)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
+        return GateR(-self.theta, self.phi)
+
     def __str__(self):
-        if self.is_reversed:
-            return 'R†'
-        else:
-            return 'R'
+        pars = f'(theta={self.theta}, phi={self.phi})'
+        return self.name + pars
 
 
 class GateRX(Gate):
-    """
-    Class for the RX gate.
-    """
+    _num_qubits = 1
+    _name = 'RX'
+
     def __init__(self, theta):
-        if not isinstance(theta, (int, float)):
-            raise TypeError("theta must be a number")
-        matrix = np.array([[np.cos(theta/2), -1j*np.sin(theta/2)],
-                           [-1j*np.sin(theta/2), np.cos(theta/2)]],
-                          dtype=np.complex128)
-        super().__init__(matrix, 1)
         self.theta = theta
-        self.is_reversed = False
-        
+
+    def matrix(self):
+        return rxmatrix(self.theta)
+
     def inverse(self):
-        inverse_gate = GateRX(self.theta)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
+        return GateRX(-self.theta)
+
     def __str__(self):
-        if self.is_reversed:
-            return 'RX†'
-        else:
-            return 'RX'
+        pars = f'(theta={self.theta})'
+        return self.name + pars
 
 
 class GateRY(Gate):
-    """
-    Class for the RY gate.
-    """
+    _num_qubits = 1
+    _name = 'RY'
+
     def __init__(self, theta):
-        if not isinstance(theta, (int, float)):
-            raise TypeError("theta must be a number")
-        matrix = np.array([[np.cos(theta/2), -np.sin(theta/2)],
-                           [np.sin(theta/2), np.cos(theta/2)]],
-                          dtype=np.complex128)
-        super().__init__(matrix, 1)
         self.theta = theta
-        self.is_reversed = False
-        
+
+    def matrix(self):
+        return rymatrix(self.theta)
+
     def inverse(self):
-        inverse_gate = GateRY(-self.theta)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
+        return GateRY(-self.theta)
+
     def __str__(self):
-        if self.is_reversed:
-            return 'RY†'
-        else:
-            return 'RY'
+        pars = f'(lmbda={self.theta})'
+        return self.name + pars
 
 
 class GateRZ(Gate):
-    """
-    Class for the RZ gate.
-    """
+    _num_qubits = 1
+    _name = 'RZ'
+
     def __init__(self, lmbda):
-        if not isinstance(lmbda, (int, float)):
-            raise TypeError("phi must be a number")
-        matrix = np.array([[np.exp(-1j*lmbda/2), 0],
-                           [0, np.exp(1j*lmbda/2)]],
-                          dtype=np.complex128)
-        super().__init__(matrix, 1)
-        self.phi = lmbda
-        self.is_reversed = False
-        
-    def inverse(self):
-        inverse_gate = GateRZ(-self.phi)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
-    def __str__(self):
-        if self.is_reversed:
-            return 'RZ†'
-        else:
-            return 'RZ'
-
-
-class GateCRX(Gate):
-    """
-    Class for the controlled-RX gate.
-    """
-    def __init__(self, theta):
-        if not isinstance(theta, (int, float)):
-            raise TypeError("theta must be a number")
-        matrix = ctrl(GateRX(theta/2).matrix)
-        super().__init__(matrix, 2)
-        self.theta = theta
-        self.is_reversed = False
-        
-    def inverse(self):
-        inverse_gate = GateCRX(-self.theta)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
-    def __str__(self):
-        if self.is_reversed:
-            return 'CRX†'
-        else:
-            return 'CRX'
-
-
-class GateCRY(Gate):
-    """
-    Class for the controlled-RY gate.
-    """
-    def __init__(self, theta):
-        if not isinstance(theta, (int, float)):
-            raise TypeError("theta must be a number")
-        matrix = ctrl(GateRY(theta/2).matrix)
-        super().__init__(matrix, 2)
-        self.theta = theta
-        self.is_reversed = False
-        
-    def inverse(self):
-        inverse_gate = GateCRY(-self.theta)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
-    def __str__(self):
-        if self.is_reversed:
-            return 'CRY†'
-        else:
-            return 'CRY'
-
-
-class GateCRZ(Gate):
-    """
-    Class for the controlled-RZ gate.
-    """
-    def __init__(self, lmbda):
-        if not isinstance(lmbda, (int, float)):
-            raise TypeError("lmbda must be a number")
-        matrix = ctrl(GateRZ(lmbda/2).matrix)
-        super().__init__(matrix, 2)
         self.lmbda = lmbda
-        self.is_reversed = False
-        
+
+    def matrix(self):
+        return rzmatrix(self.lmbda)
+
     def inverse(self):
-        inverse_gate = GateCRZ(-self.lmbda)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
+        return GateRZ(-self.lmbda)
+
     def __str__(self):
-        if self.is_reversed:
-            return 'CRZ†'
-        else:
-            return 'CRZ'
+        pars = f'(theta={self.lmbda})'
+        return self.name + pars
 
 
 class GateP(Gate):
-    """
-    Class for the P gate, also known as the phase gate.
-    """
+    _num_qubits = 1
+    _name = 'RZ'
+
     def __init__(self, lmbda):
-        if not isinstance(lmbda, (int, float)):
-            raise TypeError("angle must be a number")
-        matrix = np.eye(2, dtype=np.complex128)
-        matrix[1, 1] = np.exp(1j * lmbda)
-        super().__init__(matrix, 1)
         self.lmbda = lmbda
-        self.is_reversed = False
+
+    def matrix(self):
+        return pmatrix(self.lmbda)
 
     def inverse(self):
-        inverse_gate = GateP(-self.lmbda)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
-    def __str__(self):
-        if self.is_reversed:
-            return "P†"
-        else:
-            return 'P'
-
-    
-class GateCP(Gate):
-    """
-    Class for the controlled-P gate.
-    """
-    def __init__(self, lmbda):
-        if not isinstance(lmbda, (int, float)):
-            raise TypeError("lmbda must be a number")
-        matrix = ctrl(GateP(lmbda/2).matrix)
-        super().__init__(matrix, 2)
-        self.lmbda = lmbda
-        self.is_reversed = False
-        
-    def inverse(self):
-        inverse_gate = GateCP(-self.lmbda)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
-    def __str__(self):
-        if self.is_reversed:
-            return 'CP†'
-        else:
-            return 'CP'
-        
-        
-class GateU(Gate):
-    """
-    Class for the U gate.
-    """
-    def __init__(self, theta, phi, lmbda):
-        if not all(isinstance(p, (int, float)) for p in [theta, phi, lmbda]):
-            raise TypeError("theta, phi, and lmbda must be numbers")
-        matrix = np.array([[np.cos(theta/2), -np.exp(1j*lmbda)*np.sin(theta/2)],
-                           [np.exp(1j*phi)*np.sin(theta/2), np.exp(1j*(phi+lmbda))*np.cos(theta/2)]],
-                          dtype=np.complex128)
-        super().__init__(matrix, 1)
-        self.theta = theta
-        self.phi = phi
-        self.lmbda = lmbda
-        self.is_reversed = False
-        
-    def inverse(self):
-        inverse_gate = GateU(-self.theta, -self.phi, -self.lmbda)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
-    def __str__(self):
-        if self.is_reversed:
-            return 'U†'
-        else:
-            return 'U'
-        
-
-class GateCU(Gate):
-    """
-    Class for the controlled-U gate.
-    """
-    def __init__(self, theta, phi, lmbda, gamma):
-        if not all(isinstance(p, (int, float)) for p in [theta, phi, lmbda, gamma]):
-            raise TypeError("theta, phi, lmbda, and gamma must be numbers")
-        matrix = ctrl(GateU(theta, phi, lmbda).matrix)
-        matrix[2:, 2:] = GateU(theta, phi, lmbda + gamma).matrix
-        super().__init__(matrix, 2)
-        self.theta = theta
-        self.phi = phi
-        self.lmbda = lmbda
-        self.gamma = gamma
-        self.is_reversed = False
-        
-    def inverse(self):
-        inverse_gate = GateCU(-self.theta, -self.phi, -self.lmbda, -self.gamma)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-        
-    def __str__(self):
-        if self.is_reversed:
-            return 'CU†'
-        else:
-            return 'CU'
- 
-
-class GateU1(Gate):
-    """
-    Class for the U1 gate.
-    """
-    def __init__(self, lmbda):
-        if not isinstance(lmbda, (int, float)):
-            raise TypeError("lmbda must be a number")
-        matrix = np.array([[1, 0], [0, np.exp(1j*lmbda)]], dtype=np.complex128)
-        super().__init__(matrix, 1)
-        self.lmbda = lmbda
-        self.is_reversed = False
-        
-    def inverse(self):
-        inverse_gate = GateU1(-self.lmbda)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
-    def __str__(self):
-        if self.is_reversed:
-            return 'U1†'
-        else:
-            return 'U1'
-
-
-class GateU2(Gate):
-    """
-    Class for the U2 gate.
-    """
-    def __init__(self, phi, lmbda):
-        if not all(isinstance(p, (int, float)) for p in [phi, lmbda]):
-            raise TypeError("phi and lmbda must be numbers")
-        matrix = np.array([[1/np.sqrt(2), -np.exp(1j*lmbda)*1/np.sqrt(2)],
-                           [np.exp(1j*phi)*1/np.sqrt(2), np.exp(1j*(phi+lmbda))*1/np.sqrt(2)]],
-                          dtype=np.complex128)
-        super().__init__(matrix, 1)
-        self.phi = phi
-        self.lmbda = lmbda
-        self.is_reversed = False
-        
-    def inverse(self):
-        inverse_gate = GateU2(-self.phi, -self.lmbda)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
-    def __str__(self):
-        if self.is_reversed:
-            return 'U2†'
-        else:
-            return 'U2'
-
-
-class GateU3(Gate):
-    """
-    Class for the U3 gate.
-    """
-    def __init__(self, theta, phi, lmbda):
-        if not all(isinstance(p, (int, float)) for p in [theta, phi, lmbda]):
-            raise TypeError("theta, phi, and lmbda must be numbers")
-        matrix = np.array([[np.cos(theta/2), -np.exp(1j*lmbda)*np.sin(theta/2)],
-                           [np.exp(1j*phi)*np.sin(theta/2), np.exp(1j*(phi+lmbda))*np.cos(theta/2)]],
-                          dtype=np.complex128)
-        super().__init__(matrix, 1)
-        self.theta = theta
-        self.phi = phi
-        self.lmbda = lmbda
-        self.is_reversed = False
-        
-    def inverse(self):
-        inverse_gate = GateU3(-self.theta, -self.phi, -self.lmbda)
-        inverse_gate.is_reversed = not self.is_reversed
-        return inverse_gate
-    
-    def __str__(self):
-        if self.is_reversed:
-            return 'U3†'
-        else:
-            return 'U3'
-
-    
-class GateSWAP(Gate):
-    """
-    Class for the SWAP gate.
-    """
-    matrix = np.array([[1, 0, 0, 0],
-                       [0, 0, 1, 0],
-                       [0, 1, 0, 0],
-                       [0, 0, 0, 1]])
-
-    def __init__(self):
-        super().__init__(self.matrix, 2)
+        return GateP(-self.lmbda)
 
     def __str__(self):
-        return 'SWAP'
+        pars = f'(lmbda={self.lmbda})'
+        return self.name + pars
+
+
+class GateCX(Gate):
+    _num_qubits = 2
+    _name = 'CX'
+
+    def matrix(self):
+        return ctrl(GateX().matrix())
 
     def inverse(self):
         return self
-    
-    
+
+
+class GateCY(Gate):
+    _num_qubits = 2
+    _name = 'CY'
+
+    def matrix(self):
+        return ctrl(GateY().matrix())
+
+    def inverse(self):
+        return self
+
+
+class GateCZ(Gate):
+    _num_qubits = 2
+    _name = 'CZ'
+
+    def matrix(self):
+        return ctrl(GateZ().matrix())
+
+    def inverse(self):
+        return self
+
+
+class GateCH(Gate):
+    _num_qubits = 2
+    _name = 'CH'
+
+    def matrix(self):
+        return ctrl(GateH().matrix())
+
+    def inverse(self):
+        return self
+
+
+class GateSWAP(Gate):
+    _num_qubits = 2
+    _name = 'SWAP'
+
+    def matirx(self):
+        return np.array([
+            [1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]
+        ])
+
+    def inverse(self):
+        return self
+
+
 class GateISWAP(Gate):
-    """
-    Class for the iSWAP gate.
-    """
-    matrix = np.array([[1, 0, 0, 0],
-                        [0, 0, 1j, 0],
-                        [0, 1j, 0, 0],
-                        [0, 0, 0, 1]], dtype=np.complex128)
+    _num_qubits = 2
+    _name = 'ISWAP'
 
-    def __init__(self):
-        super().__init__(self.matrix, 2)
-
-    def __str__(self):
-        return 'ISWAP'
+    def matrix(self):
+        return np.array([
+            [1, 0, 0, 0], [0, 0, 1j, 0], [0, 1j, 0, 0], [0, 0, 0, 1]
+        ])
 
     def inverse(self):
         return GateISWAPDG()
 
 
 class GateISWAPDG(Gate):
-    """
-    Class for the inverse of iSWAP gate.
-    """
-    matrix = np.array([[1, 0, 0, 0],
-                        [0, 0, -1j, 0],
-                        [0, -1j, 0, 0],
-                        [0, 0, 0, 1]], dtype=np.complex128)
+    _num_qubits = 2
+    _name = 'ISWAPDG'
 
-    def __init__(self):
-        super().__init__(self.matrix, 2)
-
-    def __str__(self):
-        return 'ISWAP†'
+    def matrix(self):
+        return np.array([
+            [1, 0, 0, 0], [0, 0, -1j, 0], [0, -1j, 0, 0], [0, 0, 0, 1]
+        ])
 
     def inverse(self):
         return GateISWAP()
 
 
-class GateT(Gate):
-    """
-    Class for the T gate.
-    """
-    def __init__(self):
-        super().__init__(self.matrix, 1)
-        
-    def __str__(self):
-        return 'T'
-    @property
+class GateCU(Gate):
+    _num_qubits = 2
+    _name = 'CU'
+
+    def __init__(self, theta, phi, lmbda, gamma):
+        self.theta = theta
+        self.phi = phi
+        self.lmbda = lmbda
+        self.gamma = gamma
+
     def matrix(self):
-        return _decomplex(pmatrixpi(1/4))
-    
-    def inverse(self):
-        return GateTDG()
-
-
-class GateTDG(Gate):
-    """
-    Class for the T^dagger gate.
-    """
-    def __init__(self):
-        super().__init__(self.matrix, 1)
-        
-    def __str__(self):
-        return 'T†'
-    @property
-    def matrix(self):
-        return _decomplex(pmatrixpi(-1/4))
-    
-    def inverse(self):
-        return GateT()
-    
-
-class GateS(Gate):
-    """
-    Class for the S gate.
-    """
-    def __init__(self):
-        super().__init__(self.matrix, 1)
-        
-    def __str__(self):
-        return 'S'
-    @property
-    def matrix(self):
-        return _decomplex(pmatrixpi(1/2))
-    
-    def inverse(self):
-        return GateSDG()
-
-
-class GateSDG(Gate):
-    """
-    Class for the S^dagger gate.
-    """
-    def __init__(self):
-        super().__init__(self.matrix, 1)
-        
-    def __str__(self):
-        return 'S†'
-    @property
-    def matrix(self):
-        return _decomplex(pmatrixpi(-1/2))
-    
-    def inverse(self):
-        return GateS()
-
-def pmatrixpi(theta):
-    return np.array([[1, 0], [0, np.exp(1j * np.pi * theta)]])
-
-
-class GateSX(Gate):
-    """
-    Class for the SX gate or √X gate.
-    """
-    def __init__(self):
-        super().__init__(self.matrix, 1)
-
-    def __str__(self):
-        return 'SX'
-    @property
-    def matrix(self):
-        return _decomplex(gphase(np.pi/4) @ rxmatrix(np.pi/2))
+        return ctrl(umatrix(self.theta, self.phi, self.lmbda, self.gamma))
 
     def inverse(self):
-        return GateSXDG()
-
-
-class GateSXDG(Gate):
-    """
-    Class for the inverse (adjoint) of the SX or √X gate.
-    """
-    def __init__(self):
-        super().__init__(self.matrix, 1)
+        return GateCU(-self.theta, -self.phi, -self.lmbda, -self.gamma)
 
     def __str__(self):
-        return 'SX†'
-    @property
+        pars = f'(theta={self.theta}, phi={self.phi}, lmbda={self.lmbda}'
+        pars += f', gamma={self.gamma})'
+        return self.name + pars
+
+
+class GateCR(Gate):
+    _num_qubits = 2
+    _name = 'CR'
+
+    def __init__(self, theta, phi):
+        self.theta = theta
+        self.phi = phi
+
     def matrix(self):
-        return _decomplex(gphase(-np.pi/4) @ rxmatrix(-np.pi/2))
+        return ctrl(rmatrix(self.theta, self.phi))
 
     def inverse(self):
-        return GateSX()
-
-
-class GateID(Gate):
-    """
-    Class for the identity (or idle) gate.
-    """
-    def __init__(self):
-        super().__init__(self.matrix, 1)
+        return GateCR(-self.theta, self.phi)
 
     def __str__(self):
-        return 'ID'
-    @property
+        pars = f'(theta={self.theta}, phi={self.phi})'
+        return self.name + pars
+
+
+class GateCRX(Gate):
+    _num_qubits = 2
+    _name = 'CRX'
+
+    def __init__(self, theta):
+        self.theta = theta
+
     def matrix(self):
-        return _decomplex(umatrixpi(0, 0, 0))
+        return ctrl(rxmatrix(self.theta))
 
     def inverse(self):
-        return self
-
-
-class GateCCX(Gate):
-    """
-    C₂X (or C₂NOT) 3-qubits gate. Where the first two qubits are used as controls.
-    """
-    def __init__(self):
-        super().__init__(ctrl(ctrl(GateX().matrix)), 3)
+        return GateCRX(-self.theta)
 
     def __str__(self):
-        return 'CCX'
+        pars = f'(theta={self.theta})'
+        return self.name + pars
+
+
+class GateCRY(Gate):
+    _num_qubits = 2
+    _name = 'CRY'
+
+    def __init__(self, theta):
+        self.theta = theta
+
+    def matrix(self):
+        return ctrl(rymatrix(self.theta))
 
     def inverse(self):
-        return self
-
-    @property
-    def matrix(self):
-        return ctrl(ctrl(GateX().matrix))
-
-
-class GateCSWAP(Gate):
-    """
-    3-qubits control SWAP gate where the first qubit is the control.
-    """
-    def __init__(self):
-        super().__init__(self.matrix, 3)
+        return GateCRY(-self.theta)
 
     def __str__(self):
-        return 'CSWAP'
-    
-    @property
+        pars = f'(theta={self.theta})'
+        return self.name + pars
+
+
+class GateCRZ(Gate):
+    _num_qubits = 2
+    _name = 'CRZ'
+
+    def __init__(self, lmbda):
+        self.lmbda = lmbda
+
     def matrix(self):
-        return ctrl(GateSWAP().matrix)
+        return ctrl(rzmatrix(self.lmbda))
 
     def inverse(self):
-        return GateCSWAP()
-
-
-class GateCustom(Gate):
-    """
-    Class for a custom quantum gate with an optional user-defined matrix.
-    """
-    def __init__(self, matrix=None):
-        if matrix is not None:
-            if not isinstance(matrix, np.ndarray):
-                raise TypeError("matrix must be a NumPy array")
-            if len(matrix.shape) != 2 or matrix.shape[0] != matrix.shape[1]:
-                raise ValueError("matrix must be a square array")
-            num_qubits = int(np.log2(matrix.shape[0]))
-            super().__init__(matrix, num_qubits)
-        else:
-            super().__init__(None, 1)
+        return GateCRZ(-self.lmbda)
 
     def __str__(self):
-        return 'Custom'
+        pars = f'(lmbda={self.lmbda})'
+        return self.name + pars
 
-    def to_dict(self):
-        gate_dict = {}
-        if self.matrix is not None:
-            gate_dict['matrix'] = self.matrix.tolist()
-        return gate_dict
 
-    @classmethod
-    def from_dict(cls, gate_dict):
-        matrix = gate_dict.get("matrix", None)
-        if matrix is not None:
-            matrix = np.array(matrix)
-        return cls(matrix)
+class GateCP(Gate):
+    _num_qubits = 2
+    _name = 'CP'
+
+    def __init__(self, lmbda):
+        self.lmbda = lmbda
+
+    def matrix(self):
+        return ctrl(pmatrix(self.lmbda))
+
+    def inverse(self):
+        return GateCP(-self.lmbda)
+
+    def __str__(self):
+        pars = f'(lmbda={self.lmbda})'
+        return self.name + pars
