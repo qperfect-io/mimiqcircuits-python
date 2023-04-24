@@ -1,7 +1,10 @@
+#
 # Copyright © 2023 University of Strasbourg. All Rights Reserved.
 # See AUTHORS.md for the list of authors.
+#
 
 import numpy as np
+import inspect
 from abc import ABC, abstractmethod
 
 
@@ -147,6 +150,17 @@ class Gate(ABC):
     def inverse(self):
         pass
 
+    @staticmethod
+    def from_json(d):
+        name = d['name']
+        if 'params' in d:
+            return GATES[name](*d['params'])
+
+        return GATES[name]()
+
+    def to_json(self):
+        return {'name': self.name}
+
     def __str__(self):
         return self._name
 
@@ -246,7 +260,7 @@ class GateT(Gate):
 
 class GateTDG(Gate):
     _num_qubits = 1
-    _name = 'T'
+    _name = 'TDG'
 
     def inverse(self):
         return GateT()
@@ -303,6 +317,12 @@ class GateU(Gate):
     def inverse(self):
         return GateU(-self.theta, -self.phi, -self.lmbda)
 
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta, self.phi, self.lmbda]
+        }
+
     def __str__(self):
         pars = f'(theta={self.theta}, phi={self.phi}, lmbda={self.lmbda})'
         return self.name + pars
@@ -322,6 +342,12 @@ class GateR(Gate):
     def inverse(self):
         return GateR(-self.theta, self.phi)
 
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta, self.phi]
+        }
+
     def __str__(self):
         pars = f'(theta={self.theta}, phi={self.phi})'
         return self.name + pars
@@ -339,6 +365,12 @@ class GateRX(Gate):
 
     def inverse(self):
         return GateRX(-self.theta)
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta]
+        }
 
     def __str__(self):
         pars = f'(theta={self.theta})'
@@ -358,6 +390,12 @@ class GateRY(Gate):
     def inverse(self):
         return GateRY(-self.theta)
 
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta]
+        }
+
     def __str__(self):
         pars = f'(lmbda={self.theta})'
         return self.name + pars
@@ -373,6 +411,12 @@ class GateRZ(Gate):
     def matrix(self):
         return rzmatrix(self.lmbda)
 
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.lmbda]
+        }
+
     def inverse(self):
         return GateRZ(-self.lmbda)
 
@@ -383,7 +427,7 @@ class GateRZ(Gate):
 
 class GateP(Gate):
     _num_qubits = 1
-    _name = 'RZ'
+    _name = 'P'
 
     def __init__(self, lmbda):
         self.lmbda = lmbda
@@ -393,6 +437,12 @@ class GateP(Gate):
 
     def inverse(self):
         return GateP(-self.lmbda)
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.lmbda]
+        }
 
     def __str__(self):
         pars = f'(lmbda={self.lmbda})'
@@ -447,7 +497,7 @@ class GateSWAP(Gate):
     _num_qubits = 2
     _name = 'SWAP'
 
-    def matirx(self):
+    def matrix(self):
         return np.array([
             [1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]
         ])
@@ -498,6 +548,12 @@ class GateCU(Gate):
     def inverse(self):
         return GateCU(-self.theta, -self.phi, -self.lmbda, -self.gamma)
 
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta, self.phi, self.lmbda, self.gamma]
+        }
+
     def __str__(self):
         pars = f'(theta={self.theta}, phi={self.phi}, lmbda={self.lmbda}'
         pars += f', gamma={self.gamma})'
@@ -518,6 +574,12 @@ class GateCR(Gate):
     def inverse(self):
         return GateCR(-self.theta, self.phi)
 
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta, self.phi]
+        }
+
     def __str__(self):
         pars = f'(theta={self.theta}, phi={self.phi})'
         return self.name + pars
@@ -535,6 +597,12 @@ class GateCRX(Gate):
 
     def inverse(self):
         return GateCRX(-self.theta)
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta]
+        }
 
     def __str__(self):
         pars = f'(theta={self.theta})'
@@ -554,6 +622,12 @@ class GateCRY(Gate):
     def inverse(self):
         return GateCRY(-self.theta)
 
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta]
+        }
+
     def __str__(self):
         pars = f'(theta={self.theta})'
         return self.name + pars
@@ -571,6 +645,12 @@ class GateCRZ(Gate):
 
     def inverse(self):
         return GateCRZ(-self.lmbda)
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.lmbda]
+        }
 
     def __str__(self):
         pars = f'(lmbda={self.lmbda})'
@@ -590,10 +670,21 @@ class GateCP(Gate):
     def inverse(self):
         return GateCP(-self.lmbda)
 
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.lmbda]
+        }
+
     def __str__(self):
         pars = f'(lmbda={self.lmbda})'
         return self.name + pars
 
+
+GATES = {
+    c._name: c for name, c in globals().items()
+    if inspect.isclass(c) and hasattr(c, '_name')
+}
 
 # export all the gates
 __all__ = [name for name in globals() if name.startswith('Gate')]

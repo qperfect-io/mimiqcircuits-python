@@ -14,6 +14,8 @@ class CircuitGate:
     gate (Gate): The gate to apply.
     qubits (tuple of int): The qubits to apply the gate to.
     """
+    _gate = None
+    _qubits = None
 
     def __init__(self, gate, *args):
         """
@@ -30,7 +32,8 @@ class CircuitGate:
             raise TypeError("gate must be a subclass of Gate")
 
         if len(args) != gate.num_qubits:
-            raise ValueError("Wrong number of target qubits")
+            raise ValueError(
+                f"Wrong number of target qubits for gate {gate} wanted  {gate.num_qubits}, given {len(args)}")
 
         self._gate = gate
         self._qubits = args
@@ -59,8 +62,23 @@ class CircuitGate:
     def __repr__(self):
         return str(self)
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     def inverse(self):
         return CircuitGate(self.gate.inverse(), self.qubits)
+
+    def to_json(self):
+        d = self.gate.to_json()
+        # in JSON files we count from 1 (Julia convention)
+        d['targets'] = [t+1 for t in self.qubits]
+        return d
+
+    @staticmethod
+    def from_json(d):
+        qubits = tuple([t-1 for t in d['targets']])
+        gate = Gate.from_json(d)
+        return CircuitGate(gate, *qubits)
 
 
 class Circuit:
@@ -71,7 +89,7 @@ class Circuit:
     gates (list of CircuitGate): The gates in the circuit.
     """
 
-    def __init__(self, gates: list = []):
+    def __init__(self, gates=None):
         """
         Initializes a Circuit object.
 
@@ -81,15 +99,21 @@ class Circuit:
         Raises:
         TypeError: If gates is not a list of CircuitGate objects.
         """
-        if not isinstance(gates, list):
-            raise TypeError("gates must be a list of CircuitGate objects")
 
-        for gate in gates:
-            if not isinstance(gate, CircuitGate):
-                raise TypeError(
-                    "`gates` must be a list of CircuitGate objects")
+        if not isinstance(gates, list) and gates is not None:
+            raise TypeError(
+                "Circuit should be initialized with a list of CircuitGate")
 
-        self.gates = gates
+        if gates is None:
+            self.gates = []
+
+        else:
+            for gate in gates:
+                if not isinstance(gate, CircuitGate):
+                    raise TypeError(
+                        "Non Gate object passed to constructor.")
+
+            self.gates = gates
 
     def num_qubits(self):
         """
@@ -122,7 +146,8 @@ class Circuit:
         ValueError: If qubits contains less than 1 or more than 2 elements.
         """
         if not isinstance(gate, Gate):
-            raise TypeError("acceps only a Gate")
+            raise TypeError(
+                f"Acceps only a Gate. Given {gate} of type {type(gate)}")
 
         circuit_gate = CircuitGate(gate, *args)
         self.gates.append(circuit_gate)
@@ -169,6 +194,10 @@ class Circuit:
 
     def __str__(self):
         n = len(self)
+
+        if n == 0:
+            return 'empty circuit'
+
         nq = self.num_qubits()
         output = f'{nq}-qubit circuit with {n} gates'
 
@@ -180,6 +209,9 @@ class Circuit:
         output += f'\n └── {g}'
 
         return output
+
+    def __eq__(self, other):
+        return self.gates == other.gates
 
     def depth(self):
         time_steps = [[] for _ in range(len(self.gates))]
@@ -193,6 +225,15 @@ class Circuit:
         for qubits in time_steps:
             depth += max_qubits - len(qubits)
         return depth
+
+    def to_json(self):
+        return {'gates': [g.to_json() for g in self.gates]}
+
+    @staticmethod
+    def from_json(d):
+        return Circuit(
+            [CircuitGate.from_json(g) for g in d['gates']]
+        )
 
 
 # export the cirucit classes
