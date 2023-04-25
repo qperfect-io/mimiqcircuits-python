@@ -69,8 +69,8 @@ def umatrix(theta, phi, lmbda, gamma=0.0):
 
 
 def umatrixpi(theta, phi, lmbda, gamma=0.0):
-    costheta2 = np.cospi(theta / 2)
-    sintheta2 = np.sinpi(theta / 2)
+    costheta2 = np.cos(theta/2 * np.pi)
+    sintheta2 = np.sin(theta/2 * np.pi)
     return np.array([
         [cispi(gamma) * costheta2, -cispi(lmbda + gamma) * sintheta2],
         [
@@ -90,8 +90,8 @@ def rmatrix(theta, phi):
 
 
 def rmatrixpi(theta, phi):
-    costheta2 = np.cospi(theta / 2)
-    sintheta2 = np.sinpi(theta / 2)
+    costheta2 = np.cos(theta/2 * np.pi)
+    sintheta2 = np.sin(theta/2 * np.pi)
     return np.array([
         [costheta2, -1j*cispi(-phi) * sintheta2],
         [-1j*cispi(phi)*sintheta2, costheta2]
