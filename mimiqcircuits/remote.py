@@ -8,10 +8,28 @@ import hashlib
 import tempfile
 import json
 import os
-import bson
 from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.qcsr import QcsrFile
+from mimiqcircuits.bitstates import BitState
 
 from time import sleep
+
+RESULTS_SAMPLES_FILENAME = "samples.qcsr"
+RESULTS_AMPLITUES_FILENAME = "amplitudes.qcsr"
+RESULTS_PARAMETERS_FILENAME = "results.json"
+
+REQUEST_CIRCUIT_FILENAME = "circuit.json"
+REQUEST_PARAMETERS_FILENAME = "parameters.json"
+
+DEFAULT_ALGORITHM = "auto"
+DEFAULT_BONDDIM = 256
+DEFAULT_SAMPLES = 1000
+DEFAULT_TIME_LIMIT = 5 * 60
+
+MAX_SAMPLES = 2**16
+MIN_BONDDIM = 1
+MAX_BONDDIM = 2**12
+MAX_TIME_LIMIT = 5 * 60
 
 
 def _hash_file(filename):
@@ -38,26 +56,29 @@ class Results:
 
 class MimiqConnection(mimiqlink.MimiqConnection):
     def execute(self, circuit, label="circuitsimu",
-                algorithm="auto", nsamples=1000,
-                bitstates=None, timelimit=5 * 60, bonddim=None):
+                algorithm=DEFAULT_ALGORITHM, nsamples=DEFAULT_SAMPLES,
+                bitstates=None, timelimit=DEFAULT_TIME_LIMIT, bonddim=None):
         if bitstates is None:
             bitstates = []
 
         if (algorithm == "auto" or algorithm == "mps") and bonddim is None:
-            bonddim = 256
+            bonddim = DEFAULT_BONDDIM
 
-        if bonddim < 1 or bonddim > 2**12:
-            raise ValueError("bonddim must be between 1 and 4096")
+        if bonddim is not None and (bonddim < MIN_BONDDIM or bonddim > MAX_BONDDIM):
+            raise ValueError(
+                f"bonddim must be between {MIN_BONDDIM} and {MAX_BONDDIM}")
 
-        if nsamples > 2**16:
-            raise ValueError("nsamples must be less than 2^16")
+        if nsamples > MAX_SAMPLES:
+            raise ValueError(f"nsamples must be less than {MAX_SAMPLES}")
 
-        if timelimit > 30 * 60:
-            raise ValueError("timelimit must be less than 30 minutes")
+        if timelimit > MAX_TIME_LIMIT:
+            raise ValueError(
+                f"timelimit must be less than {MAX_TIME_LIMIT} seconds ({MAX_TIME_LIMIT / 60} miutes)"
+            )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # save the circuit in json format
-            circuit_filename = os.path.join(tmpdir, "circuit.json")
+            circuit_filename = os.path.join(tmpdir, REQUEST_CIRCUIT_FILENAME)
             with open(circuit_filename, "w") as f:
                 json.dump(circuit.to_json(), f)
 
@@ -81,12 +102,16 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                 "parameters": pars
             }
 
-            req_filename = os.path.join(tmpdir, "parameters.json")
+            req_filename = os.path.join(tmpdir, REQUEST_PARAMETERS_FILENAME)
 
             with open(req_filename, "w") as f:
                 json.dump(req, f)
 
-            return self.request(algorithm, label, [req_filename, circuit_filename])
+            return self.request(
+                algorithm,
+                label,
+                [req_filename, circuit_filename]
+            )
 
     def get_results(self, execution, interval=10):
         while not self.isJobDone(execution):
@@ -100,31 +125,30 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         with tempfile.TemporaryDirectory() as tmpdir:
             names = self.downloadResults(execution, destdir=tmpdir)
 
-            if "results.json" not in names:
+            if RESULTS_PARAMETERS_FILENAME not in names:
                 raise RuntimeError(
                     "File not found in results. Update Your library.")
 
-            if "samples.bson" not in names:
+            if RESULTS_SAMPLES_FILENAME not in names:
                 raise RuntimeError(
                     "File not found in results. Update your library.")
 
-            if "amplitudes.bson" not in names:
+            if RESULTS_AMPLITUES_FILENAME not in names:
                 raise RuntimeError(
                     "File not found in results. Update your library.")
 
-            with open(os.path.join(tmpdir, "results.json"), "r") as f:
+            with open(os.path.join(tmpdir, RESULTS_PARAMETERS_FILENAME), "r") as f:
                 results = json.load(f)
 
-            with open(os.path.join(tmpdir, "samples.bson"), "rb") as f:
-                # PERF: this can cause problem. there is an alternative
-                # which is
-                # samples_generator = bons.decode_file_ter(f)
-                # which returns a generator
-                samples = bson.decode_all(f.read())
+            with QcsrFile(os.path.join(tmpdir, RESULTS_SAMPLES_FILENAME), "rb") as f:
+                samples = {}
+                for x in f.read():
+                    samples[BitState(x[0])] = x[1]
 
-            with open(os.path.join(tmpdir, "amplitudes.bson"), "rb") as f:
-                # PERF: same as samples.bson
-                amplitudes = bson.decode_all(f.read())
+            with QcsrFile(os.path.join(tmpdir, RESULTS_AMPLITUES_FILENAME), "rb") as f:
+                amplitudes = {}
+                for x in f.read():
+                    amplitudes[BitState(x[0])] = x[1]
 
         return Results(execution, results, samples, amplitudes)
 
@@ -132,18 +156,18 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         with tempfile.TemporaryDirectory() as tmpdir:
             names = self.downloadJobFiles(execution, destdir=tmpdir)
 
-            if "parameters.json" not in names:
+            if REQUEST_CIRCUIT_FILENAME not in names:
                 raise RuntimeError(
                     "File not found in inputs. Update Your library.")
 
-            if "parameters.json" not in names:
+            if REQUEST_PARAMETERS_FILENAME not in names:
                 raise RuntimeError(
                     "File not found in inputs. Update Your library.")
 
-            with open(os.path.join(tmpdir, "parameters.json"), "r") as f:
+            with open(os.path.join(tmpdir, REQUEST_PARAMETERS_FILENAME), "r") as f:
                 parameters = json.load(f)
 
-            with open(os.path.join(tmpdir, "circuit.json"), "r") as f:
+            with open(os.path.join(tmpdir, REQUEST_CIRCUIT_FILENAME), "r") as f:
                 circuit = Circuit.from_json(json.load(f))
 
         return circuit, parameters
