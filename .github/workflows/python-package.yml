@@ -47,7 +47,7 @@ jobs:
 
       - name: Add private dependencies
         run: |
-          python -m poetry install 'mimiqlink @ ./mimiqlink-python'
+          python -m poetry add 'mimiqlink @ ./mimiqlink-python'
 
       - name: Install dependencies
         run: |
