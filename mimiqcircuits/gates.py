@@ -52,11 +52,11 @@ def ctrl(mat):
 
 
 def gphase(lmbda):
-    return np.array([[1, 0], [0, cis(lmbda)]])
+    return cis(lmbda)
 
 
 def gphasepi(lmbda):
-    return np.array([[1, 0], [0, cis(lmbda)]])
+    return cispi(lmbda)
 
 
 def umatrix(theta, phi, lmbda, gamma=0.0):
@@ -69,8 +69,8 @@ def umatrix(theta, phi, lmbda, gamma=0.0):
 
 
 def umatrixpi(theta, phi, lmbda, gamma=0.0):
-    costheta2 = np.cos(theta/2 * np.pi)
-    sintheta2 = np.sin(theta/2 * np.pi)
+    costheta2 = np.cos((theta/2) * np.pi)
+    sintheta2 = np.sin((theta/2) * np.pi)
     return np.array([
         [cispi(gamma) * costheta2, -cispi(lmbda + gamma) * sintheta2],
         [
@@ -535,8 +535,8 @@ class GateSX(Gate):
     
     >>> GateSX().matrix()
 
-    array([[0.92387953+0.j        , 0.        -0.j        ],
-       [0.        +0.j        , 0.89515836+0.22857145j]])
+    array([[0.5+0.5j, 0.5-0.5j],
+       [0.5-0.5j, 0.5+0.5j]])
 
     >>> c=Circuit()
     >>> c.add_gate(GateSX(),0)
@@ -553,7 +553,7 @@ class GateSX(Gate):
         return GateSXDG()
 
     def matrix(self):
-        return _decomplex(gphasepi(1 / 4) * rxmatrixpi(1 / 4))
+        return _decomplex(gphase(np.pi / 4) * rxmatrix(np.pi / 2))
 
 
 class GateSXDG(Gate):
@@ -579,8 +579,8 @@ class GateSXDG(Gate):
     
     >>> GateSXDG().matrix()
 
-    array([[ 0.70710678+0.j ,  0.        +0.j ],
-       [-0.        +0.j ,  0.5       -0.5j]])
+    array([[0.5-0.5j, 0.5+0.5j],
+       [0.5+0.5j, 0.5-0.5j]])
 
     >>> c=Circuit()
     >>> c.add_gate(GateSXDG(),0)
@@ -710,6 +710,266 @@ class GateU(Gate):
         pars = f'(theta={self.theta}, phi={self.phi}, lmbda={self.lmbda})'
         return self.name + pars
 
+
+class GateU1(Gate):
+    """
+    Single qubit generic unitary gate(U1).
+    Equivalent to [`GateP`](@ref)
+
+    # Arguments
+    :param lmbda: Euler angle 3 in radians.
+    :type lmbda: float
+
+    # Matrix Representation
+    .. math::
+
+        \\operatorname{U1}(\\lambda) = \\begin{pmatrix}
+            1 & 0 \\\\
+            0 & e^{i\\lambda}
+        \\end{pmatrix}
+
+    :return: generic unitary gate(U1).
+    :rtype: numpy.ndarray
+
+    # Examples
+    --------
+    ```python
+    >>> from mimiqcircuits.circuit import Circuit
+    >>> from mimiqcircuits.gates import GateU1
+
+    >>> GateU1(np.pi/4).matrix()
+
+    array([[1.        +0.j        , 0.        +0.j        ],
+       [0.        +0.j        , 0.70710678+0.70710678j]])
+
+    >>> c=Circuit()
+    >>> c.add_gate(GateU1(np.pi/3),0)
+    >>> print(c)
+
+     1-qubit circuit with 1 gates
+     └── U1(lmbda=1.0471975511965976) @ q0
+     ```
+    """
+    _num_qubits = 1
+    _name = 'U1'
+
+    def __init__(self, lmbda):
+        self.lmbda = lmbda
+
+    def matrix(self):
+        return pmatrix(self.lmbda)
+
+    def inverse(self):
+        return GateU1(-self.lmbda)
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.lmbda]
+        }
+
+    def __str__(self):
+        pars = f'(lmbda={self.lmbda})'
+        return self.name + pars
+
+class GateU2(Gate):
+    """
+    One qubit generic unitary gate (u2).
+    See also [`GateU2DG`](@ref)
+
+    # Arguments
+    :param phi: Euler angle in radians.
+    :type phi: float
+    :param lmbda: Euler angle in radians.
+    :type lmbda: float
+
+    # Matrix Representation
+    .. math::
+
+        \\operatorname{U2}(\\phi,\\lambda) = \\frac{1}{\\sqrt{2}}\\begin{pmatrix}
+            1 & -e^{i\\lambda} \\\\
+            e^{i\\phi} & e^{i(\\phi+\\lambda)}
+        \\end{pmatrix}
+
+    :return: unitary gate (u2).
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from mimiqcircuits.circuit import Circuit
+    >>> from mimiqcircuits.gates import GateU2
+
+    >>> GateU2(np.pi/2,np.pi/4).matrix()
+
+    array([[ 0.27059805-0.65328148j, -0.65328148+0.27059805j],
+       [ 0.65328148+0.27059805j,  0.27059805+0.65328148j]])
+
+    >>> c=Circuit()
+    >>> c.add_gate(GateU2(np.pi/2,np.pi/4),0)
+    >>> print(c)
+
+     1-qubit circuit with 1 gates
+     └── U2(phi=1.5707963267948966, lmbda=0.7853981633974483) @ q0
+     ```
+    """
+    _num_qubits = 1
+    _name = 'U2'
+
+    def __init__(self, phi, lmbda):
+        self.phi = phi
+        self.lmbda = lmbda
+
+    def matrix(self):
+        return gphase(-(self.phi + self.lmbda)/2) * umatrixpi(1/2, (self.phi/np.pi), (self.lmbda/np.pi))
+
+    
+    def inverse(self):
+        return GateU2DG(self.phi, self.lmbda,)
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.phi, self.lmbda]
+        }
+
+    def __str__(self):
+        pars = f'(phi={self.phi}, lmbda={self.lmbda})'
+        return self.name + pars
+
+
+class GateU2DG(Gate):
+    """
+    One qubit generic unitary gate (u2-dagger).
+
+    # Arguments
+    :param phi: Euler angle 2 in radians.
+    :type phi: float
+    :param lmbda: Euler angle 3 in radians.
+    :type lmbda: float
+
+    # Matrix Representation
+    .. math::
+
+        \\operatorname{U2}(\\phi,\\lambda) = \\frac{1}{\\sqrt{2}}\\begin{pmatrix}
+            1 & -e^{i\\lambda} \\\\
+            e^{i\\phi} & e^{i(\\phi+\\lambda)}
+        \\end{pmatrix}
+
+    :return: (u2-dagger) gate.
+    :rtype: numpy.ndarray
+
+    # Examples
+    --------
+    ```python
+    >>> from mimiqcircuits.circuit import Circuit
+    >>> from mimiqcircuits.gates import GateU2DG
+
+    >>> GateU2DG(np.pi/2, np.pi/4).matrix()
+
+    array([[ 0.27059805+0.65328148j,  0.65328148-0.27059805j],
+       [-0.65328148-0.27059805j,  0.27059805-0.65328148j]])
+
+    >>> import numpy as np
+    >>> c = Circuit()
+    >>> c.add_gate(GateU2DG(np.pi/2, np.pi/4), 0)
+    >>> print(c)
+
+     1-qubit circuit with 1 gates
+     └── U2DG(phi=1.5707963267948966, lmbda=0.7853981633974483) @ q0
+     ```
+    """
+    _num_qubits = 1
+    _name = 'U2DG'
+
+    def __init__(self, phi, lmbda):
+        self.phi = phi
+        self.lmbda = lmbda
+
+    def matrix(self):
+        return gphase((self.phi + self.lmbda)/2) * umatrixpi(-1/2, (-self.lmbda/np.pi), (-self.phi/np.pi))
+
+    def inverse(self):
+        return GateU2(self.phi, self.lmbda,)
+    
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.phi, self.lmbda]
+        }
+
+    def __str__(self):
+        pars = f'(phi={self.phi}, lmbda={self.lmbda})'
+        return self.name + pars
+    
+
+class GateU3(Gate):
+    """
+    Single qubit generic unitary gate (u3).
+
+    # Arguments
+    :param theta: Euler angle 1 in radians.
+    :type theta: float
+    :param phi: Euler angle 2 in radians.
+    :type phi: float
+    :param lmbda: Euler angle 3 in radians.
+    :type lmbda: float
+
+    # Matrix Representation
+    .. math::
+
+        \\operatorname{U_3}(\\theta,\\phi,\\lambda) = \\begin{pmatrix}
+            \\cos\\frac{\\theta}{2} & -e^{i\\lambda}\\sin\\frac{\\theta}{2} \\\\
+            e^{i\\phi}\\sin\\frac{\\theta}{2} & e^{i(\\phi+\\lambda)}\\cos\\frac{\\theta}{2}
+        \\end{pmatrix}
+
+    :return: generic unitary gate (u3).
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from mimiqcircuits.circuit import Circuit
+    >>> from mimiqcircuits.gates import GateU3
+    
+    >>> GateU3(np.pi/2,np.pi/4,np.pi/2).matrix()
+
+    array([[ 0.27059805-0.65328148j, -0.65328148-0.27059805j],
+       [ 0.65328148-0.27059805j,  0.27059805+0.65328148j]])
+
+    >>> import numpy as np  
+    >>> c=Circuit()
+    >>> c.add_gate(GateU3(np.pi/3,np.pi/3,np.pi/3),0)
+    >>> print(c)
+
+     1-qubit circuit with 1 gates
+     └── U3(theta=1.0471975511965976, phi=1.0471975511965976, lmbda=1.0471975511965976) @ q0
+     ```
+    """
+    _num_qubits = 1
+    _name = 'U3'
+
+    def __init__(self, theta, phi, lmbda):
+        self.theta = theta
+        self.phi = phi
+        self.lmbda = lmbda
+
+    def matrix(self):
+        return gphase(-(self.phi + self.lmbda)/2) * umatrix(self.theta, self.phi, self.lmbda)
+    
+    def inverse(self):
+        return GateU3(-self.theta, -self.phi, -self.lmbda,)
+    
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta, self.phi, self.lmbda]
+        }
+
+    def __str__(self):
+        pars = f'(theta={self.theta}, phi={self.phi}, lmbda={self.lmbda})'
+        return self.name + pars
+    
 
 class GateR(Gate):
     """
@@ -923,8 +1183,8 @@ class GateRZ(Gate):
     
     >>> GateRZ(np.pi/2).matrix()
 
-    array([[1.        +0.j        , 0.        +0.j        ],
-       [0.        +0.j        , 0.24740396+0.96891242j]])
+    array([[0.70710678-0.70710678j, 0.        -0.j        ],
+       [0.        +0.j        , 0.70710678+0.70710678j]])
        
     >>> c=Circuit()
     >>> c.add_gate(GateRZ(np.pi/3),0)
@@ -1224,7 +1484,7 @@ class GateSWAP(Gate):
     ```python
     >>> from mimiqcircuits.circuit import Circuit
     >>> from mimiqcircuits.gates import GateSWAP
-    
+   
     >>> GateSWAP().matrix()
 
     array([[1, 0, 0, 0],
@@ -1273,7 +1533,7 @@ class GateISWAP(Gate):
     ```python
     >>> from mimiqcircuits.circuit import Circuit
     >>> from mimiqcircuits.gates import GateISWAP
-    
+
     >>> GateISWAP().matrix()
 
     array([[1.+0.j, 0.+0.j, 0.+0.j, 0.+0.j],
@@ -1322,7 +1582,7 @@ class GateISWAPDG(Gate):
     ```python
     >>> from mimiqcircuits.circuit import Circuit
     >>> from mimiqcircuits.gates import GateISWAPDG
-    
+    >>> import numpy as np 
     >>> GateISWAPDG().matrix()
 
     array([[ 1.+0.j,  0.+0.j,  0.+0.j,  0.+0.j],
@@ -1383,7 +1643,7 @@ class GateCU(Gate):
     ```python
     >>> from mimiqcircuits.circuit import Circuit
     >>> from mimiqcircuits.gates import GateCU
-    
+    >>> import numpy as np 
     >>> GateCU().matrix()
 
     array([[ 1.       +0.j       ,  0.       +0.j       ,
@@ -1395,7 +1655,6 @@ class GateCU(Gate):
        [ 0.       +0.j       ,  0.       +0.j       ,
          0.25     +0.4330127j, -0.4330127+0.75j     ]])
     
-    import numpy as np 
     >>> c=Circuit()
     >>> c.add_gate(GateCU(np.pi/3, np.pi/3, np.pi/3, 0),0,1)
     >>> print(c)
@@ -1458,7 +1717,7 @@ class GateCR(Gate):
     ```python
     >>> from mimiqcircuits.circuit import Circuit
     >>> from mimiqcircuits.gates import GateCR
-    
+    >>> import numpy as np 
     >>> GateCR(np.pi/3, np.pi/3).matrix()
 
     array([[ 1.       +0.j  ,  0.       +0.j  ,  0.       +0.j  ,
@@ -1470,7 +1729,6 @@ class GateCR(Gate):
        [ 0.       +0.j  ,  0.       +0.j  ,  0.4330127-0.25j,
          0.8660254+0.j  ]])
     
-    >>> import numpy as np 
     >>> c=Circuit()
     >>> c.add_gate(GateCR(np.pi/3, np.pi/3),0,1)
     >>> print(c)
@@ -1527,19 +1785,18 @@ class GateCRX(Gate):
     ```python
     >>> from mimiqcircuits.circuit import Circuit
     >>> from mimiqcircuits.gates import GateCRX
-    
-    >>> GateCRX(np.pi/3).matrix()
-
-    array([[ 1.00000000e+00+0.j ,  0.00000000e+00+0.j ,  0.00000000e+00+0.j ,
-         0.00000000e+00+0.j ],
-       [ 0.00000000e+00+0.j ,  1.00000000e+00+0.j ,  0.00000000e+00+0.j ,
-         0.00000000e+00+0.j ],
-       [ 0.00000000e+00+0.j ,  0.00000000e+00+0.j ,  8.66025404e-01+0.j ,
-        -3.06161700e-17-0.5j],
-       [ 0.00000000e+00+0.j ,  0.00000000e+00+0.j ,  3.06161700e-17-0.5j,
-         8.66025404e-01+0.j ]])
-    
     >>> import numpy as np 
+    >>> GateCRX(np.pi/2).matrix()
+
+    array([[ 1.00000000e+00+0.j        ,  0.00000000e+00+0.j        ,
+         0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ],
+       [ 0.00000000e+00+0.j        ,  1.00000000e+00+0.j        ,
+         0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ],
+       [ 0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ,
+         7.07106781e-01+0.j        , -4.32978028e-17-0.70710678j],
+       [ 0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ,
+         4.32978028e-17-0.70710678j,  7.07106781e-01+0.j        ]])
+    
     >>> c=Circuit()
     >>> c.add_gate(GateCRX(np.pi/3),0,1)
     >>> print(c)
@@ -1595,7 +1852,7 @@ class GateCRY(Gate):
     ```python
     >>> from mimiqcircuits.circuit import Circuit
     >>> from mimiqcircuits.gates import GateCRY
-    
+    >>> import numpy as np 
     >>> GateCRY(np.pi/2).matrix()
 
     array([[ 1.        +0.j,  0.        +0.j,  0.        +0.j,
@@ -1607,7 +1864,6 @@ class GateCRY(Gate):
        [ 0.        +0.j,  0.        +0.j,  0.70710678+0.j,
          0.70710678+0.j]])
     
-    >>> import numpy as np 
     >>> c=Circuit()
     >>> c.add_gate(GateCRY(np.pi/2),0,1)
     >>> print(c)
@@ -1663,7 +1919,7 @@ class GateCRZ(Gate):
     ```python
     >>> from mimiqcircuits.circuit import Circuit
     >>> from mimiqcircuits.gates import GateCRZ
-    
+    >>> import numpy as np 
     >>> GateCRZ(np.pi/2).matrix()
 
     array([[1.        +0.j        , 0.        +0.j        ,
@@ -1671,11 +1927,10 @@ class GateCRZ(Gate):
        [0.        +0.j        , 1.        +0.j        ,
         0.        +0.j        , 0.        +0.j        ],
        [0.        +0.j        , 0.        +0.j        ,
-        1.        +0.j        , 0.        +0.j        ],
+        0.70710678-0.70710678j, 0.        -0.j        ],
        [0.        +0.j        , 0.        +0.j        ,
-        0.        +0.j        , 0.24740396+0.96891242j]])
+        0.        +0.j        , 0.70710678+0.70710678j]])
     
-    >>> import numpy as np 
     >>> c=Circuit()
     >>> c.add_gate(GateCRZ(np.pi/2),0,1)
     >>> print(c)
@@ -1730,8 +1985,8 @@ class GateCP(Gate):
     --------
     ```python
     >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCRZ
-    
+    >>> from mimiqcircuits.gates import GateCP
+     >>> import numpy as np 
     >>> GateCP(np.pi/4).matrix()
 
     array([[1.        +0.j        , 0.        +0.j        ,
@@ -1743,7 +1998,6 @@ class GateCP(Gate):
        [0.        +0.j        , 0.        +0.j        ,
         0.        +0.j        , 0.70710678+0.70710678j]])
     
-    >>> import numpy as np 
     >>> c=Circuit()
     >>> c.add_gate(GateCP(np.pi/2),0,1)
     >>> print(c)

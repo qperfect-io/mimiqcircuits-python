@@ -145,3 +145,19 @@ def test_GateCRY():
 
 def test_GateCRZ():
     _check_param_gate(GateCRZ, 2, [theta])
+
+
+def test_GateU1():
+    _check_param_gate(GateU1, 1, [lmbda])
+
+
+def test_GateU2():
+    _check_param_gate(GateU2, 1, [phi, lmbda], GateU2DG)
+
+
+def test_GateU2DG():
+    _check_param_gate(GateU2DG, 1, [phi, lmbda], GateU2)
+
+
+def test_GateU3():
+    _check_param_gate(GateU3, 1, [theta, phi, lmbda])
