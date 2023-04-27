@@ -185,8 +185,7 @@ class GateX(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateX
+    >>> from  mimiqcircuits import Circuit,GateX
     >>> GateX().matrix()
 
     array([[0, 1],
@@ -227,8 +226,7 @@ class GateY(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateY
+    >>> from  mimiqcircuits import Circuit,GateY
     >>> GateY().matrix()
 
     array([[ 0.+0.j, -0.-1.j],
@@ -269,8 +267,7 @@ class GateZ(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateZ
+    >>> from  mimiqcircuits import Circuit,GateZ
     >>> GateZ().matrix()
 
     array([[ 1,  0],
@@ -313,8 +310,7 @@ class GateH(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateH
+    >>> from  mimiqcircuits import Circuit,GateH
     >>> GateH().matrix()
 
     array([[ 0.70710678,  0.70710678],
@@ -355,8 +351,7 @@ class GateS(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateS
+    >>> from  mimiqcircuits import Circuit,GateS
     >>> GateS().matrix()
 
     array([[1.000000e+00+0.j, 0.000000e+00+0.j],
@@ -399,9 +394,7 @@ class GateSDG(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateSDG
-
+    >>> from  mimiqcircuits import Circuit,GateSDG
     >>> GateSDG().matrix()
 
     array([[1.000000e+00+0.j, 0.000000e+00+0.j],
@@ -442,9 +435,7 @@ class GateT(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateT
-    
+    >>> from  mimiqcircuits import Circuit,GateT
     >>> GateT().matrix()
 
     array([[1.        +0.j        , 0.        +0.j        ],
@@ -486,9 +477,7 @@ class GateTDG(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateTDG
-    
+    >>> from  mimiqcircuits import Circuit,GateTDG
     >>> GateTDG().matrix()
 
     array([[1.        +0.j        , 0.        +0.j        ],
@@ -530,9 +519,7 @@ class GateSX(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateSX
-    
+    >>> from  mimiqcircuits import Circuit,GateSX
     >>> GateSX().matrix()
 
     array([[0.5+0.5j, 0.5-0.5j],
@@ -574,9 +561,7 @@ class GateSXDG(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateSXDG
-    
+    >>> from  mimiqcircuits import Circuit,GateSXDG
     >>> GateSXDG().matrix()
 
     array([[0.5-0.5j, 0.5+0.5j],
@@ -618,9 +603,7 @@ class GateID(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateID
-    
+    >>> from  mimiqcircuits import Circuit,GateID
     >>> GateID().matrix()
 
     array([[1., 0.],
@@ -670,9 +653,8 @@ class GateU(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateU
-    
+    >>> from  mimiqcircuits import Circuit,GateU
+    >>> import nump as np
     >>> GateU(np.pi/3,np.pi/3,np.pi/3).matrix()
 
     array([[ 0.8660254+0.j       , -0.25     -0.4330127j],
@@ -714,7 +696,7 @@ class GateU(Gate):
 class GateU1(Gate):
     """
     Single qubit generic unitary gate(U1).
-    Equivalent to [`GateP`](@ref)
+    Equivalent to [`GateP`]
 
     # Arguments
     :param lmbda: Euler angle 3 in radians.
@@ -734,9 +716,8 @@ class GateU1(Gate):
     # Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateU1
-
+    >>> from  mimiqcircuits import Circuit,GateU1
+    >>> import nump as np
     >>> GateU1(np.pi/4).matrix()
 
     array([[1.        +0.j        , 0.        +0.j        ],
@@ -775,7 +756,7 @@ class GateU1(Gate):
 class GateU2(Gate):
     """
     One qubit generic unitary gate (u2).
-    See also [`GateU2DG`](@ref)
+    See also [GateU2DG]
 
     # Arguments
     :param phi: Euler angle in radians.
@@ -797,9 +778,8 @@ class GateU2(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateU2
-
+    >>> from  mimiqcircuits import Circuit,GateU2
+    >>> import nump as np
     >>> GateU2(np.pi/2,np.pi/4).matrix()
 
     array([[ 0.27059805-0.65328148j, -0.65328148+0.27059805j],
@@ -862,9 +842,8 @@ class GateU2DG(Gate):
     # Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateU2DG
-
+    >>> from  mimiqcircuits import Circuit,GateU2DG
+    >>> import nump as np
     >>> GateU2DG(np.pi/2, np.pi/4).matrix()
 
     array([[ 0.27059805+0.65328148j,  0.65328148-0.27059805j],
@@ -929,9 +908,8 @@ class GateU3(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateU3
-    
+    >>> from  mimiqcircuits import Circuit,GateU3
+    >>> import nump as np
     >>> GateU3(np.pi/2,np.pi/4,np.pi/2).matrix()
 
     array([[ 0.27059805-0.65328148j, -0.65328148-0.27059805j],
@@ -994,9 +972,8 @@ class GateR(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateR
-    
+    >>> from  mimiqcircuits import Circuit,GateR
+    >>> import nump as np
     >>> GateR(np.pi/2,np.pi/4).matrix()
 
     array([[ 0.70710678+0.j , -0.5       -0.5j],
@@ -1056,9 +1033,8 @@ class GateRX(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateRX
-    
+    >>> from  mimiqcircuits import Circuit,GateRX
+    >>> import nump as np
     >>> GateRX(np.pi/2).matrix()
 
     array([[ 7.07106781e-01+0.j        , -4.32978028e-17-0.70710678j],
@@ -1117,9 +1093,8 @@ class GateRY(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateRY
-    
+    >>> from  mimiqcircuits import Circuit,GateRY
+    >>> import nump as np
     >>> GateRY(np.pi/2).matrix()
 
     array([[ 0.70710678+0.j, -0.70710678-0.j],
@@ -1178,9 +1153,8 @@ class GateRZ(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateRZ
-    
+    >>> from  mimiqcircuits import Circuit,GateRZ
+    >>> import nump as np
     >>> GateRZ(np.pi/2).matrix()
 
     array([[0.70710678-0.70710678j, 0.        -0.j        ],
@@ -1239,9 +1213,8 @@ class GateP(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateP
-    
+    >>> from  mimiqcircuits import Circuit,GateP
+    >>> import nump as np
     >>> GateP(np.pi/4).matrix()
 
     array([[1.        +0.j        , 0.        +0.j        ],
@@ -1297,9 +1270,7 @@ class GateCX(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCX
-    
+    >>> from  mimiqcircuits import Circuit,GateCX
     >>> GateCX().matrix()
 
     array([[1., 0., 0., 0.],
@@ -1343,9 +1314,7 @@ class GateCY(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCY
-    
+    >>> from  mimiqcircuits import Circuit,GateCY
     >>> GateCY().matrix()
 
     array([[ 1.+0.j,  0.+0.j,  0.+0.j,  0.+0.j],
@@ -1389,9 +1358,7 @@ class GateCZ(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCZ
-    
+    >>> from  mimiqcircuits import Circuit,GateCZ
     >>> GateCZ().matrix()
 
     array([[ 1.,  0.,  0.,  0.],
@@ -1435,9 +1402,7 @@ class GateCH(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCH
-    
+    >>> from  mimiqcircuits import Circuit,GateCH
     >>> GateCH().matrix()
 
     array([[ 1.        ,  0.        ,  0.        ,  0.        ],
@@ -1465,7 +1430,7 @@ class GateCH(Gate):
 class GateSWAP(Gate):
     """
     Two qubit SWAP gate.
-    See also [`GateISWAP`](@ref)
+    See also [GateISWAP]
 
     .. math::
 
@@ -1482,9 +1447,7 @@ class GateSWAP(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateSWAP
-   
+    >>> from  mimiqcircuits import Circuit,GateSWAP
     >>> GateSWAP().matrix()
 
     array([[1, 0, 0, 0],
@@ -1514,7 +1477,7 @@ class GateSWAP(Gate):
 class GateISWAP(Gate):
     """
     Two qubit ISWAP gate.
-    See also [`GateISWAPDG`](@ref), [`GateSWAP`](@ref)
+    See also [GateISWAPDG], [GateSWAP]
 
     .. math::
 
@@ -1531,9 +1494,7 @@ class GateISWAP(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateISWAP
-
+    >>> from  mimiqcircuits import Circuit,GateISWAP
     >>> GateISWAP().matrix()
 
     array([[1.+0.j, 0.+0.j, 0.+0.j, 0.+0.j],
@@ -1563,7 +1524,7 @@ class GateISWAP(Gate):
 class GateISWAPDG(Gate):
     """
     Two qubit ISWAP-dagger gate (conjugate transpose of ISWAP)
-    See also [`GateISWAP`](@ref), [`GateSWAP`](@ref)
+    See also [GateISWAP], [GateSWAP]
 
     .. math::
 
@@ -1580,9 +1541,7 @@ class GateISWAPDG(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateISWAPDG
-    >>> import numpy as np 
+    >>> from  mimiqcircuits import Circuit,GateISWAPDG
     >>> GateISWAPDG().matrix()
 
     array([[ 1.+0.j,  0.+0.j,  0.+0.j,  0.+0.j],
@@ -1611,8 +1570,8 @@ class GateISWAPDG(Gate):
 
 class GateCU(Gate):
     """
-    Two qubit generic unitary gate, equivalent to the qiskit CU-Gate.
-    https://qiskit.org/documentation/stubs/qiskit.circuit.library.CUGate.html`
+    Two qubit generic unitary gate, equivalent to the
+    [qiskit CU-Gate](https://qiskit.org/documentation/stubs/qiskit.circuit.library.CUGate.html)
 
     # Arguments
 
@@ -1641,9 +1600,7 @@ class GateCU(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCU
-    >>> import numpy as np 
+    >>> from  mimiqcircuits import Circuit,GateCU
     >>> GateCU().matrix()
 
     array([[ 1.       +0.j       ,  0.       +0.j       ,
@@ -1715,8 +1672,7 @@ class GateCR(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCR
+    >>> from  mimiqcircuits import Circuit,GateCR
     >>> import numpy as np 
     >>> GateCR(np.pi/3, np.pi/3).matrix()
 
@@ -1783,8 +1739,7 @@ class GateCRX(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCRX
+    >>> from  mimiqcircuits import Circuit,GateCRX
     >>> import numpy as np 
     >>> GateCRX(np.pi/2).matrix()
 
@@ -1850,8 +1805,7 @@ class GateCRY(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCRY
+    >>> from  mimiqcircuits import Circuit,GateCRY
     >>> import numpy as np 
     >>> GateCRY(np.pi/2).matrix()
 
@@ -1917,8 +1871,7 @@ class GateCRZ(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCRZ
+    >>> from  mimiqcircuits import Circuit,GateCRZ
     >>> import numpy as np 
     >>> GateCRZ(np.pi/2).matrix()
 
@@ -1984,9 +1937,8 @@ class GateCP(Gate):
     #Examples
     --------
     ```python
-    >>> from mimiqcircuits.circuit import Circuit
-    >>> from mimiqcircuits.gates import GateCP
-     >>> import numpy as np 
+    >>> from  mimiqcircuits import Circuit,GateCP
+    >>> import numpy as np 
     >>> GateCP(np.pi/4).matrix()
 
     array([[1.        +0.j        , 0.        +0.j        ,
