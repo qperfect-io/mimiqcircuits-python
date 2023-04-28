@@ -13,6 +13,7 @@ def _decomplex(m):
         if np.all(np.isreal(m)):
             return np.real(m)
         else:
+
             return m
     else:
         return m
@@ -34,6 +35,53 @@ def pmatrix(lmbda):
     return np.array([[1, 0], [0, cis(lmbda)]])
 
 
+# def ctrl_first_qubit(mat):
+#     """
+#     Returns the controlled version of a given 2x2 matrix, with control on the first qubit.
+
+#     Args:
+#         mat (numpy.ndarray): A 2x2 matrix to be controlled.
+
+#     Returns:
+#         numpy.ndarray: A 4x4 controlled matrix.
+#     """
+#     dim = mat.shape[0]
+#     return np.block([
+#         [mat[0,0], 0, mat[0,1], 0],
+#         [0, 1, 0, 0],
+#         [mat[1,0], 0, mat[1,1], 0],
+#         [0, 0, 0, 1]
+#     ])
+
+
+def ctrl_fs(mat):
+    """
+    Returns the controlled version of a given 2x2 matrix, with control on first the first and then the second qubit.
+
+    Args:
+        mat (numpy.ndarray): A 2x2 matrix to be controlled.
+
+    Returns:
+        numpy.ndarray: A 4x4 controlled matrix.
+    """
+    dim = mat.shape[0]
+    return np.dot(ctrl(mat), ctrl2(mat))
+
+
+def ctrl_sf(mat):
+    """
+    Returns the controlled version of a given 2x2 matrix, with control on first the first and then the second qubit.
+
+    Args:
+        mat (numpy.ndarray): A 2x2 matrix to be controlled.
+
+    Returns:
+        numpy.ndarray: A 4x4 controlled matrix.
+    """
+    dim = mat.shape[0]
+    return np.dot(ctrl2(mat), ctrl(mat))
+
+
 def ctrl(mat):
     """
     Returns the controlled version of a given 2x2 matrix.
@@ -50,6 +98,23 @@ def ctrl(mat):
         [np.zeros(mat.shape), mat]
     ])
 
+
+def ctrl2(mat):
+    """
+    Returns the controlled version of a given 2x2 matrix, with control on the second qubit.
+
+    Args:
+        mat (numpy.ndarray): A 2x2 matrix to be controlled.
+
+    Returns:
+        numpy.ndarray: A 4x4 controlled matrix.
+    """
+    return np.block([
+        [1, 0, 0, 0],
+        [0, mat[0,0], 0, mat[0,1]],
+        [0, 0, 1, 0],
+        [0, mat[1,0], 0, mat[1,1]]
+    ])
 
 def gphase(lmbda):
     return cis(lmbda)
@@ -281,7 +346,6 @@ class GateZ(Gate):
      └── Z @ q0
      ```
     """
-    
     _num_qubits = 1
     _name = 'Z'
 
@@ -372,7 +436,7 @@ class GateS(Gate):
         return GateSDG()
 
     def matrix(self):
-        # return np.array([[1, 0], [0, 1j]])
+        #return np.array([[1, 0], [0, 1j]])
         return _decomplex(pmatrixpi(1 / 2))
 
 
@@ -1924,7 +1988,7 @@ class GateCP(Gate):
 
     .. math::
 
-        \\operatorname{CRX}(\\theta) = \\begin{pmatrix}
+        \\operatorname{CRX}(\\lambda) = \\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 1 & 0 & 0 \\\\
             0 & 0 & 1 & 0 \\\\
@@ -1941,14 +2005,14 @@ class GateCP(Gate):
     >>> import numpy as np 
     >>> GateCP(np.pi/4).matrix()
 
-    array([[1.        +0.j        , 0.        +0.j        ,
+    array([[0.92387953-0.38268343j, 0.        +0.j        ,
         0.        +0.j        , 0.        +0.j        ],
-       [0.        +0.j        , 1.        +0.j        ,
+       [0.        +0.j        , 0.92387953+0.38268343j,
         0.        +0.j        , 0.        +0.j        ],
        [0.        +0.j        , 0.        +0.j        ,
-        1.        +0.j        , 0.        +0.j        ],
+        0.92387953+0.38268343j, 0.        +0.j        ],
        [0.        +0.j        , 0.        +0.j        ,
-        0.        +0.j        , 0.70710678+0.70710678j]])
+        0.        +0.j        , 0.92387953-0.38268343j]])
     
     >>> c=Circuit()
     >>> c.add_gate(GateCP(np.pi/2),0,1)
@@ -1979,6 +2043,870 @@ class GateCP(Gate):
         pars = f'(lmbda={self.lmbda})'
         return self.name + pars
 
+
+class GateRZZ(Gate):
+    """
+    Two qubit RZZ gate.
+
+    # Arguments
+    :param theta: The angle in radians.
+    :type theta: float
+
+    .. math::
+
+        \\begin{pmatrix}
+        e^{-i\\frac{\\theta}{2}} & 0 & 0 & 0 \\\\
+        0 & e^{i\\frac{\\theta}{2}} & 0 & 0 \\\\
+        0 & 0 & e^{i\\frac{\\theta}{2}} & 0 \\\\
+        0 & 0 & 0 & e^{-i\\frac{\\theta}{2}}
+    \\end{pmatrix}
+
+    :return: RZZ gate.
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from  mimiqcircuits import Circuit,GateRZZ
+    >>> import numpy as np 
+    >>> GateRZZ(np.pi/4).matrix()
+
+    array([[0.92387953-0.38268343j, 0.        +0.j        ,
+        0.        +0.j        , 0.        +0.j        ],
+       [0.        +0.j        , 0.92387953+0.38268343j,
+        0.        +0.j        , 0.        +0.j        ],
+       [0.        +0.j        , 0.        +0.j        ,
+        0.92387953+0.38268343j, 0.        +0.j        ],
+       [0.        +0.j        , 0.        +0.j        ,
+        0.        +0.j        , 0.92387953-0.38268343j]])
+    
+    >>> c=Circuit()
+    >>> c.add_gate(GateRZZ(np.pi/2),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── RZZ(theta=1.5707963267948966) @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'RZZ'
+    def __init__(self, theta):
+        self.theta= theta
+    
+    def matrix(self):
+        return np.array([[cis(-self.theta / 2), 0, 0, 0],
+                        [0, cis(self.theta / 2), 0, 0],
+                        [0, 0, cis(self.theta / 2), 0],
+                        [0, 0, 0, cis(-self.theta / 2)]], dtype=np.complex128)
+
+
+    def inverse(self):
+        return GateRZZ(-self.theta)
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta]
+        }
+
+    def __str__(self):
+        pars = f'(theta={self.theta})'
+        return self.name + pars
+
+
+class GateRXX(Gate):
+    """
+    Two qubit RXX gate.
+
+    # Arguments
+    :param theta: The angle in radians.
+    :type theta: float
+
+    .. math::
+
+        \\begin{pmatrix}
+        \\cos(\\frac{\\theta}{2}) & 0 & 0 & -i\\sin(\\frac{\\theta}{2}) \\\\
+        0 & \\cos(\\frac{\\theta}{2}) & -i\\sin(\\frac{\\theta}{2}) & 0 \\\\
+        0 & -i\\sin(\\frac{\\theta}{2}) & \\cos(\\frac{\\theta}{2}) & 0 \\\\
+        -i\\sin(\\frac{\\theta}{2}) & 0 & 0 & \\cos(\\frac{\\theta}{2})
+    \\end{pmatrix}
+
+    :return: RXX gate.
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from  mimiqcircuits import Circuit,GateRXX
+    >>> import numpy as np 
+    >>> GateRXX(np.pi/4).matrix()
+
+    array([[0.92387953+0.j        , 0.        +0.j        ,
+        0.        +0.j        , 0.        -0.38268343j],
+       [0.        +0.j        , 0.92387953+0.j        ,
+        0.        -0.38268343j, 0.        +0.j        ],
+       [0.        +0.j        , 0.        -0.38268343j,
+        0.92387953+0.j        , 0.        +0.j        ],
+       [0.        -0.38268343j, 0.        +0.j        ,
+        0.        +0.j        , 0.92387953+0.j        ]])
+    
+    >>> c=Circuit()
+    >>> c.add_gate(GateRXX(np.pi/2),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── RXX(theta=1.5707963267948966) @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'RXX'
+    def __init__(self, theta):
+        self.theta= theta
+    
+    def matrix(self):
+        return np.array([[np.cos(self.theta / 2), 0, 0, -1j*np.sin(self.theta / 2)],
+                        [0, np.cos(self.theta / 2), -1j*np.sin(self.theta / 2), 0],
+                        [0, -1j*np.sin(self.theta / 2), np.cos(self.theta / 2), 0],
+                        [-1j*np.sin(self.theta / 2), 0, 0, np.cos(self.theta / 2)]], dtype=np.complex128)
+    def inverse(self):
+        return GateRXX(-self.theta)
+        
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta]
+        }
+
+    def __str__(self):
+        pars = f'(theta={self.theta})'
+        return self.name + pars   
+    
+
+class GateRYY(Gate):
+    """
+    Two qubit RYY gate.
+
+    # Arguments
+    :param theta: The angle in radians.
+    :type theta: float
+
+    .. math::
+
+        \\begin{pmatrix}
+        \\cos(\\frac{\\theta}{2}) & 0 & 0 & i\\sin(\\frac{\\theta}{2}) \\\\
+        0 & \\cos(\\frac{\\theta}{2}) & -i\\sin(\\frac{\\theta}{2}) & 0 \\\\
+        0 & -i\\sin(\\frac{\\theta}{2}) & \\cos(\\frac{\\theta}{2}) & 0 \\\\
+        i\\sin(\\frac{\\theta}{2}) & 0 & 0 & \\cos(\\frac{\\theta}{2})
+    \\end{pmatrix}
+
+    :return: RYY gate.
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from  mimiqcircuits import Circuit,GateRYY
+    >>> import numpy as np 
+    >>> GateRYY(np.pi/4).matrix()
+
+    array([[0.92387953+0.j        , 0.        +0.j        ,
+        0.        +0.j        , 0.        +0.38268343j],
+       [0.        +0.j        , 0.92387953+0.j        ,
+        0.        -0.38268343j, 0.        +0.j        ],
+       [0.        +0.j        , 0.        -0.38268343j,
+        0.92387953+0.j        , 0.        +0.j        ],
+       [0.        +0.38268343j, 0.        +0.j        ,
+        0.        +0.j        , 0.92387953+0.j        ]])
+    
+    >>> c=Circuit()
+    >>> c.add_gate(GateRYY(np.pi/2),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── RYY(theta=1.5707963267948966) @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'RYY'
+    def __init__(self, theta):
+        self.theta= theta
+    
+    def matrix(self):
+        return np.array([[np.cos(self.theta / 2), 0, 0, 1j*np.sin(self.theta / 2)],
+                        [0, np.cos(self.theta / 2), -1j*np.sin(self.theta / 2), 0],
+                        [0, -1j*np.sin(self.theta / 2), np.cos(self.theta / 2), 0],
+                        [1j*np.sin(self.theta / 2), 0, 0, np.cos(self.theta / 2)]], dtype=np.complex128)
+    
+    def inverse(self):
+        return GateRYY(-self.theta)
+        
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta]
+        }
+
+    def __str__(self):
+        pars = f'(theta={self.theta})'
+        return self.name + pars   
+
+
+class GateRXZ(Gate):
+    """
+    Two qubit RXZ gate.
+
+    # Arguments
+    :param theta: The angle in radians.
+    :type theta: float
+
+    .. math::
+
+        \\begin{pmatrix}
+        \\cos(\\frac{\\theta}{2}) & 0 & -i\\sin(\\frac{\\theta}{2}) & 0 \\\\
+        0 & \\cos(\\frac{\\theta}{2}) & 0 & i\\sin(\\frac{\\theta}{2}) \\\\
+        -i\\sin(\\frac{\\theta}{2}) & 0 & \\cos(\\frac{\\theta}{2}) & 0 \\\\
+        0 & i\\sin(\\frac{\\theta}{2}) & 0 & \\cos(\\frac{\\theta}{2})
+    \\end{pmatrix}
+
+    :return: RXZ gate.
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from  mimiqcircuits import Circuit,GateRXZ
+    >>> import numpy as np 
+    >>> GateRXZ(np.pi/4).matrix()
+
+    array([[0.92387953+0.j        , 0.        +0.j        ,
+        0.        -0.38268343j, 0.        +0.j        ],
+       [0.        +0.j        , 0.92387953+0.j        ,
+        0.        +0.j        , 0.        +0.38268343j],
+       [0.        -0.38268343j, 0.        +0.j        ,
+        0.92387953+0.j        , 0.        +0.j        ],
+       [0.        +0.j        , 0.        +0.38268343j,
+        0.        +0.j        , 0.92387953+0.j        ]])
+    
+    >>> c=Circuit()
+    >>> c.add_gate(GateRXZ(np.pi/2),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── RXZ(theta=1.5707963267948966) @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'RXZ'
+
+    def __init__(self, theta):
+        self.theta= theta
+    
+    def matrix(self):
+        return np.array([[np.cos(self.theta/2), 0, -1j*np.sin(self.theta/2), 0],
+                         [0, np.cos(self.theta/2), 0, 1j*np.sin(self.theta/2)],
+                         [-1j*np.sin(self.theta/2), 0, np.cos(self.theta/2), 0],
+                         [0, 1j*np.sin(self.theta/2), 0, np.cos(self.theta/2)]], dtype=np.complex128)
+    
+    def inverse(self):
+        return GateRXZ(-self.theta)
+        
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta]
+        }
+
+    def __str__(self):
+        pars = f'(theta={self.theta})'
+        return self.name + pars
+
+
+class GateRZX(Gate):
+    """
+    Two qubit RZX gate.
+
+    # Arguments
+    :param theta: The angle in radians.
+    :type theta: float
+
+    .. math::
+
+        \\begin{pmatrix}
+        \\cos(\\frac{\\theta}{2}) & -i\\sin(\\frac{\\theta}{2}) & 0 & 0 \\\\
+        -i\\sin(\\frac{\\theta}{2}) & \\cos(\\frac{\\theta}{2}) & 0 & 0 \\\\
+        0 & 0 & \\cos(\\frac{\\theta}{2}) & i\\sin(\\frac{\\theta}{2}) \\\\
+        0 & 0 & i\\sin(\\frac{\\theta}{2}) & \\cos(\\frac{\\theta}{2})
+    \\end{pmatrix}
+
+    :return: RZX gate.
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from  mimiqcircuits import Circuit,GateRZX
+    >>> import numpy as np 
+    >>> GateRZX(np.pi/4).matrix()
+
+    array([[0.92387953+0.j        , 0.        +0.j        ,
+        0.        -0.38268343j, 0.        +0.j        ],
+       [0.        +0.j        , 0.92387953+0.j        ,
+        0.        +0.j        , 0.        +0.38268343j],
+       [0.        -0.38268343j, 0.        +0.j        ,
+        0.92387953+0.j        , 0.        +0.j        ],
+       [0.        +0.j        , 0.        +0.38268343j,
+        0.        +0.j        , 0.92387953+0.j        ]])
+    
+    >>> c=Circuit()
+    >>> c.add_gate(GateRZX(np.pi/2),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── RZX(theta=1.5707963267948966) @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'RZX'
+
+    def __init__(self, theta):
+        self.theta= theta
+    
+    def matrix(self):
+        return np.array([[np.cos(self.theta/2), -1j*np.sin(self.theta/2), 0, 0],
+                         [-1j*np.sin(self.theta/2), np.cos(self.theta/2), 0, 0],
+                         [0, 0, np.cos(self.theta/2),  1j*np.sin(self.theta/2)],
+                         [0, 0,  1j*np.sin(self.theta/2), np.cos(self.theta/2)]], dtype=np.complex128)
+    
+    def inverse(self):
+        return GateRZX(-self.theta)
+        
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta]
+        }
+
+    def __str__(self):
+        pars = f'(theta={self.theta})'
+        return self.name + pars
+
+
+class GateXXPLUSYY(Gate):
+    """
+    Two qubit parametric XXPLUSYY gate.
+
+    # Arguments
+    :param theta: The angle in radians.
+    :type theta: float
+    :param phi: The angle in radians.
+    :type phi: float
+
+    .. math::
+
+        \\begin{pmatrix}
+        1 & 0 & 0 & 0 \\\\
+        0 & \\cos(\\frac{\\theta}{2}) & -i\\sin(\\frac{\\theta}{2})e^{-i\\phi} & 0 \\\\
+        0 & -i\\sin(\\frac{\\theta}{2})e^{i\\phi} & \\cos(\\frac{\\theta}{2}) & 0 \\\\
+        0 & 0 & 0 & 1
+    \\end{pmatrix}
+
+    :return: XXPLUSYY gate.
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from  mimiqcircuits import Circuit,GateXXPLUSYY
+    >>> import numpy as np 
+    >>> GateXXPLUSYY(np.pi/2,np.pi/2).matrix()
+
+    array([[ 1.        +0.00000000e+00j,  0.        +0.00000000e+00j,
+         0.        +0.00000000e+00j,  0.        +0.00000000e+00j],
+       [ 0.        +0.00000000e+00j,  0.70710678+0.00000000e+00j,
+        -0.70710678-4.32978028e-17j,  0.        +0.00000000e+00j],
+       [ 0.        +0.00000000e+00j,  0.70710678-4.32978028e-17j,
+         0.70710678+0.00000000e+00j,  0.        +0.00000000e+00j],
+       [ 0.        +0.00000000e+00j,  0.        +0.00000000e+00j,
+         0.        +0.00000000e+00j,  1.        +0.00000000e+00j]])
+    
+    >>> c=Circuit()
+    >>> c.add_gate(GateXXPLUSYY(np.pi/2,np.pi/2),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── XXPLUSYY(theta=1.5707963267948966, phi=1.5707963267948966) @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'XXPLUSYY'
+
+    def __init__(self, theta, phi):
+        self.theta= theta
+        self.phi= phi
+    
+    def matrix(self):
+        return np.array([[1, 0, 0, 0],
+                         [0, np.cos(self.theta/2), -1j*np.sin(self.theta/2) * cis(-self.phi), 0],
+                         [0, -1j*np.sin(self.theta/2) * cis(self.phi), np.cos(self.theta/2),  0],
+                         [0, 0,  0, 1]], dtype=np.complex128)
+    
+    def inverse(self):
+        return GateXXPLUSYY(-self.theta, -self.phi)
+        
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta, self.phi]
+        }
+
+    def __str__(self):
+        pars = f'(theta={self.theta}, phi={self.phi})'
+        return self.name + pars
+        
+
+class GateXXMINUSYY(Gate):
+    """
+    Two qubit parametric XXMINUSYY gate.
+
+    # Arguments
+    :param theta: The angle in radians.
+    :type theta: float
+    :param phi: The angle in radians.
+    :type phi: float
+
+    .. math::
+    
+        \\begin{pmatrix}
+        \\cos(\\frac{\\theta}{2}) & 0 & 0 & -i\\sin(\\frac{\\theta}{2})e^{-i\\phi} \\\\
+        0 & 1 & 0 & 0 \\\\
+        0 & 0 & 1 & 0 \\\\
+        -i\\sin(\\frac{\\theta}{2})e^{i\\phi} & 0 & 0 & \\cos(\\frac{\\theta}{2})
+        \\end{pmatrix}
+
+    :return: XXMINUSYY gate.
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from  mimiqcircuits import Circuit,GateXXMINUSYY
+    >>> import numpy as np 
+    >>> GateXXMINUSYY(np.pi/2,np.pi/2).matrix()
+
+    array([[ 0.70710678+0.00000000e+00j,  0.        +0.00000000e+00j,
+         0.        +0.00000000e+00j, -0.70710678-4.32978028e-17j],
+       [ 0.        +0.00000000e+00j,  1.        +0.00000000e+00j,
+         0.        +0.00000000e+00j,  0.        +0.00000000e+00j],
+       [ 0.        +0.00000000e+00j,  0.        +0.00000000e+00j,
+         1.        +0.00000000e+00j,  0.        +0.00000000e+00j],
+       [-0.70710678-4.32978028e-17j,  0.        +0.00000000e+00j,
+         0.        +0.00000000e+00j,  0.70710678+0.00000000e+00j]])
+    
+    >>> c=Circuit()
+    >>> c.add_gate(GateXXMINUSYY(np.pi/2,np.pi/2),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── XXMINUSYY(theta=1.5707963267948966, phi=1.5707963267948966) @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'XXMINUSYY'
+
+    def __init__(self, theta, phi):
+        self.theta= theta
+        self.phi= phi
+    
+    def matrix(self):
+        return np.array([[np.cos(self.theta/2), 0, 0, -1j*np.sin(self.theta/2) * cis(-self.phi)],
+                         [0, 1, 0, 0],
+                         [0, 0, 1,  0],
+                         [-1j*np.sin(self.theta/2) * cis(-self.phi), 0,  0, np.cos(self.theta/2)]], dtype=np.complex128)
+    
+    def inverse(self):
+        return GateXXMINUSYY(-self.theta, -self.phi)
+        
+    def to_json(self):
+        return {
+            'name': self.name,
+            'params': [self.theta, self.phi]
+        }
+
+    def __str__(self):
+        pars = f'(theta={self.theta}, phi={self.phi})'
+        return self.name + pars
+
+
+class GateCS(Gate):
+    """
+    Two qubit Controlled-S gate.
+
+    .. math::
+    
+        \\begin{pmatrix}
+        1 & 0 & 0 & 0 \\\\
+        0 & 1 & 0 & 0 \\\\
+        0 & 0 & 1 & 0 \\\\
+        0 & 0 & 0 & i
+        \\end{pmatrix}
+
+    :return: Controlled-S gate.
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from  mimiqcircuits import Circuit,GateCS
+    >>> GateCS().matrix()
+
+    array([[1.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
+        0.000000e+00+0.j],
+       [0.000000e+00+0.j, 1.000000e+00+0.j, 0.000000e+00+0.j,
+        0.000000e+00+0.j],
+       [0.000000e+00+0.j, 0.000000e+00+0.j, 1.000000e+00+0.j,
+        0.000000e+00+0.j],
+       [0.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
+        6.123234e-17+1.j]])
+    
+    >>> c=Circuit()
+    >>> c.add_gate(GateCS(),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── CS @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'CS'
+        
+    def matrix(self):
+        return ctrl(GateS().matrix())
+    
+    def inverse(self):
+        return GateCSDG()
+          
+
+class GateCSDG(Gate):
+    """
+    Two qubit CS-dagger gate.
+
+    .. math::
+    
+        \\begin{pmatrix}
+        1 & 0 & 0 & 0 \\\\
+        0 & 1 & 0 & 0 \\\\
+        0 & 0 & 1 & 0 \\\\
+        0 & 0 & 0 & -i
+        \\end{pmatrix}
+
+    :return: CS-dagger gate.
+    :rtype: numpy.ndarray
+
+    #Examples
+    --------
+    ```python
+    >>> from  mimiqcircuits import Circuit,GateCSDG
+    >>> GateCSDG().matrix()
+
+    array([[1.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
+        0.000000e+00+0.j],
+       [0.000000e+00+0.j, 1.000000e+00+0.j, 0.000000e+00+0.j,
+        0.000000e+00+0.j],
+       [0.000000e+00+0.j, 0.000000e+00+0.j, 1.000000e+00+0.j,
+        0.000000e+00+0.j],
+       [0.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
+        6.123234e-17+1.j]])
+    
+    >>> c=Circuit()
+    >>> c.add_gate(GateCSDG(),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── CSDG @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'CSDG'
+
+    def matrix(self):
+        return np.array([ [1, 0, 0, 0],
+                          [0, 1, 0, 0],
+                          [0, 0, 1, 0],
+                          [0, 0, 0, -1j]], dtype=np.complex128)
+    def inverse(self):
+        return GateCS()
+
+
+class GateCSX(Gate):
+    """
+    Two qubit Controled-SX (control on second qubit) gate.
+
+    .. math::
+    
+        \\begin{pmatrix}
+        1 & 0 & 0 & 0 \\\\
+        0 & \\frac{1+i}{\\sqrt{2}} & 0 & \\frac{1-i}{\\sqrt{2}} \\\\
+        0 & 0 & 1 & 0 \\\\
+        0 & \\frac{1-i}{\\sqrt{2}} & 0 & \\frac{1+i}{\\sqrt{2}}
+        \\end{pmatrix}
+
+    :return: Controled-SX gate
+    :rtype: numpy.ndarray
+
+    >>> from  mimiqcircuits import Circuit,GateCSX
+    >>> GateCSX().matrix()
+
+    array([[1. +0.j , 0. +0.j , 0. +0.j , 0. +0.j ],
+       [0. +0.j , 0.5+0.5j, 0. +0.j , 0.5-0.5j],
+       [0. +0.j , 0. +0.j , 1. +0.j , 0. +0.j ],
+       [0. +0.j , 0.5-0.5j, 0. +0.j , 0.5+0.5j]])
+
+    >>> c=Circuit()
+    >>> c.add_gate(GateCSX(),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── CSX @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'CSX'
+
+    def matrix(self):
+        return ctrl2(GateSX().matrix())
+        # return np.array([ [1,    0,     0,        0],
+        #                   [0, (1+1j)/2, 0, (1-1j)/2],
+        #                   [0,   0,      1,        0],
+        #                   [0, (1-1j)/2, 0, (1+1j)/2]], dtype=np.complex128)
+    
+    def inverse(self):
+        return GateCSXDG()
+    
+
+class GateCSXDG(Gate):
+    """
+    Two qubit CSX-dagger gate.
+
+    .. math::
+    
+        \\begin{pmatrix}
+        1 & 0 & 0 & 0 \\\\
+        0 & \\frac{1-i}{\\sqrt{2}} & 0 & \\frac{1+i}{\\sqrt{2}} \\\\
+        0 & 0 & 1 & 0 \\\\
+        0 & \\frac{1+i}{\\sqrt{2}} & 0 & \\frac{1-i}{\\sqrt{2}}
+        \\end{pmatrix}
+
+    :return: CSX-dagger gate
+    :rtype: numpy.ndarray
+
+    >>> from  mimiqcircuits import Circuit,GateCSXDG
+    >>> GateCSXDG().matrix()
+
+    array([[1. +0.j , 0. +0.j , 0. +0.j , 0. +0.j ],
+       [0. +0.j , 0.5-0.5j, 0. +0.j , 0.5+0.5j],
+       [0. +0.j , 0. +0.j , 1. +0.j , 0. +0.j ],
+       [0. +0.j , 0.5+0.5j, 0. +0.j , 0.5-0.5j]])
+
+    >>> c=Circuit()
+    >>> c.add_gate(GateCSXDG(),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── CSXDG @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'CSXDG'
+
+    def matrix(self):
+        return ctrl2(_decomplex(gphase(-np.pi / 4) * rxmatrix(-np.pi / 2)))
+        # return np.array([ [1,    0,     0,        0],
+        #                   [0, (1-1j)/2, 0, (1+1j)/2],
+        #                   [0,   0,      1,        0],
+        #                   [0, (1+1j)/2, 0, (1-1j)/2]], dtype=np.complex128)
+    
+    def inverse(self):
+        return GateCSX()
+    
+    
+class GateECR(Gate):
+    """
+    Two qubit ECR echo gate.
+
+    .. math::
+    
+        \\begin{pmatrix}
+            0 & 1 & 0 & i \\\\
+            1 & 0 & -i & 0 \\\\
+            0 & i & 0 & i \\\\
+            -i & 0 & 1 & 0
+        \\end{pmatrix}
+
+    :return: ECR gate
+    :rtype: numpy.ndarray
+
+    >>> from  mimiqcircuits import Circuit,GateECR
+    >>> GateECR().matrix()
+
+    array([[0.        +0.j        , 0.70710678+0.j        ,
+        0.        +0.j        , 0.        +0.70710678j],
+       [0.70710678+0.j        , 0.        +0.j        ,
+        0.        -0.70710678j, 0.        +0.j        ],
+       [0.        +0.j        , 0.        +0.70710678j,
+        0.        +0.j        , 0.        +0.70710678j],
+       [0.        -0.70710678j, 0.        +0.j        ,
+        0.70710678+0.j        , 0.        +0.j        ]])
+
+    >>> c=Circuit()
+    >>> c.add_gate(GateECR(),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── ECR @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'ECR'
+
+    def matrix(self):
+        return  1/np.sqrt(2) * np.array([ [0, 1, 0, 1j ],
+                                          [1, 0,-1j, 0 ],
+                                          [0, 1j, 0, 1j],
+                                          [-1j, 0, 1, 0]], dtype=np.complex128)
+
+    def inverse(self):
+        return GateECRDG()
+    
+
+class GateECRDG(Gate):
+    """
+    Two qubit ECR-dagger gate.
+
+    .. math::
+    
+        \\begin{pmatrix}
+            0 & 1 & 0 & i \\\\
+            1 & 0 & -i & 0 \\\\
+            0 & i & 0 & i \\\\
+            -i & 0 & 1 & 0
+        \\end{pmatrix}
+
+    :return: ECR-dagger gate
+    :rtype: numpy.ndarray
+
+    >>> from  mimiqcircuits import Circuit,GateECRDG
+    >>> GateECRDG().matrix()
+
+    array([[0.        +0.j        , 0.70710678+0.j        ,
+        0.        +0.j        , 0.        -0.70710678j],
+       [0.70710678+0.j        , 0.        +0.j        ,
+        0.        +0.70710678j, 0.        +0.j        ],
+       [0.        +0.j        , 0.        -0.70710678j,
+        0.        +0.j        , 0.        +0.70710678j],
+       [0.        +0.70710678j, 0.        +0.j        ,
+        0.70710678+0.j        , 0.        +0.j        ]])
+
+    >>> c=Circuit()
+    >>> c.add_gate(GateECRDG(),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── ECRDG @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'ECRDG'
+
+    def matrix(self):
+        return  1/np.sqrt(2) * np.array([ [0, 1, 0, -1j ],
+                                          [1, 0, 1j, 0  ],
+                                          [0, -1j, 0, 1j],
+                                          [1j, 0, 1, 0  ]], dtype=np.complex128)
+    
+    def inverse(self):
+        return GateECR()
+       
+
+class GateDCX(Gate):
+    """
+    Two qubit double-CNOT (Control on first qubit and then second) OR DCX gate.
+
+    .. math::
+    
+        \\begin{pmatrix}
+            1 & 0 & 0 & 0 \\\\
+            0 & 0 & 0 & 1 \\\\
+            0 & 1 & 0 & 0 \\\\
+            0 & 0 & 1 & 0
+        \\end{pmatrix}
+
+    :return: DCX gate.
+    :rtype: numpy.ndarray
+
+    >>> from  mimiqcircuits import Circuit,GateDCX
+    >>> GateDCX().matrix()
+
+    array([[1., 0., 0., 0.],
+       [0., 0., 0., 1.],
+       [0., 1., 0., 0.],
+       [0., 0., 1., 0.]])
+
+    >>> c=Circuit()
+    >>> c.add_gate(GateDCX(),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── DCX @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'DCX'
+
+    def matrix(self):
+        return ctrl_fs(GateX().matrix())
+        # return   np.array([ [1, 0, 0, 0 ],
+        #                     [0, 0, 0, 1 ],
+        #                     [0, 1, 0, 0 ],
+        #                     [0, 0, 1, 0 ]], dtype=np.complex128)
+
+    def inverse(self):
+        return GateDCXDG()
+
+
+class GateDCXDG(Gate):
+    """
+    Two qubit DCX-dagger gate.
+
+    .. math::
+    
+        \\begin{pmatrix}
+            1 & 0 & 0 & 0 \\\\
+            0 & 0 & 1 & 0 \\\\
+            0 & 0 & 0 & 1 \\\\
+            0 & 1 & 0 & 0
+        \\end{pmatrix}
+
+    :return: DCX-dagger gate
+    :rtype: numpy.ndarray
+
+    >>> from  mimiqcircuits import Circuit,GateDCXDG
+    >>> GateDCXDG().matrix()
+
+    array([[0.        +0.j        , 0.70710678+0.j        ,
+        0.        +0.j        , 0.        -0.70710678j],
+       [0.70710678+0.j        , 0.        +0.j        ,
+        0.        +0.70710678j, 0.        +0.j        ],
+       [0.        +0.j        , 0.        -0.70710678j,
+        0.        +0.j        , 0.        +0.70710678j],
+       [0.        +0.70710678j, 0.        +0.j        ,
+        0.70710678+0.j        , 0.        +0.j        ]])
+
+    >>> c=Circuit()
+    >>> c.add_gate(GateDCXDG(),0,1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── DCXDG @ q0, q1
+    """
+    _num_qubits = 2
+    _name = 'DCXDG'
+
+    def matrix(self):
+        return ctrl_sf(GateX().matrix())
+        # return  1/np.sqrt(2) * np.array([ [1, 0, 0, 0 ],
+        #                                   [0, 0, 1, 0 ],
+        #                                   [0, 1, 0, 0 ],
+        #                                   [0, 1, 0, 0 ]], dtype=np.complex128)
+    
+    def inverse(self):
+        return GateDCX()
+    
 
 GATES = {
     c._name: c for name, c in globals().items()

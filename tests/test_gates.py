@@ -99,6 +99,38 @@ def test_GateISWAPDG():
     _checknpgate(GateISWAPDG, 2, GateISWAP)
 
 
+def test_GateCS():
+    _checknpgate(GateCS, 2, GateCSDG)
+
+
+def test_GateCSDG():
+    _checknpgate(GateCSDG, 2, GateCS)
+
+
+def test_GateCSX():
+    _checknpgate(GateCSX, 2, GateCSXDG)
+
+
+def test_GateCSXDG():
+    _checknpgate(GateCSXDG, 2, GateCSX)
+
+
+def test_GateECR():
+    _checknpgate(GateECR, 2, GateECRDG)
+
+
+def test_GateECRDG():
+    _checknpgate(GateECRDG, 2, GateECR)
+
+
+def test_GateDCX():
+    _checknpgate(GateDCX, 2, GateDCXDG)
+
+
+def test_GateDCXDG():
+    _checknpgate(GateDCX, 2, GateDCXDG)
+
+
 def test_GateR():
     _check_param_gate(GateR, 1, [theta, phi])
 
@@ -161,3 +193,31 @@ def test_GateU2DG():
 
 def test_GateU3():
     _check_param_gate(GateU3, 1, [theta, phi, lmbda])
+
+
+def test_GateRZZ():
+    _check_param_gate(GateRZZ, 2, [theta])
+
+
+def test_GateRXX():
+    _check_param_gate(GateRXX, 2, [theta])
+
+
+def test_GateRYY():
+    _check_param_gate(GateRYY, 2, [theta])
+
+
+def test_GateRZX():
+    _check_param_gate(GateRZX, 2, [theta])
+
+
+def test_GateRXZ():
+    _check_param_gate(GateRXZ, 2, [theta])
+
+
+def test_GateXXPLUSYY():
+    _check_param_gate(GateXXPLUSYY, 2, [theta, phi])
+
+
+def test_GateXXMINUSYY():
+    _check_param_gate(GateXXMINUSYY, 2, [theta, phi])
