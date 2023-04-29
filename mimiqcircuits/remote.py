@@ -84,11 +84,13 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
             circuit_hash = _hash_file(circuit_filename)
 
+            jsonbitstates = ['bs' + o.to01() for o in bitstates]
+
             pars = {"algorithm": algorithm,
-                    "bitstates": bitstates, "samples": nsamples}
+                    "bitstates": jsonbitstates, "samples": nsamples}
 
             if bonddim is not None:
-                pars["bonddim"] = bonddim
+                pars["bondDimension"] = bonddim
 
             req = {
                 "executor": "Circuits",

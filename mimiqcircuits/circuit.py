@@ -158,6 +158,26 @@ class Circuit:
         circuit_gate = CircuitGate(gate, *args)
         self.gates.append(circuit_gate)
 
+    def append(self, circuit):
+        """
+        Appends all the gates of the given circuit at the end of the current circuit.
+        """
+        if not isinstance(circuit, Circuit):
+            raise TypeError("accepts only a Circuit")
+
+        for g in circuit.gates:
+            self.add_circuitgate(g)
+
+    def append_circuitgates(self, gates):
+        """
+        Appends the list of given circuit gates at the end of the current circuit.
+        """
+        if not isinstance(gates, list):
+            raise TypeError("accepts only a list of CircuitGate")
+
+        for g in gates:
+            self.add_circuitgate(g)
+
     def add_circuitgate(self, circuitgate):
         if not isinstance(circuitgate, CircuitGate):
             raise TypeError("accepts only a CircuitGate")
