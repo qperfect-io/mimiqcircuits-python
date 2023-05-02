@@ -197,9 +197,12 @@ class Gate(ABC):
     @staticmethod
     def from_json(d):
         name = d['name']
+        if d['name'] == 'Custom':
+            matrix = np.array(d['matrix'])
+            num_qubits = d['num_qubits']
+            return GateCustom(matrix=matrix, num_qubits=num_qubits)
         if 'params' in d:
             return GATES[name](*d['params'])
-
         return GATES[name]()
 
     def to_json(self):
@@ -1327,6 +1330,7 @@ class GateCX(Gate):
 
      2-qubit circuit with 1 gates
      └── CX @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CX'
@@ -1371,6 +1375,7 @@ class GateCY(Gate):
 
      2-qubit circuit with 1 gates
      └── CY @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CY'
@@ -1415,6 +1420,7 @@ class GateCZ(Gate):
 
      2-qubit circuit with 1 gates
      └── CZ @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CZ'
@@ -1459,6 +1465,7 @@ class GateCH(Gate):
 
      2-qubit circuit with 1 gates
      └── CH @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CH'
@@ -1504,6 +1511,7 @@ class GateSWAP(Gate):
 
      2-qubit circuit with 1 gates
      └── SWAP @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'SWAP'
@@ -1551,6 +1559,7 @@ class GateISWAP(Gate):
 
      2-qubit circuit with 1 gates
      └── ISWAP @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'ISWAP'
@@ -1598,6 +1607,7 @@ class GateISWAPDG(Gate):
 
      2-qubit circuit with 1 gates
      └── ISWAPDG @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'ISWAPDG'
@@ -1661,7 +1671,7 @@ class GateCU(Gate):
 
      2-qubit circuit with 1 gates
      └── CU(theta=1.0471975511965976, phi=1.0471975511965976, lmbda=1.0471975511965976, gamma=0) @ q0, q1
-
+     ```
     """
     _num_qubits = 2
     _name = 'CU'
@@ -1734,6 +1744,7 @@ class GateCR(Gate):
 
      2-qubit circuit with 1 gates
      └── CR(theta=1.0471975511965976, phi=1.0471975511965976) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CR'
@@ -1801,6 +1812,7 @@ class GateCRX(Gate):
 
      2-qubit circuit with 1 gates
      └── CRX(theta=1.0471975511965976) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CRX'
@@ -1867,6 +1879,7 @@ class GateCRY(Gate):
 
      2-qubit circuit with 1 gates
      └── CRY(theta=1.5707963267948966) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CRY'
@@ -1933,6 +1946,7 @@ class GateCRZ(Gate):
 
      2-qubit circuit with 1 gates
      └── CRZ(theta=1.5707963267948966) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CRZ'
@@ -1999,6 +2013,7 @@ class GateCP(Gate):
 
      2-qubit circuit with 1 gates
      └── CP(theta=1.5707963267948966) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CP'
@@ -2065,6 +2080,7 @@ class GateRZZ(Gate):
 
      2-qubit circuit with 1 gates
      └── RZZ(theta=1.5707963267948966) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'RZZ'
@@ -2134,6 +2150,7 @@ class GateRXX(Gate):
 
      2-qubit circuit with 1 gates
      └── RXX(theta=1.5707963267948966) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'RXX'
@@ -2201,6 +2218,7 @@ class GateRYY(Gate):
 
      2-qubit circuit with 1 gates
      └── RYY(theta=1.5707963267948966) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'RYY'
@@ -2269,6 +2287,7 @@ class GateRXZ(Gate):
 
      2-qubit circuit with 1 gates
      └── RXZ(theta=1.5707963267948966) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'RXZ'
@@ -2338,6 +2357,7 @@ class GateRZX(Gate):
 
      2-qubit circuit with 1 gates
      └── RZX(theta=1.5707963267948966) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'RZX'
@@ -2409,6 +2429,7 @@ class GateXXplusYY(Gate):
 
      2-qubit circuit with 1 gates
      └──XXplusYY(theta=1.5707963267948966, phi=1.5707963267948966) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'XXplusYY'
@@ -2481,6 +2502,7 @@ class GateXXminusYY(Gate):
 
      2-qubit circuit with 1 gates
      └── XXminusYY(theta=1.5707963267948966, phi=1.5707963267948966) @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'XXminusYY'
@@ -2621,6 +2643,9 @@ class GateCSX(Gate):
     :return: Controled-SX gate
     :rtype: numpy.ndarray
 
+    #Examples
+    --------
+    ```python
     >>> from  mimiqcircuits import Circuit,GateCSX
     >>> GateCSX().matrix()
 
@@ -2635,6 +2660,7 @@ class GateCSX(Gate):
 
      2-qubit circuit with 1 gates
      └── CSX @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CSX'
@@ -2666,6 +2692,9 @@ class GateCSXDG(Gate):
     :return: CSX-dagger gate
     :rtype: numpy.ndarray
 
+    #Examples
+    --------
+    ```python
     >>> from  mimiqcircuits import Circuit,GateCSXDG
     >>> GateCSXDG().matrix()
 
@@ -2680,6 +2709,7 @@ class GateCSXDG(Gate):
 
      2-qubit circuit with 1 gates
      └── CSXDG @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'CSXDG'
@@ -2711,6 +2741,9 @@ class GateECR(Gate):
     :return: ECR gate
     :rtype: numpy.ndarray
 
+    #Examples
+    --------
+    ```python
     >>> from  mimiqcircuits import Circuit,GateECR
     >>> GateECR().matrix()
 
@@ -2729,6 +2762,7 @@ class GateECR(Gate):
 
      2-qubit circuit with 1 gates
      └── ECR @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'ECR'
@@ -2758,7 +2792,10 @@ class GateECRDG(Gate):
 
     :return: ECR-dagger gate
     :rtype: numpy.ndarray
-
+    
+     #Examples
+    --------
+    ```python
     >>> from  mimiqcircuits import Circuit,GateECRDG
     >>> GateECRDG().matrix()
 
@@ -2777,6 +2814,7 @@ class GateECRDG(Gate):
 
      2-qubit circuit with 1 gates
      └── ECRDG @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'ECRDG'
@@ -2807,6 +2845,9 @@ class GateDCX(Gate):
     :return: DCX gate.
     :rtype: numpy.ndarray
 
+     #Examples
+    --------
+    ```python
     >>> from  mimiqcircuits import Circuit,GateDCX
     >>> GateDCX().matrix()
 
@@ -2821,6 +2862,7 @@ class GateDCX(Gate):
 
      2-qubit circuit with 1 gates
      └── DCX @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'DCX'
@@ -2852,6 +2894,9 @@ class GateDCXDG(Gate):
     :return: DCX-dagger gate
     :rtype: numpy.ndarray
 
+     #Examples
+    --------
+    ```python
     >>> from  mimiqcircuits import Circuit,GateDCXDG
     >>> GateDCXDG().matrix()
 
@@ -2865,6 +2910,7 @@ class GateDCXDG(Gate):
 
      2-qubit circuit with 1 gates
      └── DCXDG @ q0, q1
+     ```
     """
     _num_qubits = 2
     _name = 'DCXDG'
@@ -2881,6 +2927,39 @@ class GateDCXDG(Gate):
 
 
 class GateCustom(Gate):
+    """
+    One or Two qubit Custom gates.
+
+     #Examples
+    --------
+    ```python
+    >>> from  mimiqcircuits import Circuit,GateCustom
+    >>> import numpy as np
+
+    >>> matrix = np.array([[1, 0, 0, 0],
+                   [0, 1, 1j, 0],
+                   [0, 0, 0, 1],
+                   [0, 0, 1, 0]])
+    >>> qubits=2
+    >>> c=Circuit()
+    >>> c.add_gate(GateCustom(matrix, qubits), 0, 1)
+    >>> print(c)
+
+     2-qubit circuit with 1 gates
+     └── Custom @ q0, q1
+
+    #get inverse of given matrix
+
+    >>> inv_matrix=GateCustom(matrix).inverse().matrix
+    >>> print(inv_matrix)
+
+    [[1.+0.j 0.+0.j 0.+0.j 0.+0.j]
+    [0.+0.j 1.+0.j 0.+0.j 0.-1.j]
+    [0.+0.j 0.+0.j 0.+0.j 1.+0.j]
+    [0.+0.j 0.+0.j 1.+0.j 0.+0.j]]
+
+     ```
+    """
     
     def __init__(self, matrix=None, num_qubits=None):
         super().__init__()

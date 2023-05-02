@@ -3,8 +3,7 @@
 # See AUTHORS.md for the list of authors.
 #
 
-from mimiqcircuits.gates import Gate,GateCustom
-import numpy as np
+from mimiqcircuits.gates import Gate
 
 
 class CircuitGate:
@@ -78,12 +77,7 @@ class CircuitGate:
     @staticmethod
     def from_json(d):
         qubits = tuple([t-1 for t in d['targets']])
-        if d['name'] == 'Custom':
-            matrix = np.array(d['matrix'])
-            num_qubits = d['num_qubits']
-            gate = GateCustom(matrix=matrix, num_qubits=num_qubits)
-        else:
-            gate = Gate.from_json(d)
+        gate = Gate.from_json(d)
         return CircuitGate(gate, *qubits)
 
 
