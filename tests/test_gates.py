@@ -215,9 +215,9 @@ def test_GateRXZ():
     _check_param_gate(GateRXZ, 2, [theta])
 
 
-def test_GateXXPLUSYY():
-    _check_param_gate(GateXXPLUSYY, 2, [theta, phi])
+def test_GateXXplusYY():
+    _check_param_gate(GateXXplusYY, 2, [theta, phi])
 
 
-def test_GateXXMINUSYY():
-    _check_param_gate(GateXXMINUSYY, 2, [theta, phi])
+def test_GateXXminusYY():
+    _check_param_gate(GateXXminusYY, 2, [theta, phi])
