@@ -35,6 +35,7 @@ def _check_param_gate(gatetype, n, params=None, invtype=None):
 theta = 0.5333 * np.pi
 lmbda = 0.123 * np.pi
 phi = 1.739 * np.pi
+beta = 1.785 * np.pi
 gamma = 1.333 * np.pi
 
 
@@ -223,11 +224,11 @@ def test_GateRXZ():
 
 
 def test_GateXXplusYY():
-    _check_param_gate(GateXXplusYY, 2, [theta, phi])
+    _check_param_gate(GateXXplusYY, 2, [theta, beta])
 
 
 def test_GateXXminusYY():
-    _check_param_gate(GateXXminusYY, 2, [theta, phi])
+    _check_param_gate(GateXXminusYY, 2, [theta, beta])
 
 
 def _check_custom_gate(N):
@@ -237,6 +238,7 @@ def _check_custom_gate(N):
 
     assert isinstance(gate, GateCustom)
     assert np.array_equal(gate.matrix, mat)
+
 
 def test_GateCustom():
     N = 2
