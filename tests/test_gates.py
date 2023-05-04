@@ -9,6 +9,12 @@ def _checknpgate(gatetype, n, invtype=None):
     assert isinstance(gatetype().inverse().inverse(), gatetype)
     assert gatetype().num_qubits == n
     assert isinstance(gatetype().matrix(), np.ndarray)
+    m = gatetype().matrix()
+    mi = gatetype().inverse().matrix()
+    id = np.dot(m, mi)
+    assert id.shape[0] == id.shape[1]
+    assert np.allclose(id, np.eye(id.shape[0]))
+
 
 
 def _check_param_gate(gatetype, n, params=None, invtype=None):
@@ -19,6 +25,11 @@ def _check_param_gate(gatetype, n, params=None, invtype=None):
     assert isinstance(gate.inverse().inverse(), gatetype)
     assert gate.num_qubits == n
     assert isinstance(gate.matrix(), np.ndarray)
+    m = gate.matrix()
+    mi = gate.inverse().matrix()
+    id = np.dot(m, mi)
+    assert id.shape[0] == id.shape[1]
+    assert np.allclose(id, np.eye(id.shape[0]))
 
 
 theta = 0.5333 * np.pi
@@ -116,11 +127,7 @@ def test_GateCSXDG():
 
 
 def test_GateECR():
-    _checknpgate(GateECR, 2, GateECRDG)
-
-
-def test_GateECRDG():
-    _checknpgate(GateECRDG, 2, GateECR)
+    _checknpgate(GateECR, 2)
 
 
 def test_GateDCX():
@@ -221,3 +228,17 @@ def test_GateXXplusYY():
 
 def test_GateXXminusYY():
     _check_param_gate(GateXXminusYY, 2, [theta, phi])
+
+
+def _check_custom_gate(N):
+    M = 2**N
+    mat = np.random.rand(M, M)
+    gate = GateCustom(mat)
+
+    assert isinstance(gate, GateCustom)
+    assert np.array_equal(gate.matrix, mat)
+
+def test_GateCustom():
+    N = 2
+    _check_custom_gate(N)
+

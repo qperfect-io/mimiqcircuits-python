@@ -726,7 +726,7 @@ class GateU(Gate):
         return umatrix(self.theta, self.phi, self.lmbda)
 
     def inverse(self):
-        return GateU(-self.theta, -self.phi, -self.lmbda)
+        return GateU(-self.theta, -self.lmbda, -self.phi)
 
     def to_json(self):
         return {
@@ -982,7 +982,7 @@ class GateU3(Gate):
         return gphase(-(self.phi + self.lmbda)/2) * umatrix(self.theta, self.phi, self.lmbda)
     
     def inverse(self):
-        return GateU3(-self.theta, -self.phi, -self.lmbda,)
+        return GateU3(-self.theta, -self.lmbda, -self.phi)
     
     def to_json(self):
         return {
@@ -1686,7 +1686,7 @@ class GateCU(Gate):
         return ctrl(umatrix(self.theta, self.phi, self.lmbda, self.gamma))
 
     def inverse(self):
-        return GateCU(-self.theta, -self.phi, -self.lmbda, -self.gamma)
+        return GateCU(-self.theta, -self.lmbda, -self.phi, -self.gamma)
 
     def to_json(self):
         return {
@@ -2392,15 +2392,15 @@ class GateXXplusYY(Gate):
     # Arguments
     :param theta: The angle in radians.
     :type theta: float
-    :param phi: The angle in radians.
-    :type phi: float
+    :param beta: The phase angle in radians.
+    :type beta: float
 
     .. math::
 
         \\begin{pmatrix}
         1 & 0 & 0 & 0 \\\\
-        0 & \\cos(\\frac{\\theta}{2}) & -i\\sin(\\frac{\\theta}{2})e^{-i\\phi} & 0 \\\\
-        0 & -i\\sin(\\frac{\\theta}{2})e^{i\\phi} & \\cos(\\frac{\\theta}{2}) & 0 \\\\
+        0 & \\cos(\\frac{\\theta}{2}) & -i\\sin(\\frac{\\theta}{2})e^{-i\\beta} & 0 \\\\
+        0 & -i\\sin(\\frac{\\theta}{2})e^{i\\beta} & \\cos(\\frac{\\theta}{2}) & 0 \\\\
         0 & 0 & 0 & 1
     \\end{pmatrix}
 
@@ -2428,33 +2428,33 @@ class GateXXplusYY(Gate):
     >>> print(c)
 
      2-qubit circuit with 1 gates
-     └──XXplusYY(theta=1.5707963267948966, phi=1.5707963267948966) @ q0, q1
+     └──XXplusYY(theta=1.5707963267948966, beta=1.5707963267948966) @ q0, q1
      ```
     """
     _num_qubits = 2
     _name = 'XXplusYY'
 
-    def __init__(self, theta, phi):
+    def __init__(self, theta, beta):
         self.theta= theta
-        self.phi= phi
+        self.beta= beta
     
     def matrix(self):
         return np.array([[1, 0, 0, 0],
-                         [0, np.cos(self.theta/2), -1j*np.sin(self.theta/2) * cis(-self.phi), 0],
-                         [0, -1j*np.sin(self.theta/2) * cis(self.phi), np.cos(self.theta/2),  0],
+                         [0, np.cos(self.theta/2), -1j*np.sin(self.theta/2) * cis(-self.beta), 0],
+                         [0, -1j*np.sin(self.theta/2) * cis(self.beta), np.cos(self.theta/2),  0],
                          [0, 0,  0, 1]], dtype=np.complex128)
     
     def inverse(self):
-        return GateXXplusYY(-self.theta, -self.phi)
+        return GateXXplusYY(-self.theta, self.beta)
         
     def to_json(self):
         return {
             'name': self.name,
-            'params': [self.theta, self.phi]
+            'params': [self.theta, self.beta]
         }
 
     def __str__(self):
-        pars = f'(theta={self.theta}, phi={self.phi})'
+        pars = f'(theta={self.theta}, beta={self.beta})'
         return self.name + pars
         
 
@@ -2465,16 +2465,16 @@ class GateXXminusYY(Gate):
     # Arguments
     :param theta: The angle in radians.
     :type theta: float
-    :param phi: The angle in radians.
-    :type phi: float
+    :param beta: The angle in radians.
+    :type beta: float
 
     .. math::
     
         \\begin{pmatrix}
-        \\cos(\\frac{\\theta}{2}) & 0 & 0 & -i\\sin(\\frac{\\theta}{2})e^{-i\\phi} \\\\
+        \\cos(\\frac{\\theta}{2}) & 0 & 0 & -i\\sin(\\frac{\\theta}{2})e^{-i\\beta} \\\\
         0 & 1 & 0 & 0 \\\\
         0 & 0 & 1 & 0 \\\\
-        -i\\sin(\\frac{\\theta}{2})e^{i\\phi} & 0 & 0 & \\cos(\\frac{\\theta}{2})
+        -i\\sin(\\frac{\\theta}{2})e^{i\\beta} & 0 & 0 & \\cos(\\frac{\\theta}{2})
         \\end{pmatrix}
 
     :return: XXminusYY gate.
@@ -2501,33 +2501,33 @@ class GateXXminusYY(Gate):
     >>> print(c)
 
      2-qubit circuit with 1 gates
-     └── XXminusYY(theta=1.5707963267948966, phi=1.5707963267948966) @ q0, q1
+     └── XXminusYY(theta=1.5707963267948966, beta=1.5707963267948966) @ q0, q1
      ```
     """
     _num_qubits = 2
     _name = 'XXminusYY'
 
-    def __init__(self, theta, phi):
+    def __init__(self, theta, beta):
         self.theta= theta
-        self.phi= phi
+        self.beta= beta
     
     def matrix(self):
-        return np.array([[np.cos(self.theta/2), 0, 0, -1j*np.sin(self.theta/2) * cis(-self.phi)],
+        return np.array([[np.cos(self.theta/2), 0, 0, -1j*np.sin(self.theta/2) * cis(-self.beta)],
                          [0, 1, 0, 0],
                          [0, 0, 1,  0],
-                         [-1j*np.sin(self.theta/2) * cis(-self.phi), 0,  0, np.cos(self.theta/2)]], dtype=np.complex128)
+                         [-1j*np.sin(self.theta/2) * cis(self.beta), 0,  0, np.cos(self.theta/2)]], dtype=np.complex128)
     
     def inverse(self):
-        return GateXXminusYY(-self.theta, -self.phi)
+        return GateXXminusYY(-self.theta, self.beta)
         
     def to_json(self):
         return {
             'name': self.name,
-            'params': [self.theta, self.phi]
+            'params': [self.theta, self.beta]
         }
 
     def __str__(self):
-        pars = f'(theta={self.theta}, phi={self.phi})'
+        pars = f'(theta={self.theta}, beta={self.beta})'
         return self.name + pars
 
 
@@ -2732,10 +2732,10 @@ class GateECR(Gate):
     .. math::
     
         \\begin{pmatrix}
-            0 & \\frac{1}{\\sqrt{2}} \\ & 0 & \\frac{i}{\\sqrt{2}} \\ \\\\
-            \\frac{1}{\\sqrt{2}} \\ & 0 & \\frac{-i}{\\sqrt{2}} \\ & 0 \\\\
-            0 & \\frac{i}{\\sqrt{2}} \\ & 0 & \\frac{i}{\\sqrt{2}} \\ \\\\
-            \\frac{-i}{\\sqrt{2}} \\ & 0 & \\frac{1}{\\sqrt{2}} \\ & 0
+            0 & \\frac{1}{\\sqrt{2}} & 0 & \\frac{i}{\\sqrt{2}} \\ \\\\
+            \\frac{1}{\\sqrt{2}} & 0 & \\frac{-i}{\\sqrt{2}} & 0 \\\\
+            0 & \\frac{i}{\\sqrt{2}} & 0 & \\frac{i}{\\sqrt{2}} \\\\
+            \\frac{-i}{\\sqrt{2}} & 0 & \\frac{1}{\\sqrt{2}} & 0
         \\end{pmatrix}
 
     :return: ECR gate
@@ -2770,63 +2770,11 @@ class GateECR(Gate):
     def matrix(self):
         return  1/np.sqrt(2) * np.array([ [0, 1, 0, 1j ],
                                           [1, 0,-1j, 0 ],
-                                          [0, 1j, 0, 1j],
+                                          [0, 1j, 0, 1 ],
                                           [-1j, 0, 1, 0]], dtype=np.complex128)
 
     def inverse(self):
-        return GateECRDG()
-    
-
-class GateECRDG(Gate):
-    """
-    Two qubit ECR-dagger gate.
-
-    .. math::
-    
-        \\begin{pmatrix}
-            0 & \\frac{1}{\\sqrt{2}} & 0 & \\frac{i}{\\sqrt{2}} \\\\
-            \\frac{1}{\\sqrt{2}}\\ & 0 & \\frac{-i}{\\sqrt{2}} \\ & 0 \\\\
-            0 & \\frac{i}{\\sqrt{2}} \\ & 0 & \\frac{i}{\\sqrt{2}} \\ \\\\
-            \\frac{-i}{\\sqrt{2}} \\ & 0 & frac{1}{\\sqrt{2}} & 0
-        \\end{pmatrix}
-
-    :return: ECR-dagger gate
-    :rtype: numpy.ndarray
-    
-     #Examples
-    --------
-    ```python
-    >>> from  mimiqcircuits import Circuit,GateECRDG
-    >>> GateECRDG().matrix()
-
-    array([[0.        +0.j        , 0.70710678+0.j        ,
-        0.        +0.j        , 0.        -0.70710678j],
-       [0.70710678+0.j        , 0.        +0.j        ,
-        0.        +0.70710678j, 0.        +0.j        ],
-       [0.        +0.j        , 0.        -0.70710678j,
-        0.        +0.j        , 0.        +0.70710678j],
-       [0.        +0.70710678j, 0.        +0.j        ,
-        0.70710678+0.j        , 0.        +0.j        ]])
-
-    >>> c=Circuit()
-    >>> c.add_gate(GateECRDG(),0,1)
-    >>> print(c)
-
-     2-qubit circuit with 1 gates
-     └── ECRDG @ q0, q1
-     ```
-    """
-    _num_qubits = 2
-    _name = 'ECRDG'
-
-    def matrix(self):
-        return  1/np.sqrt(2) * np.array([ [0, 1, 0, -1j ],
-                                          [1, 0, 1j, 0  ],
-                                          [0, -1j, 0, 1j],
-                                          [1j, 0, 1, 0  ]], dtype=np.complex128)
-    
-    def inverse(self):
-        return GateECR()
+        return self
        
 
 class GateDCX(Gate):
