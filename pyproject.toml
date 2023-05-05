@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "mimiqcircuits"
+version = "0.2.0"
+description = ""
+authors = ["QPerfect <guido.masella@qperfect.io>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.24.3"
+mimiqlink = {git = "https://github.com/qperfect-io/mimiqlink-python.git"}
+bitarray = "^2.7.3"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
