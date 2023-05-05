@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-numpy = "^1.24.3"
+numpy = "^1.20"
 mimiqlink = {git = "https://github.com/qperfect-io/mimiqlink-python.git"}
 bitarray = "^2.7.3"
 
