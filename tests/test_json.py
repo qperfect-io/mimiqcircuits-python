@@ -71,3 +71,18 @@ def test_allgates():
     c2_params_2q = mc.Circuit.from_json(json)
 
     assert c == c2_params_2q
+
+
+def test_barrier():
+    c = mc.Circuit()
+    c.add_gate(mc.GateX(), 0)
+    c.add_gate(mc.GateCX(), 0, 1)
+    c.add_barrier(0, 1)
+    c.add_gate(mc.GateCX(), 1, 0)
+    c.add_barrier(1, 0)
+    c.add_gate(mc.GateCX(), 0, 1)
+
+    json = c.to_json()
+    c_barrier = mc.Circuit.from_json(json)
+
+    assert c == c_barrier

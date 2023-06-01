@@ -14,21 +14,33 @@
 # limitations under the License.
 #
 
-from bitarray import bitarray
+from abc import ABC, abstractmethod
 
 
-class BitState(bitarray):
+class Operation(ABC):
+    _name = None
+
+    @abstractmethod
+    def inverse(self):
+        pass
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        raise ValueError('Cannot set name. Read only parameter.')
+
+    def to_json(self):
+        return {'name': self.name}
+
     def __str__(self):
-        return f"BitState('{self.to01()}')"
+        return self._name
 
-    def __repr__(self):
-        return self.__str__()
-
-    def num_qubits(self):
-        return len(self)
-
-    def __hash__(self):
-        return hash(self.to01())
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 
-__all__ = ["BitState"]
+# export operations
+__all__ = ['Operation']

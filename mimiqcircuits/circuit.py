@@ -4,9 +4,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,10 +14,22 @@
 # limitations under the License.
 #
 
+from mimiqcircuits.operation import Operation
 from mimiqcircuits.gates import Gate
+from mimiqcircuits.barrier import Barrier
+from mimiqcircuits.json_utils import operation_from_json
 
 
-class CircuitGate:
+def allunique(lst):
+    seen = set()
+    for element in lst:
+        if element in seen:
+            return False
+        seen.add(element)
+    return True
+
+
+class Instruction:
     """
     Class representing a gate in a quantum circuit.
 
@@ -25,37 +37,72 @@ class CircuitGate:
     gate (Gate): The gate to apply.
     qubits (tuple of int): The qubits to apply the gate to.
     """
-    _gate = None
+    _operation = None
     _qubits = None
+    _bits = None
 
-    def __init__(self, gate, *args):
+    def __init__(self, operation, qubits=None, bits=None):
         """
-        Initializes a CircuitGate object.
+        Initializes a Instruction object.
         Args:
-        gate (Gate): The gate to apply.
-        qubits (tuple of int): The qubits to apply the gate to.
+        operation (Operation): The operation to apply.
+        qubits (tuple of int): The qubits to apply the quantum operation to.
+        bits (tuple of int): The classical bits to apply the quantum operation to.
 
         Raises:
-        TypeError: If gate is not a subclass of Gate or qubits is not a tuple.
+        TypeError: If operation is not a subclass of Gate or qubits is not a tuple.
         ValueError: If qubits contains less than 1 or more than 2 elements.
         """
-        if not isinstance(gate, Gate):
-            raise TypeError("gate must be a subclass of Gate")
+        if qubits is None:
+            qubits = tuple()
 
-        if len(args) != gate.num_qubits:
+        if bits is None:
+            bits = tuple()
+
+        if (not isinstance(qubits, tuple)):
+            raise TypeError(
+                f"Target qubits should be given in a tuple of integers. Given {qubits} of type {type(qubits)}.")
+
+        if (not isinstance(bits, tuple)):
+            raise TypeError(
+                f"Target bits should be given in a tuple of integers. Given {bits} of type {type(bits)}.")
+
+        if not isinstance(operation, Operation):
+            raise TypeError(
+                f"Operation must be a subclass of Operation. Given {operation} of type f{type(operation)}")
+
+        if not allunique(qubits):
+            raise ValueError("Duplicated qubit target in instruction")
+
+        if not allunique(bits):
+            raise ValueError("Duplicated classical bit target in instruction")
+
+        for qi in qubits:
+            if qi < 0:
+                raise ValueError("Qubit target index cannot be negative")
+
+        for bi in bits:
+            if bi < 0:
+                raise ValueError("Bit target index cannot be negative")
+
+        if isinstance(operation, Gate) and len(qubits) != operation.num_qubits:
             raise ValueError(
-                f"Wrong number of target qubits for gate {gate} wanted  {gate.num_qubits}, given {len(args)}")
+                f"Wrong number of target qubits for gate {operation} wanted  {operation.num_qubits}, given {len(qubits)}")
 
-        self._gate = gate
-        self._qubits = args
+        if isinstance(operation, Gate) and len(bits) != 0:
+            raise ValueError(f"A gate cannot target classical bits.")
+
+        self._operation = operation
+        self._qubits = qubits
+        self._bits = bits
 
     @property
-    def gate(self):
-        return self._gate
+    def operation(self):
+        return self._operation
 
-    @gate.setter
-    def gate(self, _):
-        raise AttributeError("gate is a read-only attribute")
+    @operation.setter
+    def operation(self, _):
+        raise AttributeError("operation is a read-only attribute")
 
     @property
     def qubits(self):
@@ -65,9 +112,19 @@ class CircuitGate:
     def qubits(self, _):
         raise AttributeError("qubits is a read-only attribute")
 
+    @property
+    def bits(self):
+        return self._bits
+
+    @bits.setter
+    def bits(self, _):
+        raise AttributeError("bits is a read-only attribute")
+
     def __str__(self):
-        base = f'{self.gate}'
-        targets = ', '.join(map(lambda q: f'q{q}', self.qubits))
+        base = f'{self.operation}'
+        qtargets = ', '.join(map(lambda q: f'q{q}', self.qubits))
+        ctargets = ', '.join(map(lambda q: f'c{q}', self.bits))
+        targets = ', '.join(filter(lambda x: x != '', [qtargets, ctargets]))
         return base + ' @ ' + targets
 
     def __repr__(self):
@@ -77,19 +134,21 @@ class CircuitGate:
         return self.__dict__ == other.__dict__
 
     def inverse(self):
-        return CircuitGate(self.gate.inverse(), self.qubits)
+        return Instruction(self.operation.inverse(), self.qubits, self.bits)
 
     def to_json(self):
-        d = self.gate.to_json()
+        d = self.operation.to_json()
         # in JSON files we count from 1 (Julia convention)
-        d['targets'] = [t+1 for t in self.qubits]
+        d['qtargets'] = [t+1 for t in self.qubits]
+        d['ctargets'] = [t+1 for t in self.bits]
         return d
 
-    @staticmethod
+    @ staticmethod
     def from_json(d):
-        qubits = tuple([t-1 for t in d['targets']])
-        gate = Gate.from_json(d)
-        return CircuitGate(gate, *qubits)
+        qubits = tuple([t-1 for t in d['qtargets']])
+        bits = tuple([t-1 for t in d['ctargets']])
+        operation = operation_from_json(d)
+        return Instruction(operation, qubits, bits)
 
 
 class Circuit:
@@ -97,42 +156,56 @@ class Circuit:
     Class representing a quantum circuit.
 
     Attributes:
-    gates (list of CircuitGate): The gates in the circuit.
+    gates (list of Instruction): The gates in the circuit.
     """
 
-    def __init__(self, gates=None):
+    def __init__(self, instructions=None):
         """
         Initializes a Circuit object.
 
         Args:
-        gates (list of CircuitGate): The gates to apply in the circuit.
+        gates (list of Instruction): The gates to apply in the circuit.
 
         Raises:
-        TypeError: If gates is not a list of CircuitGate objects.
+        TypeError: If gates is not a list of Instruction objects.
         """
 
-        if not isinstance(gates, list) and gates is not None:
+        if instructions is None:
+            instructions = []
+
+        if not isinstance(instructions, list):
             raise TypeError(
-                "Circuit should be initialized with a list of CircuitGate")
+                "Circuit should be initialized with a list of Instruction")
 
-        if gates is None:
-            self.gates = []
+        for instruction in instructions:
+            if not isinstance(instruction, Instruction):
+                raise TypeError(
+                    "Non Gate object passed to constructor.")
 
-        else:
-            for gate in gates:
-                if not isinstance(gate, CircuitGate):
-                    raise TypeError(
-                        "Non Gate object passed to constructor.")
+        self.instructions = instructions
 
-            self.gates = gates
+    def __repr__(self):
+        return self.__str__()
 
     def num_qubits(self):
         """
         Returns the number of qubits in the circuit.
         """
         n = -1
-        for gate in self.gates:
-            m = max(gate.qubits)
+        for instruction in self.instructions:
+            m = max(instruction.qubits)
+            if m > n:
+                n = m
+
+        return n+1
+
+    def num_bits(self):
+        """
+        Returns the number of qubits in the circuit.
+        """
+        n = -1
+        for instruction in self.instructions:
+            m = max(instruction.bits)
             if m > n:
                 n = m
 
@@ -142,26 +215,33 @@ class Circuit:
         """
         Checks if the circuit is empty.
         """
-        return len(self.gates) == 0
+        return len(self.instructions) == 0
+
+    def add(self, operation, qargs=None, cargs=None):
+        instruction = Instruction(operation, qargs, cargs)
+        self.instructions.append(instruction)
+
+    def add_barrier(self, *args):
+        self.instructions.append(Instruction(Barrier(), args))
 
     def add_gate(self, gate: Gate, *args):
         """
         Adds a gate to the end of the circuit.
 
         Args:
-        gate (Gate or CircuitGate): The gate to add.
+        gate (Gate or Instruction): The gate to add.
         qubits (tuple or int): The qubits to apply the gate to.
 
         Raises:
-        TypeError: If gate is not a Gate or CircuitGate object or qubits is not a tuple or int.
+        TypeError: If gate is not a Gate or Instruction object or qubits is not a tuple or int.
         ValueError: If qubits contains less than 1 or more than 2 elements.
         """
         if not isinstance(gate, Gate):
             raise TypeError(
                 f"Acceps only a Gate. Given {gate} of type {type(gate)}")
 
-        circuit_gate = CircuitGate(gate, *args)
-        self.gates.append(circuit_gate)
+        instruction = Instruction(gate, args)
+        self.instructions.append(instruction)
 
     def append(self, circuit):
         """
@@ -173,21 +253,24 @@ class Circuit:
         for g in circuit.gates:
             self.add_circuitgate(g)
 
-    def append_circuitgates(self, gates):
+    def append_instructions(self, instructions):
         """
         Appends the list of given circuit gates at the end of the current circuit.
         """
-        if not isinstance(gates, list):
-            raise TypeError("accepts only a list of CircuitGate")
+        if not isinstance(instructions, list):
+            raise TypeError("accepts only a list of Instruction")
 
-        for g in gates:
-            self.add_circuitgate(g)
+        if len(instructions) != 0 and not isinstance(instructions[0], Instruction):
+            raise TypeError("accepts only a list of Instruction")
 
-    def add_circuitgate(self, circuitgate):
-        if not isinstance(circuitgate, CircuitGate):
-            raise TypeError("accepts only a CircuitGate")
+        for g in instructions:
+            self.add_instruction(g)
 
-        self.gates.append(circuitgate)
+    def add_instruction(self, instruction):
+        if not isinstance(instruction, Instruction):
+            raise TypeError("accepts only a Instruction")
+
+        self.instructions.append(instruction)
 
     def remove_gate(self, index: int):
         """
@@ -199,7 +282,7 @@ class Circuit:
         Raises:
         IndexError: If index is out of range.
         """
-        del self.gates[index]
+        del self.instructions[index]
 
     def get_gate(self, index: int):
         """
@@ -208,17 +291,17 @@ class Circuit:
         Args:
         index (int): The index of the gate to get.
         """
-        return self.gates[index]
+        return self.instructions[index]
 
     def inverse(self):
-        invgates = map(lambda x: x.inverse(), self.gates.reverse())
+        invgates = map(lambda x: x.inverse(), self.instructions.reverse())
         return Circuit(invgates)
 
     def __len__(self):
-        return len(self.gates)
+        return len(self.instructions)
 
     def __iter__(self):
-        return iter(self.gates)
+        return iter(self.instructions)
 
     def __getitem__(self, index):
         return self.get_gate(index)
@@ -233,39 +316,44 @@ class Circuit:
         output = f'{nq}-qubit circuit with {n} gates'
 
         # iterate from the second gate
-        for g in self.gates[:-1]:
+        for g in self.instructions[:-1]:
             output += f'\n ├── {g}'
 
-        g = self.gates[-1]
+        g = self.instructions[-1]
         output += f'\n └── {g}'
 
         return output
 
     def __eq__(self, other):
-        return self.gates == other.gates
+        return self.instructions == other.instructions
+    
 
     def depth(self):
-        time_steps = [[] for _ in range(len(self.gates))]
-        for i, gate in enumerate(self.gates):
-            time_steps[i] = list(gate.qubits)
+        time_steps = [[] for _ in range(len(self.instructions))]
+        for i, instruction in enumerate(self.instructions):
+            time_steps[i] = list(instruction.qubits)
+
         max_qubits = 0
-        for qubits in time_steps:
-            if qubits:
+        for qubits, instruction in zip(time_steps, self.instructions):
+            if qubits and not isinstance(instruction.operation, Barrier):
                 max_qubits = max(max_qubits, len(qubits))
+
         depth = 0
-        for qubits in time_steps:
-            depth += max_qubits - len(qubits)
+        for qubits, instruction in zip(time_steps, self.instructions):
+            if qubits and not isinstance(instruction.operation, Barrier):
+                depth += max_qubits - len(qubits)
+
         return depth
 
     def to_json(self):
-        return {'gates': [g.to_json() for g in self.gates]}
+        return {'instructions': [g.to_json() for g in self.instructions]}
 
-    @staticmethod
+    @ staticmethod
     def from_json(d):
         return Circuit(
-            [CircuitGate.from_json(g) for g in d['gates']]
+            [Instruction.from_json(g) for g in d['instructions']]
         )
 
 
 # export the cirucit classes
-__all__ = ['CircuitGate', 'Circuit']
+__all__ = ['Instruction', 'Circuit']

@@ -14,21 +14,22 @@
 # limitations under the License.
 #
 
-from bitarray import bitarray
+from mimiqcircuits.operation import Operation
 
 
-class BitState(bitarray):
-    def __str__(self):
-        return f"BitState('{self.to01()}')"
+class Barrier(Operation):
+    _name = 'Barrier'
 
-    def __repr__(self):
-        return self.__str__()
+    def inverse(self):
+        return self
 
-    def num_qubits(self):
-        return len(self)
+    @staticmethod
+    def from_json(d):
+        if d["name"] != "Barrier":
+            raise ValueError("Invalid json for Barrier")
 
-    def __hash__(self):
-        return hash(self.to01())
+        return Barrier()
 
 
-__all__ = ["BitState"]
+# export operations
+__all__ = ['Barrier']
