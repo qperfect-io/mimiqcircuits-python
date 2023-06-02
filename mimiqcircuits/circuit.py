@@ -193,7 +193,10 @@ class Circuit:
         """
         n = -1
         for instruction in self.instructions:
-            m = max(instruction.qubits)
+            qubits = instruction.qubits
+            if len(qubits) == 0:
+                continue
+            m = max(qubits)
             if m > n:
                 n = m
 
@@ -205,7 +208,10 @@ class Circuit:
         """
         n = -1
         for instruction in self.instructions:
-            m = max(instruction.bits)
+            bits = instruction.bits
+            if len(bits) == 0:
+                continue
+            m = max(bits)
             if m > n:
                 n = m
 
@@ -295,9 +301,9 @@ class Circuit:
 
         self.instructions.append(instruction)
 
-    def remove_gate(self, index: int):
+    def remove(self, index: int):
         """
-        Removes a gate at a specific index from the circuit.
+        Removes an instruction at a specific index from the circuit.
 
         Args:
         index (int): The index of the gate to remove.
@@ -317,7 +323,8 @@ class Circuit:
         return self.instructions[index]
 
     def inverse(self):
-        invgates = map(lambda x: x.inverse(), self.instructions.reverse())
+        invgates = [x.inverse() for x in self.instructions]
+        invgates.reverse()
         return Circuit(invgates)
 
     def __len__(self):

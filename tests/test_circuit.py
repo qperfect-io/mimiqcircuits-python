@@ -24,7 +24,7 @@ def test_Circuit():
 
     c = mc.Circuit()
     c.add_gate(mc.GateR(np.pi, np.pi), 0)
-    c.remove_gate(0)
+    c.remove(0)
     assert c == mc.Circuit()
     assert c.empty()
 
@@ -42,7 +42,7 @@ def test_Circuit():
 
     gates = [gc.operation for gc in c]
     assert gates == [mc.GateH(), mc.GateCX(), mc.GateX()]
-    c.remove_gate(1)
+    c.remove(1)
     assert len(c) == 2
 
     c = mc.Circuit()
@@ -52,7 +52,7 @@ def test_Circuit():
     c.add_gate(mc.GateR(np.pi, np.pi), 1)
     assert c.num_qubits() == 2
     assert len(c) == 4
-    c.remove_gate(2)
+    c.remove(2)
     assert len(c) == 3
     gates = [gc.operation for gc in c]
     assert gates == [
@@ -84,6 +84,110 @@ def test_Circuit():
     # should not build instructions with gates and classical bits
     with pytest.raises(ValueError):
         mc.Instruction(mc.GateCH(), (1, 0), (0, 1))
+
+
+def test_emptyCircuit():
+    c = mc.Circuit()
+    assert c.empty()
+    assert len(c) == 0
+
+    assert c.num_qubits() == 0
+    assert c.num_bits() == 0
+
+    # try to iterate over an empty circuit
+    l = 0
+    for g in c:
+        l += 1
+
+    assert l == 0
+
+
+def test_constructCircuitFromInstructions():
+    insts = [
+        mc.Instruction(mc.GateH(), (0,)),
+        mc.Instruction(mc.GateX(), (1,)),
+        mc.Instruction(mc.GateCX(), (0, 1))
+    ]
+
+    c = mc.Circuit(insts)
+
+    assert len(c) == 3
+    for x in zip(c, insts):
+        assert x[0] == x[1]
+
+    assert c.num_qubits() == 2
+    assert c.num_bits() == 0
+
+
+def test_failconstructCircuitFromInstructions_1():
+    insts = [
+        mc.Instruction(mc.GateH(), (0,)),
+        mc.GateX(),
+        mc.Instruction(mc.GateCX(), (0, 1))
+    ]
+
+    with pytest.raises(TypeError):
+        c = mc.Circuit(insts)
+
+
+def test_failconstructCircuitFromInstructions_1():
+    insts = mc.Instruction(mc.GateH(), (0,))
+
+    with pytest.raises(TypeError):
+        c = mc.Circuit(insts)
+
+
+def test_addingGates():
+    c = mc.Circuit()
+
+    c.add_gate(mc.GateH(), 0)
+
+    assert len(c) == 1
+    assert c[-1] == mc.Instruction(mc.GateH(), (0,))
+    assert c.num_qubits() == 1
+
+    c.add_gate(mc.GateCX(), 23, 34)
+
+    assert len(c) == 2
+    assert c[-1] == mc.Instruction(mc.GateCX(), (23, 34))
+    assert c.num_qubits() == 35
+    assert c.num_bits() == 0
+
+    c.add_gate(mc.GateRZ(np.pi / 2), 0)
+    c.add_gate(mc.GateRY(np.pi), 2)
+    c.add_gate(mc.GateCX(), 0, 2)
+    c.add_gate(mc.GateR(np.pi, np.pi), 1)
+
+    assert c.num_qubits() == 35
+    assert c.num_bits() == 0
+    assert len(c) == 6
+    assert isinstance(c[-1].operation, mc.GateR)
+
+    # check that nothing else changed by adding
+    assert c[0] == mc.Instruction(mc.GateH(), (0,))
+    assert c[1] == mc.Instruction(mc.GateCX(), (23, 34))
+
+    # should not have negative targets
+    with pytest.raises(ValueError):
+        c.add_gate(mc.GateCH(), -1, 2)
+
+    with pytest.raises(ValueError):
+        c.add_gate(mc.GateCH(), 1, -2)
+
+    # should not add a gate with two equal qubits
+    with pytest.raises(ValueError):
+        c.add_gate(mc.GateCH(), 1, 1)
+
+
+def test_remove():
+    c = mc.Circuit()
+
+    for i in range(4):
+        c.add_gate(mc.GateH(), i)
+
+    c.add_barrier()
+    c.add_gate(mc.GateCX(), 0, 1)
+    c.add_gate(mc.GateCX(), 1, 2)
 
 
 def test_circuitDepth():
@@ -172,4 +276,17 @@ def test_appendInstructionsToCircuit():
     assert c.num_qubits() == 3
     assert len(c) == 2 + len(to_add)
     assert c[-1] == to_add[-1]
+
+
+def test_inverseCircuit():
+    c = mc.Circuit()
+    c.add_gate(mc.GateH(), 0)
+    c.add_gate(mc.GateSX(), 0)
+    c.add_gate(mc.GateX(), 0)
+
+    c2 = c.inverse()
+
+    assert c2[-1] == mc.Instruction(mc.GateH(), (0,))
+    assert c2[0] == mc.Instruction(mc.GateX(), (0,))
+    assert c2[2] == mc.Instruction(mc.GateSXDG(), (0,))
 
