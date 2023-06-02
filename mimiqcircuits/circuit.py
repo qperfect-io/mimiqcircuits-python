@@ -218,19 +218,37 @@ class Circuit:
         return len(self.instructions) == 0
 
     def add(self, operation, qargs=None, cargs=None):
+        """
+        Adds a quantum operation to the end of the circuit.
+
+        Args:
+        operation (Operation): the operation to add.
+        qargs (tuple of integers): the target qubits for the operation. Defaults to None.
+        cargs (tuple of integers): the target classical bits for the operation. Defaults to None.
+        """
         instruction = Instruction(operation, qargs, cargs)
         self.instructions.append(instruction)
 
     def add_barrier(self, *args):
-        self.instructions.append(Instruction(Barrier(), args))
+        """
+        Adds a barrier to the end of the circuit
+
+        Args:
+        *args: Target qubits for the barrier, given as variable number of arguments.
+               If none is given, all the current qubits are targeted.
+        """
+        if len(args) == 0:
+            self.instructions.append(Instruction(Barrier(), tuple(range(0,self.num_qubits()))))
+        else:
+            self.instructions.append(Instruction(Barrier(), args))
 
     def add_gate(self, gate: Gate, *args):
         """
         Adds a gate to the end of the circuit.
 
         Args:
-        gate (Gate or Instruction): The gate to add.
-        qubits (tuple or int): The qubits to apply the gate to.
+        gate (Gate): the quantum gate to add.
+        *args (integers): Target qubits for the gate, given as variable number of arguments.
 
         Raises:
         TypeError: If gate is not a Gate or Instruction object or qubits is not a tuple or int.
@@ -246,16 +264,21 @@ class Circuit:
     def append(self, circuit):
         """
         Appends all the gates of the given circuit at the end of the current circuit.
+
+        Args:
+        circuit (Circuit): the circuit to append.
         """
         if not isinstance(circuit, Circuit):
             raise TypeError("accepts only a Circuit")
 
-        for g in circuit.gates:
-            self.add_circuitgate(g)
+        self.append_instructions(circuit.instructions)
 
     def append_instructions(self, instructions):
         """
         Appends the list of given circuit gates at the end of the current circuit.
+
+        Args:
+        instruction (list of Instruction): the list of instructions to append.
         """
         if not isinstance(instructions, list):
             raise TypeError("accepts only a list of Instruction")
@@ -284,12 +307,12 @@ class Circuit:
         """
         del self.instructions[index]
 
-    def get_gate(self, index: int):
+    def get_instruction(self, index: int):
         """
-        Get a gate at a specific index from the circuit.
+        Get an instruction at a specific index from the circuit.
 
         Args:
-        index (int): The index of the gate to get.
+        index (int): The index of the instruction to get.
         """
         return self.instructions[index]
 
@@ -304,7 +327,7 @@ class Circuit:
         return iter(self.instructions)
 
     def __getitem__(self, index):
-        return self.get_gate(index)
+        return self.get_instruction(index)
 
     def __str__(self):
         n = len(self)
@@ -326,24 +349,23 @@ class Circuit:
 
     def __eq__(self, other):
         return self.instructions == other.instructions
-    
 
     def depth(self):
-        time_steps = [[] for _ in range(len(self.instructions))]
-        for i, instruction in enumerate(self.instructions):
-            time_steps[i] = list(instruction.qubits)
+        """
+        Computes the depth of the quantum circuit.
+        """
+        if self.empty() or self.num_qubits() == 0:
+            return 0
 
-        max_qubits = 0
-        for qubits, instruction in zip(time_steps, self.instructions):
-            if qubits and not isinstance(instruction.operation, Barrier):
-                max_qubits = max(max_qubits, len(qubits))
+        d = [0 for _ in range(self.num_qubits())]
 
-        depth = 0
-        for qubits, instruction in zip(time_steps, self.instructions):
-            if qubits and not isinstance(instruction.operation, Barrier):
-                depth += max_qubits - len(qubits)
+        for g in self:
+            if isinstance(g.operation, Barrier):
+                continue
+            for t in g.qubits:
+                d[t] += 1
 
-        return depth
+        return max(d)
 
     def to_json(self):
         return {'instructions': [g.to_json() for g in self.instructions]}

@@ -61,7 +61,7 @@ def test_Circuit():
     circuit = mc.Circuit()
     circuit.add_gate(mc.GateX(), 0)
     circuit.add_gate(mc.GateCH(), 0, 1)
-    assert circuit.depth() == 1
+    assert circuit.depth() == 2
 
     # should not have negative targets
     with pytest.raises(ValueError):
@@ -84,3 +84,92 @@ def test_Circuit():
     # should not build instructions with gates and classical bits
     with pytest.raises(ValueError):
         mc.Instruction(mc.GateCH(), (1, 0), (0, 1))
+
+
+def test_circuitDepth():
+    c = mc.Circuit()
+    assert c.depth() == 0
+
+    c.add_gate(mc.GateH(), 0)
+    assert c.depth() == 1
+
+    c.add_gate(mc.GateH(), 23)
+    assert c.depth() == 1
+
+    # barrier should not increase the depth
+    c. add_barrier()
+    assert c.depth() == 1
+
+    c.add_gate(mc.GateH(), 22)
+    assert c.depth() == 1
+
+    c.add_gate(mc.GateH(), 23)
+    assert c.depth() == 2
+
+    # barrier should not increase the depth
+    # no matter how many qubits it has
+    c.add_barrier(0, 1, 2, 3)
+    assert c.depth() == 2
+
+    c.add_gate(mc.GateH(), 2)
+    assert c.depth() == 2
+
+    c.add_gate(mc.GateCX(), 2, 3)
+    assert c.depth() == 2
+
+    c.add_gate(mc.GateH(), 2)
+    assert c.depth() == 3
+
+
+def test_appendCircuitToCircuit():
+    c = mc.Circuit()
+    c.add_gate(mc.GateH(), 0)
+    c.add_gate(mc.GateH(), 1)
+    c.add_barrier()
+    c.add_gate(mc.GateCX(), 0, 1)
+
+    assert c.num_qubits() == 2
+    assert len(c) == 4
+    assert c.depth() == 2
+
+    c2 = mc.Circuit()
+    c2.add_gate(mc.GateT(), 1)
+    c2.add_gate(mc.GateT(), 2)
+    c2.add_gate(mc.GateT(), 3)
+    c2.add_barrier()
+    c2.add_gate(mc.GateCH(), 1, 2)
+
+    assert c2.num_qubits() == 4
+    assert len(c2) == 5
+    assert c2.depth() == 2
+
+    c.append(c2)
+
+    assert c.num_qubits() == 4
+    assert c.depth() == 4
+
+    assert c[0].operation == mc.GateH()
+    assert c[4].operation == mc.GateCX()
+    assert c[5].operation == mc.GateT()
+    assert c[-1].operation == mc.GateCH()
+
+
+def test_appendInstructionsToCircuit():
+    c = mc.Circuit()
+    c.add_gate(mc.GateH(), 0)
+    c.add_gate(mc.GateH(), 1)
+
+    assert c.num_qubits() == 2
+    assert len(c) == 2
+
+    to_add = [mc.Instruction(mc.Barrier(), (0, 1)),
+              mc.Instruction(mc.GateT(), (2,)),
+              mc.Instruction(mc.GateCX(), (0,1)),
+              mc.Instruction(mc.GateCH(), (0,2))]
+
+    c.append_instructions(to_add)
+
+    assert c.num_qubits() == 3
+    assert len(c) == 2 + len(to_add)
+    assert c[-1] == to_add[-1]
+
