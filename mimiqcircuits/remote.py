@@ -43,6 +43,17 @@ MAX_BONDDIM = 2**12
 MAX_TIME_LIMIT = 5 * 60
 
 
+class AllEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(AllEncoder, self).default(obj)
+
+
 def _hash_file(filename):
     """
     Calculate the SHA-256 hash of a file.
@@ -162,7 +173,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             # save the circuit in json format
             circuit_filename = os.path.join(tmpdir, REQUEST_CIRCUIT_FILENAME)
             with open(circuit_filename, "w") as f:
-                json.dump(circuit.to_json(), f)
+                json.dump(circuit.to_json(), f, cls=AllEncoder)
 
             circuit_hash = _hash_file(circuit_filename)
 
