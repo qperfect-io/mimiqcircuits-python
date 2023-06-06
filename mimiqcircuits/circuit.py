@@ -364,13 +364,18 @@ class Circuit:
         if self.empty() or self.num_qubits() == 0:
             return 0
 
-        d = [0 for _ in range(self.num_qubits())]
+        d = [0 for _ in range(self.num_qubits() + self.num_bits())]
 
         for g in self:
             if isinstance(g.operation, Barrier):
                 continue
+            nq = self.num_qubits()
+            optargets = g.qubits + tuple(map(lambda x: x + nq, g.bits))
+            dm = max([d[t] for t in optargets])
             for t in g.qubits:
-                d[t] += 1
+                d[t] = dm + 1
+            for t in g.bits:
+                d[t + nq] = dm + 1
 
         return max(d)
 
