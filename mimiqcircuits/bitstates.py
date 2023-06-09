@@ -15,14 +15,66 @@
 #
 
 from bitarray import bitarray
+from multimethod import multimethod
 
 
 class BitState(bitarray):
+
+    @staticmethod
+    def zeros(num_qubits: int):
+        x = BitState(num_qubits)
+        x.setall(False)
+        return x
+
+    @staticmethod
+    def fromnonzeros(num_qubits: int, nonzeros: list):
+        x = BitState(num_qubits)
+        for i in range(num_qubits):
+            x[i] = (i in nonzeros)
+        return x
+
+    @staticmethod
+    def fromstring(bitstring: str):
+        return BitState(bitstring)
+
+    @staticmethod
+    def fromfunction(num_qubits: int, f: type(lambda: None)):
+        x = BitState(num_qubits)
+        for i in range(num_qubits):
+            x[i] = f(i)
+        return x
+
+    @staticmethod
+    def fromint(num_qubits: int, integer: int, endian: str = 'little'):
+        bitstring = bin(integer)[2:]
+        padded_bitstring = bitstring.zfill(num_qubits)
+
+        if endian == 'little':
+            padded_bitstring = padded_bitstring[::-1]
+        elif endian != 'big':
+            raise ValueError("endian must be either 'big' or 'little'")
+
+        return BitState(padded_bitstring)
+
+    def nonzeros(self):
+        return [i for i in range(self.num_qubits()) if self[i]]
+
+    def tointeger(self):
+        return int(self.to01()[::-1], 2)
+
     def __str__(self):
-        return f"BitState('{self.to01()}')"
+        s = f"{self.num_qubits()}-qubit BitState"
+        nz = self.nonzeros()
+        if len(nz) != 0:
+            s += f" with {len(nz)} non-zero qubits:\n"
+            s += f"├── |{self.to01()}⟩\n"
+            s += f"└── non-zero qubits: {nz}"
+        else:
+            s += f":\n└── |{self.to01()}⟩"
+        return s
 
     def __repr__(self):
-        return self.__str__()
+        return f"BitState('{self.to01()}')"
 
     def num_qubits(self):
         return len(self)

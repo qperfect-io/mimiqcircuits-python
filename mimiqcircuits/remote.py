@@ -85,6 +85,7 @@ class Results:
         samples (dict): A dictionary containing the sample results.
         amplitudes (dict): A dictionary containing the amplitude results.
     """
+
     def __init__(self,
                  execution: str, results: dict,
                  samples: dict, amplitudes: dict):
@@ -125,21 +126,21 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         Raises:
             ValueError: If bonddim, nsamples, or timelimit exceeds the allowed limits.
 
-        # Example of the usage
+        **Example of the usage:**
 
         >>> from mimiqcircuits import *
-        
+
         >>> conn=MimiqConnection()
-        >>> conn.connect() 
+        >>> conn.connect()
         >>> c=Circuit()
         >>> c.add_gate(GateH(),1)
         >>> c
 
-        2-qubit circuit with 1 gates
-        └── H @ q1
+        >>> 2-qubit circuit with 1 gates
+            └── H @ q1
 
         >>> job=conn.execute(c,algorithm="auto")
-       
+
         """
         if bitstates is None:
             bitstates = []
@@ -222,24 +223,24 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         Raises:
             RuntimeError: If the remote job encounters an error.
 
-        # Example of the usage
+        **Example of the usage:**
 
         >>> from mimiqcircuits import *
-        
+
         >>> conn=MimiqConnection()
-        >>> conn.connect() 
+        >>> conn.connect()
         >>> c=Circuit()
         >>> c.add_gate(GateH(),1)
         >>> c
 
-        2-qubit circuit with 1 gates
-        └── H @ q1
+        >>> 2-qubit circuit with 1 gates
+            └── H @ q1
 
         >>> job=conn.execute(c,algorithm="auto")
-        >>> res=conn.get_results(job) 
+        >>> res=conn.get_results(job)
         >>> res.samples
 
-        {BitState('00'): 504, BitState('01'): 496}
+        >>> {BitState('00'): 504, BitState('01'): 496}
 
         """
         while not self.isJobDone(execution):
@@ -292,31 +293,31 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
         Raises:
             RuntimeError: If the required files are not found in  inputs. Update your library.
-        # Example of usage
+
+        **Example of usage:**
 
         >>> from mimiqcircuits import *
-        
         >>> conn=MimiqConnection()
-        >>> conn.connect() 
+        >>> conn.connect()
         >>> c=Circuit()
         >>> c.add_gate(GateH(),1)
         >>> c
 
-        2-qubit circuit with 1 gates
-        └── H @ q1
+        >>> 2-qubit circuit with 1 gates
+            └── H @ q1
 
         >>> job=conn.execute(c,algorithm="auto")
         >>> res=conn.get_results(job) 
         >>> res.samples
 
-        {BitState('00'): 504, BitState('01'): 496}
+        >>> {BitState('00'): 504, BitState('01'): 496}
 
         >>> import json
         >>> c, parameters = conn.get_inputs(job)
         >>> print(json.dumps(parameters))
 
-        {"executor": "Circuits", "timelimit": 300, "files": [{"name": "circuit.json", "hash": "4955f6540ec79fd1c34cfadc0dd0bd37b3d4f28bbce60208198f5d0bd7f486c7"}],
-          "parameters": {"algorithm": "auto", "bitstates": [], "samples": 1000, "seed": 2875985032347405045, "bondDimension": 256}}
+        >>> {"executor": "Circuits", "timelimit": 300, "files": [{"name": "circuit.json", "hash": "4955f6540ec79fd1c34cfadc0dd0bd37b3d4f28bbce60208198f5d0bd7f486c7"}],
+             "parameters": {"algorithm": "auto", "bitstates": [], "samples": 1000, "seed": 2875985032347405045, "bondDimension": 256}}
 
         """
         with tempfile.TemporaryDirectory() as tmpdir:

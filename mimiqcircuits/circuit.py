@@ -31,11 +31,12 @@ def allunique(lst):
 
 class Instruction:
     """
-    Class representing a gate in a quantum circuit.
+    Class representing an instruction of a quantum circuit.
 
     Attributes:
-    gate (Gate): The gate to apply.
-    qubits (tuple of int): The qubits to apply the gate to.
+        operation (Operation): The operation applied by the instruction.
+        qubits (tuple of int): The qubits to apply the operation to.
+        bits (tuple of int): The classical bits to apply the operation to
     """
     _operation = None
     _qubits = None
@@ -44,14 +45,15 @@ class Instruction:
     def __init__(self, operation, qubits=None, bits=None):
         """
         Initializes a Instruction object.
+
         Args:
-        operation (Operation): The operation to apply.
-        qubits (tuple of int): The qubits to apply the quantum operation to.
-        bits (tuple of int): The classical bits to apply the quantum operation to.
+            operation (Operation): The operation to apply.
+            qubits (tuple of int): The qubits to apply the quantum operation to.
+            bits (tuple of int): The classical bits to apply the quantum operation to.
 
         Raises:
-        TypeError: If operation is not a subclass of Gate or qubits is not a tuple.
-        ValueError: If qubits contains less than 1 or more than 2 elements.
+            TypeError: If operation is not a subclass of Gate or qubits is not a tuple.
+            ValueError: If qubits contains less than 1 or more than 2 elements.
         """
         if qubits is None:
             qubits = tuple()
@@ -156,7 +158,7 @@ class Circuit:
     Class representing a quantum circuit.
 
     Attributes:
-    gates (list of Instruction): The gates in the circuit.
+        instructions (list of Instruction): The instructions in the circuit.
     """
 
     def __init__(self, instructions=None):
@@ -164,10 +166,10 @@ class Circuit:
         Initializes a Circuit object.
 
         Args:
-        gates (list of Instruction): The gates to apply in the circuit.
+            instructions (list of Instruction): The instructiuons to add at construction to the circuit.
 
         Raises:
-        TypeError: If gates is not a list of Instruction objects.
+            TypeError: If  is not a list of Instruction objects.
         """
 
         if instructions is None:
@@ -228,9 +230,9 @@ class Circuit:
         Adds a quantum operation to the end of the circuit.
 
         Args:
-        operation (Operation): the operation to add.
-        qargs (tuple of integers): the target qubits for the operation. Defaults to None.
-        cargs (tuple of integers): the target classical bits for the operation. Defaults to None.
+            operation (Operation): the operation to add.
+            qargs (tuple of integers): the target qubits for the operation. Defaults to None.
+            cargs (tuple of integers): the target classical bits for the operation. Defaults to None.
         """
         instruction = Instruction(operation, qargs, cargs)
         self.instructions.append(instruction)
@@ -240,8 +242,8 @@ class Circuit:
         Adds a barrier to the end of the circuit
 
         Args:
-        *args: Target qubits for the barrier, given as variable number of arguments.
-               If none is given, all the current qubits are targeted.
+            args (integers): Target qubits for the barrier, given as variable number of arguments.
+            If none is given, all the current qubits are targeted.
         """
         if len(args) == 0:
             self.instructions.append(Instruction(Barrier(), tuple(range(0,self.num_qubits()))))
@@ -253,12 +255,12 @@ class Circuit:
         Adds a gate to the end of the circuit.
 
         Args:
-        gate (Gate): the quantum gate to add.
-        *args (integers): Target qubits for the gate, given as variable number of arguments.
+            gate (Gate): the quantum gate to add.
+            args (integers): Target qubits for the gate, given as variable number of arguments.
 
         Raises:
-        TypeError: If gate is not a Gate or Instruction object or qubits is not a tuple or int.
-        ValueError: If qubits contains less than 1 or more than 2 elements.
+            TypeError: If gate is not a Gate or Instruction object or qubits is not a tuple or int.
+            ValueError: If qubits contains less than 1 or more than 2 elements.
         """
         if not isinstance(gate, Gate):
             raise TypeError(
@@ -272,7 +274,7 @@ class Circuit:
         Appends all the gates of the given circuit at the end of the current circuit.
 
         Args:
-        circuit (Circuit): the circuit to append.
+            circuit (Circuit): the circuit to append.
         """
         if not isinstance(circuit, Circuit):
             raise TypeError("accepts only a Circuit")
@@ -284,7 +286,7 @@ class Circuit:
         Appends the list of given circuit gates at the end of the current circuit.
 
         Args:
-        instruction (list of Instruction): the list of instructions to append.
+            instruction (list of Instruction): the list of instructions to append.
         """
         if not isinstance(instructions, list):
             raise TypeError("accepts only a list of Instruction")
@@ -306,10 +308,10 @@ class Circuit:
         Removes an instruction at a specific index from the circuit.
 
         Args:
-        index (int): The index of the gate to remove.
+            index (int): The index of the gate to remove.
 
         Raises:
-        IndexError: If index is out of range.
+            IndexError: If index is out of range.
         """
         del self.instructions[index]
 
@@ -318,7 +320,7 @@ class Circuit:
         Get an instruction at a specific index from the circuit.
 
         Args:
-        index (int): The index of the instruction to get.
+            index (int): The index of the instruction to get.
         """
         return self.instructions[index]
 

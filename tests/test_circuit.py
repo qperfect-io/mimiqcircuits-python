@@ -268,8 +268,8 @@ def test_appendInstructionsToCircuit():
 
     to_add = [mc.Instruction(mc.Barrier(), (0, 1)),
               mc.Instruction(mc.GateT(), (2,)),
-              mc.Instruction(mc.GateCX(), (0,1)),
-              mc.Instruction(mc.GateCH(), (0,2))]
+              mc.Instruction(mc.GateCX(), (0, 1)),
+              mc.Instruction(mc.GateCH(), (0, 2))]
 
     c.append_instructions(to_add)
 
@@ -289,4 +289,3 @@ def test_inverseCircuit():
     assert c2[-1] == mc.Instruction(mc.GateH(), (0,))
     assert c2[0] == mc.Instruction(mc.GateX(), (0,))
     assert c2[2] == mc.Instruction(mc.GateSXDG(), (0,))
-
