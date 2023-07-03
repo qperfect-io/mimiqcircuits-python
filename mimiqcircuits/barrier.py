@@ -30,6 +30,10 @@ class Barrier(Operation):
 
         return Barrier()
 
-
+    def __eq__(self, other):
+        if not isinstance(other, Barrier):
+            return False
+        return (self.name == other.name)
+    
 # export operations
 __all__ = ['Barrier']

@@ -15,6 +15,7 @@
 #
 
 from abc import ABC, abstractmethod
+import copy
 
 
 class Operation(ABC):
@@ -39,7 +40,15 @@ class Operation(ABC):
         return self._name
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        if not isinstance(other, Operation):
+            return False
+        return (self.name == other.name)
+
+    def copy(self):
+        return copy.copy(self)
+
+    def deepcopy(self):
+        return copy.deepcopy(self)
 
 
 # export operations

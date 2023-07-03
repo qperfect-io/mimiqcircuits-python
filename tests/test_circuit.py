@@ -253,8 +253,8 @@ def test_appendCircuitToCircuit():
     assert c.depth() == 4
 
     assert c[0].operation == mc.GateH()
-    assert c[4].operation == mc.GateCX()
-    assert c[5].operation == mc.GateT()
+    assert c[3].operation == mc.GateCX()
+    assert c[4].operation == mc.GateT()
     assert c[-1].operation == mc.GateCH()
 
 
@@ -288,4 +288,15 @@ def test_inverseCircuit():
 
     assert c2[-1] == mc.Instruction(mc.GateH(), (0,))
     assert c2[0] == mc.Instruction(mc.GateX(), (0,))
-    assert c2[2] == mc.Instruction(mc.GateSXDG(), (0,))
+    assert c2[1] == mc.Instruction(mc.GateSXDG(), (0,))
+
+
+def test_checkEquality():
+    assert mc.Instruction(mc.GateX(), (0,)) == mc.Instruction(mc.GateX(), (0,))
+    assert mc.Instruction(mc.GateX(), (0,)) != mc.Instruction(mc.GateX(), (1,))
+    assert mc.Instruction(mc.GateX(), (0,)) != mc.Instruction(mc.GateY(), (0,))
+    assert mc.Instruction(mc.GateRX(0.2), (0,)) != mc.Instruction(mc.GateRX(0.3), (0,))
+    assert mc.Instruction(mc.GateRX(0.2), (0,)) == mc.Instruction(mc.GateRX(0.2), (0,))
+    assert mc.Barrier() == mc.Barrier()
+    assert mc.GateRX(0.2) != mc.GateRX(0.3)
+    assert mc.GateRY(0.1) != mc.GateRX(0.1)

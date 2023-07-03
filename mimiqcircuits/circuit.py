@@ -18,6 +18,7 @@ from mimiqcircuits.operation import Operation
 from mimiqcircuits.gates import Gate
 from mimiqcircuits.barrier import Barrier
 from mimiqcircuits.json_utils import operation_from_json
+import copy
 
 
 def allunique(lst):
@@ -133,7 +134,9 @@ class Instruction:
         return str(self)
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        if not isinstance(other, Instruction):
+            return False
+        return (self.operation == other.operation) and (self.qubits == other.qubits) and (self.bits == other.bits)
 
     def inverse(self):
         return Instruction(self.operation.inverse(), self.qubits, self.bits)
@@ -151,6 +154,12 @@ class Instruction:
         bits = tuple([t-1 for t in d['ctargets']])
         operation = operation_from_json(d)
         return Instruction(operation, qubits, bits)
+
+    def copy(self):
+        return copy.copy(self)
+
+    def deepcopy(self):
+        return copy.deepcopy(self)
 
 
 class Circuit:
@@ -246,7 +255,8 @@ class Circuit:
             If none is given, all the current qubits are targeted.
         """
         if len(args) == 0:
-            self.instructions.append(Instruction(Barrier(), tuple(range(0,self.num_qubits()))))
+            self.instructions.append(Instruction(
+                Barrier(), tuple(range(0, self.num_qubits()))))
         else:
             self.instructions.append(Instruction(Barrier(), args))
 
@@ -315,15 +325,6 @@ class Circuit:
         """
         del self.instructions[index]
 
-    def get_instruction(self, index: int):
-        """
-        Get an instruction at a specific index from the circuit.
-
-        Args:
-            index (int): The index of the instruction to get.
-        """
-        return self.instructions[index]
-
     def inverse(self):
         invgates = [x.inverse() for x in self.instructions]
         invgates.reverse()
@@ -336,7 +337,9 @@ class Circuit:
         return iter(self.instructions)
 
     def __getitem__(self, index):
-        return self.get_instruction(index)
+        if type(index) is slice:
+            return Circuit(self.instructions[index])
+        return self.instructions[index]
 
     def __str__(self):
         n = len(self)
@@ -357,7 +360,13 @@ class Circuit:
         return output
 
     def __eq__(self, other):
-        return self.instructions == other.instructions
+        if not isinstance(other, Circuit):
+            return False
+        for (i, j) in zip(self.instructions, other.instructions):
+            if i != j:
+                return False
+
+        return True
 
     def depth(self):
         """
@@ -389,6 +398,12 @@ class Circuit:
         return Circuit(
             [Instruction.from_json(g) for g in d['instructions']]
         )
+
+    def copy(self):
+        return copy.copy(self)
+
+    def deepcopy(self):
+        return copy.deepcopy(self)
 
 
 # export the cirucit classes

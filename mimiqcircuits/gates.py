@@ -210,6 +210,10 @@ class Gate(Operation):
             return GATES[name](*d['params'])
         return GATES[name]()
 
+    def __eq__(self, other):
+        return isinstance(other, type(self)) and\
+            self.__dict__ == other.__dict__
+
 
 class GateX(Gate):
     """
@@ -1031,8 +1035,8 @@ class GateR(Gate):
     >>> import nump as np
     >>> GateR(np.pi/2,np.pi/4).matrix()
 
-    array([[ 0.70710678+0.j , -0.5       -0.5j],
-          [ 0.5       -0.5j,  0.70710678+0.j ]])
+    >>> array([[ 0.70710678+0.j , -0.5       -0.5j],
+               [ 0.5       -0.5j,  0.70710678+0.j ]])
 
     >>> c=Circuit()
     >>> c.add_gate(GateR(np.pi/3,np.pi/3),0)
@@ -2791,8 +2795,8 @@ class GateECR(Gate):
                [0.        -0.70710678j, 0.        +0.j        ,
                 0.70710678+0.j        , 0.        +0.j        ]])
 
-    >>> c=Circuit()
     >>> c.add_gate(GateECR(),0,1)
+    >>> c=Circuit()
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates

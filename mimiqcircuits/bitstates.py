@@ -38,7 +38,7 @@ class BitState(bitarray):
         return BitState(bitstring)
 
     @staticmethod
-    def fromfunction(num_qubits: int, f: type(lambda: None)):
+    def fromfunction(num_qubits: int, f: type[lambda: None]):
         x = BitState(num_qubits)
         for i in range(num_qubits):
             x[i] = f(i)
