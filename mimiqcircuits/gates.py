@@ -18,6 +18,7 @@ import numpy as np
 import inspect
 from abc import abstractmethod
 from mimiqcircuits.operation import Operation
+from mimiqcircuits.unicode import UNICODE_TO_NAMES, NAMES_TO_UNICODE
 
 
 def _decomplex(m):
@@ -181,19 +182,21 @@ def rzmatrix(lmbda):
 
 class Gate(Operation):
     _num_qubits = None
+    _num_bits = 0
     _name = None
+    _parnames = ()
+
+    @property
+    def parnames(self):
+        return self._parnames
+
+    @parnames.setter
+    def parnames(self, value):
+        raise ValueError('Cannot set parnames. Read only parameter.')
 
     @abstractmethod
     def matrix(self):
         pass
-
-    @property
-    def num_qubits(self):
-        return self._num_qubits
-
-    @num_qubits.setter
-    def num_qubits(self, value):
-        raise ValueError('Cannot set num_qubits. Read only parameter.')
 
     @abstractmethod
     def inverse(self):
@@ -202,17 +205,44 @@ class Gate(Operation):
     @staticmethod
     def from_json(d):
         name = d['name']
+        num_qubits = d['N']
+        num_bits = d['M']
+
         if d['name'] == 'Custom':
-            matrix = np.array(d['matrix'])
-            num_qubits = d['num_qubits']
+            matrix = np.array(d['U']).reshape(2**num_qubits, 2**num_qubits).transpose()
             return GateCustom(matrix=matrix, num_qubits=num_qubits)
+
         if 'params' in d:
-            return GATES[name](*d['params'])
+            nd = { UNICODE_TO_NAMES.get(k, k): v for k, v in d['params'].items() }
+            return GATES[name](**nd)
+
         return GATES[name]()
+
+    def to_json(self):
+        d = super().to_json()
+
+        if len(self.parnames) != 0:
+            d['params'] = { NAMES_TO_UNICODE.get(k, k): getattr(self, k) for k in self.parnames }
+
+        if isinstance(self, GateCustom):
+            d['matrix'] = self.matrix.transpose().flatten().tolist()
+
+        return d
 
     def __eq__(self, other):
         return isinstance(other, type(self)) and\
             self.__dict__ == other.__dict__
+
+    def __str__(self):
+        pars = ''
+        if len(self.parnames) != 0:
+            pars += '('
+            pars += ', '.join([f'{pn}={getattr(self, pn)}' for pn in self.parnames])
+            pars += ')'
+        return self.name + pars
+
+    def __repr__(self):
+        return str(self)
 
 
 class GateX(Gate):
@@ -240,7 +270,7 @@ class GateX(Gate):
               [1, 0]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateX(),0)
+    >>> c.push(GateX(),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates:
@@ -283,7 +313,7 @@ class GateY(Gate):
               [ 0.+1.j,  0.+0.j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateY(),0)
+    >>> c.push(GateY(),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates:
@@ -325,7 +355,7 @@ class GateZ(Gate):
               [ 0, -1]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateZ(),0)
+    >>> c.push(GateZ(),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates:
@@ -367,7 +397,7 @@ class GateH(Gate):
               [ 0.70710678, -0.70710678]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateH(),0)
+    >>> c.push(GateH(),0)
     >>> print(c)
     >>> 1-qubit circuit with 1 gates:
         └── H @ q0
@@ -408,7 +438,7 @@ class GateS(Gate):
               [0.000000e+00+0.j, 6.123234e-17+1.j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateS(),0)
+    >>> c.push(GateS(),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates:
@@ -451,7 +481,7 @@ class GateSDG(Gate):
               [0.000000e+00+0.j, 6.123234e-17-1.j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateSDG(),0)
+    >>> c.push(GateSDG(),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates:
@@ -493,7 +523,7 @@ class GateT(Gate):
               [0.        +0.j        , 0.70710678+0.70710678j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateT(),0)
+    >>> c.push(GateT(),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates:
@@ -535,7 +565,7 @@ class GateTDG(Gate):
               [0.        +0.j        , 0.70710678-0.70710678j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateTDG(),0)
+    >>> c.push(GateTDG(),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates:
@@ -577,7 +607,7 @@ class GateSX(Gate):
               [0.5-0.5j, 0.5+0.5j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateSX(),0)
+    >>> c.push(GateSX(),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates:
@@ -619,7 +649,7 @@ class GateSXDG(Gate):
               [0.5+0.5j, 0.5-0.5j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateSXDG(),0)
+    >>> c.push(GateSXDG(),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates:
@@ -661,7 +691,7 @@ class GateID(Gate):
               [0., 1.]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateID(),0)
+    >>> c.push(GateID(),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates:
@@ -713,7 +743,7 @@ class GateU(Gate):
               [ 0.25     +0.4330127j, -0.4330127+0.75j     ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateU(np.pi/3,np.pi/3,np.pi/3),0)
+    >>> c.push(GateU(np.pi/3,np.pi/3,np.pi/3),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates
@@ -722,6 +752,7 @@ class GateU(Gate):
     """
     _num_qubits = 1
     _name = 'U'
+    _parnames = ('theta', 'phi', 'lmbda')
 
     def __init__(self, theta, phi, lmbda):
         self.theta = theta
@@ -733,16 +764,6 @@ class GateU(Gate):
 
     def inverse(self):
         return GateU(-self.theta, -self.lmbda, -self.phi)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta, self.phi, self.lmbda]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta}, phi={self.phi}, lmbda={self.lmbda})'
-        return self.name + pars
 
 
 class GateU1(Gate):
@@ -778,7 +799,7 @@ class GateU1(Gate):
               [0.        +0.j        , 0.70710678+0.70710678j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateU1(np.pi/3),0)
+    >>> c.push(GateU1(np.pi/3),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates
@@ -787,6 +808,7 @@ class GateU1(Gate):
     """
     _num_qubits = 1
     _name = 'U1'
+    _parnames = ('lmbda',)
 
     def __init__(self, lmbda):
         self.lmbda = lmbda
@@ -796,16 +818,6 @@ class GateU1(Gate):
 
     def inverse(self):
         return GateU1(-self.lmbda)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.lmbda]
-        }
-
-    def __str__(self):
-        pars = f'(lmbda={self.lmbda})'
-        return self.name + pars
 
 
 class GateU2(Gate):
@@ -843,7 +855,7 @@ class GateU2(Gate):
               [ 0.65328148+0.27059805j,  0.27059805+0.65328148j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateU2(np.pi/2,np.pi/4),0)
+    >>> c.push(GateU2(np.pi/2,np.pi/4),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates
@@ -852,6 +864,7 @@ class GateU2(Gate):
     """
     _num_qubits = 1
     _name = 'U2'
+    _parnames = ('phi', 'lmbda')
 
     def __init__(self, phi, lmbda):
         self.phi = phi
@@ -862,16 +875,6 @@ class GateU2(Gate):
 
     def inverse(self):
         return GateU2DG(self.phi, self.lmbda,)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.phi, self.lmbda]
-        }
-
-    def __str__(self):
-        pars = f'(phi={self.phi}, lmbda={self.lmbda})'
-        return self.name + pars
 
 
 class GateU2DG(Gate):
@@ -908,7 +911,7 @@ class GateU2DG(Gate):
 
     >>> import numpy as np
     >>> c = Circuit()
-    >>> c.add_gate(GateU2DG(np.pi/2, np.pi/4), 0)
+    >>> c.push(GateU2DG(np.pi/2, np.pi/4), 0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates
@@ -917,6 +920,7 @@ class GateU2DG(Gate):
     """
     _num_qubits = 1
     _name = 'U2DG'
+    _parnames = ('phi', 'lmbda')
 
     def __init__(self, phi, lmbda):
         self.phi = phi
@@ -927,16 +931,6 @@ class GateU2DG(Gate):
 
     def inverse(self):
         return GateU2(self.phi, self.lmbda,)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.phi, self.lmbda]
-        }
-
-    def __str__(self):
-        pars = f'(phi={self.phi}, lmbda={self.lmbda})'
-        return self.name + pars
 
 
 class GateU3(Gate):
@@ -975,7 +969,7 @@ class GateU3(Gate):
 
     >>> import numpy as np  
     >>> c=Circuit()
-    >>> c.add_gate(GateU3(np.pi/3,np.pi/3,np.pi/3),0)
+    >>> c.push(GateU3(np.pi/3,np.pi/3,np.pi/3),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates
@@ -984,6 +978,7 @@ class GateU3(Gate):
     """
     _num_qubits = 1
     _name = 'U3'
+    _parnames = ('theta', 'phi', 'lmbda')
 
     def __init__(self, theta, phi, lmbda):
         self.theta = theta
@@ -995,16 +990,6 @@ class GateU3(Gate):
 
     def inverse(self):
         return GateU3(-self.theta, -self.lmbda, -self.phi)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta, self.phi, self.lmbda]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta}, phi={self.phi}, lmbda={self.lmbda})'
-        return self.name + pars
 
 
 class GateR(Gate):
@@ -1039,7 +1024,7 @@ class GateR(Gate):
                [ 0.5       -0.5j,  0.70710678+0.j ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateR(np.pi/3,np.pi/3),0)
+    >>> c.push(GateR(np.pi/3,np.pi/3),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates
@@ -1048,6 +1033,7 @@ class GateR(Gate):
     """
     _num_qubits = 1
     _name = 'R'
+    _parnames = ('theta', 'phi')
 
     def __init__(self, theta, phi):
         self.theta = theta
@@ -1058,16 +1044,6 @@ class GateR(Gate):
 
     def inverse(self):
         return GateR(-self.theta, self.phi)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta, self.phi]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta}, phi={self.phi})'
-        return self.name + pars
 
 
 class GateRX(Gate):
@@ -1101,7 +1077,7 @@ class GateRX(Gate):
               [ 4.32978028e-17-0.70710678j,  7.07106781e-01+0.j        ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateRX(np.pi/3),0)
+    >>> c.push(GateRX(np.pi/3),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates
@@ -1110,6 +1086,7 @@ class GateRX(Gate):
     """
     _num_qubits = 1
     _name = 'RX'
+    _parnames = ('theta',)
 
     def __init__(self, theta):
         self.theta = theta
@@ -1119,16 +1096,6 @@ class GateRX(Gate):
 
     def inverse(self):
         return GateRX(-self.theta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta})'
-        return self.name + pars
 
 
 class GateRY(Gate):
@@ -1162,7 +1129,7 @@ class GateRY(Gate):
               [ 0.70710678+0.j,  0.70710678+0.j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateRY(np.pi/3),0)
+    >>> c.push(GateRY(np.pi/3),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates
@@ -1171,6 +1138,7 @@ class GateRY(Gate):
     """
     _num_qubits = 1
     _name = 'RY'
+    _parnames = ('theta',)
 
     def __init__(self, theta):
         self.theta = theta
@@ -1180,16 +1148,6 @@ class GateRY(Gate):
 
     def inverse(self):
         return GateRY(-self.theta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta]
-        }
-
-    def __str__(self):
-        pars = f'(lmbda={self.theta})'
-        return self.name + pars
 
 
 class GateRZ(Gate):
@@ -1223,7 +1181,7 @@ class GateRZ(Gate):
               [0.        +0.j        , 0.70710678+0.70710678j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateRZ(np.pi/3),0)
+    >>> c.push(GateRZ(np.pi/3),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates
@@ -1232,6 +1190,7 @@ class GateRZ(Gate):
     """
     _num_qubits = 1
     _name = 'RZ'
+    _parnames = ('lmbda',)
 
     def __init__(self, lmbda):
         self.lmbda = lmbda
@@ -1239,19 +1198,8 @@ class GateRZ(Gate):
     def matrix(self):
         return rzmatrix(self.lmbda)
 
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.lmbda]
-        }
-
     def inverse(self):
         return GateRZ(-self.lmbda)
-
-    def __str__(self):
-        pars = f'(theta={self.lmbda})'
-        return self.name + pars
-
 
 class GateP(Gate):
     """
@@ -1284,7 +1232,7 @@ class GateP(Gate):
               [0.        +0.j        , 0.70710678+0.70710678j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateP(np.pi/3),0)
+    >>> c.push(GateP(np.pi/3),0)
     >>> print(c)
 
     >>> 1-qubit circuit with 1 gates
@@ -1293,6 +1241,7 @@ class GateP(Gate):
     """
     _num_qubits = 1
     _name = 'P'
+    _parnames = ('lmbda',)
 
     def __init__(self, lmbda):
         self.lmbda = lmbda
@@ -1302,16 +1251,6 @@ class GateP(Gate):
 
     def inverse(self):
         return GateP(-self.lmbda)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.lmbda]
-        }
-
-    def __str__(self):
-        pars = f'(lmbda={self.lmbda})'
-        return self.name + pars
 
 
 class GateCX(Gate):
@@ -1343,7 +1282,7 @@ class GateCX(Gate):
               [0., 0., 1., 0.]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCX(),0,1)
+    >>> c.push(GateCX(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1388,7 +1327,7 @@ class GateCY(Gate):
               [ 0.+0.j,  0.+0.j,  0.+1.j,  0.+0.j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCY(),0,1)
+    >>> c.push(GateCY(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1433,7 +1372,7 @@ class GateCZ(Gate):
               [ 0.,  0.,  0., -1.]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCZ(),0,1)
+    >>> c.push(GateCZ(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1478,7 +1417,7 @@ class GateCH(Gate):
                [ 0.        ,  0.        ,  0.70710678, -0.70710678]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCH(),0,1)
+    >>> c.push(GateCH(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1525,7 +1464,7 @@ class GateSWAP(Gate):
                [0, 0, 0, 1]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateSWAP(),0,1)
+    >>> c.push(GateSWAP(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1574,7 +1513,7 @@ class GateISWAP(Gate):
                [0.+0.j, 0.+0.j, 0.+0.j, 1.+0.j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateISWAP(),0,1)
+    >>> c.push(GateISWAP(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1623,7 +1562,7 @@ class GateISWAPDG(Gate):
                [ 0.+0.j,  0.+0.j,  0.+0.j,  1.+0.j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateISWAPDG(),0,1)
+    >>> c.push(GateISWAPDG(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1685,7 +1624,7 @@ class GateCU(Gate):
                  0.25     +0.4330127j, -0.4330127+0.75j     ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCU(np.pi/3, np.pi/3, np.pi/3, 0),0,1)
+    >>> c.push(GateCU(np.pi/3, np.pi/3, np.pi/3, 0),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1694,6 +1633,7 @@ class GateCU(Gate):
     """
     _num_qubits = 2
     _name = 'CU'
+    _parnames = ('theta', 'phi', 'lmbda', 'gamma')
 
     def __init__(self, theta, phi, lmbda, gamma):
         self.theta = theta
@@ -1706,17 +1646,6 @@ class GateCU(Gate):
 
     def inverse(self):
         return GateCU(-self.theta, -self.lmbda, -self.phi, -self.gamma)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta, self.phi, self.lmbda, self.gamma]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta}, phi={self.phi}, lmbda={self.lmbda}'
-        pars += f', gamma={self.gamma})'
-        return self.name + pars
 
 
 class GateCR(Gate):
@@ -1760,7 +1689,7 @@ class GateCR(Gate):
                  0.8660254+0.j  ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCR(np.pi/3, np.pi/3),0,1)
+    >>> c.push(GateCR(np.pi/3, np.pi/3),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1768,6 +1697,7 @@ class GateCR(Gate):
     """
     _num_qubits = 2
     _name = 'CR'
+    _parnames = ('theta', 'phi')
 
     def __init__(self, theta, phi):
         self.theta = theta
@@ -1778,16 +1708,6 @@ class GateCR(Gate):
 
     def inverse(self):
         return GateCR(-self.theta, self.phi)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta, self.phi]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta}, phi={self.phi})'
-        return self.name + pars
 
 
 class GateCRX(Gate):
@@ -1829,7 +1749,7 @@ class GateCRX(Gate):
                  4.32978028e-17-0.70710678j,  7.07106781e-01+0.j        ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCRX(np.pi/3),0,1)
+    >>> c.push(GateCRX(np.pi/3),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1837,6 +1757,7 @@ class GateCRX(Gate):
     """
     _num_qubits = 2
     _name = 'CRX'
+    _parnames = ('theta',)
 
     def __init__(self, theta):
         self.theta = theta
@@ -1846,16 +1767,6 @@ class GateCRX(Gate):
 
     def inverse(self):
         return GateCRX(-self.theta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta})'
-        return self.name + pars
 
 
 class GateCRY(Gate):
@@ -1897,7 +1808,7 @@ class GateCRY(Gate):
                  0.70710678+0.j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCRY(np.pi/2),0,1)
+    >>> c.push(GateCRY(np.pi/2),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1905,6 +1816,7 @@ class GateCRY(Gate):
     """
     _num_qubits = 2
     _name = 'CRY'
+    _parnames = ('theta',)
 
     def __init__(self, theta):
         self.theta = theta
@@ -1914,16 +1826,6 @@ class GateCRY(Gate):
 
     def inverse(self):
         return GateCRY(-self.theta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta})'
-        return self.name + pars
 
 
 class GateCRZ(Gate):
@@ -1965,7 +1867,7 @@ class GateCRZ(Gate):
                 0.        +0.j        , 0.70710678+0.70710678j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCRZ(np.pi/2),0,1)
+    >>> c.push(GateCRZ(np.pi/2),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -1973,6 +1875,7 @@ class GateCRZ(Gate):
     """
     _num_qubits = 2
     _name = 'CRZ'
+    _parnames = ('lmbda',)
 
     def __init__(self, lmbda):
         self.lmbda = lmbda
@@ -1982,16 +1885,6 @@ class GateCRZ(Gate):
 
     def inverse(self):
         return GateCRZ(-self.lmbda)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.lmbda]
-        }
-
-    def __str__(self):
-        pars = f'(lmbda={self.lmbda})'
-        return self.name + pars
 
 
 class GateCP(Gate):
@@ -2033,7 +1926,7 @@ class GateCP(Gate):
                 0.        +0.j        , 0.92387953-0.38268343j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCP(np.pi/2),0,1)
+    >>> c.push(GateCP(np.pi/2),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2041,6 +1934,7 @@ class GateCP(Gate):
     """
     _num_qubits = 2
     _name = 'CP'
+    _parnames = ('lmbda',)
 
     def __init__(self, lmbda):
         self.lmbda = lmbda
@@ -2050,16 +1944,6 @@ class GateCP(Gate):
 
     def inverse(self):
         return GateCP(-self.lmbda)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.lmbda]
-        }
-
-    def __str__(self):
-        pars = f'(lmbda={self.lmbda})'
-        return self.name + pars
 
 
 class GateRZZ(Gate):
@@ -2101,7 +1985,7 @@ class GateRZZ(Gate):
                 0.        +0.j        , 0.92387953-0.38268343j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateRZZ(np.pi/2),0,1)
+    >>> c.push(GateRZZ(np.pi/2),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2109,6 +1993,7 @@ class GateRZZ(Gate):
     """
     _num_qubits = 2
     _name = 'RZZ'
+    _parnames = ('theta',)
 
     def __init__(self, theta):
         self.theta = theta
@@ -2121,16 +2006,6 @@ class GateRZZ(Gate):
 
     def inverse(self):
         return GateRZZ(-self.theta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta})'
-        return self.name + pars
 
 
 class GateRXX(Gate):
@@ -2172,7 +2047,7 @@ class GateRXX(Gate):
                 0.        +0.j        , 0.92387953+0.j        ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateRXX(np.pi/2),0,1)
+    >>> c.push(GateRXX(np.pi/2),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2180,6 +2055,7 @@ class GateRXX(Gate):
     """
     _num_qubits = 2
     _name = 'RXX'
+    _parnames = ('theta',)
 
     def __init__(self, theta):
         self.theta = theta
@@ -2194,16 +2070,6 @@ class GateRXX(Gate):
 
     def inverse(self):
         return GateRXX(-self.theta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta})'
-        return self.name + pars
 
 
 class GateRYY(Gate):
@@ -2245,7 +2111,7 @@ class GateRYY(Gate):
                 0.        +0.j        , 0.92387953+0.j        ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateRYY(np.pi/2),0,1)
+    >>> c.push(GateRYY(np.pi/2),0,1)
     >>> print(c)
 
      >>> 2-qubit circuit with 1 gates
@@ -2253,6 +2119,7 @@ class GateRYY(Gate):
     """
     _num_qubits = 2
     _name = 'RYY'
+    _parnames = ('theta',)
 
     def __init__(self, theta):
         self.theta = theta
@@ -2267,16 +2134,6 @@ class GateRYY(Gate):
 
     def inverse(self):
         return GateRYY(-self.theta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta})'
-        return self.name + pars
 
 
 class GateRXZ(Gate):
@@ -2318,7 +2175,7 @@ class GateRXZ(Gate):
                 0.        +0.j        , 0.92387953+0.j        ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateRXZ(np.pi/2),0,1)
+    >>> c.push(GateRXZ(np.pi/2),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2326,6 +2183,7 @@ class GateRXZ(Gate):
     """
     _num_qubits = 2
     _name = 'RXZ'
+    _parnames = ('theta',)
 
     def __init__(self, theta):
         self.theta = theta
@@ -2339,16 +2197,6 @@ class GateRXZ(Gate):
 
     def inverse(self):
         return GateRXZ(-self.theta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta})'
-        return self.name + pars
 
 
 class GateRZX(Gate):
@@ -2390,7 +2238,7 @@ class GateRZX(Gate):
                 0.        +0.j        , 0.92387953+0.j        ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateRZX(np.pi/2),0,1)
+    >>> c.push(GateRZX(np.pi/2),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2398,6 +2246,7 @@ class GateRZX(Gate):
     """
     _num_qubits = 2
     _name = 'RZX'
+    _parnames = ('theta',)
 
     def __init__(self, theta):
         self.theta = theta
@@ -2412,16 +2261,6 @@ class GateRZX(Gate):
 
     def inverse(self):
         return GateRZX(-self.theta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta})'
-        return self.name + pars
 
 
 class GateXXplusYY(Gate):
@@ -2465,7 +2304,7 @@ class GateXXplusYY(Gate):
                  0.        +0.00000000e+00j,  1.        +0.00000000e+00j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateXXplusYY(np.pi/2,np.pi/2),0,1)
+    >>> c.push(GateXXplusYY(np.pi/2,np.pi/2),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2474,6 +2313,7 @@ class GateXXplusYY(Gate):
     """
     _num_qubits = 2
     _name = 'XXplusYY'
+    _parnames = ('theta', 'beta')
 
     def __init__(self, theta, beta):
         self.theta = theta
@@ -2489,16 +2329,6 @@ class GateXXplusYY(Gate):
 
     def inverse(self):
         return GateXXplusYY(-self.theta, self.beta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta, self.beta]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta}, beta={self.beta})'
-        return self.name + pars
 
 
 class GateXXminusYY(Gate):
@@ -2542,7 +2372,7 @@ class GateXXminusYY(Gate):
                  0.        +0.00000000e+00j,  0.70710678+0.00000000e+00j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateXXminusYY(np.pi/2,np.pi/2),0,1)
+    >>> c.push(GateXXminusYY(np.pi/2,np.pi/2),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2551,6 +2381,7 @@ class GateXXminusYY(Gate):
     """
     _num_qubits = 2
     _name = 'XXminusYY'
+    _parnames = ('theta', 'beta')
 
     def __init__(self, theta, beta):
         self.theta = theta
@@ -2564,16 +2395,6 @@ class GateXXminusYY(Gate):
 
     def inverse(self):
         return GateXXminusYY(-self.theta, self.beta)
-
-    def to_json(self):
-        return {
-            'name': self.name,
-            'params': [self.theta, self.beta]
-        }
-
-    def __str__(self):
-        pars = f'(theta={self.theta}, beta={self.beta})'
-        return self.name + pars
 
 
 class GateCS(Gate):
@@ -2609,7 +2430,7 @@ class GateCS(Gate):
                 6.123234e-17+1.j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCS(),0,1)
+    >>> c.push(GateCS(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2658,7 +2479,7 @@ class GateCSDG(Gate):
                6.123234e-17-1.j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCSDG(),0,1)
+    >>> c.push(GateCSDG(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2704,7 +2525,7 @@ class GateCSX(Gate):
                [0. +0.j , 0.5-0.5j, 0. +0.j , 0.5+0.5j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCSX(),0,1)
+    >>> c.push(GateCSX(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2747,7 +2568,7 @@ class GateCSXDG(Gate):
                [0. +0.j , 0.5+0.5j, 0. +0.j , 0.5-0.5j]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateCSXDG(),0,1)
+    >>> c.push(GateCSXDG(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2795,7 +2616,7 @@ class GateECR(Gate):
                [0.        -0.70710678j, 0.        +0.j        ,
                 0.70710678+0.j        , 0.        +0.j        ]])
 
-    >>> c.add_gate(GateECR(),0,1)
+    >>> c.push(GateECR(),0,1)
     >>> c=Circuit()
     >>> print(c)
 
@@ -2843,7 +2664,7 @@ class GateDCX(Gate):
                [0., 0., 1., 0.]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateDCX(),0,1)
+    >>> c.push(GateDCX(),0,1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2890,7 +2711,7 @@ class GateDCXDG(Gate):
                 0.70710678+0.j        , 0.        +0.j        ]])
 
     >>> c=Circuit()
-    >>> c.add_gate(GateDCXDG(),0,1)
+    >>> c.push(GateDCXDG(),0,1)
     >>> print(c)
     2-qubit circuit with 1 gates
     └── DCXDG @ q0, q1
@@ -2920,7 +2741,7 @@ class GateCustom(Gate):
                    [0, 0, 1, 0]])
     >>> qubits=2
     >>> c=Circuit()
-    >>> c.add_gate(GateCustom(matrix, qubits), 0, 1)
+    >>> c.push(GateCustom(matrix, qubits), 0, 1)
     >>> print(c)
 
     >>> 2-qubit circuit with 1 gates
@@ -2950,18 +2771,6 @@ class GateCustom(Gate):
 
     def inverse(self):
         return GateCustom(np.linalg.inv(self.matrix))
-
-    def to_json(self):
-        if self.matrix is not None:
-            return {
-                'name': self.name,
-                'matrix': self.matrix.tolist(),
-                'num_qubits': self.num_qubits
-            }
-        else:
-            return {
-                'name': self.name
-            }
 
 
 GATES = {

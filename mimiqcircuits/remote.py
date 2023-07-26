@@ -203,9 +203,12 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             with open(req_filename, "w") as f:
                 json.dump(req, f)
 
+            emutype = "example-type-1"
             return self.request(
+                emutype,
                 algorithm,
                 label,
+                timelimit,
                 [req_filename, circuit_filename]
             )
 

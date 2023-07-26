@@ -19,11 +19,25 @@ import copy
 
 
 class Operation(ABC):
+    _num_qubits = None
+    _num_bits = None
     _name = None
 
-    @abstractmethod
-    def inverse(self):
-        pass
+    @property
+    def num_qubits(self):
+        return self._num_qubits
+
+    @num_qubits.setter
+    def num_qubits(self, value):
+        raise ValueError('Cannot set num_qubits. Read only parameter.')
+
+    @property
+    def num_bits(self):
+        return self._num_bits
+
+    @num_bits.setter
+    def num_bits(self, value):
+        raise ValueError('Cannot set num_qubits. Read only parameter.')
 
     @property
     def name(self):
@@ -33,11 +47,15 @@ class Operation(ABC):
     def name(self, value):
         raise ValueError('Cannot set name. Read only parameter.')
 
+    @abstractmethod
+    def inverse(self):
+        pass
+
     def to_json(self):
-        return {'name': self.name}
+        return {'name': self.name, 'N': self.num_qubits, 'M': self.num_bits}
 
     def __str__(self):
-        return self._name
+        return self.name
 
     def __eq__(self, other):
         if not isinstance(other, Operation):

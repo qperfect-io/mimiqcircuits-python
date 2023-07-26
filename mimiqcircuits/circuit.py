@@ -17,8 +17,12 @@
 from mimiqcircuits.operation import Operation
 from mimiqcircuits.gates import Gate
 from mimiqcircuits.barrier import Barrier
+from mimiqcircuits.measure import Measure
+from mimiqcircuits.reset import Reset
 from mimiqcircuits.json_utils import operation_from_json
 import copy
+from collections.abc import Iterable
+import itertools
 
 
 def allunique(lst):
@@ -88,12 +92,13 @@ class Instruction:
             if bi < 0:
                 raise ValueError("Bit target index cannot be negative")
 
-        if isinstance(operation, Gate) and len(qubits) != operation.num_qubits:
+        if len(qubits) != operation.num_qubits:
             raise ValueError(
-                f"Wrong number of target qubits for gate {operation} wanted  {operation.num_qubits}, given {len(qubits)}")
+                f"Wrong number of target qubits for operation {operation} wanted  {operation.num_qubits}, given {len(qubits)}")
 
-        if isinstance(operation, Gate) and len(bits) != 0:
-            raise ValueError(f"A gate cannot target classical bits.")
+        if len(bits) != operation.num_bits:
+            raise ValueError(
+                f"Wrong number of target bits for operation {operation} wanted  {operation.num_bits}, given {len(bits)}")
 
         self._operation = operation
         self._qubits = qubits
@@ -142,7 +147,8 @@ class Instruction:
         return Instruction(self.operation.inverse(), self.qubits, self.bits)
 
     def to_json(self):
-        d = self.operation.to_json()
+        d = {}
+        d['op'] = self.operation.to_json()
         # in JSON files we count from 1 (Julia convention)
         d['qtargets'] = [t+1 for t in self.qubits]
         d['ctargets'] = [t+1 for t in self.bits]
@@ -150,9 +156,9 @@ class Instruction:
 
     @ staticmethod
     def from_json(d):
+        operation = operation_from_json(d['op'])
         qubits = tuple([t-1 for t in d['qtargets']])
         bits = tuple([t-1 for t in d['ctargets']])
-        operation = operation_from_json(d)
         return Instruction(operation, qubits, bits)
 
     def copy(self):
@@ -195,9 +201,6 @@ class Circuit:
 
         self.instructions = instructions
 
-    def __repr__(self):
-        return self.__str__()
-
     def num_qubits(self):
         """
         Returns the number of qubits in the circuit.
@@ -234,84 +237,130 @@ class Circuit:
         """
         return len(self.instructions) == 0
 
-    def add(self, operation, qargs=None, cargs=None):
+    def push(self, operation, *args):
         """
-        Adds a quantum operation to the end of the circuit.
+        Adds an Operation or an Instruction to the end of the circuit.
 
         Args:
-            operation (Operation): the operation to add.
-            qargs (tuple of integers): the target qubits for the operation. Defaults to None.
-            cargs (tuple of integers): the target classical bits for the operation. Defaults to None.
-        """
-        instruction = Instruction(operation, qargs, cargs)
-        self.instructions.append(instruction)
-
-    def add_barrier(self, *args):
-        """
-        Adds a barrier to the end of the circuit
-
-        Args:
-            args (integers): Target qubits for the barrier, given as variable number of arguments.
-            If none is given, all the current qubits are targeted.
-        """
-        if len(args) == 0:
-            self.instructions.append(Instruction(
-                Barrier(), tuple(range(0, self.num_qubits()))))
-        else:
-            self.instructions.append(Instruction(Barrier(), args))
-
-    def add_gate(self, gate: Gate, *args):
-        """
-        Adds a gate to the end of the circuit.
-
-        Args:
-            gate (Gate): the quantum gate to add.
-            args (integers): Target qubits for the gate, given as variable number of arguments.
+            operation (Operation or Instruction): the quantum operation to add.
+            *args (integers or ranges): Target qubits and bits for the operation (not instruction), given as variable number of arguments.
 
         Raises:
-            TypeError: If gate is not a Gate or Instruction object or qubits is not a tuple or int.
-            ValueError: If qubits contains less than 1 or more than 2 elements.
+            TypeError: If operation is not an Operation object or the arguments are invalid.
+            ValueError: If the number of arguments is incorrect or qubits contain less than 1 or more than the operation's number of qubits.
         """
-        if not isinstance(gate, Gate):
-            raise TypeError(
-                f"Acceps only a Gate. Given {gate} of type {type(gate)}")
+        N = 0
+        M = 0
+        L = len(args)
 
-        instruction = Instruction(gate, args)
-        self.instructions.append(instruction)
+        if isinstance(operation, Instruction):
+            if L != 0:
+                raise(ValueError("No extra arguments allowed when pushing an instruction."))
 
-    def append(self, circuit):
+            self.instructions.append(operation)
+            return self
+
+        if operation == Barrier:
+            N = L
+        else:
+            if not isinstance(operation, Operation):
+                raise(TypeError("Non Operation object passed to push."))
+
+            N = operation.num_qubits
+            M = operation.num_bits
+
+        if L != N + M:
+            raise(ValueError(
+                f"Wrong number of target qubits and bits, given {L} for a {N} qubits + {M} bits operation."
+            ))
+
+        target_ranges = []
+        for arg in args:
+            if isinstance(arg, int):
+                target_ranges.append([arg])
+            elif isinstance(arg, Iterable):
+                target_ranges.append(list(arg))
+            else:
+                raise TypeError(f"Invalid target type: {type(arg)}")
+
+        for i in range(N):
+            for j in range(i+1, N):
+                if not set(target_ranges[i]).isdisjoint(target_ranges[j]):
+                    raise ValueError("Duplicated qubit target.")
+
+        for i in range(M):
+            for j in range(i+1, M):
+                if not set(target_ranges[N+i]).isdisjoint(target_ranges[N+j]):
+                    raise ValueError("Duplicated bit target.")
+
+        for targets in itertools.product(*target_ranges):
+            if operation == Barrier:
+                self.instructions.append(Instruction(Barrier(N), (*targets,), ()))
+            else:
+                self.instructions.append(Instruction(operation, (*targets[:N],), (*targets[N:],)))
+
+        return self
+
+    def insert(self, index: int, operation, *args):
+        """
+        Inserts an operation at a specific index in the circuit.
+
+        Args:
+            index (int): The index at which the operation should be inserted.
+            operation (Operation): The quantum operation to insert.
+            *args: The target qubits or classical bits for the operation.
+
+        Raises:
+            TypeError: If operation is not an Operation object or the arguments are invalid.
+            ValueError: If the number of arguments is incorrect or qubits contain less than 1 or more than the operation's number of qubits.
+        """
+        N = 0
+        M = 0
+        L = len(args)
+
+        if isinstance(operation, Instruction):
+            if L != 0:
+                raise(ValueError("No extra arguments allowed when inserting an instruction."))
+
+            self.instructions.insert(index, operation)
+            return self
+
+        if operation == Barrier:
+            N = L
+        else:
+            if not isinstance(operation, Operation):
+                raise(TypeError("Non Operation object passed to push."))
+
+            N = operation.num_qubits()
+            M = operation.num_bits()
+
+        if L != N + M:
+            raise(ValueError(
+                f"Wrong number of target qubits and bits, given {L} for a {N} qubits + {M} bits operation."
+            ))
+
+        if operation == Barrier:
+            self.instructions.insert(index, Instruction(operation, args))
+        else:
+            self.instructions.insert(index, Instruction(Barrier(N), args))
+
+    def append(self, other):
         """
         Appends all the gates of the given circuit at the end of the current circuit.
 
         Args:
             circuit (Circuit): the circuit to append.
         """
-        if not isinstance(circuit, Circuit):
-            raise TypeError("accepts only a Circuit")
+        instructions = None
+        if isinstance(other, Circuit):
+            instructions = other.instructions
+        elif isinstance(other, list):
+            instructions = other
+        else:
+            raise TypeError("Only allowed to append a circuit or a list of instructions")
 
-        self.append_instructions(circuit.instructions)
-
-    def append_instructions(self, instructions):
-        """
-        Appends the list of given circuit gates at the end of the current circuit.
-
-        Args:
-            instruction (list of Instruction): the list of instructions to append.
-        """
-        if not isinstance(instructions, list):
-            raise TypeError("accepts only a list of Instruction")
-
-        if len(instructions) != 0 and not isinstance(instructions[0], Instruction):
-            raise TypeError("accepts only a list of Instruction")
-
-        for g in instructions:
-            self.add_instruction(g)
-
-    def add_instruction(self, instruction):
-        if not isinstance(instruction, Instruction):
-            raise TypeError("accepts only a Instruction")
-
-        self.instructions.append(instruction)
+        for inst in instructions:
+            self.instructions.append(inst)
 
     def remove(self, index: int):
         """
@@ -326,6 +375,9 @@ class Circuit:
         del self.instructions[index]
 
     def inverse(self):
+        """
+        Returns the inverse of the circuit.
+        """
         invgates = [x.inverse() for x in self.instructions]
         invgates.reverse()
         return Circuit(invgates)
@@ -358,6 +410,9 @@ class Circuit:
         output += f'\n └── {g}'
 
         return output
+
+    def __repr__(self):
+        return self.__str__()
 
     def __eq__(self, other):
         if not isinstance(other, Circuit):

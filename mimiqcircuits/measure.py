@@ -17,45 +17,27 @@
 from mimiqcircuits.operation import Operation
 
 
-class Barrier(Operation):
-    """
-    Barrier operation used to prevent reordering of gates.
-    """
-    _name = 'Barrier'
-    _num_qubits = None
-    _num_bits = 0
-
-    def __init__(self, num_qubits=1):
-        """
-        Initialize a barrier operation
-
-        Args:
-            num_qubits: number of qubits the barrier will cover
-
-        Raises:
-            ValueError: if num_qubits is less than 1
-        """
-        super().__init__()
-
-        if num_qubits < 1:
-            raise ValueError("Number of qubits must be greater than 0")
-
-        self._num_qubits = num_qubits
+class Measure(Operation):
+    _name = 'Measure'
+    _num_bits = 1
+    _num_qubits = 1
 
     def inverse(self):
-        return self
+        raise TypeError('Measure is not inversible')
 
     @staticmethod
     def from_json(d):
-        if d["name"] != "Barrier":
-            raise ValueError("Invalid json for Barrier")
+        if d["name"] != "Measure":
+            raise ValueError("Invalid json for Measure")
 
-        return Barrier()
-
+        return Measure()
+    
     def __eq__(self, other):
-        if not isinstance(other, Barrier):
+        if not isinstance(other, Measure):
             return False
         return (self.name == other.name)
-    
+
+
 # export operations
-__all__ = ['Barrier']
+__all__ = ['Measure']
+
