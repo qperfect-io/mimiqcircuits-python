@@ -50,131 +50,155 @@ def int_to_bitarr(x, pad):
 
 
 class BitState:
-    """
-    :: class BitState
+    """BitState for the quantum states.
 
-    Represents a quantum bit state with arbitrary number of qubits.
-
+    Representation of the quantum state of a quantum register with definite values for each qubit.
+    
     Args:
-        bits (Union[int, str, Circuit, bitarray]): The input to initialize the BitState. It can be
-            an integer, a binary string, a Circuit, or a bitarray.
+        bits (Union[int, str, Circuit, bitarray]): The input to initialize the BitState.
+            It can be an integer, a binary string, a Circuit, or a bitarray.
+
         init (Optional[List[int]]): A list of non-zero qubit indices to set in the BitState. Default is None.
 
     Examples:
+        Creating a BitState with specific non-zeros
 
         >>> bs = BitState(16, [1, 2, 3, 4])
         >>> print(bs)
-        >>> 16-qubit BitState with 4 non-zero qubits:
+            16-qubit BitState with 4 non-zero qubits:
             ├── |0111100000000000⟩
             └── non-zero qubits: [1, 2, 3, 4]
 
         Setting the value of a qubit
+
         >>> bs = BitState(12, [1, 2, 3, 5])
         >>> print(bs)
         >>> 12-qubit BitState with 4 non-zero qubits:
             ├── |011101000000⟩
             └── non-zero qubits: [1, 2, 3, 5]
-
         >>> bs[0] = 1
         >>> print(bs)
         >>> 12-qubit BitState with 3 non-zero qubits:
             ├── |111010000000⟩
             └── non-zero qubits: [0, 1, 2, 3, 5]
 
-        Creating a 9-qubit Circuit and adding a GateX on qubit 8
+        Creating a 9-qubit BitState from the Circuit 'c' with specific non-zero qubits
+
         >>> c = Circuit()
         >>> c.push(GateX(), 8)
         >>> print(c)
-
-        >>> 9-qubit circuit with 1 gates
+        >>> 9-qubit circuit with 1 instructions:
             └── X @ q8
-
         >>> print(c.num_qubits())
             9
-
-        Creating a 4-qubit BitState from the Circuit 'c' with specific non-zero qubits
         >>> bs = BitState(c, [1, 2, 3, 4])
         >>> print(bs)
         >>> 9-qubit BitState with 4 non-zero qubits:
             ├── |011110000⟩
             └── non-zero qubits: [1, 2, 3, 4]
 
-        Converting the BitState to an integer
+        Converting a BitState with specific non-zeros qubits to an integer
+
         >>> bs = BitState(16, [1,2,3,4])
         >>> print(bs)
         >>> 16-qubit BitState with 4 non-zero qubits:
             ├── |0111100000000000⟩
             └── non-zero qubits: [1, 2, 3, 4]
-        >>> v = bs.tointeger()
-        >>> print(v)
+        >>> int_value = bs.tointeger()
+        >>> print(int_value)
             30
 
         Creating a 16-qubit BitState from an integer value with big-endian representation
+
         >>> bs = BitState.fromint(16, 30, 'big')
+        >>> bs.fromint()
         >>> print(bs)
-        >>> 16-qubit BitState with 4 non-zero qubits:
             16-qubit BitState with 4 non-zero qubits:
             ├── |0111100000000000⟩
             └── non-zero qubits: [1, 2, 3, 4]
 
+
+        Creating a 16-qubit BitState from an integer value with little-endian representation
+
+        >>> bs = BitState.fromint(16, 30, 'little')
+        >>> print(bs)
+            16-qubit BitState with 4 non-zero qubits:
+            ├── |0000000000011110⟩
+            └── non-zero qubits: [11, 12, 13, 14]
+
         Comparing two BitState objects for equality
+
         >>> bs1 = BitState('10101')
         >>> bs2 = BitState('10101')
+        >>> bs3 = BitState('10001')
         >>> print(bs1 == bs2) 
             True 
+        >>> print(bs1 == bs3)
+            False
 
         Converting to bitarray
+
         >>> bs = BitState('111001')
         >>> bits = bs.bits
         >>> print(bits)
             bitarray('111001') 
 
         Converting the BitState to a binary string with default big-endianess representation
+
         >>> bs = BitState('1101001')
         >>> binary_str = bs.to01()
         >>> print(binary_str)
             1101001
 
         Converting the BitState to a binary string with little-endianess representation (by default endianess='big')
+
         >>> bs = BitState('1101001')
         >>> binary_str = bs.to01(endianess='little')
         >>> print(binary_str)
             1001011
 
         Converting the BitState to an index value
+
         >>> bs = BitState('1010')
         >>> index = bs.bitarr_to_index()
         >>> print(index)
             5
+    
         Converting to BitState from string
+
         >>> bitstring = "11001"
         >>> bs_from_string = BitState.fromstring(bitstring)
         >>> print(bs_from_string)
-        >>> 5-qubit BitState with 3 non-zero qubits:
+            5-qubit BitState with 3 non-zero qubits:
             ├── |11001⟩
             └── non-zero qubits: [0, 1, 4]
 
-        Example using fromnonzeros method also
+        Example of using fromnonzeros method
+
         >>> num_qubits = 5
         >>> nonzeros = [1, 3]
         >>> bit_state_from_nonzeros = BitState.fromnonzeros(num_qubits, nonzeros)
         >>> print(bit_state_from_nonzeros)
-        >>> 5-qubit BitState with 2 non-zero qubits:
+            5-qubit BitState with 2 non-zero qubits:
             ├── |01010⟩
             └── non-zero qubits: [1, 3]
 
-        Example using fromstring method
+        Example of using fromstring method
+
         >>> bitstring = "11001"
-        >>> bs_from_string = BitState.fromstring(bitstring)
+        >>> bs = BitState
+        >>> bs_from_string = bs.fromstring(bitstring)
         >>> print(bs_from_string)
-        >>> 5-qubit BitState with 3 non-zero qubits:
+            5-qubit BitState with 3 non-zero qubits:
             ├── |11001⟩
             └── non-zero qubits: [0, 1, 4]
-        Example using the zeros method
+
+        Example of using zeros method
+
         >>> bs = BitState('1010')
         >>> z= bs.zeros()
         >>> print(z)
-        >>> [1, 3]
+            [1, 3]
     """
 
     def __init__(self, num_qubits, init=None):
@@ -241,8 +265,10 @@ class BitState:
         padded_bitstring = bitstring.zfill(num_qubits)
 
         if endian == 'little':
+            padded_bitstring = padded_bitstring[::-1]
+        elif endian == 'big':
             padded_bitstring = padded_bitstring
-        elif endian != 'big':
+        else:
             raise ValueError("endian must be either 'big' or 'little'")
 
         return BitState(padded_bitstring[::-1])

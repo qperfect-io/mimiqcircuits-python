@@ -18,6 +18,22 @@ from mimiqcircuits.operation import Operation
 
 
 class Measure(Operation):
+    """Measure operation.
+    
+    Single qubit measurement operation in the computational basis.
+    
+    This operation is non-reversible
+
+    Examples:
+        >>> from  mimiqcircuits import *
+        >>> c=Circuit()
+        >>> c.push(GateX(),0)
+        >>> c.push(Measure(),0,0)
+
+        >>> 1-qubit circuit with 2 instructions:
+            ├── X @ q0
+            └── Measure @ q0, c0
+    """
     _name = 'Measure'
     _num_bits = 1
     _num_qubits = 1

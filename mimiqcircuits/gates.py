@@ -246,36 +246,25 @@ class Gate(Operation):
 
 
 class GateX(Gate):
-    """
-    Class for Single qubit Pauli-X gate.
+    """ Single qubit Pauli-X gate.
 
-    **Matrix representation::**
+    **Matrix representation:**
 
     .. math::
-
         \\operatorname{X} = \\begin{pmatrix}
             0 & 1 \\\\
             1 & 0
         \\end{pmatrix}
 
-    :return: The Pauli-X operator X.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateX
-    >>> GateX().matrix()
-
-    >>> array([[0, 1],
-              [1, 0]])
-
-    >>> c=Circuit()
-    >>> c.push(GateX(),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates:
-        └── X @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateX
+        >>> GateX().matrix()
+            array([[0, 1],
+                   [1, 0]])
+        >>> c=Circuit()
+        >>> c.push(GateX(),0)
+            1-qubit circuit with 1 instructions:
+             └── X @ q0
     """
     _num_qubits = 1
     _name = 'X'
@@ -288,37 +277,25 @@ class GateX(Gate):
 
 
 class GateY(Gate):
-    """
+    """Single qubit Pauli-Y gate.
 
-    Class for Single qubit Pauli-Y gate.
-
-    **Matrix representation::**
+    **Matrix representation:**
 
     .. math::
-
         \\operatorname{Y} = \\begin{pmatrix}
             0 & -i \\\\
             i & 0
         \\end{pmatrix}
 
-    :return: The Pauli-Y operator Y.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateY
-    >>> GateY().matrix()
-
-    >>> array([[ 0.+0.j, -0.-1.j],
-              [ 0.+1.j,  0.+0.j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateY(),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates:
-        └── Y @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateY
+        >>> GateY().matrix()
+            array([[ 0.+0.j, -0.-1.j],
+                   [ 0.+1.j,  0.+0.j]])
+        >>> c=Circuit()
+        >>> c.push(GateY(),0)
+            1-qubit circuit with 1 instructions:
+             └── Y @ q0
     """
     _num_qubits = 1
     _name = 'Y'
@@ -331,36 +308,25 @@ class GateY(Gate):
 
 
 class GateZ(Gate):
-    """
-    Class for Single qubit Pauli-Z gate.
+    """Single qubit Pauli-Z gate.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{Z} = \\begin{pmatrix}
             1 & 0 \\\\
             0 & -1
         \\end{pmatrix}
 
-    :return: The Pauli-Z operator Z.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateZ
-    >>> GateZ().matrix()
-
-    >>> array([[ 1,  0],
-              [ 0, -1]])
-
-    >>> c=Circuit()
-    >>> c.push(GateZ(),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates:
-        └── Z @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateZ
+        >>> GateZ().matrix()
+            array([[ 1,  0],
+                   [ 0, -1]])
+        >>> c=Circuit()
+        >>> c.push(GateZ(),0)
+            1-qubit circuit with 1 instructions:
+             └── Z @ q0
     """
     _num_qubits = 1
     _name = 'Z'
@@ -373,35 +339,25 @@ class GateZ(Gate):
 
 
 class GateH(Gate):
-    """
-    Class for Single qubit Hadamard gate.
+    """Single qubit Hadamard gate.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{H} = \\frac{1}{\\sqrt{2}} \\begin{pmatrix}
             1 & 1 \\\\
             1 & -1
         \\end{pmatrix}
 
-    :return: The Hadamard gate H.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateH
-    >>> GateH().matrix()
-
-    >>> array([[ 0.70710678,  0.70710678],
-              [ 0.70710678, -0.70710678]])
-
-    >>> c=Circuit()
-    >>> c.push(GateH(),0)
-    >>> print(c)
-    >>> 1-qubit circuit with 1 gates:
-        └── H @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateH
+        >>> GateH().matrix()
+            array([[ 0.70710678,  0.70710678],
+                   [ 0.70710678, -0.70710678]])
+        >>> c=Circuit()
+        >>> c.push(GateH(),0)
+            1-qubit circuit with 1 instructions:
+             └── H @ q0
     """
     _num_qubits = 1
     _name = 'H'
@@ -414,36 +370,27 @@ class GateH(Gate):
 
 
 class GateS(Gate):
-    """
-    Class for Single qubit S gate (or Phase gate).
+    """Single qubit gate S.
+
+    It induces a :math:`\\frac{\\pi}{2}` phase gate.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{S} = \\begin{pmatrix}
             1 & 0 \\\\
             0 & i
         \\end{pmatrix}
 
-    :return: The S gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateS
-    >>> GateS().matrix()
-
-    >>> array([[1.000000e+00+0.j, 0.000000e+00+0.j],
-              [0.000000e+00+0.j, 6.123234e-17+1.j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateS(),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates:
-        └── S @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateS
+        >>> GateS().matrix()
+            array([[1.000000e+00+0.j, 0.000000e+00+0.j],
+                   [0.000000e+00+0.j, 6.123234e-17+1.j]])
+        >>> c=Circuit()
+        >>> c.push(GateS(),0)
+            1-qubit circuit with 1 instructions:
+             └── S @ q0
     """
     _num_qubits = 1
     _name = 'S'
@@ -457,36 +404,25 @@ class GateS(Gate):
 
 
 class GateSDG(Gate):
-    """
-    Class for Single qubit S-dagger gate (conjugate transpose of the S gate).
+    """Single qubit S-dagger gate (conjugate transpose of the S gate).
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{S}^\\dagger = \\begin{pmatrix}
             1 & 0 \\\\
             0 & -i
         \\end{pmatrix}
 
-    :return: The S-dagger gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateSDG
-    >>> GateSDG().matrix()
-
-    >>> array([[1.000000e+00+0.j, 0.000000e+00+0.j],
-              [0.000000e+00+0.j, 6.123234e-17-1.j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateSDG(),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates:
-        └── SDG @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateSDG
+        >>> GateSDG().matrix()
+            array([[1.000000e+00+0.j, 0.000000e+00+0.j],
+                   [0.000000e+00+0.j, 6.123234e-17-1.j]])
+        >>> c=Circuit()
+        >>> c.push(GateSDG(),0)
+            1-qubit circuit with 1 instructions:
+             └── SDG @ q0
     """
     _num_qubits = 1
     _name = 'SDG'
@@ -499,36 +435,25 @@ class GateSDG(Gate):
 
 
 class GateT(Gate):
-    """
-    Class for Single qubit T gate.
+    """ Single qubit T gate.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{T} = \\begin{pmatrix}
             1 & 0 \\\\
             0 & \\exp\\left(\\frac{i\\pi}{4}\\right)
         \\end{pmatrix}
 
-    :return: The T gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateT
-    >>> GateT().matrix()
-
-    >>> array([[1.        +0.j        , 0.        +0.j        ],
-              [0.        +0.j        , 0.70710678+0.70710678j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateT(),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates:
-        └── T @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateT
+        >>> GateT().matrix()
+            array([[1.        +0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.70710678+0.70710678j]])
+        >>> c=Circuit()
+        >>> c.push(GateT(),0)
+            1-qubit circuit with 1 instructions:
+             └── T @ q0
     """
     _num_qubits = 1
     _name = 'T'
@@ -541,36 +466,25 @@ class GateT(Gate):
 
 
 class GateTDG(Gate):
-    """
-    Class for Single qubit T-dagger gate (conjugate transpose of the T gate).
+    """Single qubit T-dagger gate (conjugate transpose of the T gate).
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{T}^\\dagger = \\begin{pmatrix}
             1 & 0 \\\\
             0 & \\exp\\left(\\frac{-i\\pi}{4}\\right)
         \\end{pmatrix}
 
-    :return: The T-dagger gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateTDG
-    >>> GateTDG().matrix()
-
-    >>> array([[1.        +0.j        , 0.        +0.j        ],
-              [0.        +0.j        , 0.70710678-0.70710678j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateTDG(),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates:
-        └── TDG @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateTDG
+        >>> GateTDG().matrix()
+            array([[1.        +0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.70710678-0.70710678j]])
+        >>> c=Circuit()
+        >>> c.push(GateTDG(),0)
+            1-qubit circuit with 1 instructions:
+             └── TDG @ q0
     """
     _num_qubits = 1
     _name = 'TDG'
@@ -583,36 +497,25 @@ class GateTDG(Gate):
 
 
 class GateSX(Gate):
-    """
-    Class for Single qubit √X gate.
+    """Single qubit :math:`\\sqrt{X}` gate.
 
     **Matrix representation:**
 
     .. math::
-
         \\sqrt{\\operatorname{X}} = \\frac{1}{2} \\begin{pmatrix}
             1+i & 1-i \\\\
             1-i & 1+i
         \\end{pmatrix}
 
-    :return: The √X gate gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateSX
-    >>> GateSX().matrix()
-
-    >>> array([[0.5+0.5j, 0.5-0.5j],
-              [0.5-0.5j, 0.5+0.5j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateSX(),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates:
-        └── SX @ q0
-
+   Examples:
+        >>> from mimiqcircuits import Circuit, GateSX
+        >>> GateSX().matrix()
+            array([[0.5+0.5j, 0.5-0.5j],
+                   [0.5-0.5j, 0.5+0.5j]])
+        >>> c=Circuit()
+        >>> c.push(GateSX(),0)
+            1-qubit circuit with 1 instructions:
+             └── SX @ q0
     """
     _num_qubits = 1
     _name = 'SX'
@@ -625,36 +528,25 @@ class GateSX(Gate):
 
 
 class GateSXDG(Gate):
-    """
-    Class for Single qubit √X-dagger gate (conjugate transpose of the √X gate).
-
+    """Single qubit :math:`\\sqrt{X}^\\dagger` gate (conjugate transpose of the :math:`\\sqrt{X}` gate).
+    
     **Matrix representation:**
 
     .. math::
-
         \\sqrt{\\operatorname{X}}^\\dagger = \\frac{1}{2} \\begin{pmatrix}
             1-i & 1+i \\\\
             1+i & 1-i
         \\end{pmatrix}
 
-    :return: The conjugate transpose of the √X gate gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateSXDG
-    >>> GateSXDG().matrix()
-
-    >>> array([[0.5-0.5j, 0.5+0.5j],
-              [0.5+0.5j, 0.5-0.5j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateSXDG(),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates:
-        └── SXDG @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateSXDG
+        >>> GateSXDG().matrix()
+            array([[0.5-0.5j, 0.5+0.5j],
+                   [0.5+0.5j, 0.5-0.5j]])
+        >>> c=Circuit()
+        >>> c.push(GateSXDG(),0)
+            1-qubit circuit with 1 instructions:
+             └── SXDG @ q0
     """
     _num_qubits = 1
     _name = 'SXDG'
@@ -667,36 +559,25 @@ class GateSXDG(Gate):
 
 
 class GateID(Gate):
-    """
-    Class for Single qubit Identity gate.
+    """Single qubit Identity gate.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{ID} = \\begin{pmatrix}
             1 & 0 \\\\
             0 & 1
         \\end{pmatrix}
 
-    :return: The identity gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateID
-    >>> GateID().matrix()
-
-    >>> array([[1., 0.],
-              [0., 1.]])
-
-    >>> c=Circuit()
-    >>> c.push(GateID(),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates:
-        └── ID @ q0
-
+   Examples:
+        >>> from mimiqcircuits import Circuit, GateID
+        >>> GateID().matrix()
+            array([[1., 0.],
+                   [0., 1.]])
+        >>> c=Circuit()
+        >>> c.push(GateID(),0)
+            1-qubit circuit with 1 instructions:
+             └── ID @ q0
     """
     _num_qubits = 1
     _name = 'ID'
@@ -709,46 +590,31 @@ class GateID(Gate):
 
 
 class GateU(Gate):
-    """
-    Class for Single qubit generic unitary gate.
-
-    **Arguments:**
-
-    :param theta: Euler angle 1 in radians.
-    :type theta: float
-    :param phi: Euler angle 2 in radians.
-    :type phi: float
-    :param lambda: Euler angle 3 in radians.
-    :type lambda: float
+    """Single qubit generic unitary gate.
 
     **Matrix representation:**
 
     .. math::
-
-        \\operatorname{U}(\\theta,\\phi,\\lambda) = \\begin{pmatrix}
-            \\cos\\frac{\\theta}{2} & -e^{i\\lambda}\\sin\\frac{\\theta}{2} \\\\
+        \\operatorname{U}(\\theta, \\phi, \\lambda) = \\begin{pmatrix}
+            \\cos\\frac{\\theta}{2} & -e^{i\\lambda}\\sin\\frac{\\theta}{2}\\\\
             e^{i\\phi}\\sin\\frac{\\theta}{2} & e^{i(\\phi+\\lambda)}\\cos\\frac{\\theta}{2}
         \\end{pmatrix}
 
-    :return: generic unitary gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): Euler angle 1 in radians.
+        phi (float): Euler angle 2 in radians.
+        lambda (float): Euler angle 3 in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateU
-    >>> import nump as np
-    >>> GateU(np.pi/3,np.pi/3,np.pi/3).matrix()
-
-    >>> array([[ 0.8660254+0.j       , -0.25     -0.4330127j],
-              [ 0.25     +0.4330127j, -0.4330127+0.75j     ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateU(np.pi/3,np.pi/3,np.pi/3),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates
-        └── U(theta=1.0471975511965976, phi=1.0471975511965976, lmbda=1.0471975511965976) @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateU
+        >>> import nump as np
+        >>> GateU(np.pi/3,np.pi/3,np.pi/3).matrix()
+            array([[ 0.8660254+0.j       , -0.25     -0.4330127j],
+                   [ 0.25     +0.4330127j, -0.4330127+0.75j     ]])
+        >>> c=Circuit()
+        >>> c.push(GateU(np.pi/3,np.pi/3,np.pi/3),0)
+            1-qubit circuit with 1 instructions:
+             └── U(theta=1.0471975511965976, phi=1.0471975511965976, lmbda=1.0471975511965976) @ q0
     """
     _num_qubits = 1
     _name = 'U'
@@ -767,44 +633,31 @@ class GateU(Gate):
 
 
 class GateU1(Gate):
-    """
-    Single qubit generic unitary gate(U1).
+    """Single qubit generic unitary gate :math:`{U_1}`.
 
     Equivalent to :func:`GateP`
-
-    **Arguments:**
-
-    :param lambda: Euler angle 3 in radians.
-    :type lambda: float
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{U1}(\\lambda) = \\begin{pmatrix}
             1 & 0 \\\\
             0 & e^{i\\lambda}
         \\end{pmatrix}
 
-    :return: generic unitary gate(U1).
-    :rtype: numpy.ndarray
+    Parameters:
+        lambda (float): Euler angle 3 in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateU1
-    >>> import nump as np
-    >>> GateU1(np.pi/4).matrix()
-
-    >>> array([[1.        +0.j        , 0.        +0.j        ],
-              [0.        +0.j        , 0.70710678+0.70710678j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateU1(np.pi/3),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates
-        └── U1(lmbda=1.0471975511965976) @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateU1
+        >>> import nump as np
+        >>> GateU1(np.pi/4).matrix()
+            array([[1.        +0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.70710678+0.70710678j]])
+        >>> c=Circuit()
+        >>> c.push(GateU1(np.pi/3),0)
+            1-qubit circuit with 1 instructions:
+             └── U1(lmbda=1.0471975511965976) @ q0
     """
     _num_qubits = 1
     _name = 'U1'
@@ -821,46 +674,32 @@ class GateU1(Gate):
 
 
 class GateU2(Gate):
-    """
-    One qubit generic unitary gate (U2).
+    """Single qubit generic unitary gate :math:`{U_2}`.
 
     Equivalent to :func:`GateU2DG`
-
-    **Arguments:**
-
-    :param phi: Euler angle in radians.
-    :type phi: float
-    :param lambda: Euler angle in radians.
-    :type lambda: float
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{U2}(\\phi,\\lambda) = \\frac{1}{\\sqrt{2}}\\begin{pmatrix}
             1 & -e^{i\\lambda} \\\\
             e^{i\\phi} & e^{i(\\phi+\\lambda)}
         \\end{pmatrix}
 
-    :return: unitary gate (u2).
-    :rtype: numpy.ndarray
+    Parameters:
+        phi (float): Euler angle in radians.
+        lambda (float): Euler angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateU2
-    >>> import nump as np
-    >>> GateU2(np.pi/2,np.pi/4).matrix()
-
-    >>> array([[ 0.27059805-0.65328148j, -0.65328148+0.27059805j],
-              [ 0.65328148+0.27059805j,  0.27059805+0.65328148j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateU2(np.pi/2,np.pi/4),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates
-        └── U2(phi=1.5707963267948966, lmbda=0.7853981633974483) @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateU2
+        >>> import nump as np
+        >>> GateU2(np.pi/2,np.pi/4).matrix()
+            array([[ 0.27059805-0.65328148j, -0.65328148+0.27059805j],
+                   [ 0.65328148+0.27059805j,  0.27059805+0.65328148j]])
+        >>> c=Circuit()
+        >>> c.push(GateU2(np.pi/2,np.pi/4),0)
+            1-qubit circuit with 1 instructions:
+             └── U2(phi=1.5707963267948966, lmbda=0.7853981633974483) @ q0
     """
     _num_qubits = 1
     _name = 'U2'
@@ -878,45 +717,31 @@ class GateU2(Gate):
 
 
 class GateU2DG(Gate):
-    """
-    One qubit generic unitary gate (u2-dagger).
-
-    **Arguments:**
-
-    :param phi: Euler angle 2 in radians.
-    :type phi: float
-    :param lambda: Euler angle 3 in radians.
-    :type lambda: float
+    """Single qubit generic unitary gate :math:`{U_2}^\\dagger`.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{U2}^\\dagger(\\phi,\\lambda) = \\frac{1}{\\sqrt{2}}\\begin{pmatrix}
             1 & -e^{i\\lambda} \\\\
             e^{i\\phi} & e^{i(\\phi+\\lambda)}
         \\end{pmatrix}
 
-    :return: (U2-dagger) gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        phi (float): Euler angle 2 in radians.
+        lambda (float): Euler angle 3 in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateU2DG
-    >>> import nump as np
-    >>> GateU2DG(np.pi/2, np.pi/4).matrix()
-
-    >>> array([[ 0.27059805+0.65328148j,  0.65328148-0.27059805j],
-              [-0.65328148-0.27059805j,  0.27059805-0.65328148j]])
-
-    >>> import numpy as np
-    >>> c = Circuit()
-    >>> c.push(GateU2DG(np.pi/2, np.pi/4), 0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates
-        └── U2DG(phi=1.5707963267948966, lmbda=0.7853981633974483) @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateU2DG
+        >>> import nump as np
+        >>> GateU2DG(np.pi/2, np.pi/4).matrix()
+            array([[ 0.27059805+0.65328148j,  0.65328148-0.27059805j],
+                   [-0.65328148-0.27059805j,  0.27059805-0.65328148j]])
+        >>> import numpy as np
+        >>> c = Circuit()
+        >>> c.push(GateU2DG(np.pi/2, np.pi/4), 0)
+            1-qubit circuit with 1 instructions:
+             └── U2DG(phi=1.5707963267948966, lmbda=0.7853981633974483) @ q0
     """
     _num_qubits = 1
     _name = 'U2DG'
@@ -934,47 +759,32 @@ class GateU2DG(Gate):
 
 
 class GateU3(Gate):
-    """
-    Single qubit generic unitary gate (u3).
-
-    **Arguments:**
-
-    :param theta: Euler angle 1 in radians.
-    :type theta: float
-    :param phi: Euler angle 2 in radians.
-    :type phi: float
-    :param lambda: Euler angle 3 in radians.
-    :type lambda: float
+    """Single qubit generic unitary gate :math:`{U_3}`.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{U3}(\\theta,\\phi,\\lambda) = \\begin{pmatrix}
             \\cos\\frac{\\theta}{2} & -e^{i\\lambda}\\sin\\frac{\\theta}{2} \\\\
             e^{i\\phi}\\sin\\frac{\\theta}{2} & e^{i(\\phi+\\lambda)}\\cos\\frac{\\theta}{2}
         \\end{pmatrix}
 
-    :return: generic unitary gate (u3).
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateU3
-    >>> import nump as np
-    >>> GateU3(np.pi/2,np.pi/4,np.pi/2).matrix()
-
-    >>> array([[ 0.27059805-0.65328148j, -0.65328148-0.27059805j],
-              [ 0.65328148-0.27059805j,  0.27059805+0.65328148j]])
-
-    >>> import numpy as np  
-    >>> c=Circuit()
-    >>> c.push(GateU3(np.pi/3,np.pi/3,np.pi/3),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates
-        └── U3(theta=1.0471975511965976, phi=1.0471975511965976, lmbda=1.0471975511965976) @ q0
-
+    Parameters:
+        theta (float): Euler angle 1 in radians.
+        phi (float): Euler angle 2 in radians.
+        lambda (float): Euler angle 3 in radians.
+   
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateU3
+        >>> import nump as np
+        >>> GateU3(np.pi/2,np.pi/4,np.pi/2).matrix()
+            array([[ 0.27059805-0.65328148j, -0.65328148-0.27059805j],
+                   [ 0.65328148-0.27059805j,  0.27059805+0.65328148j]])
+        >>> import numpy as np  
+        >>> c=Circuit()
+        >>> c.push(GateU3(np.pi/3,np.pi/3,np.pi/3),0)
+            1-qubit circuit with 1 instructions:
+             └── U3(theta=1.0471975511965976, phi=1.0471975511965976, lmbda=1.0471975511965976) @ q0
     """
     _num_qubits = 1
     _name = 'U3'
@@ -993,15 +803,7 @@ class GateU3(Gate):
 
 
 class GateR(Gate):
-    """
-    Class for Single qubit Rotation gate around the axis cos(ϕ)x + sin(ϕ)y.
-
-    **Arguments:**
-
-    :param theta: The rotation angle in radians.
-    :type theta: float
-    :param phi: The axis of rotation in radians.
-    :type phi: float
+    """Single qubit Rotation gate around the axis :math:`\\cos(\\phi)\\hat{x} + \\sin(\\phi)\\hat{y}`.
 
     **Matrix representation:**
 
@@ -1011,25 +813,20 @@ class GateR(Gate):
           -i e^{i \\phi} \\sin \\frac{\\theta}{2}  &  \\cos \\frac{\\theta}{2}
         \\end{pmatrix}
 
-    :return: Rotation gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): The rotation angle in radians.
+        phi (float): The axis of rotation in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateR
-    >>> import nump as np
-    >>> GateR(np.pi/2,np.pi/4).matrix()
-
-    >>> array([[ 0.70710678+0.j , -0.5       -0.5j],
-               [ 0.5       -0.5j,  0.70710678+0.j ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateR(np.pi/3,np.pi/3),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates
-        └── R(theta=1.0471975511965976, phi=1.0471975511965976) @ q0
-
+    Example:
+        >>> from mimiqcircuits import Circuit, GateR
+        >>> import nump as np
+        >>> GateR(np.pi/2,np.pi/4).matrix()
+            array([[ 0.70710678+0.j , -0.5       -0.5j],
+                   [ 0.5       -0.5j,  0.70710678+0.j ]])
+        >>> c=Circuit()
+        >>> c.push(GateR(np.pi/3,np.pi/3),0)
+            1-qubit circuit with 1 instructions:
+             └── R(theta=1.0471975511965976, phi=1.0471975511965976) @ q0
     """
     _num_qubits = 1
     _name = 'R'
@@ -1047,42 +844,29 @@ class GateR(Gate):
 
 
 class GateRX(Gate):
-    """
-    Class for Single qubit Rotation-X gate (RX gate).
-
-    **Arguments:**
-
-    :param theta: Rotation angle in radians.
-    :type theta: float
+    """Single qubit Rotation gate around the axis :math:`\\hat{x}`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{RX}(\\theta) = \\frac{1}{\\sqrt{2}} \\begin{pmatrix}
             \\cos\\frac{\\theta}{2} & -i\\sin\\frac{\\theta}{2} \\\\
             -i\\sin\\frac{\\theta}{2} & \\cos\\frac{\\theta}{2}
         \\end{pmatrix}
 
-    :return: Rotation-X gate (RX gate).
-    :rtype: numpy.ndarray 
+    Parameters:
+        theta: Rotation angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateRX
-    >>> import nump as np
-    >>> GateRX(np.pi/2).matrix()
-
-    >>> array([[ 7.07106781e-01+0.j        , -4.32978028e-17-0.70710678j],
-              [ 4.32978028e-17-0.70710678j,  7.07106781e-01+0.j        ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateRX(np.pi/3),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates
-        └── RX(theta=1.0471975511965976) @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateRX
+        >>> import nump as np
+        >>> GateRX(np.pi/2).matrix()
+            array([[ 7.07106781e-01+0.j        , -4.32978028e-17-0.70710678j],
+                   [ 4.32978028e-17-0.70710678j,  7.07106781e-01+0.j        ]])
+        >>> c=Circuit()
+        >>> c.push(GateRX(np.pi/3),0)
+            1-qubit circuit with 1 instructions:
+             └── RX(theta=1.0471975511965976) @ q0
     """
     _num_qubits = 1
     _name = 'RX'
@@ -1099,42 +883,29 @@ class GateRX(Gate):
 
 
 class GateRY(Gate):
-    """
-    Class for Single qubit Rotation-Y gate (RY gate).
-
-    **Arguments:**
-
-    :param theta: Rotation angle in radians.
-    :type theta: float
+    """Single qubit Rotation gate around the axis :math:`\\hat{y}`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{RY}(\\theta) = \\begin{pmatrix}
             \\cos\\frac{\\theta}{2} & -\\sin\\frac{\\theta}{2} \\\\
             \\sin\\frac{\\theta}{2} & \\cos\\frac{\\theta}{2}
         \\end{pmatrix}
 
-    :return: Rotation-Y gate (RY gate).
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): Rotation angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateRY
-    >>> import nump as np
-    >>> GateRY(np.pi/2).matrix()
-
-    >>> array([[ 0.70710678+0.j, -0.70710678-0.j],
-              [ 0.70710678+0.j,  0.70710678+0.j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateRY(np.pi/3),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates
-        └── RY(theta=1.0471975511965976) @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit,GateRY
+        >>> import nump as np
+        >>> GateRY(np.pi/2).matrix()
+            array([[ 0.70710678+0.j, -0.70710678-0.j],
+                   [ 0.70710678+0.j,  0.70710678+0.j]])
+        >>> c=Circuit()
+        >>> c.push(GateRY(np.pi/3),0)
+            1-qubit circuit with 1 instructions:
+             └── RY(theta=1.0471975511965976) @ q0
     """
     _num_qubits = 1
     _name = 'RY'
@@ -1151,42 +922,29 @@ class GateRY(Gate):
 
 
 class GateRZ(Gate):
-    """
-    Class for Single qubit Rotation-Z gate (RZ gate).
-
-    **Arguments:**
-
-    :param lambda: Rotation angle in radians.
-    :type lambda: float
+    """Single qubit Rotation gate around the axis :math:`\\hat{z}`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{RZ}(\\lambda) = \\begin{pmatrix}
             e^{-i\\frac{\\lambda}{2}} & 0 \\\\
             0 & e^{i\\frac{\\lambda}{2}}
         \\end{pmatrix}
 
-    :return: Rotation-Z gate (RZ gate).
-    :rtype: numpy.ndarray
+    Parameters:
+        lambda (float): Rotation angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateRZ
-    >>> import nump as np
-    >>> GateRZ(np.pi/2).matrix()
-
-    >>> array([[0.70710678-0.70710678j, 0.        -0.j        ],
-              [0.        +0.j        , 0.70710678+0.70710678j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateRZ(np.pi/3),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates
-        └── RZ(theta=1.0471975511965976) @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateRZ
+        >>> import nump as np
+        >>> GateRZ(np.pi/2).matrix()
+            array([[0.70710678-0.70710678j, 0.        -0.j        ],
+                   [0.        +0.j        , 0.70710678+0.70710678j]])
+        >>> c=Circuit()
+        >>> c.push(GateRZ(np.pi/3),0)
+            1-qubit circuit with 1 instructions:
+             └── RZ(theta=1.0471975511965976) @ q0
     """
     _num_qubits = 1
     _name = 'RZ'
@@ -1202,42 +960,29 @@ class GateRZ(Gate):
         return GateRZ(-self.lmbda)
 
 class GateP(Gate):
-    """
-    Class for Single qubit Phase gate.
-
-    **Arguments:**
-
-    :param lambda: Rotation angle in radians.
-    :type lambda: float
+    """Single qubit Phase gate.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{P}(\\lambda) = \\begin{pmatrix}
             1 & 0 \\\\
             0 & e^{i\\lambda}
         \\end{pmatrix}
 
-    :return: Phase gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        lambda (float): Phase angle
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateP
-    >>> import nump as np
-    >>> GateP(np.pi/4).matrix()
-
-    >>> array([[1.        +0.j        , 0.        +0.j        ],
-              [0.        +0.j        , 0.70710678+0.70710678j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateP(np.pi/3),0)
-    >>> print(c)
-
-    >>> 1-qubit circuit with 1 gates
-        └── P(theta=1.0471975511965976) @ q0
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateP
+        >>> import nump as np
+        >>> GateP(np.pi/4).matrix()
+            array([[1.        +0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.70710678+0.70710678j]])
+        >>> c=Circuit()
+        >>> c.push(GateP(np.pi/3),0)
+            1-qubit circuit with 1 instructions:
+             └── P(theta=1.0471975511965976) @ q0
     """
     _num_qubits = 1
     _name = 'P'
@@ -1254,13 +999,11 @@ class GateP(Gate):
 
 
 class GateCX(Gate):
-    """
-    Two qubit Controlled-X gate (or CNOT).
+    """Two qubit Controlled-X gate (or CNOT).
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{CX} = \\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 1 & 0 & 0 \\\\
@@ -1268,25 +1011,17 @@ class GateCX(Gate):
             0 & 0 & 1 & 0
         \\end{pmatrix}
 
-    :return: Controlled-X gate (or CNOT).
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCX
-    >>> GateCX().matrix()
-
-    >>> array([[1., 0., 0., 0.],
-              [0., 1., 0., 0.],
-              [0., 0., 0., 1.],
-              [0., 0., 1., 0.]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCX(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CX @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCX
+        >>> GateCX().matrix()
+            array([[1., 0., 0., 0.],
+                   [0., 1., 0., 0.],
+                   [0., 0., 0., 1.],
+                   [0., 0., 1., 0.]])
+        >>> c=Circuit()
+        >>> c.push(GateCX(),0,1)
+            2-qubit circuit with 1 instructions:
+             └── CX @ q0, q1
     """
     _num_qubits = 2
     _name = 'CX'
@@ -1299,13 +1034,11 @@ class GateCX(Gate):
 
 
 class GateCY(Gate):
-    """
-    Two qubit Controlled-Y gate.
-
+    """Two qubit Controlled-Y gate.
+    
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{CY} = \\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 1 & 0 & 0 \\\\
@@ -1313,25 +1046,17 @@ class GateCY(Gate):
             0 & 0 & i & 0
         \\end{pmatrix}
 
-    :return: Controlled-Y gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCY
-    >>> GateCY().matrix()
-
-    >>> array([[ 1.+0.j,  0.+0.j,  0.+0.j,  0.+0.j],
-              [ 0.+0.j,  1.+0.j,  0.+0.j,  0.+0.j],
-              [ 0.+0.j,  0.+0.j,  0.+0.j, -0.-1.j],
-              [ 0.+0.j,  0.+0.j,  0.+1.j,  0.+0.j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCY(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CY @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit,GateCY
+        >>> GateCY().matrix()
+            array([[ 1.+0.j,  0.+0.j,  0.+0.j,  0.+0.j],
+                   [ 0.+0.j,  1.+0.j,  0.+0.j,  0.+0.j],
+                   [ 0.+0.j,  0.+0.j,  0.+0.j, -0.-1.j],
+                   [ 0.+0.j,  0.+0.j,  0.+1.j,  0.+0.j]])
+        >>> c=Circuit()
+        >>> c.push(GateCY(),0,1)
+            2-qubit circuit with 1 instructions:
+             └── CY @ q0, q1
     """
     _num_qubits = 2
     _name = 'CY'
@@ -1344,13 +1069,11 @@ class GateCY(Gate):
 
 
 class GateCZ(Gate):
-    """
-    Two qubit Controlled-Z gate.
+    """Two qubit Controlled-Z gate.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{CZ} = \\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 1 & 0 & 0 \\\\
@@ -1358,25 +1081,17 @@ class GateCZ(Gate):
             0 & 0 & 0 & -1
         \\end{pmatrix}
 
-    :return: Controlled-Z gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCZ
-    >>> GateCZ().matrix()
-
-    >>> array([[ 1.,  0.,  0.,  0.],
-              [ 0.,  1.,  0.,  0.],
-              [ 0.,  0.,  1.,  0.],
-              [ 0.,  0.,  0., -1.]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCZ(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CZ @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCZ
+        >>> GateCZ().matrix()
+            array([[ 1.,  0.,  0.,  0.],
+                [ 0.,  1.,  0.,  0.],
+                [ 0.,  0.,  1.,  0.],
+                [ 0.,  0.,  0., -1.]])
+        >>> c=Circuit()
+        >>> c.push(GateCZ(),0,1)
+            2-qubit circuit with 1 instructions:
+             └── CZ @ q0, q1
     """
     _num_qubits = 2
     _name = 'CZ'
@@ -1389,13 +1104,11 @@ class GateCZ(Gate):
 
 
 class GateCH(Gate):
-    """
-    Two qubit Controlled-Hadamard gate.
-
+    """Two qubit Controlled-Hadamard gate.
+    
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{CH} = \\frac{1}{\\sqrt{2}} \\begin{pmatrix}
             1 & 1 & 0 & 0 \\\\
             1 & -1 & 0 & 0 \\\\
@@ -1403,25 +1116,17 @@ class GateCH(Gate):
             0 & 0 & 1 & -1
         \\end{pmatrix}
 
-    :return: Controlled-Hadamard gate (or CH).
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCH
-    >>> GateCH().matrix()
-
-    >>> array([[ 1.        ,  0.        ,  0.        ,  0.        ],
-               [ 0.        ,  1.        ,  0.        ,  0.        ],
-               [ 0.        ,  0.        ,  0.70710678,  0.70710678],
-               [ 0.        ,  0.        ,  0.70710678, -0.70710678]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCH(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CH @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit,GateCH
+        >>> GateCH().matrix()
+            array([[ 1.        ,  0.        ,  0.        ,  0.        ],
+                   [ 0.        ,  1.        ,  0.        ,  0.        ],
+                   [ 0.        ,  0.        ,  0.70710678,  0.70710678],
+                   [ 0.        ,  0.        ,  0.70710678, -0.70710678]])
+        >>> c=Circuit()
+        >>> c.push(GateCH(),0,1)
+            2-qubit circuit with 1 instructions:
+             └── CH @ q0, q1
     """
     _num_qubits = 2
     _name = 'CH'
@@ -1434,15 +1139,13 @@ class GateCH(Gate):
 
 
 class GateSWAP(Gate):
-    """
-    Two qubit SWAP gate.
-
-    See also :func:`GateISWAP`
+    """Two qubit SWAP gate.
+    
+    See Also :func:`GateISWAP`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{SWAP} = \\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 0 & 1 & 0 \\\\
@@ -1450,25 +1153,17 @@ class GateSWAP(Gate):
             0 & 0 & 0 & 1
         \\end{pmatrix}
 
-    :return: SWAP gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateSWAP
-    >>> GateSWAP().matrix()
-
-    >>> array([[1, 0, 0, 0],
-               [0, 0, 1, 0],
-               [0, 1, 0, 0],
-               [0, 0, 0, 1]])
-
-    >>> c=Circuit()
-    >>> c.push(GateSWAP(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── SWAP @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateSWAP
+        >>> GateSWAP().matrix()
+            array([[1, 0, 0, 0],
+                [0, 0, 1, 0],
+                [0, 1, 0, 0],
+                [0, 0, 0, 1]])
+        >>> c=Circuit()
+        >>> c.push(GateSWAP(),0,1)
+            2-qubit circuit with 1 instructions:
+             └── SWAP @ q0, q1
     """
     _num_qubits = 2
     _name = 'SWAP'
@@ -1483,15 +1178,13 @@ class GateSWAP(Gate):
 
 
 class GateISWAP(Gate):
-    """
-    Two qubit ISWAP gate.
+    """ Two qubit ISWAP gate.
 
-    See also :func:`GateISWAPDG`, :func:`GateSWAP`
+    See Also :func:`GateISWAPDG` and :func:`GateSWAP`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{ISWAP} = \\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 0 & i & 0 \\\\
@@ -1499,25 +1192,17 @@ class GateISWAP(Gate):
             0 & 0 & 0 & 1
         \\end{pmatrix}
 
-    :return: ISWAP gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateISWAP
-    >>> GateISWAP().matrix()
-
-    >>> array([[1.+0.j, 0.+0.j, 0.+0.j, 0.+0.j],
-               [0.+0.j, 0.+0.j, 0.+1.j, 0.+0.j],
-               [0.+0.j, 0.+1.j, 0.+0.j, 0.+0.j],
-               [0.+0.j, 0.+0.j, 0.+0.j, 1.+0.j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateISWAP(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── ISWAP @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateISWAP
+        >>> GateISWAP().matrix()
+            array([[1.+0.j, 0.+0.j, 0.+0.j, 0.+0.j],
+                   [0.+0.j, 0.+0.j, 0.+1.j, 0.+0.j],
+                   [0.+0.j, 0.+1.j, 0.+0.j, 0.+0.j],
+                   [0.+0.j, 0.+0.j, 0.+0.j, 1.+0.j]])
+        >>> c=Circuit()
+        >>> c.push(GateISWAP(),0,1)
+            2-qubit circuit with 1 instructions:
+             └── ISWAP @ q0, q1
     """
     _num_qubits = 2
     _name = 'ISWAP'
@@ -1533,9 +1218,9 @@ class GateISWAP(Gate):
 
 class GateISWAPDG(Gate):
     """
-    Two qubit ISWAP-dagger gate (conjugate transpose of ISWAP)
+    Two qubit :math:`{ISWAP}^{\\dagger}` gate (conjugate transpose of :math:`{ISWAP}` gate)
 
-    See also :func:`GateISWAP`, :func:`GateSWAP`
+    See Also :func:`GateISWAP`, :func:`GateSWAP`
 
     **Matrix representation:**
 
@@ -1548,25 +1233,17 @@ class GateISWAPDG(Gate):
             0 & 0 & 0 & 1
         \\end{pmatrix}
 
-    :return: ISWAP dagger (or inverse ISWAP) gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateISWAPDG
-    >>> GateISWAPDG().matrix()
-
-    >>> array([[ 1.+0.j,  0.+0.j,  0.+0.j,  0.+0.j],
-               [ 0.+0.j,  0.+0.j, -0.-1.j,  0.+0.j],
-               [ 0.+0.j, -0.-1.j,  0.+0.j,  0.+0.j],
-               [ 0.+0.j,  0.+0.j,  0.+0.j,  1.+0.j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateISWAPDG(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── ISWAPDG @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateISWAPDG
+        >>> GateISWAPDG().matrix()
+            array([[ 1.+0.j,  0.+0.j,  0.+0.j,  0.+0.j],
+                   [ 0.+0.j,  0.+0.j, -0.-1.j,  0.+0.j],
+                   [ 0.+0.j, -0.-1.j,  0.+0.j,  0.+0.j],
+                   [ 0.+0.j,  0.+0.j,  0.+0.j,  1.+0.j]])
+        >>> c=Circuit()
+        >>> c.push(GateISWAPDG(),0,1)
+            2-qubit circuit with 1 instructions:
+             └── ISWAPDG @ q0, q1
     """
     _num_qubits = 2
     _name = 'ISWAPDG'
@@ -1581,21 +1258,11 @@ class GateISWAPDG(Gate):
 
 
 class GateCU(Gate):
-    """
-    Two qubit generic unitary gate, equivalent to the
-    [qiskit CU-Gate](https://qiskit.org/documentation/stubs/qiskit.circuit.library.CUGate.html)
+    """Two qubit generic unitary gate.
 
-    **Arguments:**
+    equivalent to the [qiskit CU-Gate](https://qiskit.org/documentation/stubs/qiskit.circuit.library.CUGate.html)
 
-    :param theta: Euler angle 1 in radians.
-    :type theta: float
-    :param phi: Euler angle 2 in radians.
-    :type phi: float
-    :param lambda: Euler angle 3 in radians.
-    :type lambda: float
-    :param gamma: Global phase of the CU gate.
-    :type gamma: float
-
+    
     **Matrix representation:**
 
     .. math::
@@ -1606,30 +1273,27 @@ class GateCU(Gate):
             0 & 0 & e^{i(\\gamma+\\phi)}\\sin\\frac{\\theta}{2} & e^{i(\\gamma+\\phi+\\lambda)}\\cos\\frac{\\theta}{2}
         \\end{pmatrix}
 
-    :return: Controlled-U gate (CU).
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): Euler angle 1 in radians.
+        phi (float): Euler angle 2 in radians.
+        lambda (float): Euler angle 3 in radians.
+        gamma (float): Global phase of the CU gate.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCU
-    >>> GateCU(np.pi/3, np.pi/3, np.pi/3, 0).matrix()
-
-    >>> array([[ 1.       +0.j       ,  0.       +0.j       ,
-                 0.       +0.j       ,  0.       +0.j       ],
-               [ 0.       +0.j       ,  1.       +0.j       ,
-                 0.       +0.j       ,  0.       +0.j       ],
-               [ 0.       +0.j       ,  0.       +0.j       ,
-                 0.8660254+0.j       , -0.25     -0.4330127j],
-               [ 0.       +0.j       ,  0.       +0.j       ,
-                 0.25     +0.4330127j, -0.4330127+0.75j     ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCU(np.pi/3, np.pi/3, np.pi/3, 0),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CU(theta=1.0471975511965976, phi=1.0471975511965976, lmbda=1.0471975511965976, gamma=0) @ q0, q1
-
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCU
+        >>> GateCU(np.pi/3, np.pi/3, np.pi/3, 0).matrix()
+            array([[ 1.       +0.j       ,  0.       +0.j       ,
+                     0.       +0.j       ,  0.       +0.j       ],
+                   [ 0.       +0.j       ,  1.       +0.j       ,
+                     0.       +0.j       ,  0.       +0.j       ],
+                   [ 0.       +0.j       ,  0.       +0.j       ,
+                     0.8660254+0.j       , -0.25     -0.4330127j],
+                   [ 0.       +0.j       ,  0.       +0.j       ,
+                     0.25     +0.4330127j, -0.4330127+0.75j     ]])
+        >>> c=Circuit()
+        >>> c.push(GateCU(np.pi/3, np.pi/3, np.pi/3, 0),0,1)
+            2-qubit circuit with 1 instructions:
+             └── CU(theta=1.0471975511965976, phi=1.0471975511965976, lmbda=1.0471975511965976, gamma=0) @ q0, q1
     """
     _num_qubits = 2
     _name = 'CU'
@@ -1649,20 +1313,13 @@ class GateCU(Gate):
 
 
 class GateCR(Gate):
-    """
-    Two qubit Controlled-R gate.
+    """Two qubit Controlled-R gate.
 
-    **Arguments:**
-
-    :param theta: The rotation angle in radians.
-    :type theta: float
-    :param phi: The phase angle in radians.
-    :type phi: float
-
+    See Also :func:`GateR`
+    
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{CR}(\\theta, \\phi) = \\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 1 & 0 & 0 \\\\
@@ -1670,30 +1327,26 @@ class GateCR(Gate):
             0 & 0 & -i e^{i\\phi}\\sin\\frac{\\theta}{2} & \\cos\\frac{\\theta}{2}
         \\end{pmatrix}
 
-    :return: Controlled-R gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): The rotation angle in radians.
+        phi (float): The phase angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCR
-    >>> import numpy as np 
-    >>> GateCR(np.pi/3, np.pi/3).matrix()
-
-    >>> array([[ 1.       +0.j  ,  0.       +0.j  ,  0.       +0.j  ,
-                 0.       +0.j  ],
-               [ 0.       +0.j  ,  1.       +0.j  ,  0.       +0.j  ,
-                 0.       +0.j  ],
-               [ 0.       +0.j  ,  0.       +0.j  ,  0.8660254+0.j  ,
-                -0.4330127-0.25j],
-               [ 0.       +0.j  ,  0.       +0.j  ,  0.4330127-0.25j,
-                 0.8660254+0.j  ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCR(np.pi/3, np.pi/3),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CR(theta=1.0471975511965976, phi=1.0471975511965976) @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCR
+        >>> import numpy as np 
+        >>> GateCR(np.pi/3, np.pi/3).matrix()
+            array([[ 1.       +0.j  ,  0.       +0.j  ,  0.       +0.j  ,
+                     0.       +0.j  ],
+                   [ 0.       +0.j  ,  1.       +0.j  ,  0.       +0.j  ,
+                     0.       +0.j  ],
+                   [ 0.       +0.j  ,  0.       +0.j  ,  0.8660254+0.j  ,
+                     -0.4330127-0.25j],
+                   [ 0.       +0.j  ,  0.       +0.j  ,  0.4330127-0.25j,
+                     0.8660254+0.j  ]])
+        >>> c=Circuit()
+        >>> c.push(GateCR(np.pi/3, np.pi/3),0,1)
+            2-qubit circuit with 1 instructions:
+             └── CR(theta=1.0471975511965976, phi=1.0471975511965976) @ q0, q1
     """
     _num_qubits = 2
     _name = 'CR'
@@ -1711,18 +1364,13 @@ class GateCR(Gate):
 
 
 class GateCRX(Gate):
-    """
-    Two qubit Controlled-RX gate.
+    """Two qubit Controlled-RX gate.
 
-    **Arguments:**
-
-    :param theta: The rotation angle in radians.
-    :type theta: float
+    See Also :func:`GateRX`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{CRX}(\\theta) = \\begin{pmatrix}
                   1 & 0 & 0 & 0 \\\\
                   0 & 1 & 0 & 0 \\\\
@@ -1730,30 +1378,25 @@ class GateCRX(Gate):
                   0 & 0 & -i\\sin\\frac{\\theta}{2} & \\cos\\frac{\\theta}{2}
               \\end{pmatrix}
 
-    :return: Two qubit Controlled-RX gate .
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): The rotation angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCRX
-    >>> import numpy as np 
-    >>> GateCRX(np.pi/2).matrix()
-
-    >>> array([[ 1.00000000e+00+0.j        ,  0.00000000e+00+0.j        ,
-                 0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ],
-               [ 0.00000000e+00+0.j        ,  1.00000000e+00+0.j        ,
-                 0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ],
-               [ 0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ,
-                 7.07106781e-01+0.j        , -4.32978028e-17-0.70710678j],
-               [ 0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ,
-                 4.32978028e-17-0.70710678j,  7.07106781e-01+0.j        ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCRX(np.pi/3),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CRX(theta=1.0471975511965976) @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCRX
+        >>> import numpy as np 
+        >>> GateCRX(np.pi/2).matrix()
+            array([[ 1.00000000e+00+0.j        ,  0.00000000e+00+0.j        ,
+                     0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ],
+                   [ 0.00000000e+00+0.j        ,  1.00000000e+00+0.j        ,
+                     0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ],
+                   [ 0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ,
+                     7.07106781e-01+0.j        , -4.32978028e-17-0.70710678j],
+                   [ 0.00000000e+00+0.j        ,  0.00000000e+00+0.j        ,
+                     4.32978028e-17-0.70710678j,  7.07106781e-01+0.j        ]])
+        >>> c=Circuit()
+        >>> c.push(GateCRX(np.pi/3),0,1)
+            2-qubit circuit with 1 instructions:
+             └── CRX(theta=1.0471975511965976) @ q0, q1
     """
     _num_qubits = 2
     _name = 'CRX'
@@ -1770,18 +1413,13 @@ class GateCRX(Gate):
 
 
 class GateCRY(Gate):
-    """
-    Two qubit Controlled-RY gate.
+    """Two qubit Controlled-RY gate.
 
-    **Arguments:**
-
-    :param theta: The rotation angle in radians.
-    :type theta: float
+    See Also :func:`GateRY`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{CRY}(\\theta) = \\begin{pmatrix}
                   1 & 0 & 0 & 0 \\\\
                   0 & 1 & 0 & 0 \\\\
@@ -1789,30 +1427,26 @@ class GateCRY(Gate):
                   0 & 0 &  \\sin\\frac{\\theta}{2} & \\cos\\frac{\\theta}{2}
               \\end{pmatrix}
 
-    :return: Controlled-RY gate .
-    :rtype: numpy.ndarray
+    
+    Parameters:
+        theta (float): The rotation angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCRY
-    >>> import numpy as np 
-    >>> GateCRY(np.pi/2).matrix()
-
-    >>> array([[ 1.        +0.j,  0.        +0.j,  0.        +0.j,
-                 0.        +0.j],
-               [ 0.        +0.j,  1.        +0.j,  0.        +0.j,
-                 0.        +0.j],
-               [ 0.        +0.j,  0.        +0.j,  0.70710678+0.j,
-                -0.70710678-0.j],
-               [ 0.        +0.j,  0.        +0.j,  0.70710678+0.j,
-                 0.70710678+0.j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCRY(np.pi/2),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CRY(theta=1.5707963267948966) @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCRY
+        >>> import numpy as np 
+        >>> GateCRY(np.pi/2).matrix()
+            array([[ 1.        +0.j,  0.        +0.j,  0.        +0.j,
+                     0.        +0.j],
+                   [ 0.        +0.j,  1.        +0.j,  0.        +0.j,
+                     0.        +0.j],
+                   [ 0.        +0.j,  0.        +0.j,  0.70710678+0.j,
+                     -0.70710678-0.j],
+                   [ 0.        +0.j,  0.        +0.j,  0.70710678+0.j,
+                     0.70710678+0.j]])
+        >>> c=Circuit()
+        >>> c.push(GateCRY(np.pi/2),0,1)
+            2-qubit circuit with 1 instructions:
+             └── CRY(theta=1.5707963267948966) @ q0, q1
     """
     _num_qubits = 2
     _name = 'CRY'
@@ -1829,18 +1463,13 @@ class GateCRY(Gate):
 
 
 class GateCRZ(Gate):
-    """
-    Two qubit Controlled-RZ gate.
+    """Two qubit Controlled-RZ gate.
 
-    **Arguments**
-
-    :param theta: The rotation angle in radians.
-    :type theta: float
+    See Also :func:`GateRZ`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{CRZ}(\\theta) = \\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 1 & 0 & 0 \\\\
@@ -1848,30 +1477,26 @@ class GateCRZ(Gate):
             0 & 0 & 0 & e^{i\\frac{\\lambda}{2}}
               \\end{pmatrix}
 
-    :return: Controlled-RZ gate .
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): The rotation angle in radians.
 
-    **Example:**
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCRZ
+        >>> import numpy as np 
+        >>> GateCRZ(np.pi/2).matrix()
+            array([[1.        +0.j        , 0.        +0.j        ,
+                    0.        +0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 1.        +0.j        ,
+                    0.        +0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.        +0.j        ,
+                    0.70710678-0.70710678j, 0.        -0.j        ],
+                   [0.        +0.j        , 0.        +0.j        ,
+                    0.        +0.j        , 0.70710678+0.70710678j]])
 
-    >>> from  mimiqcircuits import Circuit,GateCRZ
-    >>> import numpy as np 
-    >>> GateCRZ(np.pi/2).matrix()
-
-    >>> array([[1.        +0.j        , 0.        +0.j        ,
-                0.        +0.j        , 0.        +0.j        ],
-               [0.        +0.j        , 1.        +0.j        ,
-                0.        +0.j        , 0.        +0.j        ],
-               [0.        +0.j        , 0.        +0.j        ,
-                0.70710678-0.70710678j, 0.        -0.j        ],
-               [0.        +0.j        , 0.        +0.j        ,
-                0.        +0.j        , 0.70710678+0.70710678j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCRZ(np.pi/2),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CRZ(theta=1.5707963267948966) @ q0, q1
+        >>> c=Circuit()
+        >>> c.push(GateCRZ(np.pi/2),0,1)
+            2-qubit circuit with 1 gates
+             └── CRZ(theta=1.5707963267948966) @ q0, q1
     """
     _num_qubits = 2
     _name = 'CRZ'
@@ -1888,13 +1513,9 @@ class GateCRZ(Gate):
 
 
 class GateCP(Gate):
-    """
-    Two qubit Controlled-Phase gate.
-
-    **Arguments:**
-
-    :param lambda: Phase angle in radians.
-    :type lambda: float
+    """Two qubit Controlled-Phase gate.
+    
+    See Also :func:`GateP`
 
     **Matrix representation:**
 
@@ -1907,30 +1528,25 @@ class GateCP(Gate):
             0 & 0 & 0 & e^{i\\lambda}
               \\end{pmatrix}
 
-    :return: Controlled-Phase gate
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCP
-    >>> import numpy as np 
-    >>> GateCP(np.pi/4).matrix()
-
-    >>> array([[0.92387953-0.38268343j, 0.        +0.j        ,
-                0.        +0.j        , 0.        +0.j        ],
-               [0.        +0.j        , 0.92387953+0.38268343j,
-                0.        +0.j        , 0.        +0.j        ],
-               [0.        +0.j        , 0.        +0.j        ,
-                0.92387953+0.38268343j, 0.        +0.j        ],
-               [0.        +0.j        , 0.        +0.j        ,
-                0.        +0.j        , 0.92387953-0.38268343j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCP(np.pi/2),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CP(theta=1.5707963267948966) @ q0, q1
+    Parameters:
+        param lambda (float): Phase angle in radians.
+    
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCP
+        >>> import numpy as np 
+        >>> GateCP(np.pi/4).matrix()
+            array([[0.92387953-0.38268343j, 0.        +0.j        ,
+                    0.        +0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.92387953+0.38268343j,
+                    0.        +0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.        +0.j        ,
+                    0.92387953+0.38268343j, 0.        +0.j        ],
+                   [0.        +0.j        , 0.        +0.j        ,
+                    0.        +0.j        , 0.92387953-0.38268343j]])
+        >>> c=Circuit()
+        >>> c.push(GateCP(np.pi/2),0,1)
+            2-qubit circuit with 1 instructions:
+             └── CP(theta=1.5707963267948966) @ q0, q1
     """
     _num_qubits = 2
     _name = 'CP'
@@ -1947,18 +1563,13 @@ class GateCP(Gate):
 
 
 class GateRZZ(Gate):
-    """
-    Two qubit RZZ gate.
+    """Two qubit RZZ gate (rotation about ZZ)..
 
-    **Arguments:**
-
-    :param theta: The angle in radians.
-    :type theta: float
-
+    This gate is symmetric, and is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
+    
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{RZZ}(\\theta) = \\begin{pmatrix}
             e^{-i\\frac{\\theta}{2}} & 0 & 0 & 0 \\\\
             0 & e^{i\\frac{\\theta}{2}} & 0 & 0 \\\\
@@ -1966,30 +1577,25 @@ class GateRZZ(Gate):
             0 & 0 & 0 & e^{-i\\frac{\\theta}{2}}
         \\end{pmatrix}
 
-    :return: RZZ gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): The angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateRZZ
-    >>> import numpy as np 
-    >>> GateRZZ(np.pi/4).matrix()
-
-    >>> array([[0.92387953-0.38268343j, 0.        +0.j        ,
-                0.        +0.j        , 0.        +0.j        ],
-               [0.        +0.j        , 0.92387953+0.38268343j,
-                0.        +0.j        , 0.        +0.j        ],
-               [0.        +0.j        , 0.        +0.j        ,
-                0.92387953+0.38268343j, 0.        +0.j        ],
-               [0.        +0.j        , 0.        +0.j        ,
-                0.        +0.j        , 0.92387953-0.38268343j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateRZZ(np.pi/2),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── RZZ(theta=1.5707963267948966) @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateRZZ
+        >>> import numpy as np 
+        >>> GateRZZ(np.pi/4).matrix()
+            array([[0.92387953-0.38268343j, 0.        +0.j        ,
+                    0.        +0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.92387953+0.38268343j,
+                    0.        +0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.        +0.j        ,
+                    0.92387953+0.38268343j, 0.        +0.j        ],
+                   [0.        +0.j        , 0.        +0.j        ,
+                    0.        +0.j        , 0.92387953-0.38268343j]])
+        >>> c=Circuit()
+        >>> c.push(GateRZZ(np.pi/2),0,1)
+            2-qubit circuit with 1 instructions:
+             └── RZZ(theta=1.5707963267948966) @ q0, q1
     """
     _num_qubits = 2
     _name = 'RZZ'
@@ -2009,13 +1615,9 @@ class GateRZZ(Gate):
 
 
 class GateRXX(Gate):
-    """
-    Two qubit RXX gate.
+    """Two qubit RXX gate (rotation about XX).
 
-    **Arguments**
-
-    :param theta: The angle in radians.
-    :type theta: float
+    This gate is symmetric, and is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
 
     **Matrix representation:**
 
@@ -2028,30 +1630,25 @@ class GateRXX(Gate):
             -i\\sin(\\frac{\\theta}{2}) & 0 & 0 & \\cos(\\frac{\\theta}{2})
         \\end{pmatrix}
 
-    :return: RXX gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        theta: The angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateRXX
-    >>> import numpy as np 
-    >>> GateRXX(np.pi/4).matrix()
-
-    >>> array([[0.92387953+0.j        , 0.        +0.j        ,
-                0.        +0.j        , 0.        -0.38268343j],
-               [0.        +0.j        , 0.92387953+0.j        ,
-                0.        -0.38268343j, 0.        +0.j        ],
-               [0.        +0.j        , 0.        -0.38268343j,
-                0.92387953+0.j        , 0.        +0.j        ],
-               [0.        -0.38268343j, 0.        +0.j        ,
-                0.        +0.j        , 0.92387953+0.j        ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateRXX(np.pi/2),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── RXX(theta=1.5707963267948966) @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateRXX
+        >>> import numpy as np 
+        >>> GateRXX(np.pi/4).matrix()
+            array([[0.92387953+0.j        , 0.        +0.j        ,
+                    0.        +0.j        , 0.        -0.38268343j],
+                   [0.        +0.j        , 0.92387953+0.j        ,
+                    0.        -0.38268343j, 0.        +0.j        ],
+                   [0.        +0.j        , 0.        -0.38268343j,
+                    0.92387953+0.j        , 0.        +0.j        ],
+                   [0.        -0.38268343j, 0.        +0.j        ,
+                    0.        +0.j        , 0.92387953+0.j        ]])
+        >>> c=Circuit()
+        >>> c.push(GateRXX(np.pi/2),0,1)
+            2-qubit circuit with 1 instructions:
+             └── RXX(theta=1.5707963267948966) @ q0, q1
     """
     _num_qubits = 2
     _name = 'RXX'
@@ -2073,18 +1670,13 @@ class GateRXX(Gate):
 
 
 class GateRYY(Gate):
-    """
-    Two qubit RYY gate.
-
-    **Arguments:**
-
-    :param theta: The angle in radians.
-    :type theta: float
-
+    """Two qubit RYY gate (rotation about YY).
+    
+    This gate is symmetric, and is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
+    
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{RYY}(\\theta) =\\begin{pmatrix}
             \\cos(\\frac{\\theta}{2}) & 0 & 0 & i\\sin(\\frac{\\theta}{2}) \\\\
             0 & \\cos(\\frac{\\theta}{2}) & -i\\sin(\\frac{\\theta}{2}) & 0 \\\\
@@ -2092,30 +1684,25 @@ class GateRYY(Gate):
             i\\sin(\\frac{\\theta}{2}) & 0 & 0 & \\cos(\\frac{\\theta}{2})
         \\end{pmatrix}
 
-    :return: RYY gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): The angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateRYY
-    >>> import numpy as np 
-    >>> GateRYY(np.pi/4).matrix()
-
-    >>> array([[0.92387953+0.j        , 0.        +0.j        ,
-                0.        +0.j        , 0.        +0.38268343j],
-               [0.        +0.j        , 0.92387953+0.j        ,
-                0.        -0.38268343j, 0.        +0.j        ],
-               [0.        +0.j        , 0.        -0.38268343j,
-                0.92387953+0.j        , 0.        +0.j        ],
-               [0.        +0.38268343j, 0.        +0.j        ,
-                0.        +0.j        , 0.92387953+0.j        ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateRYY(np.pi/2),0,1)
-    >>> print(c)
-
-     >>> 2-qubit circuit with 1 gates
-         └── RYY(theta=1.5707963267948966) @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateRYY
+        >>> import numpy as np 
+        >>> GateRYY(np.pi/4).matrix()
+            array([[0.92387953+0.j        , 0.        +0.j        ,
+                    0.        +0.j        , 0.        +0.38268343j],
+                   [0.        +0.j        , 0.92387953+0.j        ,
+                    0.        -0.38268343j, 0.        +0.j        ],
+                   [0.        +0.j        , 0.        -0.38268343j,
+                    0.92387953+0.j        , 0.        +0.j        ],
+                   [0.        +0.38268343j, 0.        +0.j        ,
+                    0.        +0.j        , 0.92387953+0.j        ]])
+        >>> c=Circuit()
+        >>> c.push(GateRYY(np.pi/2),0,1)
+            2-qubit circuit with 1 instructions:
+             └── RYY(theta=1.5707963267948966) @ q0, q1
     """
     _num_qubits = 2
     _name = 'RYY'
@@ -2137,13 +1724,7 @@ class GateRYY(Gate):
 
 
 class GateRXZ(Gate):
-    """
-    Two qubit RXZ gate.
-
-    **Arguments:**
-
-    :param theta: The angle in radians.
-    :type theta: float
+    """ Two qubit RXZ gate.
 
     **Matrix representation:**
 
@@ -2156,30 +1737,26 @@ class GateRXZ(Gate):
             0 & i\\sin(\\frac{\\theta}{2}) & 0 & \\cos(\\frac{\\theta}{2})
         \\end{pmatrix}
 
-    :return: RXZ gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): The angle in radians.
+    
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateRXZ
+        >>> import numpy as np 
+        >>> GateRXZ(np.pi/4).matrix()
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateRXZ
-    >>> import numpy as np 
-    >>> GateRXZ(np.pi/4).matrix()
-
-    >>> array([[0.92387953+0.j        , 0.        +0.j        ,
-                0.        -0.38268343j, 0.        +0.j        ],
-               [0.        +0.j        , 0.92387953+0.j        ,
-                0.        +0.j        , 0.        +0.38268343j],
-               [0.        -0.38268343j, 0.        +0.j        ,
-                0.92387953+0.j        , 0.        +0.j        ],
-               [0.        +0.j        , 0.        +0.38268343j,
-                0.        +0.j        , 0.92387953+0.j        ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateRXZ(np.pi/2),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── RXZ(theta=1.5707963267948966) @ q0, q1
+        >>> array([[0.92387953+0.j        , 0.        +0.j        ,
+                    0.        -0.38268343j, 0.        +0.j        ],
+                   [0.        +0.j        , 0.92387953+0.j        ,
+                    0.        +0.j        , 0.        +0.38268343j],
+                   [0.        -0.38268343j, 0.        +0.j        ,
+                    0.92387953+0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.        +0.38268343j,
+                    0.        +0.j        , 0.92387953+0.j        ]])
+        >>> c=Circuit()
+        >>> c.push(GateRXZ(np.pi/2),0,1)
+            2-qubit circuit with 1 instructions:
+             └── RXZ(theta=1.5707963267948966) @ q0, q1
     """
     _num_qubits = 2
     _name = 'RXZ'
@@ -2200,18 +1777,13 @@ class GateRXZ(Gate):
 
 
 class GateRZX(Gate):
-    """
-    Two qubit RZX gate.
-
-    **Arguments:**
-
-    :param theta: The angle in radians.
-    :type theta: float
+    """Two qubit RZX gate.
+    
+    This gate i is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{RZX}(\\theta) =\\begin{pmatrix}
             \\cos(\\frac{\\theta}{2}) & -i\\sin(\\frac{\\theta}{2}) & 0 & 0 \\\\
             -i\\sin(\\frac{\\theta}{2}) & \\cos(\\frac{\\theta}{2}) & 0 & 0 \\\\
@@ -2219,30 +1791,25 @@ class GateRZX(Gate):
             0 & 0 & i\\sin(\\frac{\\theta}{2}) & \\cos(\\frac{\\theta}{2})
         \\end{pmatrix}
 
-    :return: RZX gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): The angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateRZX
-    >>> import numpy as np 
-    >>> GateRZX(np.pi/4).matrix()
-
-    >>> array([[0.92387953+0.j        , 0.        +0.j        ,
-                0.        -0.38268343j, 0.        +0.j        ],
-               [0.        +0.j        , 0.92387953+0.j        ,
-                0.        +0.j        , 0.        +0.38268343j],
-               [0.        -0.38268343j, 0.        +0.j        ,
-                0.92387953+0.j        , 0.        +0.j        ],
-               [0.        +0.j        , 0.        +0.38268343j,
-                0.        +0.j        , 0.92387953+0.j        ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateRZX(np.pi/2),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── RZX(theta=1.5707963267948966) @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateRZX
+        >>> import numpy as np 
+        >>> GateRZX(np.pi/4).matrix()
+            array([[0.92387953+0.j        , 0.        +0.j        ,
+                    0.        -0.38268343j, 0.        +0.j        ],
+                   [0.        +0.j        , 0.92387953+0.j        ,
+                    0.        +0.j        , 0.        +0.38268343j],
+                   [0.        -0.38268343j, 0.        +0.j        ,
+                    0.92387953+0.j        , 0.        +0.j        ],
+                   [0.        +0.j        , 0.        +0.38268343j,
+                    0.        +0.j        , 0.92387953+0.j        ]])
+        >>> c=Circuit()
+        >>> c.push(GateRZX(np.pi/2),0,1)
+            2-qubit circuit with 1 instructions:
+             └── RZX(theta=1.5707963267948966) @ q0, q1
     """
     _num_qubits = 2
     _name = 'RZX'
@@ -2264,20 +1831,13 @@ class GateRZX(Gate):
 
 
 class GateXXplusYY(Gate):
-    """
-    Two qubit parametric XXplusYY gate.
-
-    **Arguments:**
-
-    :param theta: The angle in radians.
-    :type theta: float
-    :param beta: The phase angle in radians.
-    :type beta: float
+    """Two qubit parametric XXplusYY gate.
+    
+    Also known as an XY gate. Its action is to induce a coherent rotation by some angle between :math:`\\ket{10}` and :math:`\\ket{01}`.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{XXplusYY}(\\theta, \\beta)= \\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & \\cos(\\frac{\\theta}{2}) & -i\\sin(\\frac{\\theta}{2})e^{-i\\beta} & 0 \\\\
@@ -2285,30 +1845,26 @@ class GateXXplusYY(Gate):
             0 & 0 & 0 & 1
         \\end{pmatrix}
 
-    :return: XXplusYY gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): The angle in radians.
+        beta (float): The phase angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateXXplusYY
-    >>> import numpy as np 
-    >>> GateXXplusYY(np.pi/2,np.pi/2).matrix()
-
-    >>> array([[ 1.        +0.00000000e+00j,  0.        +0.00000000e+00j,
-                 0.        +0.00000000e+00j,  0.        +0.00000000e+00j],
-               [ 0.        +0.00000000e+00j,  0.70710678+0.00000000e+00j,
-                -0.70710678-4.32978028e-17j,  0.        +0.00000000e+00j],
-               [ 0.        +0.00000000e+00j,  0.70710678-4.32978028e-17j,
-                 0.70710678+0.00000000e+00j,  0.        +0.00000000e+00j],
-               [ 0.        +0.00000000e+00j,  0.        +0.00000000e+00j,
-                 0.        +0.00000000e+00j,  1.        +0.00000000e+00j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateXXplusYY(np.pi/2,np.pi/2),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └──XXplusYY(theta=1.5707963267948966, beta=1.5707963267948966) @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateXXplusYY
+        >>> import numpy as np 
+        >>> GateXXplusYY(np.pi/2,np.pi/2).matrix()
+            array([[ 1.        +0.00000000e+00j,  0.        +0.00000000e+00j,
+                     0.        +0.00000000e+00j,  0.        +0.00000000e+00j],
+                   [ 0.        +0.00000000e+00j,  0.70710678+0.00000000e+00j,
+                    -0.70710678-4.32978028e-17j,  0.        +0.00000000e+00j],
+                   [ 0.        +0.00000000e+00j,  0.70710678-4.32978028e-17j,
+                     0.70710678+0.00000000e+00j,  0.        +0.00000000e+00j],
+                   [ 0.        +0.00000000e+00j,  0.        +0.00000000e+00j,
+                     0.        +0.00000000e+00j,  1.        +0.00000000e+00j]])
+        >>> c=Circuit()
+        >>> c.push(GateXXplusYY(np.pi/2,np.pi/2),0,1)
+            2-qubit circuit with 1 instructions:
+             └──XXplusYY(theta=1.5707963267948966, beta=1.5707963267948966) @ q0, q1
 
     """
     _num_qubits = 2
@@ -2332,20 +1888,13 @@ class GateXXplusYY(Gate):
 
 
 class GateXXminusYY(Gate):
-    """
-    Two qubit parametric GateXXminusYY gate.
-
-    **Arguments:**
-
-    :param theta: The angle in radians.
-    :type theta: float
-    :param beta: The angle in radians.
-    :type beta: float
+    """Two qubit parametric GateXXminusYY gate.
+    
+    Its action is to induce a coherent rotation by some angle between :math:`\\ket{00}` and :math:`\\ket{11}`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{XXminusYY}(\\theta, \\beta)=\\begin{pmatrix}
             \\cos(\\frac{\\theta}{2}) & 0 & 0 & -i\\sin(\\frac{\\theta}{2})e^{-i\\beta} \\\\
             0 & 1 & 0 & 0 \\\\
@@ -2353,31 +1902,26 @@ class GateXXminusYY(Gate):
             -i\\sin(\\frac{\\theta}{2})e^{i\\beta} & 0 & 0 & \\cos(\\frac{\\theta}{2})
         \\end{pmatrix}
 
-    :return: XXminusYY gate.
-    :rtype: numpy.ndarray
+    Parameters:
+        theta (float): The angle in radians.
+        beta (float): The angle in radians.
 
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateXXminusYY
-    >>> import numpy as np
-    >>> GateXXminusYY(np.pi/2,np.pi/2).matrix()
-
-    >>> array([[ 0.70710678+0.00000000e+00j,  0.        +0.00000000e+00j,
-                 0.        +0.00000000e+00j,  0.70710678-4.32978028e-17j],
-               [ 0.        +0.00000000e+00j,  1.        +0.00000000e+00j,
-                 0.        +0.00000000e+00j,  0.        +0.00000000e+00j],
-               [ 0.        +0.00000000e+00j,  0.        +0.00000000e+00j,
-                 1.        +0.00000000e+00j,  0.        +0.00000000e+00j],
-               [-0.70710678-4.32978028e-17j,  0.        +0.00000000e+00j,
-                 0.        +0.00000000e+00j,  0.70710678+0.00000000e+00j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateXXminusYY(np.pi/2,np.pi/2),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── XXminusYY(theta=1.5707963267948966, beta=1.5707963267948966) @ q0, q1
-
+    Examples:
+            >>> from mimiqcircuits import Circuit, GateXXminusYY
+            >>> import numpy as np
+            >>> GateXXminusYY(np.pi/2,np.pi/2).matrix()
+                array([[ 0.70710678+0.00000000e+00j,  0.        +0.00000000e+00j,
+                         0.        +0.00000000e+00j,  0.70710678-4.32978028e-17j],
+                       [ 0.        +0.00000000e+00j,  1.        +0.00000000e+00j,
+                         0.        +0.00000000e+00j,  0.        +0.00000000e+00j],
+                       [ 0.        +0.00000000e+00j,  0.        +0.00000000e+00j,
+                         1.        +0.00000000e+00j,  0.        +0.00000000e+00j],
+                       [-0.70710678-4.32978028e-17j,  0.        +0.00000000e+00j,
+                         0.        +0.00000000e+00j,  0.70710678+0.00000000e+00j]])
+            >>> c=Circuit()
+            >>> c.push(GateXXminusYY(np.pi/2,np.pi/2),0,1)
+                2-qubit circuit with 1 instructions:
+                 └── XXminusYY(theta=1.5707963267948966, beta=1.5707963267948966) @ q0, q1
     """
     _num_qubits = 2
     _name = 'XXminusYY'
@@ -2398,13 +1942,13 @@ class GateXXminusYY(Gate):
 
 
 class GateCS(Gate):
-    """
-    Two qubit Controlled-S gate.
+    """Two qubit Controlled-S gate.
 
+    See Also :func:`GateS`
+    
     **Matrix representation:**:
 
     .. math::
-
         \\operatorname{CS} =\\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 1 & 0 & 0 \\\\
@@ -2412,29 +1956,21 @@ class GateCS(Gate):
             0 & 0 & 0 & i
         \\end{pmatrix}
 
-    :return: Controlled-S gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCS
-    >>> GateCS().matrix()
-
-    >>> array([[1.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
-                0.000000e+00+0.j],
-               [0.000000e+00+0.j, 1.000000e+00+0.j, 0.000000e+00+0.j,
-                0.000000e+00+0.j],
-               [0.000000e+00+0.j, 0.000000e+00+0.j, 1.000000e+00+0.j,
-                0.000000e+00+0.j],
-               [0.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
-                6.123234e-17+1.j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCS(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CS @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCS
+        >>> GateCS().matrix()
+            array([[1.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
+                    0.000000e+00+0.j],
+                [0.000000e+00+0.j, 1.000000e+00+0.j, 0.000000e+00+0.j,
+                    0.000000e+00+0.j],
+                [0.000000e+00+0.j, 0.000000e+00+0.j, 1.000000e+00+0.j,
+                    0.000000e+00+0.j],
+                [0.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
+                    6.123234e-17+1.j]])
+        >>> c=Circuit()
+        >>> c.push(GateCS(),0,1)
+            2-qubit circuit with 1 instructions:
+            └── CS @ q0, q1
     """
     _num_qubits = 2
     _name = 'CS'
@@ -2447,13 +1983,11 @@ class GateCS(Gate):
 
 
 class GateCSDG(Gate):
-    """
-    Two qubit Controlled-S gate.
-
+    """Two qubit Controlled-S gate.
+    
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{CS}^{\\dagger} = \\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 1 & 0 & 0 \\\\
@@ -2461,29 +1995,21 @@ class GateCSDG(Gate):
             0 & 0 & 0 & -i
             \\end{pmatrix}
 
-    :return: CS-dagger gate.
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCSDG
-    >>> GateCSDG().matrix()
-
-    >>> array([[1.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
-               0.000000e+00+0.j],
-              [0.000000e+00+0.j, 1.000000e+00+0.j, 0.000000e+00+0.j,
-               0.000000e+00+0.j],
-              [0.000000e+00+0.j, 0.000000e+00+0.j, 1.000000e+00+0.j,
-               0.000000e+00+0.j],
-              [0.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
-               6.123234e-17-1.j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCSDG(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CSDG @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCSDG
+        >>> GateCSDG().matrix()
+            array([[1.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
+                    0.000000e+00+0.j],
+                [0.000000e+00+0.j, 1.000000e+00+0.j, 0.000000e+00+0.j,
+                    0.000000e+00+0.j],
+                [0.000000e+00+0.j, 0.000000e+00+0.j, 1.000000e+00+0.j,
+                    0.000000e+00+0.j],
+                [0.000000e+00+0.j, 0.000000e+00+0.j, 0.000000e+00+0.j,
+                    6.123234e-17-1.j]])
+        >>> c=Circuit()
+        >>> c.push(GateCSDG(),0,1)
+            2-qubit circuit with 1 instructions:
+            └── CSDG @ q0, q1
     """
     _num_qubits = 2
     _name = 'CSDG'
@@ -2499,8 +2025,7 @@ class GateCSDG(Gate):
 
 
 class GateCSX(Gate):
-    """
-    Two qubit Controled-SX (control on second qubit) gate.
+    """Two qubit Controled-SX (control on second qubit) gate.
 
     **Matrix representation:**
 
@@ -2513,23 +2038,17 @@ class GateCSX(Gate):
             0 & \\frac{1-i}{\\sqrt{2}} & 0 & \\frac{1+i}{\\sqrt{2}}
         \\end{pmatrix}
 
-    :return: Controled-SX gate
-    :rtype: numpy.ndarray
-
-    >>> from  mimiqcircuits import Circuit,GateCSX
-    >>> GateCSX().matrix()
-
-    >>> array([[1. +0.j , 0. +0.j , 0. +0.j , 0. +0.j ],
-               [0. +0.j , 0.5+0.5j, 0. +0.j , 0.5-0.5j],
-               [0. +0.j , 0. +0.j , 1. +0.j , 0. +0.j ],
-               [0. +0.j , 0.5-0.5j, 0. +0.j , 0.5+0.5j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCSX(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CSX @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateCSX
+        >>> GateCSX().matrix()
+            array([[1. +0.j , 0. +0.j , 0. +0.j , 0. +0.j ],
+                [0. +0.j , 0.5+0.5j, 0. +0.j , 0.5-0.5j],
+                [0. +0.j , 0. +0.j , 1. +0.j , 0. +0.j ],
+                [0. +0.j , 0.5-0.5j, 0. +0.j , 0.5+0.5j]])
+        >>> c=Circuit()
+        >>> c.push(GateCSX(),0,1)
+            2-qubit circuit with 1 instructions:
+             └── CSX @ q0, q1
     """
     _num_qubits = 2
     _name = 'CSX'
@@ -2542,13 +2061,11 @@ class GateCSX(Gate):
 
 
 class GateCSXDG(Gate):
-    """
-    Two qubit CSX-dagger gate.
+    """Two qubit :math:`{CSX}^\\dagger` gate.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{CSX}^{\\dagger} =\\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & \\frac{1-i}{\\sqrt{2}} & 0 & \\frac{1+i}{\\sqrt{2}} \\\\
@@ -2556,23 +2073,17 @@ class GateCSXDG(Gate):
             0 & \\frac{1+i}{\\sqrt{2}} & 0 & \\frac{1-i}{\\sqrt{2}}
         \\end{pmatrix}
 
-    :return: CSX-dagger gate
-    :rtype: numpy.ndarray
-
-    >>> from  mimiqcircuits import Circuit,GateCSXDG
-    >>> GateCSXDG().matrix()
-
-    >>> array([[1. +0.j , 0. +0.j , 0. +0.j , 0. +0.j ],
-               [0. +0.j , 0.5-0.5j, 0. +0.j , 0.5+0.5j],
-               [0. +0.j , 0. +0.j , 1. +0.j , 0. +0.j ],
-               [0. +0.j , 0.5+0.5j, 0. +0.j , 0.5-0.5j]])
-
-    >>> c=Circuit()
-    >>> c.push(GateCSXDG(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── CSXDG @ q0, q1
+    Examples:
+            >>> from mimiqcircuits import Circuit, GateCSXDG
+            >>> GateCSXDG().matrix()
+                array([[1. +0.j , 0. +0.j , 0. +0.j , 0. +0.j ],
+                       [0. +0.j , 0.5-0.5j, 0. +0.j , 0.5+0.5j],
+                       [0. +0.j , 0. +0.j , 1. +0.j , 0. +0.j ],
+                       [0. +0.j , 0.5+0.5j, 0. +0.j , 0.5-0.5j]])
+            >>> c=Circuit()
+            >>> c.push(GateCSXDG(),0,1)
+                2-qubit circuit with 1 instructions:
+                 └── CSXDG @ q0, q1
     """
     _num_qubits = 2
     _name = 'CSXDG'
@@ -2585,13 +2096,11 @@ class GateCSXDG(Gate):
 
 
 class GateECR(Gate):
-    """
-    Two qubit ECR echo gate.
+    """Two qubit ECR (echo) gate.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{ECR} =\\begin{pmatrix}
             0 & \\frac{1}{\\sqrt{2}} & 0 & \\frac{i}{\\sqrt{2}} \\ \\\\
             \\frac{1}{\\sqrt{2}} & 0 & \\frac{-i}{\\sqrt{2}} & 0 \\\\
@@ -2599,30 +2108,21 @@ class GateECR(Gate):
             \\frac{-i}{\\sqrt{2}} & 0 & \\frac{1}{\\sqrt{2}} & 0
         \\end{pmatrix}
 
-    :return: ECR gate
-    :rtype: numpy.ndarray
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateECR
-    >>> GateECR().matrix()
-
-    >>> array([[0.        +0.j        , 0.70710678+0.j        ,
-                0.        +0.j        , 0.        +0.70710678j],
-               [0.70710678+0.j        , 0.        +0.j        ,
-                0.        -0.70710678j, 0.        +0.j        ],
-               [0.        +0.j        , 0.        +0.70710678j,
-                0.        +0.j        , 0.        +0.70710678j],
-               [0.        -0.70710678j, 0.        +0.j        ,
-                0.70710678+0.j        , 0.        +0.j        ]])
-
-    >>> c.push(GateECR(),0,1)
-    >>> c=Circuit()
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── ECR @ q0, q1
-     ```
+    Examples:
+        >>> from mimiqcircuits import Circuit,GateECR
+        >>> GateECR().matrix()
+            array([[0.        +0.j        , 0.70710678+0.j        ,
+                    0.        +0.j        , 0.        +0.70710678j],
+                   [0.70710678+0.j        , 0.        +0.j        ,
+                    0.        -0.70710678j, 0.        +0.j        ],
+                   [0.        +0.j        , 0.        +0.70710678j,
+                    0.        +0.j        , 0.        +0.70710678j],
+                   [0.        -0.70710678j, 0.        +0.j        ,
+                    0.70710678+0.j        , 0.        +0.j        ]])
+        >>> c.push(GateECR(),0,1)
+        >>> c=Circuit()
+            2-qubit circuit with 1 instructions:
+             └── ECR @ q0, q1
     """
     _num_qubits = 2
     _name = 'ECR'
@@ -2638,13 +2138,13 @@ class GateECR(Gate):
 
 
 class GateDCX(Gate):
-    """
-    Two qubit double-CNOT (Control on first qubit and then second) OR DCX gate.
+    """Two qubit double-CNOT gate.
+
+    A two qubit Clifford gate consisting of two back-to-back CNOTs with alternate controls.
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{DCX} =\\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 0 & 0 & 1 \\\\
@@ -2652,23 +2152,17 @@ class GateDCX(Gate):
             0 & 0 & 1 & 0
         \\end{pmatrix}
 
-    :return: DCX gate.
-    :rtype: numpy.ndarray
-
-    >>> from  mimiqcircuits import Circuit,GateDCX
-    >>> GateDCX().matrix()
-
-    >>> array([[1., 0., 0., 0.],
-               [0., 0., 0., 1.],
-               [0., 1., 0., 0.],
-               [0., 0., 1., 0.]])
-
-    >>> c=Circuit()
-    >>> c.push(GateDCX(),0,1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── DCX @ q0, q1
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateDCX
+        >>> GateDCX().matrix()
+            array([[1., 0., 0., 0.],
+                [0., 0., 0., 1.],
+                [0., 1., 0., 0.],
+                [0., 0., 1., 0.]])
+        >>> c=Circuit()
+        >>> c.push(GateDCX(),0,1)
+            2-qubit circuit with 1 instructions:
+            └── DCX @ q0, q1
     """
     _num_qubits = 2
     _name = 'DCX'
@@ -2681,13 +2175,13 @@ class GateDCX(Gate):
 
 
 class GateDCXDG(Gate):
-    """
-    Two qubit DCX-dagger gate.
+    """Two qubit :math:`{DCX}^\\dagger` gate.
+
+    See Also :func:`GateDCX`
 
     **Matrix representation:**
 
     .. math::
-
         \\operatorname{DCX}^{\\dagger} =\\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
             0 & 0 & 1 & 0 \\\\
@@ -2695,26 +2189,22 @@ class GateDCXDG(Gate):
             0 & 1 & 0 & 0
         \\end{pmatrix}
 
-    :return: DCX-dagger gate
-    :rtype: numpy.ndarray
+    Examples:
+        >>> from mimiqcircuits import Circuit, GateDCXDG
+        >>> GateDCXDG().matrix()
+            array([[0.        +0.j        , 0.70710678+0.j        ,
+                    0.        +0.j        , 0.        -0.70710678j],
+                   [0.70710678+0.j        , 0.        +0.j        ,
+                    0.        +0.70710678j, 0.        +0.j        ],
+                   [0.        +0.j        , 0.        -0.70710678j,
+                    0.        +0.j        , 0.        +0.70710678j],
+                   [0.        +0.70710678j, 0.        +0.j        ,
+                    0.70710678+0.j        , 0.        +0.j        ]])
 
-    >>> from  mimiqcircuits import Circuit,GateDCXDG
-    >>> GateDCXDG().matrix()
-
-    >>> array([[0.        +0.j        , 0.70710678+0.j        ,
-                0.        +0.j        , 0.        -0.70710678j],
-               [0.70710678+0.j        , 0.        +0.j        ,
-                0.        +0.70710678j, 0.        +0.j        ],
-               [0.        +0.j        , 0.        -0.70710678j,
-                0.        +0.j        , 0.        +0.70710678j],
-               [0.        +0.70710678j, 0.        +0.j        ,
-                0.70710678+0.j        , 0.        +0.j        ]])
-
-    >>> c=Circuit()
-    >>> c.push(GateDCXDG(),0,1)
-    >>> print(c)
-    2-qubit circuit with 1 gates
-    └── DCXDG @ q0, q1
+        >>> c=Circuit()
+        >>> c.push(GateDCXDG(),0,1)
+            2-qubit circuit with 1 instructions:
+             └── DCXDG @ q0, q1
     """
     _num_qubits = 2
     _name = 'DCXDG'
@@ -2727,25 +2217,20 @@ class GateDCXDG(Gate):
 
 
 class GateCustom(Gate):
-    """
-    One or Two qubit Custom gates.
-
-    **Example:**
-
-    >>> from  mimiqcircuits import Circuit,GateCustom
-    >>> import numpy as np
-
-    >>> matrix = np.array([[1, 0, 0, 0],
-                   [0, 1, 1j, 0],
-                   [0, 0, 0, 1],
-                   [0, 0, 1, 0]])
-    >>> qubits=2
-    >>> c=Circuit()
-    >>> c.push(GateCustom(matrix, qubits), 0, 1)
-    >>> print(c)
-
-    >>> 2-qubit circuit with 1 gates
-        └── Custom @ q0, q1
+    """One or Two qubit Custom gates.
+    
+    Examples:
+        >>> from mimiqcircuits import Circuit,GateCustom
+        >>> import numpy as np
+        >>> matrix = np.array([[1, 0, 0, 0],
+                            [0, 1, 1j, 0],
+                            [0, 0, 0, 1],
+                            [0, 0, 1, 0]])
+        >>> qubits=2
+        >>> c=Circuit()
+        >>> c.push(GateCustom(matrix, qubits), 0, 1)
+            2-qubit circuit with 1 instructions:
+            └── Custom @ q0, q1
     """
 
     def __init__(self, matrix=None, num_qubits=None):

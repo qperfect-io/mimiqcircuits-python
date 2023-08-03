@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mimiqcircuits"
-version = "0.3.1"
+version = "0.3.2"
 description = ""
 authors = ["QPerfect <guido.masella@qperfect.io>"]
 readme = "README.md"
@@ -15,6 +15,17 @@ multimethod = "^1.9.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.3.1"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^7.1.2"
+furo = "^2023.7.26"
+sphinx-copybutton = "^0.5.2"
+jupyter-sphinx = "^0.4.0"
+sphinx-inline-tabs = "^2023.4.21"
+pydata-sphinx-theme = "^0.13.3"
 
 [build-system]
 requires = ["poetry-core"]

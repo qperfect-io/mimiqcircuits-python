@@ -18,8 +18,21 @@ from mimiqcircuits.operation import Operation
 
 
 class Barrier(Operation):
-    """
-    Barrier operation used to prevent reordering of gates.
+    """Barrier operation.
+
+    A barrier is a special operation that does not affect the quantum state or the
+    execution of a circuit, but it prevents compression or optimization operation
+    from being applied across it.
+    
+    Examples:
+            >>> from  mimiqcircuits import *
+            >>> c=Circuit()
+            >>> c.push(GateX(),0)
+            >>> c.push(Barrier(),0)
+
+            >>> 1-qubit circuit with 2 instructions:
+                ├── X @ q0
+                └── Barrier @ q0
     """
     _name = 'Barrier'
     _num_qubits = None

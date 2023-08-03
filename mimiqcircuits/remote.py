@@ -76,7 +76,8 @@ def _hash_file(filename):
 
 
 class Results:
-    """
+    """Results
+
     Represents the results of a execution.
 
     Attributes:
@@ -84,6 +85,7 @@ class Results:
         results (dict): A dictionary containing the result parameters.
         samples (dict): A dictionary containing the sample results.
         amplitudes (dict): A dictionary containing the amplitude results.
+
     """
 
     def __init__(self,
@@ -96,18 +98,16 @@ class Results:
 
 
 class MimiqConnection(mimiqlink.MimiqConnection):
-    """
-    Represents a connection to the Mimiq Server.
+    """Represents a connection to the Mimiq Server.
 
     Inherits from: mimiqlink.MimiqConnection python.
-
     """
 
     def execute(self, circuit, label="circuitsimu",
                 algorithm=DEFAULT_ALGORITHM, nsamples=DEFAULT_SAMPLES,
                 bitstates=None, timelimit=DEFAULT_TIME_LIMIT, bonddim=None, seed=None):
         """
-        Execute a circuit simulation using the Mimiq Server.
+        Execute a circuit simulation using the MIMIQ cloud services.
 
         Args:
             circuit (Circuit): The quantum circuit to be executed.
@@ -118,7 +118,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             timelimit (int): The time limit for execution in seconds (default: 5 * 60).
             bonddim (int): The bond dimension for the MPS algorithm (default: None).
             seed (int): The seed for generating random numbers (default: randomly generated). If provided,
-            uses the specified seed.
+                uses the specified seed.
 
         Returns:
             str: The execution identifier.
@@ -126,21 +126,19 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         Raises:
             ValueError: If bonddim, nsamples, or timelimit exceeds the allowed limits.
 
-        **Example of the usage:**
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> conn=MimiqConnection()
+            >>> conn.connect()
+            >>> c=Circuit()
+            >>> c.push(GateH(),1)
+                2-qubit circuit with 1 instructions:
+                 └── H @ q1
 
-        >>> from mimiqcircuits import *
-
-        >>> conn=MimiqConnection()
-        >>> conn.connect()
-        >>> c=Circuit()
-        >>> c.add_gate(GateH(),1)
-        >>> c
-
-        >>> 2-qubit circuit with 1 gates
-            └── H @ q1
-
-        >>> job=conn.execute(c,algorithm="auto")
-
+            >>> job=conn.execute(c,algorithm="auto")
+            >>> res=conn.get_results(job)
+            >>> res.samples
+                {BitState('00'): 505, BitState('01'): 495}
         """
         if bitstates is None:
             bitstates = []
@@ -213,38 +211,31 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             )
 
     def get_results(self, execution, interval=10):
-        """
-        Retrieve the results of a completed execution.
+        """Retrieve the results of a completed execution.
 
         Args:
             execution (str): The execution identifier.
             interval (int): The interval (in seconds) for checking job status (default: 10).
-
+            
         Returns:
             Results: An instance of the Results class containing the execution, results, samples, amplitudes.
-
+            
         Raises:
             RuntimeError: If the remote job encounters an error.
+        
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> conn=MimiqConnection()
+            >>> conn.connect()
+            >>> c=Circuit()
+            >>> c.push(GateH(),1)
+                2-qubit circuit with 1 instructions:
+                 └── H @ q1
 
-        **Example of the usage:**
-
-        >>> from mimiqcircuits import *
-
-        >>> conn=MimiqConnection()
-        >>> conn.connect()
-        >>> c=Circuit()
-        >>> c.add_gate(GateH(),1)
-        >>> c
-
-        >>> 2-qubit circuit with 1 gates
-            └── H @ q1
-
-        >>> job=conn.execute(c,algorithm="auto")
-        >>> res=conn.get_results(job)
-        >>> res.samples
-
-        >>> {BitState('00'): 504, BitState('01'): 496}
-
+            >>> job=conn.execute(c,algorithm="auto")
+            >>> res=conn.get_results(job)
+            >>> res.samples
+                {BitState('00'): 504, BitState('01'): 496}
         """
         while not self.isJobDone(execution):
             sleep(interval)
@@ -285,43 +276,36 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         return Results(execution, results, samples, amplitudes)
 
     def get_inputs(self, execution):
-        """
-        Retrieve the inputs (circuit and parameters) of the execution.
+        """Retrieve the inputs (circuit and parameters) of the execution.
 
         Args:
             execution (str): The execution identifier.
-
+            
         Returns:
             dict: parameters (dict) of the execution.
-
+            
         Raises:
             RuntimeError: If the required files are not found in  inputs. Update your library.
+        
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> conn=MimiqConnection()
+            >>> conn.connect()
+            >>> c=Circuit()
+            >>> c.push(GateH(),1)
+                2-qubit circuit with 1 instructions:
+                 └── H @ q1
 
-        **Example of usage:**
+            >>> job=conn.execute(c,algorithm="auto")
+            >>> res=conn.get_results(job)
+            >>> res.samples
+                {BitState('00'): 504, BitState('01'): 496}
 
-        >>> from mimiqcircuits import *
-        >>> conn=MimiqConnection()
-        >>> conn.connect()
-        >>> c=Circuit()
-        >>> c.add_gate(GateH(),1)
-        >>> c
-
-        >>> 2-qubit circuit with 1 gates
-            └── H @ q1
-
-        >>> job=conn.execute(c,algorithm="auto")
-        >>> res=conn.get_results(job) 
-        >>> res.samples
-
-        >>> {BitState('00'): 504, BitState('01'): 496}
-
-        >>> import json
-        >>> c, parameters = conn.get_inputs(job)
-        >>> print(json.dumps(parameters))
-
-        >>> {"executor": "Circuits", "timelimit": 300, "files": [{"name": "circuit.json", "hash": "4955f6540ec79fd1c34cfadc0dd0bd37b3d4f28bbce60208198f5d0bd7f486c7"}],
-             "parameters": {"algorithm": "auto", "bitstates": [], "samples": 1000, "seed": 2875985032347405045, "bondDimension": 256}}
-
+            >>> import json
+            >>> c, parameters = conn.get_inputs(job)
+            >>> print(json.dumps(parameters))
+                {"executor": "Circuits", "timelimit": 300, "files": [{"name": "circuit.json", "hash": "4955f6540ec79fd1c34cfadc0dd0bd37b3d4f28bbce60208198f5d0bd7f486c7"}],
+                "parameters": {"algorithm": "auto", "bitstates": [], "samples": 1000, "seed": 2875985032347405045, "bondDimension": 256}}
         """
         with tempfile.TemporaryDirectory() as tmpdir:
             names = self.downloadJobFiles(execution, destdir=tmpdir)

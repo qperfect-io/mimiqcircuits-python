@@ -35,31 +35,23 @@ def allunique(lst):
 
 
 class Instruction:
-    """
-    Class representing an instruction of a quantum circuit.
+    """Initializes an instruction of a quantum circuit.
 
-    Attributes:
+    Args:
         operation (Operation): The operation applied by the instruction.
-        qubits (tuple of int): The qubits to apply the operation to.
-        bits (tuple of int): The classical bits to apply the operation to
+        qubits (tuple of int): The qubits to apply the quantum operation to.
+        bits (tuple of int): The classical bits to apply the quantum operation to.
+
+    Raises:
+        TypeError: If operation is not a subclass of Gate or qubits is not a tuple.
+        ValueError: If qubits contains less than 1 or more than 2 elements.
     """
     _operation = None
     _qubits = None
     _bits = None
 
     def __init__(self, operation, qubits=None, bits=None):
-        """
-        Initializes a Instruction object.
-
-        Args:
-            operation (Operation): The operation to apply.
-            qubits (tuple of int): The qubits to apply the quantum operation to.
-            bits (tuple of int): The classical bits to apply the quantum operation to.
-
-        Raises:
-            TypeError: If operation is not a subclass of Gate or qubits is not a tuple.
-            ValueError: If qubits contains less than 1 or more than 2 elements.
-        """
+        
         if qubits is None:
             qubits = tuple()
 
@@ -169,23 +161,16 @@ class Instruction:
 
 
 class Circuit:
-    """
-    Class representing a quantum circuit.
+    """Initializes a quantum circuit.
 
-    Attributes:
-        instructions (list of Instruction): The instructions in the circuit.
+    Args:
+        instructions (list of Instruction): The instructiuons to add at construction to the circuit.
+
+    Raises:
+            TypeError: If  is not a list of Instruction objects.
     """
 
     def __init__(self, instructions=None):
-        """
-        Initializes a Circuit object.
-
-        Args:
-            instructions (list of Instruction): The instructiuons to add at construction to the circuit.
-
-        Raises:
-            TypeError: If  is not a list of Instruction objects.
-        """
 
         if instructions is None:
             instructions = []
@@ -218,7 +203,7 @@ class Circuit:
 
     def num_bits(self):
         """
-        Returns the number of qubits in the circuit.
+        Returns the number of bits in the circuit.
         """
         n = -1
         for instruction in self.instructions:
@@ -243,11 +228,117 @@ class Circuit:
 
         Args:
             operation (Operation or Instruction): the quantum operation to add.
-            *args (integers or ranges): Target qubits and bits for the operation (not instruction), given as variable number of arguments.
+
+            args (integers or ranges): Target qubits and bits for the operation (not instruction), given as variable number of arguments.
 
         Raises:
             TypeError: If operation is not an Operation object or the arguments are invalid.
+
             ValueError: If the number of arguments is incorrect or qubits contain less than 1 or more than the operation's number of qubits.
+
+        Examples:
+            Different ways of pushing:
+
+            Pushing one qubit gates (The args can be range, list, tuple, set, int)
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(GateX(), 0)
+                1-qubit circuit with 1 instructions:
+                └── X @ q0
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit() 
+            >>> c.push(GateX(), range(0,4))
+            >>> 4-qubit circuit with 4 instructions:
+                ├── X @ q0
+                ├── X @ q1
+                ├── X @ q2
+                └── X @ q3
+
+            Pushing two qubit gates (The args can be: range, list, tuple, set or int)
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(GateCX(), 0, 1)
+                2-qubit circuit with 1 instructions:
+                └── CX @ q0, q1
+            
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(GateCX(),range(0,3),range(3,5))
+                5-qubit circuit with 6 instructions:
+                ├── CX @ q0, q3
+                ├── CX @ q0, q4
+                ├── CX @ q1, q3
+                ├── CX @ q1, q4
+                ├── CX @ q2, q3
+                └── CX @ q2, q4
+
+            Pushing Reset operation to the circuit (The args can be: range, list, tuple, set or int)
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(Reset(), 0)
+                1-qubit circuit with 1 instructions:
+                └── Reset @ q0
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(Reset(),(0,1,2))
+                3-qubit circuit with 3 instructions:
+                ├── Reset @ q0
+                ├── Reset @ q1
+                └── Reset @ q2
+
+            Pushing Measure operation to the circuit (The args (first arg) and the bits (second arg) can be: range, list, tuple, set or int)
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(Measure(),0,0)
+                1-qubit circuit with 1 instructions:
+                └── Measure @ q0, c0 
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(Measure(), range(0,3), range(0,3))
+                2-qubit circuit with 4 instructions:
+                ├── Measure @ q0, c0
+                ├── Measure @ q0, c1
+                ├── Measure @ q1, c0
+                └── Measure @ q1, c1
+
+            Pushing Barrier operation to the circuit (The args can be: range, list, tuple, set or int)
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(Barrier(), 1)
+                2-qubit circuit with 1 instructions:
+                └── Barrier @ q1
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(Barrier(), range(0,4))
+                4-qubit circuit with 4 instructions:
+                ├── Barrier @ q0
+                ├── Barrier @ q1
+                ├── Barrier @ q2
+                └── Barrier @ q3
+
+            Pushing Barrier to the circuit as a multi-qubits gate
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(Barrier,1,2,3,4,5)
+                6-qubit circuit with 1 instructions:
+                └── Barrier @ q1, q2, q3, q4, q5
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(Barrier(3),0,1,2)
+                3-qubit circuit with 1 instructions:
+                └── Barrier @ q0, q1, q2
+
         """
         N = 0
         M = 0
@@ -307,12 +398,34 @@ class Circuit:
 
         Args:
             index (int): The index at which the operation should be inserted.
+
             operation (Operation): The quantum operation to insert.
-            *args: The target qubits or classical bits for the operation.
+
+            args: The target qubits or classical bits for the operation.
 
         Raises:
-            TypeError: If operation is not an Operation object or the arguments are invalid.
+            TypeError: If operation is not an Operation object or the arguments are invalid. 
+            
             ValueError: If the number of arguments is incorrect or qubits contain less than 1 or more than the operation's number of qubits.
+
+        Examples:
+            Inserting an operation to the specify index of the circuit
+
+            >>> from mimiqcircuits import *
+            >>> c= Circuit()
+            >>> c.push(GateX(), 0)
+                1-qubit circuit with 1 instructions:
+                └── X @ q0
+            >>> c.push(GateCX(),0,1)
+                2-qubit circuit with 2 instructions:
+                ├── X @ q0
+                └── CX @ q0, q1
+            >>> c.insert(1, GateH(), 0)
+                2-qubit circuit with 2 instructions:
+                    ├── X @ q0
+                    ├── H @ q0
+                    └── CX @ q0, q1
+            
         """
         N = 0
         M = 0
@@ -349,7 +462,7 @@ class Circuit:
         Appends all the gates of the given circuit at the end of the current circuit.
 
         Args:
-            circuit (Circuit): the circuit to append.
+            other (Circuit): the circuit to append.
         """
         instructions = None
         if isinstance(other, Circuit):
@@ -400,7 +513,7 @@ class Circuit:
             return 'empty circuit'
 
         nq = self.num_qubits()
-        output = f'{nq}-qubit circuit with {n} gates'
+        output = f'{nq}-qubit circuit with {n} instructions:'
 
         # iterate from the second gate
         for g in self.instructions[:-1]:
