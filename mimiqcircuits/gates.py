@@ -208,12 +208,17 @@ class Gate(Operation):
         num_qubits = d['N']
         num_bits = d['M']
 
+        if num_bits != 0:
+            raise ValueError('Cannot create a gate acting on classical bits.')
+
         if d['name'] == 'Custom':
-            matrix = np.array(d['U']).reshape(2**num_qubits, 2**num_qubits).transpose()
+            matrix = np.array(d['U']).reshape(
+                2**num_qubits, 2**num_qubits).transpose()
             return GateCustom(matrix=matrix, num_qubits=num_qubits)
 
         if 'params' in d:
-            nd = { UNICODE_TO_NAMES.get(k, k): v for k, v in d['params'].items() }
+            nd = {UNICODE_TO_NAMES.get(
+                k, k): v for k, v in d['params'].items()}
             return GATES[name](**nd)
 
         return GATES[name]()
@@ -222,16 +227,13 @@ class Gate(Operation):
         d = super().to_json()
 
         if len(self.parnames) != 0:
-            d['params'] = { NAMES_TO_UNICODE.get(k, k): getattr(self, k) for k in self.parnames }
+            d['params'] = {NAMES_TO_UNICODE.get(
+                k, k): getattr(self, k) for k in self.parnames}
 
         if isinstance(self, GateCustom):
             d['matrix'] = self.matrix.transpose().flatten().tolist()
 
         return d
-
-    def __eq__(self, other):
-        return isinstance(other, type(self)) and\
-            self.__dict__ == other.__dict__
 
     def __str__(self):
         pars = ''
@@ -529,7 +531,7 @@ class GateSX(Gate):
 
 class GateSXDG(Gate):
     """Single qubit :math:`\\sqrt{X}^\\dagger` gate (conjugate transpose of the :math:`\\sqrt{X}` gate).
-    
+
     **Matrix representation:**
 
     .. math::
@@ -773,7 +775,7 @@ class GateU3(Gate):
         theta (float): Euler angle 1 in radians.
         phi (float): Euler angle 2 in radians.
         lambda (float): Euler angle 3 in radians.
-   
+
     Examples:
         >>> from mimiqcircuits import Circuit, GateU3
         >>> import nump as np
@@ -959,6 +961,7 @@ class GateRZ(Gate):
     def inverse(self):
         return GateRZ(-self.lmbda)
 
+
 class GateP(Gate):
     """Single qubit Phase gate.
 
@@ -1035,7 +1038,7 @@ class GateCX(Gate):
 
 class GateCY(Gate):
     """Two qubit Controlled-Y gate.
-    
+
     **Matrix representation:**
 
     .. math::
@@ -1105,7 +1108,7 @@ class GateCZ(Gate):
 
 class GateCH(Gate):
     """Two qubit Controlled-Hadamard gate.
-    
+
     **Matrix representation:**
 
     .. math::
@@ -1140,7 +1143,7 @@ class GateCH(Gate):
 
 class GateSWAP(Gate):
     """Two qubit SWAP gate.
-    
+
     See Also :func:`GateISWAP`
 
     **Matrix representation:**
@@ -1262,7 +1265,7 @@ class GateCU(Gate):
 
     equivalent to the [qiskit CU-Gate](https://qiskit.org/documentation/stubs/qiskit.circuit.library.CUGate.html)
 
-    
+
     **Matrix representation:**
 
     .. math::
@@ -1316,7 +1319,7 @@ class GateCR(Gate):
     """Two qubit Controlled-R gate.
 
     See Also :func:`GateR`
-    
+
     **Matrix representation:**
 
     .. math::
@@ -1427,7 +1430,7 @@ class GateCRY(Gate):
                   0 & 0 &  \\sin\\frac{\\theta}{2} & \\cos\\frac{\\theta}{2}
               \\end{pmatrix}
 
-    
+
     Parameters:
         theta (float): The rotation angle in radians.
 
@@ -1514,7 +1517,7 @@ class GateCRZ(Gate):
 
 class GateCP(Gate):
     """Two qubit Controlled-Phase gate.
-    
+
     See Also :func:`GateP`
 
     **Matrix representation:**
@@ -1530,7 +1533,7 @@ class GateCP(Gate):
 
     Parameters:
         param lambda (float): Phase angle in radians.
-    
+
     Examples:
         >>> from mimiqcircuits import Circuit, GateCP
         >>> import numpy as np 
@@ -1566,7 +1569,7 @@ class GateRZZ(Gate):
     """Two qubit RZZ gate (rotation about ZZ)..
 
     This gate is symmetric, and is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
-    
+
     **Matrix representation:**
 
     .. math::
@@ -1671,9 +1674,9 @@ class GateRXX(Gate):
 
 class GateRYY(Gate):
     """Two qubit RYY gate (rotation about YY).
-    
+
     This gate is symmetric, and is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
-    
+
     **Matrix representation:**
 
     .. math::
@@ -1739,7 +1742,7 @@ class GateRXZ(Gate):
 
     Parameters:
         theta (float): The angle in radians.
-    
+
     Examples:
         >>> from mimiqcircuits import Circuit, GateRXZ
         >>> import numpy as np 
@@ -1778,7 +1781,7 @@ class GateRXZ(Gate):
 
 class GateRZX(Gate):
     """Two qubit RZX gate.
-    
+
     This gate i is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
 
     **Matrix representation:**
@@ -1832,7 +1835,7 @@ class GateRZX(Gate):
 
 class GateXXplusYY(Gate):
     """Two qubit parametric XXplusYY gate.
-    
+
     Also known as an XY gate. Its action is to induce a coherent rotation by some angle between :math:`\\ket{10}` and :math:`\\ket{01}`.
 
     **Matrix representation:**
@@ -1889,7 +1892,7 @@ class GateXXplusYY(Gate):
 
 class GateXXminusYY(Gate):
     """Two qubit parametric GateXXminusYY gate.
-    
+
     Its action is to induce a coherent rotation by some angle between :math:`\\ket{00}` and :math:`\\ket{11}`
 
     **Matrix representation:**
@@ -1945,7 +1948,7 @@ class GateCS(Gate):
     """Two qubit Controlled-S gate.
 
     See Also :func:`GateS`
-    
+
     **Matrix representation:**:
 
     .. math::
@@ -1984,7 +1987,7 @@ class GateCS(Gate):
 
 class GateCSDG(Gate):
     """Two qubit Controlled-S gate.
-    
+
     **Matrix representation:**
 
     .. math::
@@ -2218,7 +2221,7 @@ class GateDCXDG(Gate):
 
 class GateCustom(Gate):
     """One or Two qubit Custom gates.
-    
+
     Examples:
         >>> from mimiqcircuits import Circuit,GateCustom
         >>> import numpy as np

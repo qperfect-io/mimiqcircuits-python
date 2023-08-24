@@ -22,6 +22,9 @@ import mimiqcircuits.remote as remote
 import mimiqcircuits.bitstates as bitstates
 import mimiqcircuits.measure as measure
 import mimiqcircuits.reset as reset
+import mimiqcircuits.control as control
+import mimiqcircuits.parallel as parallel
+import mimiqcircuits.ifstatement as ifstatement
 
 from mimiqcircuits.operation import *
 from mimiqcircuits.barrier import *
@@ -33,8 +36,12 @@ from mimiqcircuits.remote import *
 from mimiqcircuits.bitstates import *
 from mimiqcircuits.measure import *
 from mimiqcircuits.reset import *
-
+from mimiqcircuits.control import *
+from mimiqcircuits.parallel import *
+from mimiqcircuits.ifstatement import *
 
 # re export from the two previous
 __all__ = circuit.__all__ + operation.__all__ + gates.__all__ + \
-    barrier.__all__ + remote.__all__ + bitstates.__all__ +measure.__all__ + reset.__all__
+    barrier.__all__ + remote.__all__ + \
+    bitstates.__all__ + measure.__all__ + reset.__all__ + \
+    control.__all__ + parallel.__all__ + ifstatement.__all__

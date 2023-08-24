@@ -20,19 +20,42 @@ from mimiqcircuits.operation import Operation
 class Barrier(Operation):
     """Barrier operation.
 
-    A barrier is a special operation that does not affect the quantum state or the
-    execution of a circuit, but it prevents compression or optimization operation
-    from being applied across it.
-    
-    Examples:
-            >>> from  mimiqcircuits import *
-            >>> c=Circuit()
-            >>> c.push(GateX(),0)
-            >>> c.push(Barrier(),0)
+    A barrier is a special operation that does not affect the quantum state or
+    the execution of a circuit, but it prevents compression or optimization
+    operation from being applied across it.
 
-            >>> 1-qubit circuit with 2 instructions:
-                ├── X @ q0
-                └── Barrier @ q0
+    Examples:
+        Adding Barrier operation to the Circuit (The args can be: range, list,
+        tuple, set or int)
+
+        >>> from mimiqcircuits import *
+        >>> c= Circuit()
+        >>> c.push(Barrier(), 1)
+            2-qubit circuit with 1 instructions:
+            └── Barrier @ q1
+
+        >>> from mimiqcircuits import *
+        >>> c= Circuit()
+        >>> c.push(Barrier(), range(0,4))
+            4-qubit circuit with 4 instructions:
+            ├── Barrier @ q0
+            ├── Barrier @ q1
+            ├── Barrier @ q2
+            └── Barrier @ q3
+
+        Adding Barrier to the circuit as a multi-qubits gate
+
+        >>> from mimiqcircuits import *
+        >>> c= Circuit()
+        >>> c.push(Barrier,1,2,3,4,5)
+            6-qubit circuit with 1 instructions:
+            └── Barrier @ q1, q2, q3, q4, q5
+
+        >>> from mimiqcircuits import *
+        >>> c= Circuit()
+        >>> c.push(Barrier(3),0,1,2)
+            3-qubit circuit with 1 instructions:
+            └── Barrier @ q0, q1, q2
     """
     _name = 'Barrier'
     _num_qubits = None
@@ -58,17 +81,18 @@ class Barrier(Operation):
     def inverse(self):
         return self
 
+    def to_json(self):
+        return {
+            "name": self._name,
+            "num_qubits": self._num_qubits,
+        }
+
     @staticmethod
     def from_json(d):
         if d["name"] != "Barrier":
             raise ValueError("Invalid json for Barrier")
+        return Barrier(num_qubits=d["num_qubits"])
 
-        return Barrier()
 
-    def __eq__(self, other):
-        if not isinstance(other, Barrier):
-            return False
-        return (self.name == other.name)
-    
 # export operations
 __all__ = ['Barrier']

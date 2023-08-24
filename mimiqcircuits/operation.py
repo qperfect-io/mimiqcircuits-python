@@ -37,7 +37,7 @@ class Operation(ABC):
 
     @num_bits.setter
     def num_bits(self, value):
-        raise ValueError('Cannot set num_qubits. Read only parameter.')
+        raise ValueError('Cannot set num_bits. Read only parameter.')
 
     @property
     def name(self):
@@ -57,10 +57,12 @@ class Operation(ABC):
     def __str__(self):
         return self.name
 
+    def __repr__(self):
+        return str(self)
+
     def __eq__(self, other):
-        if not isinstance(other, Operation):
-            return False
-        return (self.name == other.name)
+        return isinstance(other, type(self)) and\
+            self.__dict__ == other.__dict__
 
     def copy(self):
         return copy.copy(self)

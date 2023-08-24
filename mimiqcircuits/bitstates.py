@@ -13,11 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 from bitarray import bitarray
-from multimethod import multimethod
-from mimiqcircuits import *
-from mimiqcircuits.circuit import Circuit
 
 
 def _helper_bitarr_to_int(arr):
@@ -53,7 +49,7 @@ class BitState:
     """BitState for the quantum states.
 
     Representation of the quantum state of a quantum register with definite values for each qubit.
-    
+
     Args:
         bits (Union[int, str, Circuit, bitarray]): The input to initialize the BitState.
             It can be an integer, a binary string, a Circuit, or a bitarray.
@@ -131,8 +127,8 @@ class BitState:
         >>> bs1 = BitState('10101')
         >>> bs2 = BitState('10101')
         >>> bs3 = BitState('10001')
-        >>> print(bs1 == bs2) 
-            True 
+        >>> print(bs1 == bs2)
+            True
         >>> print(bs1 == bs3)
             False
 
@@ -141,7 +137,7 @@ class BitState:
         >>> bs = BitState('111001')
         >>> bits = bs.bits
         >>> print(bits)
-            bitarray('111001') 
+            bitarray('111001')
 
         Converting the BitState to a binary string with default big-endianess representation
 
@@ -163,7 +159,7 @@ class BitState:
         >>> index = bs.bitarr_to_index()
         >>> print(index)
             5
-    
+
         Converting to BitState from string
 
         >>> bitstring = "11001"
@@ -210,25 +206,17 @@ class BitState:
                 if isinstance(init, list):
                     self.bits.setall(0)
                     for idx in init:
-                        if 0 <= idx <= num_qubits:  # Adjust 1-based index to 0-based index
-                            self.bits[idx] = 1  # Set the bit to 1
+                        # Adjust 1-based index to 0-based index
+                        if 0 <= idx <= num_qubits:
+                            # Set the bit to 1
+                            self.bits[idx] = 1
                         else:
-                            raise ValueError("Invalid index in the 'init' list.")
+                            raise ValueError(
+                                "Invalid index in the 'init' list.")
                 else:
                     self.bits.setall(init)
         elif isinstance(num_qubits, str):
             self.bits = bitarray(num_qubits)
-        elif isinstance(num_qubits, Circuit):
-            num_qubits = num_qubits.num_qubits()
-            self.bits = bitarray(num_qubits)
-            self.bits.setall(0)
-
-            if init is not None:
-                for idx in init:
-                    if 1 <= idx <= num_qubits:  # Adjust 1-based index to 0-based index
-                        self.bits[idx] = 1  # Set the bit to 1
-                    else:
-                        raise ValueError("Invalid index in the 'init' list.")
         else:
             self.bits = bitarray(num_qubits)
 

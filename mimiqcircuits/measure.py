@@ -19,20 +19,29 @@ from mimiqcircuits.operation import Operation
 
 class Measure(Operation):
     """Measure operation.
-    
+
     Single qubit measurement operation in the computational basis.
-    
+
     This operation is non-reversible
 
     Examples:
-        >>> from  mimiqcircuits import *
-        >>> c=Circuit()
-        >>> c.push(GateX(),0)
-        >>> c.push(Measure(),0,0)
+        Adding Measure operation to the Circuit (The qubits (first arg) and the
+        bits (second arg) can be: range, list, tuple, set or int)
 
-        >>> 1-qubit circuit with 2 instructions:
-            ├── X @ q0
+        >>> from mimiqcircuits import *
+        >>> c= Circuit()
+        >>> c.push(Measure(),0,0)
+            1-qubit circuit with 1 instructions:
             └── Measure @ q0, c0
+
+        >>> from mimiqcircuits import *
+        >>> c= Circuit()
+        >>> c.push(Measure(), range(0,3), range(0,3))
+            2-qubit circuit with 4 instructions:
+            ├── Measure @ q0, c0
+            ├── Measure @ q0, c1
+            ├── Measure @ q1, c0
+            └── Measure @ q1, c1
     """
     _name = 'Measure'
     _num_bits = 1
@@ -47,13 +56,7 @@ class Measure(Operation):
             raise ValueError("Invalid json for Measure")
 
         return Measure()
-    
-    def __eq__(self, other):
-        if not isinstance(other, Measure):
-            return False
-        return (self.name == other.name)
 
 
 # export operations
 __all__ = ['Measure']
-

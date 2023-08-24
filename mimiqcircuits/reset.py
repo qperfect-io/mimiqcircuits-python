@@ -19,20 +19,29 @@ from mimiqcircuits.operation import Operation
 
 class Reset(Operation):
     """Reset operation.
-    
-    Quantum operation that resets the status of one qubit to the :math:`\\ket{0}` state.
+
+    Quantum operation that resets the status of one qubit to the
+    :math:`\\ket{0}` state.
 
     This operation is non-reversible.
 
     Examples:
-            >>> from  mimiqcircuits import *
-            >>> c=Circuit()
-            >>> c.push(GateX(),0)
-            >>> c.push(Reset(),0)
+        Adding Reset operation to the Circuit (The args can be: range, list,
+        tuple, set or int)
 
-            >>> 1-qubit circuit with 2 instructions:
-                ├── X @ q0
-                └── Reset @ q0
+        >>> from mimiqcircuits import *
+        >>> c= Circuit()
+        >>> c.push(Reset(), 0)
+            1-qubit circuit with 1 instructions:
+            └── Reset @ q0
+
+        >>> from mimiqcircuits import *
+        >>> c= Circuit()
+        >>> c.push(Reset(),(0,1,2))
+            3-qubit circuit with 3 instructions:
+            ├── Reset @ q0
+            ├── Reset @ q1
+            └── Reset @ q2
     """
     _name = 'Reset'
     _num_qubits = 1
@@ -47,11 +56,6 @@ class Reset(Operation):
             raise ValueError("Invalid json for Reset")
 
         return Reset()
-    
-    def __eq__(self, other):
-        if not isinstance(other, Reset):
-            return False
-        return (self.name == other.name)
 
 
 # export operations

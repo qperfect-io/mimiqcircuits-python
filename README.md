@@ -1,6 +1,10 @@
 # Python interface to MIMIQ Circuits (`mimiqcircuits`)
 
-A library to handle quantum circuits for **QPerfect**'s MIMIQ Emulator.
+*A library to handle quantum circuits for **QPerfect**'s MIMIQ Emulator.*
+
+| **Documentation**                                                               | **Build Status**                                                                                |
+|:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
+| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][GHA-img]][GHA-url] |
 
 ## Installation
 
@@ -8,40 +12,24 @@ A library to handle quantum circuits for **QPerfect**'s MIMIQ Emulator.
 pip install "mimiqcircuits @ git+https://github.com/qperfect-io/mimiqcircuits-python.git
 ````
 
-## Usage
+## Documentation
 
-### Handling circuits
+- [**STABLE**][docs-stable-url] &mdash; **documentation of the most recently version.**
 
-```python
-import mimiqcircuits as mc
+## Project Status
 
-c = mc.Circuit()
+The package is tested against, and being developed for, Python 3.8 and above
+on Linux, MacOS, and Windows.
 
-print(c)
-# will print:
-# empty circuit
+*MIMIQ Circuits* is currently in the alpha stage and open to test for early
+adopters. We are continuously refining and enhance our tools so we value any
+feedback you may have to ensure that MIMIQ Circuits meets and exceeds your
+expectations. If you want access to MIMIQ Circuits, we encourage you register
+on [our website](https://qperfect.io/index.php/mimiq-circuits).
 
-c.add_gate(mc.GateX(), 4)
+## Related projects
 
-print(c)
-# will print:
-#5-qubit circuit with 1 gates
-# └── X @ q4
-
-c.add_gate(mc.GateCX(), 1, 8)
-
-print(c)
-# will print:
-# 9-qubit circuit with 2 gates
-# ├── X @ q4
-# └── CX @ q1, q8
-
-import json
-
-json.dumps(c.to_json())
-# will give:
-# '{"gates": [{"name": "X", "targets": [5]}, {"name": "CX", "targets": [2, 9]}]}'
-```
+* [MimiqCircuits.jl](https://github.com/qperfect-io/MimiqCircuits.jl) the Julia version of this library.
 
 ## COPYRIGHT
 
@@ -59,3 +47,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://qperfect-io.github.io/mimiqcircuits-python/
+
+[GHA-img]: https://github.com/qperfect-io/mimiqcircuits-python/workflows/test/badge.svg
+[GHA-url]: https://github.com/qperfect-io/mimiqcircuits-python/actions?query=workflows/test
