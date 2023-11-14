@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+message BitVector {
+    int64 len = 1;
+    bytes data = 2;
+}
+
+message ComplexDouble {
+    double real = 1;
+    double imag = 2;
+}
+
+message ComplexVector {
+    repeated ComplexDouble data = 1;
+}
+
+message AmplitudeEntry {
+    BitVector key = 1;
+    ComplexDouble val = 2;
+}
+
+message QCSResults {
+    string simulator = 1;
+    string version = 2;
+    repeated double fidelities = 3;
+    repeated double avggateerrors = 4;
+    repeated BitVector cstates = 5;
+    repeated ComplexVector zstates = 6;
+    repeated AmplitudeEntry amplitudes = 7;
+    map<string, double> timings = 8;
+}

@@ -77,13 +77,12 @@ MIMIQ Circuits, follow these steps:
 
 
 If you plan to use visualization functionality or work with Jupyter notebooks,
-it is recommended to install the MIMIQ Visual package, which contain the extra
-support for visualization:
+it is recommended to install the extra support for visualization:
 
 
 .. code:: shell
 
-    pip3 install "mimiqvisual @ git+https://github.com/qperfect-io/mimiqvisual-python.git"
+    pip3 install "mimiqcircuits[visualization] @ git+https://github.com/qperfect-io/mimiqcircuits-python.git"
 
 
 .. warning::

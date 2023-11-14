@@ -1,0 +1,65 @@
+### AXES
+axes.facecolor: 282c34
+axes.edgecolor: abb2bf
+axes.titlesize: 11
+axes.labelsize: 11
+axes.labelweight: normal
+axes.labelcolor: abb2bf
+axes.prop_cycle: cycler('color', ['e5c07b', 'c678dd', '0c7e8f', '98c379', '56b6c2', 'e06c75', '61afef'])
+
+### LINES
+lines.color: C0
+lines.linewidth: 1.0
+lines.markeredgewidth: 0.5
+lines.markersize: 5.0
+lines.dashed_pattern: 2.6, 1.4
+lines.dashdot_pattern: 4.6, 1.4, 0.6, 1.4
+lines.dotted_pattern: 1.1, 1.1
+
+### TICKS
+xtick.labelsize: 11
+xtick.direction: in
+xtick.color: abb2bf
+ytick.labelsize: 11
+ytick.direction: in
+ytick.color: abb2bf
+
+### GRIDS
+grid.color: 505868
+grid.linestyle: -
+grid.alpha: 0.75
+
+### LEGEND
+legend.frameon: True
+legend.framealpha: 0.75
+legend.fancybox: True
+legend.shadow: True
+legend.scatterpoints: 1
+legend.fontsize: 11
+
+### PATCHES
+patch.facecolor: C0
+patch.edgecolor: abb2bf
+patch.force_edgecolor: True
+patch.antialiased: True
+
+### FONT
+font.family: sans-serif
+font.style: normal
+font.weight: normal
+font.serif: Roboto Slab, Calibri, Carlito, serif
+font.sans-serif: Roboto, Fira Sans, sans serif
+font.monospace: Roboto Mono, Fira Mono, monospace
+font.size: 11.0
+
+### TEXT
+text.color: abb2bf
+
+### FIGURE
+figure.titlesize: 11
+figure.facecolor: 282c34
+figure.edgecolor: abb2bf
+figure.dpi: 150
+
+### SAVEFIG
+savefig.dpi: 150

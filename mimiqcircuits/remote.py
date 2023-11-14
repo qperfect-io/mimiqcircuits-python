@@ -20,38 +20,33 @@ import tempfile
 import json
 import os
 from mimiqcircuits.circuit import Circuit
-from mimiqcircuits.qcsr import QcsrFile
-from mimiqcircuits.bitstates import BitState
+from mimiqcircuits.qcsresults import QCSResults
+from mimiqcircuits.__version__ import __version__
 import numpy as np
 from time import sleep
 
-RESULTS_SAMPLES_FILENAME = "samples.qcsr"
-RESULTS_AMPLITUES_FILENAME = "amplitudes.qcsr"
-RESULTS_PARAMETERS_FILENAME = "results.json"
-
-REQUEST_CIRCUIT_FILENAME = "circuit.json"
-REQUEST_PARAMETERS_FILENAME = "parameters.json"
-
-DEFAULT_ALGORITHM = "auto"
-DEFAULT_BONDDIM = 256
-DEFAULT_SAMPLES = 1000
-DEFAULT_TIME_LIMIT = 5 * 60
-
+# maximum nbumber of samples allowed
 MAX_SAMPLES = 2**16
+
+# default value for the number of samples
+DEFAULT_SAMPLES = 1000
+
+# minimum and maximum bond dimension allowed
 MIN_BONDDIM = 1
 MAX_BONDDIM = 2**12
-MAX_TIME_LIMIT = 30 * 60
 
+# default bond dimension
+DEFAULT_BONDDIM = 256
 
-class AllEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return super(AllEncoder, self).default(obj)
+# default time limit
+DEFAULT_TIME_LIMIT = 5 * 60
+
+# default algorithm
+DEFAULT_ALGORITHM = "auto"
+
+RESULTSPB_FILE = "results.pb"
+CIRCUITPB_FILE = "circuit.pb"
+CIRCUITQASM_FILE = "circuit.qasm"
 
 
 def _hash_file(filename):
@@ -75,37 +70,16 @@ def _hash_file(filename):
     return hash
 
 
-class Results:
-    """Results
-
-    Represents the results of a execution.
-
-    Attributes:
-        execution (str): The execution identifier.
-        results (dict): A dictionary containing the result parameters.
-        samples (dict): A dictionary containing the sample results.
-        amplitudes (dict): A dictionary containing the amplitude results.
-
-    """
-
-    def __init__(self,
-                 execution: str, results: dict,
-                 samples: dict, amplitudes: dict):
-        self.execution = execution
-        self.results = results
-        self.samples = samples
-        self.amplitudes = amplitudes
-
-
 class MimiqConnection(mimiqlink.MimiqConnection):
     """Represents a connection to the Mimiq Server.
 
     Inherits from: mimiqlink.MimiqConnection python.
     """
 
-    def execute(self, circuit, label="circuitsimu",
+    def execute(self, circuit, label="pyapi_v" + __version__,
                 algorithm=DEFAULT_ALGORITHM, nsamples=DEFAULT_SAMPLES,
-                bitstates=None, timelimit=DEFAULT_TIME_LIMIT, bonddim=None, seed=None):
+                bitstates=None, timelimit=DEFAULT_TIME_LIMIT, bonddim=None,
+                seed=None):
         """
         Execute a circuit simulation using the MIMIQ cloud services.
 
@@ -163,23 +137,30 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         if nsamples > MAX_SAMPLES:
             raise ValueError(f"nsamples must be less than {MAX_SAMPLES}")
 
-        if timelimit > MAX_TIME_LIMIT:
-            raise ValueError(
-                f"timelimit must be less than {MAX_TIME_LIMIT} seconds ({MAX_TIME_LIMIT / 60} miutes)"
-            )
-
         with tempfile.TemporaryDirectory() as tmpdir:
             # save the circuit in json format
-            circuit_filename = os.path.join(tmpdir, REQUEST_CIRCUIT_FILENAME)
-            with open(circuit_filename, "w") as f:
-                json.dump(circuit.to_json(), f, cls=AllEncoder)
+            if isinstance(circuit, Circuit):
+                circuit_filename = os.path.join(tmpdir, CIRCUITPB_FILE)
+                circuit.saveproto(circuit_filename)
+            elif isinstance(circuit, str):
+                if not os.path.isfile(circuit):
+                    raise FileNotFoundError(
+                        f"File {circuit} not found.")
+
+                circuit_filename = os.path.join(tmpdir, CIRCUITQASM_FILE)
+                os.path.copy(circuit, circuit_filename)
+            else:
+                raise TypeError(
+                    "circuit must be a Circuit object or a OPENQASM file")
 
             circuit_hash = _hash_file(circuit_filename)
 
             jsonbitstates = ['bs' + o.to01() for o in bitstates]
 
             pars = {"algorithm": algorithm, "bitstates": jsonbitstates,
-                    "samples": nsamples, "seed": seed}
+                    "samples": nsamples, "seed": seed,
+                    "apilang: ": "python", "apiversion": __version__,
+                    "circuitsapiversion": __version__}
 
             if bonddim is not None:
                 pars["bondDimension"] = bonddim
@@ -196,12 +177,12 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                 "parameters": pars
             }
 
-            req_filename = os.path.join(tmpdir, REQUEST_PARAMETERS_FILENAME)
+            req_filename = os.path.join(tmpdir, "parameters.json")
 
             with open(req_filename, "w") as f:
                 json.dump(req, f)
 
-            emutype = "example-type-1"
+            emutype = "CIRC"
             return self.request(
                 emutype,
                 algorithm,
@@ -216,13 +197,13 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         Args:
             execution (str): The execution identifier.
             interval (int): The interval (in seconds) for checking job status (default: 10).
-            
+
         Returns:
-            Results: An instance of the Results class containing the execution, results, samples, amplitudes.
-            
+            Results: An instance of the QCSResults class.
+
         Raises:
             RuntimeError: If the remote job encounters an error.
-        
+
         Examples:
             >>> from mimiqcircuits import *
             >>> conn=MimiqConnection()
@@ -248,45 +229,27 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         with tempfile.TemporaryDirectory() as tmpdir:
             names = self.downloadResults(execution, destdir=tmpdir)
 
-            if RESULTS_PARAMETERS_FILENAME not in names:
+            if RESULTSPB_FILE not in names:
                 raise RuntimeError(
                     "File not found in results. Update Your library.")
 
-            if RESULTS_SAMPLES_FILENAME not in names:
-                raise RuntimeError(
-                    "File not found in results. Update your library.")
+            results = QCSResults.loadproto(
+                os.path.join(tmpdir, RESULTSPB_FILE))
 
-            if RESULTS_AMPLITUES_FILENAME not in names:
-                raise RuntimeError(
-                    "File not found in results. Update your library.")
-
-            with open(os.path.join(tmpdir, RESULTS_PARAMETERS_FILENAME), "r") as f:
-                results = json.load(f)
-
-            with QcsrFile(os.path.join(tmpdir, RESULTS_SAMPLES_FILENAME), "rb") as f:
-                samples = {}
-                for x in f.read():
-                    samples[BitState(x[0])] = x[1]
-
-            with QcsrFile(os.path.join(tmpdir, RESULTS_AMPLITUES_FILENAME), "rb") as f:
-                amplitudes = {}
-                for x in f.read():
-                    amplitudes[BitState(x[0])] = x[1]
-
-        return Results(execution, results, samples, amplitudes)
+        return results
 
     def get_inputs(self, execution):
         """Retrieve the inputs (circuit and parameters) of the execution.
 
         Args:
             execution (str): The execution identifier.
-            
+
         Returns:
             dict: parameters (dict) of the execution.
-            
+
         Raises:
             RuntimeError: If the required files are not found in  inputs. Update your library.
-        
+
         Examples:
             >>> from mimiqcircuits import *
             >>> conn=MimiqConnection()
@@ -310,21 +273,24 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         with tempfile.TemporaryDirectory() as tmpdir:
             names = self.downloadJobFiles(execution, destdir=tmpdir)
 
-            if REQUEST_CIRCUIT_FILENAME not in names:
+            if CIRCUITPB_FILE not in names or CIRCUITQASM_FILE not in names:
                 raise RuntimeError(
                     "File not found in inputs. Update Your library.")
 
-            if REQUEST_PARAMETERS_FILENAME not in names:
+            if "parameters.jl" not in names:
                 raise RuntimeError(
                     "File not found in inputs. Update Your library.")
 
-            with open(os.path.join(tmpdir, REQUEST_PARAMETERS_FILENAME), "r") as f:
+            with open(os.path.join(tmpdir, "parameters.jl"), "r") as f:
                 parameters = json.load(f)
 
-            with open(os.path.join(tmpdir, REQUEST_CIRCUIT_FILENAME), "r") as f:
-                circuit = Circuit.from_json(json.load(f))
+            if CIRCUITPB_FILE in names:
+                circuit = Circuit.loadproto(
+                    os.path.join(tmpdir, CIRCUITPB_FILE))
+            elif CIRCUITQASM_FILE in names:
+                circuit = os.path.join(tmpdir, CIRCUITQASM_FILE)
+            else:
+                raise FileNotFoundError(
+                    "Circuit file not found within results. Update your library.")
 
         return circuit, parameters
-
-
-__all__ = ["MimiqConnection", "Results"]

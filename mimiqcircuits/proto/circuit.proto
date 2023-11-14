@@ -1,0 +1,178 @@
+syntax = "proto3";
+
+
+
+enum Irrational {
+    PI = 0;
+    EULER = 1;
+}
+
+message Symbol {
+    string value = 1;
+}
+
+message Arg {
+    oneof arg {
+        ArgValue argvalue_value= 1;
+        Symbol symbol_value = 2;
+        ArgFunction argfunction_value = 3;
+        Irrational irrational_value = 4;
+    }
+}
+
+message ArgValue {
+    oneof arg_value {
+        int64 integer_value = 1;
+        double double_value = 2;
+    }
+}
+
+enum FunctionType {
+    ADD = 0;
+    MUL = 1;
+    DIV = 2;
+    POW = 3;
+    SIN = 5;
+    COS = 6;
+    TAN = 7;
+    EXP = 8;
+    LOG = 9;
+    IDENTITY = 10;
+}
+
+message ArgFunction {
+    FunctionType functiontype = 1;
+    repeated Arg args = 2;
+}
+
+message Operation {
+    oneof operation {
+        Gate gate = 1;
+        Control control = 2;
+        Power power = 3;
+        Inverse inverse = 4;
+        Barrier barrier = 5;
+        Measure measure = 6;
+        Reset reset = 7;
+        IfStatement ifstatement = 8;
+        Generalized generalized = 9;
+        GateCustom custom = 10;
+        GateCall gatecall = 11;
+        Parallel parallel = 12;
+    }
+}
+
+enum GateType {
+        GateU = 0;
+        GateID = 1;
+        GateX = 2;
+        GateY = 3;
+        GateZ = 4;
+        GateH = 5;
+        GateS = 6;
+        GateT = 7;
+        GateP = 8;
+        GateRX = 10;
+        GateRY = 11;
+        GateRZ = 12;
+        GateR = 13;
+        GateU1 = 14;
+        GateU2 = 15;
+        GateU3 = 16;
+        GateSWAP = 17;
+        GateISWAP = 18;
+        GateECR = 19;
+        GateDCX = 20;
+        GateRXX = 21;
+        GateRYY = 22;
+        GateRZZ = 23;
+        GateRZX = 24;
+        GateXXplusYY = 25;
+        GateXXminusYY = 26;
+        GateUPhase = 27;
+}
+
+message Gate {
+    GateType gtype = 1;
+    repeated Arg parameters = 2;
+}
+
+message Generalized {
+    string name = 1;
+    repeated Arg args = 2;
+    repeated int64 regsizes = 3;
+}
+
+message Measure {}
+
+message Reset {}
+
+message Control {
+    Operation operation = 1;
+    int64 numcontrols = 2;
+}
+
+message Parallel {
+    Operation operation = 1;
+    int64 numrepeats = 2;
+}
+
+message Rational {
+    int64 num = 1;
+    int64 den = 2;
+}
+
+message Power {
+    Operation operation = 1;
+
+    oneof power {
+        double double_val= 2;
+        Rational rational_val = 3;
+        int64 int_val = 4;
+    }
+}
+
+message IfStatement {
+    Operation operation = 1;
+    Arg value = 2;
+    int64 nbits = 3;
+}
+
+message Inverse {
+    Operation operation = 1;
+}
+
+message Barrier {
+    int64 numqubits = 1;
+}
+
+message ComplexArg {
+    Arg real = 1;
+    Arg imag = 2;
+}
+
+message GateCustom {
+    int64 nqubits = 1;
+    repeated ComplexArg matrix = 2;
+}
+
+message GateCall {
+    GateDecl decl = 1;
+    repeated Arg args = 2;
+}
+
+message GateDecl {
+    string name = 1;
+    repeated Symbol args = 2;
+    repeated Instruction instructions = 3;
+}
+
+message Instruction {
+    Operation operation = 1;
+    repeated int64 qtargets = 2;
+    repeated int64 ctargets = 3;
+}
+
+message Circuit {
+    repeated Instruction instructions = 1;
+}

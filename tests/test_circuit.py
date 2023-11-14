@@ -86,8 +86,8 @@ def test_Circuit():
         mc.Instruction(mc.GateCH(), (1, 0), (0, 1))
 
     # Test add_barrier
-    c= mc.Circuit()
-    c.push(mc.Barrier(), range(0,3))
+    c = mc.Circuit()
+    c.push(mc.Barrier(), range(0, 3))
     assert len(c.instructions) == 3
     assert isinstance(c.instructions[0].operation, mc.Barrier)
     assert c.instructions[0].qubits == (0, )
@@ -103,7 +103,7 @@ def test_Circuit():
         c.push(mc.Measure(), [0, 1])
 
     c.push(mc.Measure(), [0, 1], [2, 3])
-    assert len(c.instructions) == 8
+    assert len(c.instructions) == 6
     assert isinstance(c.instructions[3].operation, mc.Measure)
     assert c.instructions[2].qubits == (2,)
     assert c.instructions[2].bits == ()
@@ -114,7 +114,7 @@ def test_Circuit():
 
     # Test add_reset
     c.push(mc.Reset(), 4)
-    assert len(c.instructions) == 9
+    assert len(c.instructions) == 7
     assert isinstance(c.instructions[4].operation, mc.Measure)
     assert c.instructions[4].qubits == (0,)
 
@@ -122,7 +122,7 @@ def test_Circuit():
     c = mc.Circuit()
     c.push(mc.GateX(), 0)
     c.push(mc.GateY(), 1)
-    c.push(mc.Barrier, *range(2))
+    c.push(mc.Barrier(2), *range(2))
 
     # should add barriers to all two qubits here
     assert len(c.instructions) == 3
@@ -139,11 +139,11 @@ def test_emptyCircuit():
     assert c.num_bits() == 0
 
     # try to iterate over an empty circuit
-    l = 0
+    ll = 0
     for g in c:
-        l += 1
+        ll += 1
 
-    assert l == 0
+    assert ll == 0
 
 
 def test_constructCircuitFromInstructions():
@@ -229,7 +229,7 @@ def test_remove():
     for i in range(4):
         c.push(mc.GateH(), i)
 
-    c.push(mc.Barrier, *range(4))
+    c.push(mc.Barrier(4), *range(4))
     c.push(mc.GateCX(), 0, 1)
     c.push(mc.GateCX(), 1, 2)
 
@@ -245,7 +245,7 @@ def test_circuitDepth():
     assert c.depth() == 1
 
     # barrier should not increase the depth
-    c.push(mc.Barrier, *range(c.num_qubits()))
+    c.push(mc.Barrier(c.num_qubits()), *range(c.num_qubits()))
     assert c.depth() == 1
 
     c.push(mc.GateH(), 22)
@@ -256,7 +256,7 @@ def test_circuitDepth():
 
     # barrier should not increase the depth
     # no matter how many qubits it has
-    c.push(mc.Barrier, *range(0,4))
+    c.push(mc.Barrier(4), *range(0, 4))
     assert c.depth() == 2
 
     c.push(mc.GateH(), 2)
@@ -273,7 +273,7 @@ def test_appendCircuitToCircuit():
     c = mc.Circuit()
     c.push(mc.GateH(), 0)
     c.push(mc.GateH(), 1)
-    c.push(mc.Barrier, *range(2))
+    c.push(mc.Barrier(2), *range(2))
     c.push(mc.GateCX(), 0, 1)
 
     assert c.num_qubits() == 2
@@ -284,7 +284,7 @@ def test_appendCircuitToCircuit():
     c2.push(mc.GateT(), 1)
     c2.push(mc.GateT(), 2)
     c2.push(mc.GateT(), 3)
-    c2.push(mc.Barrier, *range(c2.num_qubits()))
+    c2.push(mc.Barrier(c2.num_qubits()), *range(c2.num_qubits()))
     c2.push(mc.GateCH(), 1, 2)
 
     assert c2.num_qubits() == 4
@@ -310,7 +310,7 @@ def test_appendInstructionsToCircuit():
     assert c.num_qubits() == 2
     assert len(c) == 2
 
-    to_add = [mc.Instruction(mc.Barrier(2),(0, 1)),
+    to_add = [mc.Instruction(mc.Barrier(2), (0, 1)),
               mc.Instruction(mc.GateT(), (2,)),
               mc.Instruction(mc.GateCX(), (0, 1)),
               mc.Instruction(mc.GateCH(), (0, 2))]
@@ -339,8 +339,10 @@ def test_checkEquality():
     assert mc.Instruction(mc.GateX(), (0,)) == mc.Instruction(mc.GateX(), (0,))
     assert mc.Instruction(mc.GateX(), (0,)) != mc.Instruction(mc.GateX(), (1,))
     assert mc.Instruction(mc.GateX(), (0,)) != mc.Instruction(mc.GateY(), (0,))
-    assert mc.Instruction(mc.GateRX(0.2), (0,)) != mc.Instruction(mc.GateRX(0.3), (0,))
-    assert mc.Instruction(mc.GateRX(0.2), (0,)) == mc.Instruction(mc.GateRX(0.2), (0,))
+    assert mc.Instruction(mc.GateRX(0.2), (0,)) != mc.Instruction(
+        mc.GateRX(0.3), (0,))
+    assert mc.Instruction(mc.GateRX(0.2), (0,)) == mc.Instruction(
+        mc.GateRX(0.2), (0,))
     assert mc.Barrier() == mc.Barrier()
     assert mc.GateRX(0.2) != mc.GateRX(0.3)
     assert mc.GateRY(0.1) != mc.GateRX(0.1)
