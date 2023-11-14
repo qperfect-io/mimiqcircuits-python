@@ -47,9 +47,6 @@ patch.antialiased: True
 font.family: sans-serif
 font.style: normal
 font.weight: normal
-font.serif: Roboto Slab, Calibri, Carlito, serif
-font.sans-serif: Roboto, Fira Sans, sans serif
-font.monospace: Roboto Mono, Fira Mono, monospace
 font.size: 11.0
 
 ### TEXT
