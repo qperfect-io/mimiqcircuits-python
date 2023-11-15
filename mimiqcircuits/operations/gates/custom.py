@@ -18,25 +18,28 @@ import mimiqcircuits.operations.gates.gate as mcg
 from numpy import ndarray
 from numpy.linalg import inv
 from symengine import *
-import numpy as np
+
+import sympy as sp
 
 
 class GateCustom(mcg.Gate):
     """One or Two qubit Custom gates.
 
-    Examples:
-        >>> from mimiqcircuits import Circuit,GateCustom
-        >>> import numpy as np
-        >>> matrix = np.array([[1, 0, 0, 0],
-                            [0, 1, 1j, 0],
-                            [0, 0, 0, 1],
-                            [0, 0, 1, 0]])
-        >>> qubits=2
-        >>> c=Circuit()
-        >>> c.push(GateCustom(matrix, qubits), 0, 1)
-            2-qubit circuit with 1 instructions:
-            └── Custom @ q0, q1
-    """
+Examples:
+    >>> from mimiqcircuits import Circuit, GateCustom
+    >>> import numpy as np
+    >>> matrix = np.array([[1, 0, 0, 0],
+    ...                    [0, 1, 1j, 0],
+    ...                    [0, 0, 0, 1],
+    ...                    [0, 0, 1, 0]])
+    >>> c = Circuit()
+    >>> c.push(GateCustom(matrix), 0, 1)
+    2-qubit circuit with 1 instructions:
+    └── Custom([[1.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I],
+                [0.0 + 0.0*I, 1.0 + 0.0*I, 0.0 + 1.0*I, 0.0 + 0.0*I],
+                [0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 1.0 + 0.0*I],
+                [0.0 + 0.0*I, 0.0 + 0.0*I, 1.0 + 0.0*I, 0.0 + 0.0*I]]) @ q0, q1
+"""
     _name = 'Custom'
     _num_qubits = None
     _qregsizes = None
@@ -55,11 +58,12 @@ class GateCustom(mcg.Gate):
         if mat.rows != mat.cols:
             raise ValueError("Matrix is not square")
         
-        num_qubits = mat.rows >> 2 + 1
+        num_qubits = int(log(mat.rows, 2))
+
         
         self._matrix = mat
         self._num_qubits = num_qubits
-        self._qregsizes = [num_qubits]
+        self._qregsizes = [num_qubits,]
 
     @property
     def matrix(self):
@@ -76,8 +80,10 @@ class GateCustom(mcg.Gate):
         return f'{self.name}({self.matrix.tolist()})'
 
     def evaluate(self, d):
-        matrix = map(lambda x: x.subs(d), self.matrix)
-        return GateCustom(Matrix(list(matrix))) 
- 
+        sympy_matrix = sp.Matrix(self.matrix)
+        matrix = sympy_matrix.applyfunc(lambda entry: entry.subs(d) if not isinstance(entry, (float, int)) else entry)
+        evaluated_matrix = Matrix(matrix.tolist())
+        return GateCustom(evaluated_matrix)
+
         
 __all__ = ['Custom']
