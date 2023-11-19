@@ -14,13 +14,13 @@
 # limitations under the License.
 #
 
-import mimiqcircuits.operations.gates.gate as mcg
-from mimiqcircuits.operations.gates.standard.u import GateU
-import mimiqcircuits.operations.control as mctrl
+import mimiqcircuits as mc
 from mimiqcircuits.matrices import umatrixpi
+import symengine as se
+import sympy as sp
 
 
-class GateID(mcg.Gate):
+class GateID(mc.Gate):
     """Single qubit Identity gate.
 
     **Matrix representation:**
@@ -40,18 +40,9 @@ class GateID(mcg.Gate):
         [0, 1]
         <BLANKLINE>
         >>> c = Circuit().push(GateID(), 0)
-        >>> GateID().power(2), GateID().inverse()
-        (ID^(2), ID)
-        >>> GateID().decompose()
+        >>> c
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, 0) @ q0
-        1-qubit circuit with 1 instructions:
-        └── U(0, 0, 0) @ q0
-        >>> GateID().matrix()
-        [1, 0]
-        [0, 1]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateID(), 0)
+        └── ID @ q0
         >>> GateID().power(2), GateID().inverse()
         (ID^(2), ID)
         >>> GateID().decompose()
@@ -67,15 +58,15 @@ class GateID(mcg.Gate):
         return self
 
     def matrix(self):
-        return umatrixpi(0, 0, 0)
+        return se.Matrix(sp.simplify(umatrixpi(0, 0, 0)))
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
-        circ.push(GateU(0, 0, 0), q)
+        circ.push(mc.GateU(0, 0, 0), q)
         return circ
 
 
-class GateID2(mctrl.Control):
+class GateID2(mc.Control):
 
     """Two-qubit identity gate
 
@@ -96,12 +87,24 @@ class GateID2(mctrl.Control):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateID2()
+        CID
         >>> GateID2().matrix()
+        [1, 0, 0, 0]
+        [0, 1, 0, 0]
+        [0, 0, 1, 0]
+        [0, 0, 0, 1]
+        <BLANKLINE>
         >>> c = Circuit().push(GateID2(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── CID @ q0, q1
         >>> GateID2().power(2), GateID2().inverse()
+        (C(ID^(2)), CID)
         >>> GateID2().decompose()
+        2-qubit circuit with 1 instructions:
+        └── CID @ q0, q1
     """
     _name = 'ID2'
 
     def __init__(self):
-        super().__init__(GateID())
+        super().__init__(1, GateID())

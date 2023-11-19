@@ -1,9 +1,31 @@
 from mimiqcircuits.proto.qcsrproto import toproto_qcsr, fromproto_qcsr
 from mimiqcircuits.proto import qcsresults_pb
-from mimiqcircuits.bitstates import bitvec_to_int
+from mimiqcircuits.bitstrings import bitvec_to_int
 
 
 class QCSResults:
+    """
+    Represents the results of quantum computations obtained from quantum cloud services (QCS).
+
+    Attributes:
+        simulator (str): The name of the quantum simulator.
+        version (str): The version of the quantum simulator.
+        fidelities (list): List of fidelity estimates from different executions.
+        avggateerrors (list): List of average ≥2-qubit gate errors from different executions.
+        cstates (list): List of classical states obtained from executions.
+        zstates (list): Not used in the current implementation.
+        amplitudes (dict): Dictionary of statevector amplitudes for different quantum states.
+        timings (dict): Dictionary of timing information for different phases of the computation.
+
+    Methods:
+        histogram(): Calculates and returns a histogram of classical states and their occurrences.
+        saveproto(filename): Saves the QCSResults object to a Protocol Buffers file.
+        loadproto(filename): Loads a QCSResults object from a Protocol Buffers file.
+
+        Note:
+            The :func:`loadproto` method is a static method and should be called on the class, not on an instance of the class.
+"""
+
     def __init__(self, simulator=None, version=None, fidelities=None, avggateerrors=None, cstates=None, zstates=None, amplitudes=None, timings=None):
         self.simulator = simulator
         self.version = version

@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 from mimiqcircuits.qcsresults import QCSResults
-from mimiqcircuits.bitstates import bitvec_to_int
+from mimiqcircuits.bitstrings import bitvec_to_int
 
 
 # define colors for plots
@@ -71,7 +71,7 @@ def plothistogram(results, num_outcomes=15, mimiqstyle=True, nobitstrings=False)
 
     Arguments:
         results: a QCSResults object.
-        num_states (int): the maximum number of bitstates plotted (default 15)
+        num_states (int): the maximum number of bitstrings plotted (default 15)
 
     Raises:
         TypeError: If a non QCSResults object is passed.

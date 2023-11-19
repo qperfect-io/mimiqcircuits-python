@@ -45,8 +45,8 @@ class QFT(mcg.Gate):
         >>> from mimiqcircuits import *
         >>> c=Circuit()
         >>> c.push(QFT(2),1,2)
-            3-qubit circuit with 1 instructions:
-            └── QFT @ q1, q2
+        3-qubit circuit with 1 instructions:
+        └── QFT @ q1, q2
 
     """
     _name = "QFT"

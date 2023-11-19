@@ -23,6 +23,9 @@ from symengine import pi
 class GateCS(mctrl.Control):
     """Controlled-S gate.
 
+    By convention, the first qubit is the control and the second is
+    the target
+
     See Also :func:`GateS`
 
     **Matrix representation:**:
@@ -37,21 +40,20 @@ class GateCS(mctrl.Control):
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> GateCS(), GateCS().num_controls, GateCS().num_targets
-        (CS, 1, 1)
+        >>> GateCS(), GateCS().num_controls, GateCS().num_targets, GateCS().num_qubits
+        (CS, 1, 1, 2)
         >>> GateCS().matrix()
+        [1, 0, 0, 0]
+        [0, 1, 0, 0]
+        [0, 0, 1, 0]
+        [0, 0, 0, 0.0 + 1.0*I]
+        <BLANKLINE>
         >>> c = Circuit().push(GateCS(), 0, 1)
-        >>> GateCS().power(2), GateCS().inverse()
-        (CZ^(1.0), CS†)
-        >>> GateCS().decompose()
+        >>> c
         2-qubit circuit with 1 instructions:
-        └── CP((1/2)*pi) @ q0, q1
-        2-qubit circuit with 1 instructions:
-        └── CP((1/2)*pi) @ q0, q1
-        >>> GateCS().matrix()
-        >>> c = Circuit().push(GateCS(), 0, 1)
+        └── CS @ q0, q1
         >>> GateCS().power(2), GateCS().inverse()
-        (CZ^(1.0), CS†)
+        (C(Z^(1.0)), CS†)
         >>> GateCS().decompose()
         2-qubit circuit with 1 instructions:
         └── CP((1/2)*pi) @ q0, q1
@@ -71,6 +73,9 @@ class GateCS(mctrl.Control):
 class GateCSDG(mctrl.Control):
     """Two qubit Controlled-S gate.
 
+    By convention, the first qubit is the control and the second is
+    the target
+
     **Matrix representation:**
 
     .. math::
@@ -83,21 +88,20 @@ class GateCSDG(mctrl.Control):
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> GateCSDG(), GateCSDG().num_controls, GateCSDG().num_targets
-        (CInverse, 1, 1)
+        >>> GateCSDG(), GateCSDG().num_controls, GateCSDG().num_targets, GateCSDG().num_qubits
+        (CS†, 1, 1, 2)
         >>> GateCSDG().matrix()
+        [1, 0, 0, 0]
+        [0, 1, 0, 0]
+        [0, 0, 1.0, 0]
+        [0, 0, 0, 6.12323399573677e-17 - 1.0*I]
+        <BLANKLINE>
         >>> c = Circuit().push(GateCSDG(), 0, 1)
-        >>> GateCSDG().power(2), GateCSDG().inverse()
-        (CInverse^(2), CS)
-        >>> GateCSDG().decompose()
+        >>> c
         2-qubit circuit with 1 instructions:
-        └── CP((-1/2)*pi) @ q0, q1
-        2-qubit circuit with 1 instructions:
-        └── CP((-1/2)*pi) @ q0, q1
-        >>> GateCSDG().matrix()
-        >>> c = Circuit().push(GateCSDG(), 0, 1)
+        └── CS† @ q0, q1
         >>> GateCSDG().power(2), GateCSDG().inverse()
-        (CInverse^(2), CS)
+        (C(S†^(2)), CS)
         >>> GateCSDG().decompose()
         2-qubit circuit with 1 instructions:
         └── CP((-1/2)*pi) @ q0, q1

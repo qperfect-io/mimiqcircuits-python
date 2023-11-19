@@ -21,6 +21,9 @@ from mimiqcircuits.operations.gates.standard.phase import GateP
 
 class GateCP(mctrl.Control):
     """Two qubit Controlled-Phase gate.
+    
+    By convention, the first qubit is the control and the second is
+    the target
 
     See Also :func:`GateP`
 
@@ -39,11 +42,27 @@ class GateCP(mctrl.Control):
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> from symengine import pi
+        >>> from symengine import *
         >>> lmbda = Symbol('lambda')
-        >>> GateCP(lmbda), GateCP(lmbda).num_controls, GateCP(lmbda).num_targets
+        >>> GateCP(lmbda), GateCP(lmbda).num_controls, GateCP(lmbda).num_targets, GateCP(lmbda).num_qubits
+        (CP(lambda), 1, 1, 2)
         >>> GateCP(lmbda).matrix()
-        >>> c = Circuit().push(GateCP(lmbda), 0, 1)
+        [1, 0, 0, 0]
+        [0, 1, 0, 0]
+        [0, 0, 1, 0]
+        [0, 0, 0, exp(I*lambda)]
+        <BLANKLINE>
+        >>> c = Circuit().push(GateCP(lmbda), 10, 11)
+        >>> c
+        12-qubit circuit with 1 instructions:
+        └── CP(lambda) @ q10, q11
+        >>> GateCP(lmbda).decompose()
+        2-qubit circuit with 5 instructions:
+        ├── P((1/2)*lambda) @ q0
+        ├── CX @ q0, q1
+        ├── P((-1/2)*lambda) @ q1
+        ├── CX @ q0, q1
+        └── P((1/2)*lambda) @ q1
     """
 
     def __init__(self, *args, **kwargs):

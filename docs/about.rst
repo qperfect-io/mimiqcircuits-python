@@ -33,14 +33,16 @@ process:
   functions and tools for defining and manipulating quantum circuits.
 
 * **Job Request**: Once your circuit is ready, submit a job request to our
-  remote services using the Python or [Julia](/docs/julia/) libraries.
-  This request contains the circuit information along with any specific
-  simulation parameters.
+  remote services using the Python or `Julia
+  <https://docs.qperfect.io/MimiqCircuit.jl/>`_ libraries. This request
+  contains the circuit information along with any specific simulation
+  parameters.
 
 * **Simulation and Execution**: Our robust remote infrastructure takes charge
   and performs the quantum circuit simulation using powerful cloud based
   computational resources.
 
 * **Result Retrieval**: After the simulation completes, you can retrieve the
-  results through the [Julia](/docs/julia/)/Python libraries or via a
-  web interface.
+  results through the `Julia
+  <https://docs.qperfect.io/MimiqCircuit.jl/>`_/Python libraries or via a web
+  interface.

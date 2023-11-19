@@ -14,15 +14,14 @@
 # limitations under the License.
 #
 
-import mimiqcircuits.operations.gates.gate as mcg
+import mimiqcircuits as mc
 from mimiqcircuits.operations.utils import power_nhilpotent
-from mimiqcircuits.operations.gates.standard.u import GateU
-from mimiqcircuits.operations.gates.generalized.gphase import GPhase
 from mimiqcircuits.matrices import gphasepi, umatrixpi
-from symengine import pi
+from symengine import pi, Matrix
+import sympy as sp
 
 
-class GateH(mcg.Gate):
+class GateH(mc.Gate):
     """Single qubit Hadamard gate.
 
     **Matrix representation:**
@@ -38,24 +37,13 @@ class GateH(mcg.Gate):
         >>> GateH()
         H
         >>> GateH().matrix()
-        [(1/2)*(-I*sin(0.25*pi) + cos(0.25*pi))*(1 + I*sin(0.5*pi) + cos(0.5*pi)), 1/2*I*(-I*sin(0.25*pi) + cos(0.25*pi))*(1 - (I*sin(0.5*pi) + cos(0.5*pi)))]
-        [1/2*I*(-I*sin(0.25*pi) + cos(0.25*pi))*(1 - (I*sin(0.5*pi) + cos(0.5*pi))), (-1/2)*(-I*sin(0.25*pi) + cos(0.25*pi))*(1 + I*sin(0.5*pi) + cos(0.5*pi))]
+        [(1/2)*sqrt(2), (1/2)*sqrt(2)]
+        [(1/2)*sqrt(2), (-1/2)*sqrt(2)]
         <BLANKLINE>
         >>> c = Circuit().push(GateH(), 0)
-        >>> GateH().power(2), GateH().inverse()
-        (ID, H)
-        >>> GateH().decompose()
-        1-qubit circuit with 2 instructions:
-        ├── U((1/2)*pi, 0, pi) @ q0
-        └── GPhase(lmbda=(-1/4)*pi) @ q0
-        1-qubit circuit with 2 instructions:
-        ├── U((1/2)*pi, 0, pi) @ q0
-        └── GPhase(lmbda=(-1/4)*pi) @ q0
-        >>> GateH().matrix()
-        [(1/2)*(-I*sin(0.25*pi) + cos(0.25*pi))*(1 + I*sin(0.5*pi) + cos(0.5*pi)), 1/2*I*(-I*sin(0.25*pi) + cos(0.25*pi))*(1 - (I*sin(0.5*pi) + cos(0.5*pi)))]
-        [1/2*I*(-I*sin(0.25*pi) + cos(0.25*pi))*(1 - (I*sin(0.5*pi) + cos(0.5*pi))), (-1/2)*(-I*sin(0.25*pi) + cos(0.25*pi))*(1 + I*sin(0.5*pi) + cos(0.5*pi))]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateH(), 0)
+        >>> c
+        1-qubit circuit with 1 instructions:
+        └── H @ q0
         >>> GateH().power(2), GateH().inverse()
         (ID, H)
         >>> GateH().decompose()
@@ -75,10 +63,10 @@ class GateH(mcg.Gate):
         return power_nhilpotent(self, p)
 
     def matrix(self):
-        return gphasepi(-1/4) * umatrixpi(1/2, 0, 1)
+        return Matrix(sp.simplify(gphasepi(-1/4) * umatrixpi(1/2, 0, 1)))
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
-        circ.push(GateU(pi/2, 0, pi), q)
-        circ.push(GPhase(1, -pi/4), q)
+        circ.push(mc.GateU(pi/2, 0, pi), q)
+        circ.push(mc.GPhase(1, -pi/4), q)
         return circ

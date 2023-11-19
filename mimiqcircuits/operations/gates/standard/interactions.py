@@ -14,17 +14,13 @@
 # limitations under the License.
 #
 
-import mimiqcircuits.operations.gates.gate as mcg
-from mimiqcircuits.operations.gates.standard.rotations import GateRX, GateRY, GateRZ
-from mimiqcircuits.operations.gates.standard.cpauli import GateCX
-from mimiqcircuits.operations.gates.standard.sx import GateSX, GateSXDG
-from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
-from mimiqcircuits.operations.gates.standard.hadamard import GateH
+import mimiqcircuits as mc
 from mimiqcircuits.matrices import cis
-from symengine import I, Matrix, cos, sin, pi
+from symengine import I, Matrix, cos, sin, pi, expand
+import sympy as sp
 
 
-class GateRXX(mcg.Gate):
+class GateRXX(mc.Gate):
     """Two qubit RXX gate (rotation about XX).
 
     This gate is symmetric, and is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
@@ -48,26 +44,27 @@ class GateRXX(mcg.Gate):
         >>> theta = Symbol('theta')
         >>> GateRXX(theta)
         RXX(theta)
+        >>> c = Circuit()
+        >>> c.push(GateRXX(theta), 0, 1)
+        2-qubit circuit with 1 instructions:
+        └── RXX(theta) @ q0, q1
+        >>> GateRXX(theta).power(2), GateRXX(theta).inverse()
+        (RXX(theta)^(2), RXX(-theta))
         >>> GateRXX(theta).matrix()
         [cos((1/2)*theta), 0, 0, -I*sin((1/2)*theta)]
         [0, cos((1/2)*theta), -I*sin((1/2)*theta), 0]
         [0, -I*sin((1/2)*theta), cos((1/2)*theta), 0]
         [-I*sin((1/2)*theta), 0, 0, cos((1/2)*theta)]
         <BLANKLINE>
-        >>> c = Circuit().push(GateRXX(theta), 0, 1)
-        >>> GateRXX(theta).power(2), GateRXX(theta).inverse()
-        (RXX(theta)^(2), RXX(-theta))
-        (RXX(theta)^(2), RXX(-theta))
-        >>> GateRXX(theta).matrix()
-        [cos((1/2)*theta), 0, 0, -I*sin((1/2)*theta)]
-        [0, cos((1/2)*theta), -I*sin((1/2)*theta), 0]
-        [0, -I*sin((1/2)*theta), cos((1/2)*theta), 0]
-        [-I*sin((1/2)*theta), 0, 0, cos((1/2)*theta)]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateRXX(theta), 0, 1)
-        >>> GateRXX(theta).power(2), GateRXX(theta).inverse()
-        (RXX(theta)^(2), RXX(-theta))
         >>> GateRXX(theta).decompose()
+        2-qubit circuit with 7 instructions:
+        ├── H @ q0
+        ├── H @ q1
+        ├── CX @ q0, q1
+        ├── RZ(theta) @ q1
+        ├── CX @ q0, q1
+        ├── H @ q1
+        └── H @ q0
     """
     _name = 'RXX'
 
@@ -85,10 +82,10 @@ class GateRXX(mcg.Gate):
         cos2 = cos(theta / 2)
         sin2 = sin(theta / 2)
 
-        return Matrix([[cos2, 0, 0, -I * sin2],
-                       [0, cos2, -I * sin2, 0],
-                       [0, -I * sin2, cos2, 0],
-                       [-I * sin2, 0, 0, cos2]])
+        return Matrix(sp.simplify((Matrix([[cos2, 0, 0, -I * sin2],
+                                           [0, cos2, -I * sin2, 0],
+                                           [0, -I * sin2, cos2, 0],
+                                           [-I * sin2, 0, 0, cos2]]))))
 
     def inverse(self):
         return GateRXX(-self.theta)
@@ -96,17 +93,17 @@ class GateRXX(mcg.Gate):
     def _decompose(self, circ, qubits, bits):
         a, b = range(self.num_qubits)
 
-        circ.push(GateH(), a)
-        circ.push(GateH(), b)
-        circ.push(GateCX(), a, b)
-        circ.push(GateRZ(self.theta), b)
-        circ.push(GateCX(), a, b)
-        circ.push(GateH(), b)
-        circ.push(GateH(), a)
+        circ.push(mc.GateH(), a)
+        circ.push(mc.GateH(), b)
+        circ.push(mc.GateCX(), a, b)
+        circ.push(mc.GateRZ(self.theta), b)
+        circ.push(mc.GateCX(), a, b)
+        circ.push(mc.GateH(), b)
+        circ.push(mc.GateH(), a)
         return circ
 
 
-class GateRYY(mcg.Gate):
+class GateRYY(mc.Gate):
     """Two qubit RYY gate (rotation about YY).
 
     This gate is symmetric, and is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
@@ -127,12 +124,30 @@ class GateRYY(mcg.Gate):
     Examples:
         >>> from mimiqcircuits import *
         >>> from symengine import *
-        >>> theta = Symbol('theta')o
+        >>> theta = Symbol('theta')
         >>> GateRYY(theta)
+        RYY(theta)
         >>> GateRYY(theta).matrix()
+        [cos((1/2)*theta), 0, 0, I*sin((1/2)*theta)]
+        [0, cos((1/2)*theta), -I*sin((1/2)*theta), 0]
+        [0, -I*sin((1/2)*theta), cos((1/2)*theta), 0]
+        [I*sin((1/2)*theta), 0, 0, cos((1/2)*theta)]
+        <BLANKLINE>
         >>> c = Circuit().push(GateRYY(theta), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── RYY(theta) @ q0, q1
         >>> GateRYY(theta).power(2), GateRYY(theta).inverse()
+        (RYY(theta)^(2), RYY(-theta))
         >>> GateRYY(theta).decompose()
+        2-qubit circuit with 7 instructions:
+        ├── RX((1/2)*pi) @ q0
+        ├── RX((1/2)*pi) @ q1
+        ├── CX @ q0, q1
+        ├── RZ(theta) @ q1
+        ├── CX @ q0, q1
+        ├── RX((-1/2)*pi) @ q0
+        └── RX((-1/2)*pi) @ q1
     """
     _name = 'RYY'
 
@@ -149,10 +164,10 @@ class GateRYY(mcg.Gate):
         cos2 = cos(theta / 2)
         sin2 = sin(theta / 2)
 
-        return Matrix([[cos2, 0, 0, I * sin2],
-                       [0, cos2, -I * sin2, 0],
-                       [0, -I * sin2, cos2, 0],
-                       [I * sin2, 0, 0, cos2]])
+        return Matrix(sp.simplify((Matrix([[cos2, 0, 0, I * sin2],
+                                           [0, cos2, -I * sin2, 0],
+                                           [0, -I * sin2, cos2, 0],
+                                           [I * sin2, 0, 0, cos2]]))))
 
     def inverse(self):
         return GateRYY(-self.theta)
@@ -160,18 +175,18 @@ class GateRYY(mcg.Gate):
     def _decompose(self, circ, qubits, bits):
         a, b = range(self.num_qubits)
 
-        circ.push(GateRX(pi/2), a)
-        circ.push(GateRX(pi/2), b)
-        circ.push(GateCX(), a, b)
-        circ.push(GateRZ(self.theta), b)
-        circ.push(GateCX(), a, b)
-        circ.push(GateRX(-pi/2), a)
-        circ.push(GateRX(-pi/2), b)
+        circ.push(mc.GateRX(pi/2), a)
+        circ.push(mc.GateRX(pi/2), b)
+        circ.push(mc.GateCX(), a, b)
+        circ.push(mc.GateRZ(self.theta), b)
+        circ.push(mc.GateCX(), a, b)
+        circ.push(mc.GateRX(-pi/2), a)
+        circ.push(mc.GateRX(-pi/2), b)
 
         return circ
 
 
-class GateRZZ(mcg.Gate):
+class GateRZZ(mc.Gate):
     """Two qubit RZZ gate (rotation about ZZ)..
 
     This gate is symmetric, and is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
@@ -192,12 +207,26 @@ class GateRZZ(mcg.Gate):
     Examples:
         >>> from mimiqcircuits import *
         >>> from symengine import *
-        >>> theta = Symbol('theta')o
+        >>> theta = Symbol('theta')
         >>> GateRZZ(theta)
+        RZZ(theta)
         >>> GateRZZ(theta).matrix()
+        [exp(-1/2*I*theta), 0, 0, 0]
+        [0, exp(1/2*I*theta), 0, 0]
+        [0, 0, exp(1/2*I*theta), 0]
+        [0, 0, 0, exp(-1/2*I*theta)]
+        <BLANKLINE>
         >>> c = Circuit().push(GateRZZ(theta), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── RZZ(theta) @ q0, q1
         >>> GateRZZ(theta).power(2), GateRZZ(theta).inverse()
+        (RZZ(theta)^(2), RZZ(-theta))
         >>> GateRZZ(theta).decompose()
+        2-qubit circuit with 3 instructions:
+        ├── CX @ q0, q1
+        ├── RZ(theta) @ q1
+        └── CX @ q0, q1
     """
     _num_qubits = 2
     _name = 'RZZ'
@@ -207,10 +236,10 @@ class GateRZZ(mcg.Gate):
         self.theta = theta
 
     def matrix(self):
-        return Matrix([[cis(-self.theta / 2), 0, 0, 0],
-                       [0, cis(self.theta / 2), 0, 0],
-                       [0, 0, cis(self.theta / 2), 0],
-                       [0, 0, 0, cis(-self.theta / 2)]])
+        return Matrix(sp.simplify(Matrix([[cis(-self.theta / 2), 0, 0, 0],
+                                          [0, cis(self.theta / 2), 0, 0],
+                                          [0, 0, cis(self.theta / 2), 0],
+                                          [0, 0, 0, cis(-self.theta / 2)]])))
 
     def inverse(self):
         return GateRZZ(-self.theta)
@@ -218,13 +247,13 @@ class GateRZZ(mcg.Gate):
     def _decompose(self, circ, qubits, bits):
         a, b = qubits
 
-        circ.push(GateCX(), a, b)
-        circ.push(GateRZ(self.theta), b)
-        circ.push(GateCX(), a, b)
+        circ.push(mc.GateCX(), a, b)
+        circ.push(mc.GateRZ(self.theta), b)
+        circ.push(mc.GateCX(), a, b)
         return circ
 
 
-class GateRZX(mcg.Gate):
+class GateRZX(mc.Gate):
     """Two qubit RZX gate.
 
     This gate i is maximally entangling at :math:`(\\theta = \\frac{\\pi}{2})`
@@ -245,12 +274,28 @@ class GateRZX(mcg.Gate):
     Examples:
         >>> from mimiqcircuits import *
         >>> from symengine import *
-        >>> theta = Symbol('theta')o
+        >>> theta = Symbol('theta')
         >>> GateRZX(theta)
+        RZX(theta)
         >>> GateRZX(theta).matrix()
+        [cos((1/2)*theta), -I*sin((1/2)*theta), 0, 0]
+        [-I*sin((1/2)*theta), cos((1/2)*theta), 0, 0]
+        [0, 0, cos((1/2)*theta), I*sin((1/2)*theta)]
+        [0, 0, I*sin((1/2)*theta), cos((1/2)*theta)]
+        <BLANKLINE>
         >>> c = Circuit().push(GateRZX(theta), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── RZX(theta) @ q0, q1
         >>> GateRZX(theta).power(2), GateRZX(theta).inverse()
+        (RZX(theta)^(2), RZX(-theta))
         >>> GateRZX(theta).decompose()
+        2-qubit circuit with 5 instructions:
+        ├── H @ q1
+        ├── CX @ q0, q1
+        ├── RZ(theta) @ q1
+        ├── CX @ q0, q1
+        └── H @ q1
     """
     _num_qubits = 2
     _name = 'RZX'
@@ -264,12 +309,12 @@ class GateRZX(mcg.Gate):
         cos2 = cos(theta / 2)
         sin2 = sin(theta / 2)
 
-        return Matrix([
+        return Matrix(sp.simplify(Matrix([
             [cos2, -I * sin2, 0, 0],
             [-I * sin2, cos2, 0, 0],
             [0, 0, cos2, I * sin2],
             [0, 0, I * sin2, cos2]
-        ])
+        ])))
 
     def inverse(self):
         return GateRZX(-self.theta)
@@ -277,16 +322,16 @@ class GateRZX(mcg.Gate):
     def _decompose(self, circ, qubits, bits):
         a, b = range(self.num_qubits)
 
-        circ.push(GateH(), b)
-        circ.push(GateCX(), a, b)
-        circ.push(GateRZ(self.theta), b)
-        circ.push(GateCX(), a, b)
-        circ.push(GateH(), b)
+        circ.push(mc.GateH(), b)
+        circ.push(mc.GateCX(), a, b)
+        circ.push(mc.GateRZ(self.theta), b)
+        circ.push(mc.GateCX(), a, b)
+        circ.push(mc.GateH(), b)
 
         return circ
 
 
-class GateXXplusYY(mcg.Gate):
+class GateXXplusYY(mc.Gate):
     """Two qubit parametric XXplusYY gate.
 
     Also known as an XY gate. Its action is to induce a coherent rotation by some angle between :math:`\\ket{10}` and :math:`\\ket{01}`.
@@ -313,24 +358,32 @@ class GateXXplusYY(mcg.Gate):
         XXplusYY(theta, beta)
         >>> GateXXplusYY(theta, beta).matrix()
         [1, 0, 0, 0]
-        [0, cos((1/2)*theta), -I*(-I*sin(beta) + cos(beta))*sin((1/2)*theta), 0]
-        [0, -I*(I*sin(beta) + cos(beta))*sin((1/2)*theta), cos((1/2)*theta), 0]
+        [0, cos((1/2)*theta), (sin(beta) - I*cos(beta))*sin((1/2)*theta), 0]
+        [0, I*(I*sin(beta) - cos(beta))*sin((1/2)*theta), cos((1/2)*theta), 0]
         [0, 0, 0, 1]
         <BLANKLINE>
         >>> c = Circuit().push(GateXXplusYY(theta, beta), 0, 1)
-        >>> GateXXplusYY(theta, beta).power(2), GateXXplusYY(theta, beta).inverse()
-        (XXplusYY(theta, beta)^(2), XXplusYY(-theta, beta))
-        (XXplusYY(theta, beta)^(2), XXplusYY(-theta, beta))
-        >>> GateXXplusYY(theta, beta).matrix()
-        [1, 0, 0, 0]
-        [0, cos((1/2)*theta), -I*(-I*sin(beta) + cos(beta))*sin((1/2)*theta), 0]
-        [0, -I*(I*sin(beta) + cos(beta))*sin((1/2)*theta), cos((1/2)*theta), 0]
-        [0, 0, 0, 1]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateXXplusYY(theta, beta), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── XXplusYY(theta, beta) @ q0, q1
         >>> GateXXplusYY(theta, beta).power(2), GateXXplusYY(theta, beta).inverse()
         (XXplusYY(theta, beta)^(2), XXplusYY(-theta, beta))
         >>> GateXXplusYY(theta, beta).decompose()
+        2-qubit circuit with 14 instructions:
+        ├── RZ(beta) @ q0
+        ├── RZ((-1/2)*pi) @ q1
+        ├── X^(1/2) @ q1
+        ├── RZ((1/2)*pi) @ q1
+        ├── S @ q0
+        ├── CX @ q1, q0
+        ├── RY((-1/2)*theta) @ q1
+        ├── RY((-1/2)*theta) @ q0
+        ├── CX @ q1, q0
+        ├── S† @ q0
+        ├── RZ((-1/2)*pi) @ q1
+        ├── (X^(1/2))† @ q1
+        ├── RZ((-1/2)*pi) @ q1
+        └── RZ(-beta) @ q0
     """
     _num_qubits = 2
     _name = 'XXplusYY'
@@ -346,12 +399,12 @@ class GateXXplusYY(mcg.Gate):
         cos2 = cos(theta / 2)
         sin2 = sin(theta / 2)
 
-        return Matrix([
+        return Matrix(sp.simplify(Matrix([
             [1, 0, 0, 0],
-            [0, cos2, -I * sin2 * cis(-beta), 0],
-            [0, -I * sin2 * cis(beta), cos2, 0],
+            [0, cos2, -I * sin2 * cis(beta), 0],
+            [0, -I * sin2 * cis(-beta), cos2, 0],
             [0, 0, 0, 1]
-        ])
+        ])))
 
     def inverse(self):
         return GateXXplusYY(-self.theta, self.beta)
@@ -359,25 +412,25 @@ class GateXXplusYY(mcg.Gate):
     def _decompose(self, circ, qubits, bits):
         a, b = range(self.num_qubits)
 
-        circ.push(GateRZ(self.beta), a)
-        circ.push(GateRZ(-pi/2), b)
-        circ.push(GateSX(), b)
-        circ.push(GateRZ(pi/2), b)
-        circ.push(GateS(), a)
-        circ.push(GateCX(), b, a)
-        circ.push(GateRY(-self.theta/2), b)
-        circ.push(GateRY(-self.theta/2), a)
-        circ.push(GateCX(), b, a)
-        circ.push(GateSDG(), a)
-        circ.push(GateRZ(-pi/2), b)
-        circ.push(GateSXDG(), b)
-        circ.push(GateRZ(-pi/2), b)
-        circ.push(GateRZ(-self.beta), a)
+        circ.push(mc.GateRZ(self.beta), a)
+        circ.push(mc.GateRZ(-pi/2), b)
+        circ.push(mc.GateSX(), b)
+        circ.push(mc.GateRZ(pi/2), b)
+        circ.push(mc.GateS(), a)
+        circ.push(mc.GateCX(), b, a)
+        circ.push(mc.GateRY(-self.theta/2), b)
+        circ.push(mc.GateRY(-self.theta/2), a)
+        circ.push(mc.GateCX(), b, a)
+        circ.push(mc.GateSDG(), a)
+        circ.push(mc.GateRZ(-pi/2), b)
+        circ.push(mc.GateSXDG(), b)
+        circ.push(mc.GateRZ(-pi/2), b)
+        circ.push(mc.GateRZ(-self.beta), a)
 
         return circ
 
 
-class GateXXminusYY(mcg.Gate):
+class GateXXminusYY(mc.Gate):
     """Two qubit parametric GateXXminusYY gate.
 
     Its action is to induce a coherent rotation by some angle between :math:`\\ket{00}` and :math:`\\ket{11}`
@@ -403,25 +456,33 @@ class GateXXminusYY(mcg.Gate):
         >>> GateXXminusYY(theta, beta)
         XXminusYY(theta, beta)
         >>> GateXXminusYY(theta, beta).matrix()
-        [cos((1/2)*theta), 0, 0, -I*(I*sin(beta) + cos(beta))*sin((1/2)*theta)]
+        [cos((1/2)*theta), 0, 0, I*(I*sin(beta) - cos(beta))*sin((1/2)*theta)]
         [0, 1, 0, 0]
         [0, 0, 1, 0]
-        [-I*(-I*sin(beta) + cos(beta))*sin((1/2)*theta), 0, 0, cos((1/2)*theta)]
+        [(sin(beta) - I*cos(beta))*sin((1/2)*theta), 0, 0, cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateXXminusYY(theta, beta), 0, 1)
-        >>> GateXXminusYY(theta, beta).power(2), GateXXminusYY(theta, beta).inverse()
-        (XXminusYY(theta, beta)^(2), XXminusYY(-theta, beta))
-        (XXminusYY(theta, beta)^(2), XXminusYY(-theta, beta))
-        >>> GateXXminusYY(theta, beta).matrix()
-        [cos((1/2)*theta), 0, 0, -I*(I*sin(beta) + cos(beta))*sin((1/2)*theta)]
-        [0, 1, 0, 0]
-        [0, 0, 1, 0]
-        [-I*(-I*sin(beta) + cos(beta))*sin((1/2)*theta), 0, 0, cos((1/2)*theta)]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateXXminusYY(theta, beta), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── XXminusYY(theta, beta) @ q0, q1
         >>> GateXXminusYY(theta, beta).power(2), GateXXminusYY(theta, beta).inverse()
         (XXminusYY(theta, beta)^(2), XXminusYY(-theta, beta))
         >>> GateXXminusYY(theta, beta).decompose()
+        2-qubit circuit with 14 instructions:
+        ├── RZ(-beta) @ q1
+        ├── RZ((-1/2)*pi) @ q0
+        ├── X^(1/2) @ q0
+        ├── RZ((1/2)*pi) @ q0
+        ├── S @ q1
+        ├── CX @ q0, q1
+        ├── RY((1/2)*theta) @ q0
+        ├── RY((-1/2)*theta) @ q1
+        ├── CX @ q0, q1
+        ├── S† @ q1
+        ├── RZ((-1/2)*pi) @ q0
+        ├── S† @ q0
+        ├── RZ((1/2)*pi) @ q0
+        └── RZ(beta) @ q1
     """
     _num_qubits = 2
     _name = 'XXminusYY'
@@ -437,12 +498,12 @@ class GateXXminusYY(mcg.Gate):
         cos2 = cos(theta / 2)
         sin2 = sin(theta / 2)
 
-        return Matrix([
-            [cos2, 0, 0, -I * sin2 * cis(beta)],
+        return Matrix(sp.simplify(Matrix([
+            [cos2, 0, 0, -I * sin2 * cis(-beta)],
             [0, 1, 0, 0],
             [0, 0, 1, 0],
-            [-I * sin2 * cis(-beta), 0, 0, cos2]
-        ])
+            [-I * sin2 * cis(beta), 0, 0, cos2]
+        ])))
 
     def inverse(self):
         return GateXXminusYY(-self.theta, self.beta)
@@ -450,19 +511,19 @@ class GateXXminusYY(mcg.Gate):
     def _decompose(self, circ, qubits, bits):
         a, b = range(self.num_qubits)
 
-        circ.push(GateRZ(-self.beta), b)
-        circ.push(GateRZ(-pi/2), a)
-        circ.push(GateSX(), a)
-        circ.push(GateRZ(pi/2), a)
-        circ.push(GateS(), b)
-        circ.push(GateCX(), a, b)
-        circ.push(GateRY(self.theta/2), a)
-        circ.push(GateRY(-self.theta/2), b)
-        circ.push(GateCX(), a, b)
-        circ.push(GateSDG(), b)
-        circ.push(GateRZ(-pi/2), a)
-        circ.push(GateSDG(), a)
-        circ.push(GateRZ(pi/2), a)
-        circ.push(GateRZ(self.beta), b)
+        circ.push(mc.GateRZ(-self.beta), b)
+        circ.push(mc.GateRZ(-pi/2), a)
+        circ.push(mc.GateSX(), a)
+        circ.push(mc.GateRZ(pi/2), a)
+        circ.push(mc.GateS(), b)
+        circ.push(mc.GateCX(), a, b)
+        circ.push(mc.GateRY(self.theta/2), a)
+        circ.push(mc.GateRY(-self.theta/2), b)
+        circ.push(mc.GateCX(), a, b)
+        circ.push(mc.GateSDG(), b)
+        circ.push(mc.GateRZ(-pi/2), a)
+        circ.push(mc.GateSDG(), a)
+        circ.push(mc.GateRZ(pi/2), a)
+        circ.push(mc.GateRZ(self.beta), b)
 
         return circ

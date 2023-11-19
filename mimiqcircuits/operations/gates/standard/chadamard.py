@@ -20,20 +20,23 @@ import mimiqcircuits as mc
 class GateCH(mc.Control):
     """Two qubit Controlled-Hadamard gate.
 
+    By convention, the first qubit is the control and the second is
+    the target
+
     **Matrix representation:**
 
     .. math::
         \\operatorname{CH} = \\frac{1}{\\sqrt{2}} \\begin{pmatrix}
-            1 & 1 & 0 & 0 \\\\
-            1 & -1 & 0 & 0 \\\\
+            1 & 0 & 0 & 0 \\\\
+            0 & 1 & 0 & 0 \\\\
             0 & 0 & 1 & 1 \\\\
             0 & 0 & 1 & -1
         \\end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> GateCH(), GateCH().num_controls, GateCH().num_targets
-        (CH, 1, 1)
+        >>> GateCH(), GateCH().num_controls, GateCH().num_targets, GateCH().num_qubits
+        (CH, 1, 1, 2)
         >>> GateCH().matrix()
         [1, 0, 0, 0]
         [0, 1, 0, 0]
@@ -41,19 +44,21 @@ class GateCH(mc.Control):
         [0, 0, (1/2)*sqrt(2), (-1/2)*sqrt(2)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCH(), 0, 1)
-        >>> GateCH().power(2), GateCH().inverse()
-        (CID, CH)
-        (CID, CH)
-        >>> GateCH().matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, (1/2)*sqrt(2), (1/2)*sqrt(2)]
-        [0, 0, (1/2)*sqrt(2), (-1/2)*sqrt(2)]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateCH(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── CH @ q0, q1
         >>> GateCH().power(2), GateCH().inverse()
         (CID, CH)
         >>> GateCH().decompose()
+        2-qubit circuit with 7 instructions:
+        ├── S @ q1
+        ├── H @ q1
+        ├── T @ q1
+        ├── CX @ q0, q1
+        ├── T† @ q1
+        ├── H @ q1
+        └── S† @ q1
+
     """
 
     def __init__(self):

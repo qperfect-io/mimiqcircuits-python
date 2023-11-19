@@ -39,6 +39,15 @@ class Instruction:
     Raises:
         TypeError: If operation is not a subclass of Gate or qubits is not a tuple.
         ValueError: If qubits contains less than 1 or more than 2 elements.
+        
+    Examples:
+    
+        >>> from mimiqcircuits import *
+        >>> Instruction(GateX(),(0,),())
+        X @ q0
+        >>> Instruction(Barrier(4),(0,1,2,3),())
+        Barrier @ q0, q1, q2, q3
+       
     """
     _operation = None
     _qubits = None

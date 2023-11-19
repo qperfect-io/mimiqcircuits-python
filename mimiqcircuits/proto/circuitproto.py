@@ -392,19 +392,22 @@ def fromproto_inverse(inverse_proto):
     operation = fromproto_operation(inverse_proto.operation)
     return mc.Inverse(operation)
 
-def toproto_complex(val):
-    arg = toproto_param(val)
-    complex_arg = circuit_pb.ComplexArg()
-    complex_arg.real.CopyFrom(arg.real())
-    complex_arg.imag.CopyFrom(arg.imag)
+def toproto_complex(complex_matrix):
+    complex_args = []
+    new_matrix = [complex_matrix[i, j] for i in range(complex_matrix.rows) for j in range(complex_matrix.cols)]
+    print (new_matrix)
+    for val in new_matrix:
+        arg = toproto_param(val)
+        complex_arg = circuit_pb.ComplexArg()
+        complex_arg.real.CopyFrom(arg)
+        complex_arg.imag.CopyFrom(arg)
+        complex_args.nd(complex_arg)
 
-    return complex_arg
+    return complex_args
 
 
 def toproto_custom(custom):
-    m = custom.matrix
-    complex_args = [toproto_complex(m[i, j]) for i in range(m.rows) for j in range(m.cols)]
-
+    complex_args = toproto_complex(custom.matrix)
     return circuit_pb.Operation(custom=circuit_pb.GateCustom(matrix=complex_args, nqubits=custom.num_qubits))
 
 def fromproto_complex(complex_args):
@@ -412,7 +415,7 @@ def fromproto_complex(complex_args):
     for complex_arg in complex_args:
         real_val = fromproto_param(complex_arg.real)
         imag_val = fromproto_param(complex_arg.imag)
-        complex_matrix.append(real_val +  se.I * imag_val)
+        complex_matrix.append((real_val))
 
     return se.Matrix(complex_matrix)
 
@@ -420,11 +423,8 @@ def fromproto_complex(complex_args):
 def fromproto_custom(custom_proto):
     complex_matrix = fromproto_complex(custom_proto.matrix)
     num_qubits = custom_proto.nqubits
-    new_shape = (2 ** num_qubits, 2 ** num_qubits)
-    complex_matrix_sympy = sp.Matrix(complex_matrix)
-    complex_matrix_sympy = complex_matrix_sympy.reshape(*new_shape)
-    complex_matrix_symengine = se.Matrix(complex_matrix_sympy)
-    return mc.GateCustom(complex_matrix_symengine, num_qubits)
+    complex_matrix = complex_matrix.reshape(2 ** num_qubits, 2 ** num_qubits)
+    return mc.GateCustom(complex_matrix)
 
 
 

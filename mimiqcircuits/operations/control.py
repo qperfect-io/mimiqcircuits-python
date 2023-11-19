@@ -14,27 +14,34 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.operations.operation import Operation
-import mimiqcircuits.operations.gates.gate as mcg
-import mimiqcircuits.operations.decompositions.control as ctrldecomp
-import mimiqcircuits.matrices as matrices
 import mimiqcircuits as mc
-from symengine import *
+import mimiqcircuits.operations.decompositions.control as ctrldecomp
+from mimiqcircuits.printutils import print_wrapped_parens
+import symengine as se
 import sympy as sp
-import numpy as np
 
 
-class Control(Operation):
+class Control(mc.Operation):
     """Control operation.
 
-    A Control is an special operation that applies multi-control gates to the Circuit at once.
+    A Control is a special operation that applies multi-control gates to the Circuit at once.
 
     Examples:
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(Control(3,GateX()),1,2,3,4)
         5-qubit circuit with 1 instructions:
-            └── Control(3, X) @ q1, q2, q3, q4
+        └── C₃X @ q1, q2, q3, q4
+        >>> Control(2, GateX()).matrix()
+        [1, 0, 0, 0, 0, 0, 0, 0]
+        [0, 1, 0, 0, 0, 0, 0, 0]
+        [0, 0, 1, 0, 0, 0, 0, 0]
+        [0, 0, 0, 1, 0, 0, 0, 0]
+        [0, 0, 0, 0, 1, 0, 0, 0]
+        [0, 0, 0, 0, 0, 1, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 1]
+        [0, 0, 0, 0, 0, 0, 1, 0]
+        <BLANKLINE>
     """
     _name = 'Control'
 
@@ -48,9 +55,9 @@ class Control(Operation):
     _op = None
 
     def __init__(self, num_controls, operation, *args, **kwargs):
-        if isinstance(operation, type) and issubclass(operation, Operation):
+        if isinstance(operation, type) and issubclass(operation, mc.Operation):
             op = operation(*args, **kwargs)
-        elif isinstance(operation, Operation):
+        elif isinstance(operation, mc.Operation):
             op = operation
         else:
             raise TypeError("Operation must be an Operation object or type.")
@@ -86,14 +93,13 @@ class Control(Operation):
             self._parnames = op.parnames
 
     def matrix(self):
-        op_matrix = sp.Matrix(self.op.matrix().tolist())
         Mdim = 2 ** self.op.num_qubits
         Ldim = 2 ** (self.op.num_qubits + self.num_controls)
-        mat = np.zeros((Ldim, Ldim), dtype=object)
-        mat[Ldim - Mdim:, Ldim - Mdim:] = op_matrix
+        mat = se.zeros(Ldim, Ldim)
+        mat[Ldim - Mdim:, Ldim - Mdim:] = self.op.matrix()
         for i in range(0, Ldim - Mdim):
             mat[i, i] = 1
-        return Matrix(mat.tolist())
+        return se.Matrix(sp.simplify(mat))
 
     @property
     def num_controls(self):
@@ -137,13 +143,10 @@ class Control(Operation):
         if self.num_controls > 1:
             ctext = str(self.num_controls).translate(controls_subscript)
 
-        if isinstance(self.op, mcg.Gate):
-            return f"C{ctext}{str(self.op)}"
-        else:
-            return f"C{ctext}{str(self.op)}"
+        return f"C{ctext}{print_wrapped_parens(self.op)}"
 
     def evaluate(self, param_dict):
-        if not isinstance(self.op, (mcg.Gate)):
+        if not isinstance(self.op, (mc.Gate)):
             new_control = Control(self.num_controls, self.op)
             if hasattr(new_control.op.op, 'evaluate'):
                 new_control._op = new_control.op.op.evaluate(param_dict)

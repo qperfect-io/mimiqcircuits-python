@@ -14,13 +14,14 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.operations.operation import Operation
 import numpy as np
 from functools import reduce
-import mimiqcircuits.operations.gates.gate as mcg
+import mimiqcircuits as mc
+import symengine as se
+import sympy as sp
 
 
-class Parallel(Operation):
+class Parallel(mc.Operation):
     """Parallel operation
 
     This is a composite operation that applies multiple gates in parallel to the circuit at once.
@@ -30,7 +31,7 @@ class Parallel(Operation):
         >>> c= Circuit()
         >>> c.push(Parallel(3,GateX()),1,2,3)
         4-qubit circuit with 1 instructions:
-         └── Parallel(3, X) @ q1, q2, q3
+        └── Parallel(3, X) @ q1, q2, q3
     """
     _name = 'Parallel'
     _num_qubits = None
@@ -38,8 +39,8 @@ class Parallel(Operation):
     _num_repeats = None
     _op = None
 
-    def __init__(self, num_repeats, op: Operation):
-        if not isinstance(op, Operation):
+    def __init__(self, num_repeats, op: mc.Operation):
+        if not isinstance(op, mc.Operation):
             raise ValueError("op must be an Operation")
 
         if self.num_bits != 0:
@@ -56,7 +57,7 @@ class Parallel(Operation):
         self._op = op
 
     def matrix(self):
-        op_matrix = self.op.matrix()
+        op_matrix = se.Matrix(sp.simplify(self.op.matrix()))
         return reduce(np.kron, [op_matrix] * (self._num_repeats))
 
     @property
@@ -92,7 +93,7 @@ class Parallel(Operation):
         return f'Parallel({self.num_repeats}, {self.op})'
 
     def evaluate(self, param_dict):
-        if not isinstance(self.op, (mcg.Gate)):
+        if not isinstance(self.op, (mc.Gate)):
             new_parallel = Parallel(self.num_repeats, self.op)
             if hasattr(new_parallel.op.op, 'evaluate'):
                 new_parallel._op = new_parallel.op.op.evaluate(param_dict)

@@ -37,21 +37,18 @@ class GateT(Power):
         >>> GateT()
         T
         >>> GateT().matrix()
+        [1, 0]
+        [0, 0.707106781186548 + 0.707106781186547*I]
+        <BLANKLINE>
         >>> c = Circuit().push(GateT(), 0)
+        >>> c
+        1-qubit circuit with 1 instructions:
+        └── T @ q0
         >>> GateT().power(2), GateT().inverse()
         (S^(1.0), T†)
         >>> GateT().decompose()
         1-qubit circuit with 1 instructions:
-        └── T @ q0
-        1-qubit circuit with 1 instructions:
-        └── T @ q0
-        >>> GateT().matrix()
-        >>> c = Circuit().push(GateT(), 0)
-        >>> GateT().power(2), GateT().inverse()
-        (S^(1.0), T†)
-        >>> GateT().decompose()
-        1-qubit circuit with 1 instructions:
-        └── T @ q0
+        └── U(0, 0, (1/4)*pi) @ q0
     """
     _name = 'T'
 
@@ -87,20 +84,17 @@ class GateTDG(Inverse):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateTDG()
-        Inverse
+        T†
         >>> GateTDG().matrix()
+        [1.0, 0]
+        [0, 0.707106781186548 - 0.707106781186547*I]
+        <BLANKLINE>
         >>> c = Circuit().push(GateTDG(), 0)
-        >>> GateTDG().power(2), GateTDG().inverse()
-        (Inverse^(2), T)
-        >>> GateTDG().decompose()
+        >>> c
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, (-1/4)*pi) @ q0
-        1-qubit circuit with 1 instructions:
-        └── U(0, 0, (-1/4)*pi) @ q0
-        >>> GateTDG().matrix()
-        >>> c = Circuit().push(GateTDG(), 0)
+        └── T† @ q0
         >>> GateTDG().power(2), GateTDG().inverse()
-        (Inverse^(2), T)
+        (T†^(2), T)
         >>> GateTDG().decompose()
         1-qubit circuit with 1 instructions:
         └── U(0, 0, (-1/4)*pi) @ q0
@@ -114,9 +108,6 @@ class GateTDG(Inverse):
 
     def inverse(self):
         return GateT()
-
-    def __str__(self):
-        return f"{self.name}"
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]

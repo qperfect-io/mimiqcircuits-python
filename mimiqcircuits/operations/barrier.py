@@ -25,37 +25,32 @@ class Barrier(Operation):
     operation from being applied across it.
 
     Examples:
+    
         Adding Barrier operation to the Circuit (The args can be: range, list,
         tuple, set or int)
 
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Barrier(), 1)
-            2-qubit circuit with 1 instructions:
-            └── Barrier @ q1
+        2-qubit circuit with 1 instructions:
+        └── Barrier @ q1
 
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Barrier(), range(0,4))
-            4-qubit circuit with 4 instructions:
-            ├── Barrier @ q0
-            ├── Barrier @ q1
-            ├── Barrier @ q2
-            └── Barrier @ q3
+        4-qubit circuit with 4 instructions:
+        ├── Barrier @ q0
+        ├── Barrier @ q1
+        ├── Barrier @ q2
+        └── Barrier @ q3
 
         Adding Barrier to the circuit as a multi-qubits gate
 
         >>> from mimiqcircuits import *
         >>> c= Circuit()
-        >>> c.push(Barrier,1,2,3,4,5)
-            6-qubit circuit with 1 instructions:
-            └── Barrier @ q1, q2, q3, q4, q5
-
-        >>> from mimiqcircuits import *
-        >>> c= Circuit()
-        >>> c.push(Barrier(3),0,1,2)
-            3-qubit circuit with 1 instructions:
-            └── Barrier @ q0, q1, q2
+        >>> c.push(Barrier(5),1,2,3,4,5)
+        6-qubit circuit with 1 instructions:
+        └── Barrier @ q1, q2, q3, q4, q5
     """
     _name = 'Barrier'
     _num_qubits = None

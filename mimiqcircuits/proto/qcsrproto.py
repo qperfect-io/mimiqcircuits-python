@@ -2,7 +2,7 @@ from mimiqcircuits.proto import qcsresults_pb
 
 import mimiqcircuits.qcsresults as mq
 
-from mimiqcircuits.bitstates import BitState
+from mimiqcircuits.bitstrings import BitString
 from bitarray import frozenbitarray
 
 
@@ -83,7 +83,7 @@ def toproto_amplitude(key, value):
 
 
 def fromproto_amplitude(amplitude_entry):
-    key = BitState(fromproto_bitvector(amplitude_entry.key))
+    key = BitString(fromproto_bitvector(amplitude_entry.key))
     value = fromproto_complexdouble(amplitude_entry.val)
     return key, value
 

@@ -16,10 +16,13 @@
 
 from abc import ABC, abstractmethod
 import copy
-import mimiqcircuits.circuit as mc
+import mimiqcircuits as mc
 
 
 class Operation(ABC):
+    """
+    Abstract base class for quantum operations.
+    """
     _name = None
 
     _num_qubits = None

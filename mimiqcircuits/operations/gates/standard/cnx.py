@@ -27,11 +27,41 @@ class GateCCX(mc.Control):
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> GateCCX(), GateCCX().num_controls, GateCCX().num_targets
+        >>> GateCCX(), GateCCX().num_controls, GateCCX().num_targets, GateCCX().num_qubits
+        (C₂X, 2, 1, 3)
         >>> GateCCX().matrix()
+        [1, 0, 0, 0, 0, 0, 0, 0]
+        [0, 1, 0, 0, 0, 0, 0, 0]
+        [0, 0, 1, 0, 0, 0, 0, 0]
+        [0, 0, 0, 1, 0, 0, 0, 0]
+        [0, 0, 0, 0, 1, 0, 0, 0]
+        [0, 0, 0, 0, 0, 1, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 1]
+        [0, 0, 0, 0, 0, 0, 1, 0]
+        <BLANKLINE>
         >>> c = Circuit().push(GateCCX(), 0, 1, 2)
+        >>> c
+        3-qubit circuit with 1 instructions:
+        └── C₂X @ q0, q1, q2
         >>> GateCCX().power(2), GateCCX().inverse()
+        (C₂ID, C₂X)
         >>> GateCCX().decompose()
+        3-qubit circuit with 15 instructions:
+        ├── H @ q2
+        ├── CX @ q1, q2
+        ├── T† @ q2
+        ├── CX @ q0, q2
+        ├── T @ q2
+        ├── CX @ q1, q2
+        ├── T† @ q2
+        ├── CX @ q0, q2
+        ├── T @ q1
+        ├── T @ q2
+        ├── CX @ q0, q1
+        ├── H @ q2
+        ├── T @ q0
+        ├── T† @ q1
+        └── CX @ q0, q1
     """
 
     def __init__(self):
@@ -65,11 +95,65 @@ class GateC3X(mc.Control):
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> GateC3X(), GateC3X().num_controls, GateC3X().num_targets
+        >>> GateC3X(), GateC3X().num_controls, GateC3X().num_targets, GateC3X().num_qubits
+        (C₃X, 3, 1, 4)
         >>> GateC3X().matrix()
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+        <BLANKLINE>
         >>> c = Circuit().push(GateC3X(), 0, 1, 2, 3)
+        >>> c
+        4-qubit circuit with 1 instructions:
+        └── C₃X @ q0, q1, q2, q3
         >>> GateC3X().power(2), GateC3X().inverse()
+        (C₃ID, C₃X)
         >>> GateC3X().decompose()
+        4-qubit circuit with 31 instructions:
+        ├── H @ q3
+        ├── P((1/8)*pi) @ q0
+        ├── P((1/8)*pi) @ q1
+        ├── P((1/8)*pi) @ q2
+        ├── P((1/8)*pi) @ q3
+        ├── CX @ q0, q1
+        ├── P((-1/8)*pi) @ q1
+        ├── CX @ q0, q1
+        ├── CX @ q1, q2
+        ├── P((-1/8)*pi) @ q2
+        ├── CX @ q0, q2
+        ├── P((1/8)*pi) @ q2
+        ├── CX @ q1, q2
+        ├── P((-1/8)*pi) @ q2
+        ├── CX @ q0, q2
+        ├── CX @ q2, q3
+        ├── P((-1/8)*pi) @ q3
+        ├── CX @ q1, q3
+        ├── P((1/8)*pi) @ q3
+        ├── CX @ q2, q3
+        ├── P((-1/8)*pi) @ q3
+        ├── CX @ q0, q3
+        ├── P((1/8)*pi) @ q3
+        ├── CX @ q2, q3
+        ├── P((-1/8)*pi) @ q3
+        ├── CX @ q1, q3
+        ├── P((1/8)*pi) @ q3
+        ├── CX @ q2, q3
+        ├── P((-1/8)*pi) @ q3
+        ├── CX @ q0, q3
+        └── H @ q3
     """
 
     def __init__(self):

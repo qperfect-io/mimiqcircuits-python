@@ -19,6 +19,7 @@ from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
 from mimiqcircuits.operations.gates.standard.s import GateS
 from symengine import Matrix, I
+import sympy as sp
 
 
 class GateISWAP(mcg.Gate):
@@ -49,17 +50,14 @@ class GateISWAP(mcg.Gate):
         >>> c = Circuit().push(GateISWAP(), 0, 1)
         >>> GateISWAP().power(2), GateISWAP().inverse()
         (ISWAP^(2), ISWAP†)
-        (ISWAP^(2), ISWAP†)
-        >>> GateISWAP().matrix()
-        [1, 0, 0, 0]
-        [0, 0, I, 0]
-        [0, I, 0, 0]
-        [0, 0, 0, 1]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateISWAP(), 0, 1)
-        >>> GateISWAP().power(2), GateISWAP().inverse()
-        (ISWAP^(2), ISWAP†)
         >>> GateISWAP().decompose()
+        2-qubit circuit with 6 instructions:
+        ├── S @ q0
+        ├── S @ q1
+        ├── H @ q0
+        ├── CX @ q0, q1
+        ├── CX @ q1, q0
+        └── H @ q1
     """
     _name = 'ISWAP'
 
@@ -67,9 +65,9 @@ class GateISWAP(mcg.Gate):
     _qragsizes = [2]
 
     def matrix(self):
-        return Matrix([
+        return Matrix(sp.simplify(Matrix([
             [1, 0, 0, 0], [0, 0, I, 0], [0, I, 0, 0], [0, 0, 0, 1]
-        ])
+        ])))
 
     def _decompose(self, circ, qubits, bits):
         c, t = qubits

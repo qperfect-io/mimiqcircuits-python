@@ -17,7 +17,7 @@
 import mimiqcircuits.operations.gates.gate as mcg
 from numpy import ndarray
 from numpy.linalg import inv
-from symengine import *
+import  symengine as se
 
 import sympy as sp
 
@@ -35,10 +35,7 @@ Examples:
     >>> c = Circuit()
     >>> c.push(GateCustom(matrix), 0, 1)
     2-qubit circuit with 1 instructions:
-    └── Custom([[1.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I],
-                [0.0 + 0.0*I, 1.0 + 0.0*I, 0.0 + 1.0*I, 0.0 + 0.0*I],
-                [0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 1.0 + 0.0*I],
-                [0.0 + 0.0*I, 0.0 + 0.0*I, 1.0 + 0.0*I, 0.0 + 0.0*I]]) @ q0, q1
+    └── Custom([[1.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I], [0.0 + 0.0*I, 1.0 + 0.0*I, 0.0 + 1.0*I, 0.0 + 0.0*I], [0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 1.0 + 0.0*I], [0.0 + 0.0*I, 0.0 + 0.0*I, 1.0 + 0.0*I, 0.0 + 0.0*I]]) @ q0, q1
 """
     _name = 'Custom'
     _num_qubits = None
@@ -49,8 +46,8 @@ Examples:
         super().__init__()
         
         if isinstance(matrix, ndarray):
-            mat = Matrix(matrix.tolist())
-        elif isinstance(matrix, Matrix):
+            mat = se.Matrix(matrix.tolist())
+        elif isinstance(matrix, se.Matrix):
             mat = matrix
         else:
             raise TypeError(f"{type(matrix)} not supported in GateCustom, use symengine.Matrix or numpy.ndarray.")
@@ -58,7 +55,7 @@ Examples:
         if mat.rows != mat.cols:
             raise ValueError("Matrix is not square")
         
-        num_qubits = int(log(mat.rows, 2))
+        num_qubits = int(se.log(mat.rows, 2))
 
         
         self._matrix = mat
@@ -82,7 +79,7 @@ Examples:
     def evaluate(self, d):
         sympy_matrix = sp.Matrix(self.matrix)
         matrix = sympy_matrix.applyfunc(lambda entry: entry.subs(d) if not isinstance(entry, (float, int)) else entry)
-        evaluated_matrix = Matrix(matrix.tolist())
+        evaluated_matrix = se.Matrix(matrix.tolist())
         return GateCustom(evaluated_matrix)
 
         

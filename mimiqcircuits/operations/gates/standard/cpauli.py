@@ -23,6 +23,9 @@ from mimiqcircuits.operations.gates.standard.hadamard import GateH
 class GateCX(mctrl.Control):
     """Two qubit Controlled-X gate (or CNOT).
 
+    By convention, the first qubit is the control and the second is
+    the target
+
     **Matrix representation:**
 
     .. math::
@@ -36,10 +39,22 @@ class GateCX(mctrl.Control):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCX(), GateCX().num_controls, GateCX().num_targets
+        (CX, 1, 1)
         >>> GateCX().matrix()
+        [1, 0, 0, 0]
+        [0, 1, 0, 0]
+        [0, 0, 0, 1]
+        [0, 0, 1, 0]
+        <BLANKLINE>
         >>> c = Circuit().push(GateCX(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── CX @ q0, q1
         >>> GateCX().power(2), GateCX().inverse()
+        (CID, CX)
         >>> GateCX().decompose()
+        2-qubit circuit with 1 instructions:
+        └── CX @ q0, q1
     """
 
     def __init__(self):
@@ -52,6 +67,9 @@ class GateCX(mctrl.Control):
 
 class GateCY(mctrl.Control):
     """Two qubit Controlled-Y gate.
+
+    By convention, the first qubit is the control and the second is
+    the target
 
     **Matrix representation:**
 
@@ -66,10 +84,24 @@ class GateCY(mctrl.Control):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCY(), GateCY().num_controls, GateCY().num_targets
+        (CY, 1, 1)
         >>> GateCY().matrix()
+        [1, 0, 0, 0]
+        [0, 1, 0, 0]
+        [0, 0, 0, -I]
+        [0, 0, I, 0]
+        <BLANKLINE>
         >>> c = Circuit().push(GateCY(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── CY @ q0, q1
         >>> GateCY().power(2), GateCY().inverse()
+        (CID, CY)
         >>> GateCY().decompose()
+        2-qubit circuit with 3 instructions:
+        ├── S† @ q1
+        ├── CX @ q0, q1
+        └── S @ q0
     """
 
     def __init__(self):
@@ -86,6 +118,9 @@ class GateCY(mctrl.Control):
 class GateCZ(mctrl.Control):
     """Two qubit Controlled-Z gate.
 
+    By convention, the first qubit is the control and the second is
+    the target
+
     **Matrix representation:**
 
     .. math::
@@ -99,10 +134,24 @@ class GateCZ(mctrl.Control):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCZ(), GateCZ().num_controls, GateCZ().num_targets
+        (CZ, 1, 1)
         >>> GateCZ().matrix()
+        [1, 0, 0, 0]
+        [0, 1, 0, 0]
+        [0, 0, 1, 0]
+        [0, 0, 0, -1]
+        <BLANKLINE>
         >>> c = Circuit().push(GateCZ(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── CZ @ q0, q1
         >>> GateCZ().power(2), GateCZ().inverse()
+        (CID, CZ)
         >>> GateCZ().decompose()
+        2-qubit circuit with 3 instructions:
+        ├── H @ q1
+        ├── CX @ q0, q1
+        └── H @ q1
     """
 
     def __init__(self):

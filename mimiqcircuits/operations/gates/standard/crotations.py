@@ -24,6 +24,9 @@ from symengine import pi
 
 class GateCRX(mctrl.Control):
     """Two qubit Controlled-RX gate.
+    
+    By convention, the first qubit is the control and the second is
+    the target
 
     See Also :func:`GateRX`, :func:`GateCRY`, :func:`GateCRZ`
 
@@ -44,28 +47,26 @@ class GateCRX(mctrl.Control):
         >>> from mimiqcircuits import *
         >>> from symengine import *
         >>> theta = Symbol('theta')
-        >>> GateCRZ(theta), GateCRZ(theta).num_controls, GateCRZ(theta).num_targets
-        (CRZ(theta), 1, 1)
+        >>> GateCRZ(theta), GateCRZ(theta).num_controls, GateCRZ(theta).num_targets, GateCRZ(theta).num_qubits
+        (CRZ(theta), 1, 1, 2)
         >>> GateCRZ(theta).matrix()
         [1, 0, 0, 0]
         [0, 1, 0, 0]
-        [0, 0, -I*sin((1/2)*theta) + cos((1/2)*theta), 0]
-        [0, 0, 0, (-I*sin((1/2)*theta) + cos((1/2)*theta))*(I*sin(theta) + cos(theta))]
+        [0, 0, exp(-1/2*I*theta), 0]
+        [0, 0, 0, exp(1/2*I*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCRZ(theta), 0, 1)
-        >>> GateCRZ(theta).power(2), GateCRZ(theta).inverse()
-        (CRZ(2*theta), CRZ(-theta))
-        (CRZ(2*theta), CRZ(-theta))
-        >>> GateCRZ(theta).matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, -I*sin((1/2)*theta) + cos((1/2)*theta), 0]
-        [0, 0, 0, (-I*sin((1/2)*theta) + cos((1/2)*theta))*(I*sin(theta) + cos(theta))]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateCRZ(theta), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── CRZ(theta) @ q0, q1
         >>> GateCRZ(theta).power(2), GateCRZ(theta).inverse()
         (CRZ(2*theta), CRZ(-theta))
         >>> GateCRZ(theta).decompose()
+        2-qubit circuit with 4 instructions:
+        ├── RZ((1/2)*theta) @ q1
+        ├── CX @ q0, q1
+        ├── RZ((-1/2)*theta) @ q1
+        └── CX @ q0, q1
     """
 
     def __init__(self, *args, **kwargs):
@@ -73,7 +74,7 @@ class GateCRX(mctrl.Control):
 
     def _decompose(self, circ, qubits, bits):
         c, t = qubits
-        theta = self.operation.theta
+        theta = self.op.theta
         circ.push(GateP(pi/2), t)
         circ.push(GateCX(), c, t)
         circ.push(GateU(-theta/2, 0, 0), t)
@@ -84,6 +85,9 @@ class GateCRX(mctrl.Control):
 
 class GateCRY(mctrl.Control):
     """Two qubit Controlled-RY gate.
+    
+    By convention, the first qubit is the control and the second is
+    the target
 
     See Also :func:`GateRY`, :func:`GateCRX`, :func:`GateCRZ`
 
@@ -105,28 +109,26 @@ class GateCRY(mctrl.Control):
         >>> from mimiqcircuits import *
         >>> from symengine import *
         >>> theta = Symbol('theta')
-        >>> GateCRY(theta), GateCRY(theta).num_controls, GateCRY(theta).num_targets
-        (CRY(theta), 1, 1)
+        >>> GateCRY(theta), GateCRY(theta).num_controls, GateCRY(theta).num_targets, GateCRY(theta).num_qubits
+        (CRY(theta), 1, 1, 2)
         >>> GateCRY(theta).matrix()
         [1, 0, 0, 0]
         [0, 1, 0, 0]
-        [0, 0, (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta)), -1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - I*sin(theta) - cos(theta))]
-        [0, 0, 1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - I*sin(theta) - cos(theta)), (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta))]
+        [0, 0, cos((1/2)*theta), -sin((1/2)*theta)]
+        [0, 0, sin((1/2)*theta), cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCRY(theta), 0, 1)
-        >>> GateCRY(theta).power(2), GateCRY(theta).inverse()
-        (CRY(2*theta), CRY(-theta))
-        (CRY(2*theta), CRY(-theta))
-        >>> GateCRY(theta).matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta)), -1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - I*sin(theta) - cos(theta))]
-        [0, 0, 1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - I*sin(theta) - cos(theta)), (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta))]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateCRY(theta), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── CRY(theta) @ q0, q1
         >>> GateCRY(theta).power(2), GateCRY(theta).inverse()
         (CRY(2*theta), CRY(-theta))
         >>> GateCRY(theta).decompose()
+        2-qubit circuit with 4 instructions:
+        ├── RY((1/2)*theta) @ q1
+        ├── CX @ q0, q1
+        ├── RY((-1/2)*theta) @ q1
+        └── CX @ q0, q1
     """
 
     def __init__(self, *args, **kwargs):
@@ -134,7 +136,7 @@ class GateCRY(mctrl.Control):
 
     def _decompose(self, circ, qubits, bits):
         c, t = qubits
-        theta = self.operation.theta
+        theta = self.op.theta
         circ.push(GateRY(theta/2), t)
         circ.push(GateCX(), c, t)
         circ.push(GateRY(-theta/2), t)
@@ -144,6 +146,9 @@ class GateCRY(mctrl.Control):
 
 class GateCRZ(mctrl.Control):
     """Two qubit Controlled-RZ gate.
+    
+    By convention, the first qubit is the control and the second is
+    the target
 
     See Also :func:`GateRZ`, :func:`GateCRX`, :func:`GateCRY`
 
@@ -164,28 +169,26 @@ class GateCRZ(mctrl.Control):
         >>> from mimiqcircuits import *
         >>> from symengine import *
         >>> lmbda = Symbol('lambda')
-        >>> GateCRZ(lmbda), GateCRZ(lmbda).num_controls, GateCRZ(lmbda).num_targets
-        (CRZ(lambda), 1, 1)
+        >>> GateCRZ(lmbda), GateCRZ(lmbda).num_controls, GateCRZ(lmbda).num_targets, GateCRZ(lmbda).num_qubits
+        (CRZ(lambda), 1, 1, 2)
         >>> GateCRZ(lmbda).matrix()
         [1, 0, 0, 0]
         [0, 1, 0, 0]
-        [0, 0, -I*sin((1/2)*lambda) + cos((1/2)*lambda), 0]
-        [0, 0, 0, (-I*sin((1/2)*lambda) + cos((1/2)*lambda))*(I*sin(lambda) + cos(lambda))]
+        [0, 0, exp(-1/2*I*lambda), 0]
+        [0, 0, 0, exp(1/2*I*lambda)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCRZ(lmbda), 0, 1)
-        >>> GateCRZ(lmbda).power(2), GateCRZ(lmbda).inverse()
-        (CRZ(2*lambda), CRZ(-lambda))
-        (CRZ(2*lambda), CRZ(-lambda))
-        >>> GateCRZ(lmbda).matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, -I*sin((1/2)*lambda) + cos((1/2)*lambda), 0]
-        [0, 0, 0, (-I*sin((1/2)*lambda) + cos((1/2)*lambda))*(I*sin(lambda) + cos(lambda))]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateCRZ(lmbda), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── CRZ(lambda) @ q0, q1
         >>> GateCRZ(lmbda).power(2), GateCRZ(lmbda).inverse()
         (CRZ(2*lambda), CRZ(-lambda))
         >>> GateCRZ(lmbda).decompose()
+        2-qubit circuit with 4 instructions:
+        ├── RZ((1/2)*lambda) @ q1
+        ├── CX @ q0, q1
+        ├── RZ((-1/2)*lambda) @ q1
+        └── CX @ q0, q1
     """
 
     def __init__(self, *args, **kwargs):
@@ -193,7 +196,7 @@ class GateCRZ(mctrl.Control):
 
     def _decompose(self, circ, qubits, bits):
         c, t = qubits
-        lmbda = self.operation.lmbda
+        lmbda = self.op.lmbda
         circ.push(GateRZ(lmbda/2), t)
         circ.push(GateCX(), c, t)
         circ.push(GateRZ(-lmbda/2), t)

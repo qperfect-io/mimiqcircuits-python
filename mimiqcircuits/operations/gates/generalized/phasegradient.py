@@ -24,8 +24,8 @@ class PhaseGradient(mcg.Gate):
     Phase Gradient gate
 
     A phase gradient gate applies a phase shift to a quantum register of `n` qubits,
-    where each computational basis state |k⟩ experiences a phase
-    proportional to its integer value `k`:
+    where each computational basis state `|k⟩` experiences a phase
+    proportional to its integer value `k`
 
     Args:
         n (int): The number of qubits in the quantum register.
@@ -42,8 +42,8 @@ class PhaseGradient(mcg.Gate):
         >>> from mimiqcircuits import *
         >>> c=Circuit()
         >>> c.push(PhaseGradient(2),9,8)
-            10-qubit circuit with 1 instructions:
-            └── PhaseGradient @ q9, q8
+        10-qubit circuit with 1 instructions:
+        └── PhaseGradient @ q9, q8
 
     """
     _name = "PhaseGradient"

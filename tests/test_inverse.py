@@ -14,7 +14,7 @@ def test_inverse_init():
     with pytest.raises(ValueError):
         mc.Inverse(0)
     with pytest.raises(ValueError):
-        mc.Inverse(mc.BitState(0))
+        mc.Inverse(mc.BitString(0))
 
 
 def test_inverse_str():

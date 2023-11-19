@@ -18,6 +18,7 @@ import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.pauli import GateX
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from symengine import Matrix
+import sympy as sp
 
 
 class GateDCX(mcg.Gate):
@@ -41,37 +42,33 @@ class GateDCX(mcg.Gate):
         >>> GateDCX()
         DCX
         >>> GateDCX().matrix()
-        [1.0, 0.0, 0.0, 0.0]
-        [0.0, 0.0, 0.0, 1.0]
-        [0.0, 1.0, 0.0, 0.0]
-        [0.0, 0.0, 1.0, 0.0]
+        [1.0, 0, 0, 0]
+        [0, 0, 0, 1.0]
+        [0, 1.0, 0, 0]
+        [0, 0, 1.0, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateDCX(), 0, 1)
-        >>> GateDCX().power(2), GateDCX().inverse()
-        (DCX^(2), DCX†)
-        (DCX^(2), DCX†)
-        >>> GateDCX().matrix()
-        [1.0, 0.0, 0.0, 0.0]
-        [0.0, 0.0, 0.0, 1.0]
-        [0.0, 1.0, 0.0, 0.0]
-        [0.0, 0.0, 1.0, 0.0]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateDCX(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── DCX @ q0, q1
         >>> GateDCX().power(2), GateDCX().inverse()
         (DCX^(2), DCX†)
         >>> GateDCX().decompose()
+        2-qubit circuit with 2 instructions:
+        ├── CX @ q0, q1
+        └── CX @ q1, q0
     """
     _num_qubits = 2
     _qregsizes = [2]
     _name = 'DCX'
 
     def matrix(self):
-        return Matrix([
+        return Matrix(sp.simplify(Matrix([
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 1.0],
             [0.0, 1.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0]
-        ])
+        ])))
 
     def _decompose(self, circ, qubits, bits):
         a, b = qubits

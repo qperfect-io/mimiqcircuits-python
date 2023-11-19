@@ -14,15 +14,13 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.operations.operation import Operation
-import mimiqcircuits.operations.gates.gate as mcg
-import mimiqcircuits.operations.control as mctrl
-import mimiqcircuits.operations.power as mpwr
-import mimiqcircuits.circuit as mcc
+import mimiqcircuits as mc
+import sympy as sp
+import symengine as se
 from mimiqcircuits.printutils import print_wrapped_parens
 
 
-class Inverse(Operation):
+class Inverse(mc.Operation):
     """Inverse of the wrapped quantum operation.
 
     The inversion is not performed right away, but only when the circuit is
@@ -30,10 +28,19 @@ class Inverse(Operation):
 
     .. warning::
 
-        User should not use directly `Inverse` but rather the `inverse` method,
-        which performs already all the simplifications (e.g. `op.inverse().inverse() == op`)
+        Users should not use `Inverse` directly but rather the `inverse` method,
+        which performs all the necessary simplifications (e.g., `op.inverse().inverse() == op`)
 
     Examples:
+        >>> from mimiqcircuits import *
+        >>> Inverse(GateP(1)).matrix()
+        [1, 0]
+        [0, exp(-I)]
+        <BLANKLINE>
+        >>> c = Circuit()
+        >>> c.push(Inverse(GateP(1)), 1)
+        2-qubit circuit with 1 instructions:
+        └── P(1)† @ q1
     """
     _name = 'Inverse'
     _num_qubits = None
@@ -44,9 +51,9 @@ class Inverse(Operation):
     _op = None
 
     def __init__(self, operation, *args, **kwargs):
-        if isinstance(operation, type) and issubclass(operation, Operation):
+        if isinstance(operation, type) and issubclass(operation, mc.Operation):
             op = operation(*args, **kwargs)
-        elif isinstance(operation, Operation):
+        elif isinstance(operation, mc.Operation):
             op = operation
         else:
             raise ValueError("Operation must be an Operation object or type.")
@@ -71,19 +78,19 @@ class Inverse(Operation):
         return self.op
 
     def power(self, pwr):
-        return mpwr.Power(self, pwr)
+        return mc.Power(self, pwr)
 
     def control(self, num_controls):
-        return mctrl.Control(num_controls, self)
+        return mc.Control(num_controls, self)
 
     def matrix(self):
-        return self.op.matrix().inv()
+        return se.Matrix(sp.simplify(self.op.matrix().inv()))
 
     def evaluate(self, d):
         return self.op.evaluate(d).inverse()
 
     def _decompose(self, circ, qubits, bits):
-        newc = self.op._decompose(mcc.Circuit(), qubits, bits).inverse()
+        newc = self.op._decompose(mc.Circuit(), qubits, bits).inverse()
         circ.append(newc)
         return circ
 

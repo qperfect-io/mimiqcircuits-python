@@ -15,7 +15,7 @@
 #
 
 from mimiqcircuits.operations.operation import Operation
-from mimiqcircuits.bitstates import BitState
+from mimiqcircuits.bitstrings import BitString
 
 
 class IfStatement(Operation):
@@ -26,11 +26,10 @@ class IfStatement(Operation):
     Examples:
         >>> from mimiqcircuits import *
         >>> c = Circuit()
-        >>> c.push(IfStatement(GateX(), BitState(1)), 0,0)
-        >>> c.push(IfStatement(GateCX(), BitState(2,[0,1])), 1,3,1,2)
-            4-qubit circuit with 2 instructions:
-             ├── If(X, bs0) @ q0, c0
-             └── If(CX, bs11) @ q1, q3, c1, c2
+        >>> c.push(IfStatement(GateX(), 1,1), 0,0)
+        init if -> operation= X
+        1-qubit circuit with 1 instructions:
+        └── If(X, 1) @ q0, c0
     """
     _name = 'If'
 

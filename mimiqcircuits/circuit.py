@@ -20,7 +20,6 @@ import mimiqcircuits.instruction as mi
 import copy
 from collections.abc import Iterable
 from itertools import repeat
-from symengine import *
 from mimiqcircuits.proto.circuitproto import *
 from mimiqcircuits.proto import circuit_pb
 import mimiqcircuits.operations.gates.custom as gc
@@ -62,31 +61,38 @@ class Circuit:
 
         Add a Parametric GateR gate with parameters np.pi and np.pi
 
-        >>> c.push(GateRX(pi / 4))
+        >>> c.push(GateRX(pi / 4),0)
+        2-qubit circuit with 3 instructions:
+        ├── X @ q0
+        ├── CX @ q0, q1
+        └── RX((1/4)*pi) @ q0
 
         Add a Reset gate on qubit 0
 
         >>> c.push(Reset(), 0)
-        2-qubit circuit with 3 instructions:
+        2-qubit circuit with 4 instructions:
         ├── X @ q0
         ├── CX @ q0, q1
+        ├── RX((1/4)*pi) @ q0
         └── Reset @ q0
 
         Add a Barrier gate on qubits 0 and 1
 
         >>> c.push(Barrier(2), 0, 1)
-        2-qubit circuit with 4 instructions:
+        2-qubit circuit with 5 instructions:
         ├── X @ q0
         ├── CX @ q0, q1
+        ├── RX((1/4)*pi) @ q0
         ├── Reset @ q0
         └── Barrier @ q0, q1
 
         Add a Measurement gate on qubit 0, storing the result in bit 0.
 
         >>> c.push(Measure(), 0, 0)
-        2-qubit circuit with 5 instructions:
+        2-qubit circuit with 6 instructions:
         ├── X @ q0
         ├── CX @ q0, q1
+        ├── RX((1/4)*pi) @ q0
         ├── Reset @ q0
         ├── Barrier @ q0, q1
         └── Measure @ q0, c0
@@ -95,9 +101,10 @@ class Circuit:
         targets are the control qubits.
 
         >>> c.push(Control(3, GateX()), 0, 1, 2, 3)
-        4-qubit circuit with 6 instructions:
+        4-qubit circuit with 7 instructions:
         ├── X @ q0
         ├── CX @ q0, q1
+        ├── RX((1/4)*pi) @ q0
         ├── Reset @ q0
         ├── Barrier @ q0, q1
         ├── Measure @ q0, c0
@@ -106,9 +113,10 @@ class Circuit:
         Add a 3-qubit Parallel gate with GateX
 
         >>> c.push(Parallel(3,GateX()),0, 1, 2)
-        4-qubit circuit with 7 instructions:
+        4-qubit circuit with 8 instructions:
         ├── X @ q0
         ├── CX @ q0, q1
+        ├── RX((1/4)*pi) @ q0
         ├── Reset @ q0
         ├── Barrier @ q0, q1
         ├── Measure @ q0, c0
@@ -124,14 +132,14 @@ class Circuit:
     **Gates**
 
     **Single qubit gates**
-        :func:`GateX` :func:`GateY` :func`GateZ` :func:`GateH`
+        :func:`GateX` :func:`GateY` :func:`GateZ` :func:`GateH` 
         :func:`GateS` :func:`GateSDG`
         :func:`GateT` :func:`GateTDG`
         :func:`GateSX` :func:`GateSXDG`
         :func:`GateID`
 
     **Single qubit gates (parametric)**
-        :func:`GateU` :func:GateUPpase
+        :func:`GateU` :func:`GateUPpase`
         :func:`GateP`
         :func:`GateRX` :func:`GateRY` :func:`GateRZ` :func:`GateP`
 
@@ -139,7 +147,7 @@ class Circuit:
         :func:`GateCX` :func:`GateCY` :func:`GateCZ`
         :func:`GateCH`
         :func:`GateSWAP` :func:`GateISWAP`
-        :func:`GateCS`, :func:`GateCSX`
+        :func:`GateCS` :func:`GateCSX`
 
     **Two qubit gates (parametric)**
         :func:`GateCU`
@@ -160,7 +168,7 @@ class Circuit:
     **Composite operations**
         :func:`Control` :func:`Parallel`
 
-    **Generalized gates
+    **Generalized gates**
         :func:`GPhase` :func:`QFT` :func:`PhaseGradient`
     """
 
@@ -391,12 +399,12 @@ class Circuit:
                 every classical register supported.
 
         Examples:
+        
             >>> from mimiqcircuits import *
             >>> c = Circuit()
             >>> c.emplace(GateX, [0])
             1-qubit circuit with 1 instructions:
             └── X @ q0
-            >>> c.emplace(GateCX, [0, 1])
             >>> c.emplace(GateRX, [0.2], [0])
             1-qubit circuit with 2 instructions:
             ├── X @ q0

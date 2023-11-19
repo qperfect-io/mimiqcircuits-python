@@ -78,7 +78,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
     def execute(self, circuit, label="pyapi_v" + __version__,
                 algorithm=DEFAULT_ALGORITHM, nsamples=DEFAULT_SAMPLES,
-                bitstates=None, timelimit=DEFAULT_TIME_LIMIT, bonddim=None,
+                bitstrings=None, timelimit=DEFAULT_TIME_LIMIT, bonddim=None,
                 seed=None):
         """
         Execute a circuit simulation using the MIMIQ cloud services.
@@ -88,7 +88,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             label (str): The label for the execution (default: "circuitsimu").
             algorithm (str): The algorithm to be used for execution (default: "auto").
             nsamples (int): The number of samples to generate (default: 1000).
-            bitstates (list): List of bitstates for conditional execution (default: None).
+            bitstrings (list): List of bitstrings for conditional execution (default: None).
             timelimit (int): The time limit for execution in seconds (default: 5 * 60).
             bonddim (int): The bond dimension for the MPS algorithm (default: None).
             seed (int): The seed for generating random numbers (default: randomly generated). If provided,
@@ -101,24 +101,45 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             ValueError: If bonddim, nsamples, or timelimit exceeds the allowed limits.
 
         Examples:
-            >>> from mimiqcircuits import *
-            >>> conn=MimiqConnection()
-            >>> conn.connect()
-            >>> c=Circuit()
-            >>> c.push(GateH(),1)
-                2-qubit circuit with 1 instructions:
-                 └── H @ q1
 
+            >>> from mimiqcircuits import *
+            >>> conn = MimiqConnection(url = "https://mimiq.qperfect.io")
+            >>> conn.connect()
+            Starting authentication server on port 39991 (http://localhost:39991)
+            >>> c = Circuit()
+            >>> c.push(GateH(),range(10))
+            10-qubit circuit with 10 instructions:
+            ├── H @ q0
+            ├── H @ q1
+            ├── H @ q2
+            ├── H @ q3
+            ├── H @ q4
+            ├── H @ q5
+            ├── H @ q6
+            ├── H @ q7
+            ├── H @ q8
+            └── H @ q9
             >>> job=conn.execute(c,algorithm="auto")
             >>> res=conn.get_results(job)
-            >>> res.samples
-                {BitState('00'): 505, BitState('01'): 495}
+            >>> res
+            QCSResults:
+            ├── simulator: MIMIQ-StateVector 0.10.3
+            ├── apply time: 4.5893e-05s
+            ├── amplitudes time: 3.7e-08s
+            ├── total time: 0.000349207s
+            ├── compression time: 6.669e-06s
+            ├── sample time: 0.000249403s
+            ├── fidelity estimate (min,max): (1.000, 1.000)
+            ├── average ≥2-qubit gate error (min,max): (0.000, 0.000)
+            ├── 1 executions
+            ├── 0 amplitudes
+            └── 1000 samples
         """
-        if bitstates is None:
-            bitstates = []
+        if bitstrings is None:
+            bitstrings = []
         else:
             nq = circuit.num_qubits()
-            for b in bitstates:
+            for b in bitstrings:
                 if len(b) != nq:
                     raise ValueError(
                         "The number of qubits in the bitstring is not equal to the number of qubits in the circuit.")
@@ -155,9 +176,9 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
             circuit_hash = _hash_file(circuit_filename)
 
-            jsonbitstates = ['bs' + o.to01() for o in bitstates]
+            jsonbitstrings = ['bs' + o.to01() for o in bitstrings]
 
-            pars = {"algorithm": algorithm, "bitstates": jsonbitstates,
+            pars = {"algorithm": algorithm, "bitstrings": jsonbitstrings,
                     "samples": nsamples, "seed": seed,
                     "apilang: ": "python", "apiversion": __version__,
                     "circuitsapiversion": __version__}
@@ -203,20 +224,6 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
         Raises:
             RuntimeError: If the remote job encounters an error.
-
-        Examples:
-            >>> from mimiqcircuits import *
-            >>> conn=MimiqConnection()
-            >>> conn.connect()
-            >>> c=Circuit()
-            >>> c.push(GateH(),1)
-                2-qubit circuit with 1 instructions:
-                 └── H @ q1
-
-            >>> job=conn.execute(c,algorithm="auto")
-            >>> res=conn.get_results(job)
-            >>> res.samples
-                {BitState('00'): 504, BitState('01'): 496}
         """
         while not self.isJobDone(execution):
             sleep(interval)
@@ -249,26 +256,6 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
         Raises:
             RuntimeError: If the required files are not found in  inputs. Update your library.
-
-        Examples:
-            >>> from mimiqcircuits import *
-            >>> conn=MimiqConnection()
-            >>> conn.connect()
-            >>> c=Circuit()
-            >>> c.push(GateH(),1)
-                2-qubit circuit with 1 instructions:
-                 └── H @ q1
-
-            >>> job=conn.execute(c,algorithm="auto")
-            >>> res=conn.get_results(job)
-            >>> res.samples
-                {BitState('00'): 504, BitState('01'): 496}
-
-            >>> import json
-            >>> c, parameters = conn.get_inputs(job)
-            >>> print(json.dumps(parameters))
-                {"executor": "Circuits", "timelimit": 300, "files": [{"name": "circuit.json", "hash": "4955f6540ec79fd1c34cfadc0dd0bd37b3d4f28bbce60208198f5d0bd7f486c7"}],
-                "parameters": {"algorithm": "auto", "bitstates": [], "samples": 1000, "seed": 2875985032347405045, "bondDimension": 256}}
         """
         with tempfile.TemporaryDirectory() as tmpdir:
             names = self.downloadJobFiles(execution, destdir=tmpdir)

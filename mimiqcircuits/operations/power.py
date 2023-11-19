@@ -14,20 +14,37 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.operations.operation import Operation
-import mimiqcircuits.circuit as mcc
-import mimiqcircuits.operations.gates.gate as mcg
-import mimiqcircuits.operations.control as mctrl
-import mimiqcircuits.operations.inverse as minv
+
 from fractions import Fraction
-from symengine import Matrix
+from symengine import Matrix, expand
 from mimiqcircuits.printutils import print_wrapped_parens
 import sympy as sp
 import mimiqcircuits as mc
 
 
-class Power(Operation):
-    """Square Root operation.
+class Power(mc.Operation):
+    """Power operation.
+    
+    Represents a Power operation raised to a specified exponent.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> c= Circuit()
+        >>> c.push(Power(GateX(),1/2),1)
+        2-qubit circuit with 1 instructions:
+        └── X^(1/2) @ q1
+        >>> c.push(Power(GateX(),5),1)
+        2-qubit circuit with 2 instructions:
+        ├── X^(1/2) @ q1
+        └── X^(5) @ q1
+        >>> c.decompose()
+        2-qubit circuit with 6 instructions:
+        ├── X^(1/2) @ q1
+        ├── X @ q1
+        ├── X @ q1
+        ├── X @ q1
+        ├── X @ q1
+        └── X @ q1
     """
     _name = 'Power'
 
@@ -40,9 +57,9 @@ class Power(Operation):
     _parnames = ('exponent',)
 
     def __init__(self, operation, exponent, *args, **kwargs):
-        if isinstance(operation, type) and issubclass(operation, Operation):
+        if isinstance(operation, type) and issubclass(operation, mc.Operation):
             op = operation(*args, **kwargs)
-        elif isinstance(operation, Operation):
+        elif isinstance(operation, mc.Operation):
             op = operation
         else:
             raise ValueError("Operation must be an Operation object or type.")
@@ -83,18 +100,18 @@ class Power(Operation):
         return Power(self.op, self.exponent * exponent)
 
     def inverse(self):
-        return minv.Inverse(self)
+        return mc.Inverse(self)
 
     def control(self, num_controls):
-        return mctrl.Control(num_controls, self)
+        return mc.Control(num_controls, self)
 
     def matrix(self):
         matrix = sp.Matrix(self.op.matrix().tolist())
         pow_matrix = matrix**(self.exponent)
-        return Matrix(pow_matrix.tolist())
+        return Matrix(sp.simplify(Matrix(pow_matrix.tolist())))
 
     def decompose(self):
-        c = mcc.Circuit()
+        c = mc.Circuit()
         qubits = [j for j in range(0, self.num_qubits)]
         c.push(self, *qubits)
         return c

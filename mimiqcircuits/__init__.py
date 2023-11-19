@@ -18,7 +18,7 @@ from mimiqcircuits.__version__ import __version__
 
 from mimiqcircuits.circuit import Circuit
 
-from mimiqcircuits.bitstates import BitState
+from mimiqcircuits.bitstrings import BitString
 
 from mimiqcircuits.operations.operation import Operation
 
@@ -86,7 +86,7 @@ import mimiqcircuits.matrices as matrices
 # Add any other imports or definitions you want to expose here
 
 __all__ = [
-    'Circuit', 'BitState', 'Operation', 'Control', 'Parallel', 'Inverse',
+    'Circuit', 'BitString', 'Operation', 'Control', 'Parallel', 'Inverse',
     'Power', 'Barrier', 'IfStatement', 'Measure', 'Reset', 'Gate',
     'GateCustom', 'GateU', 'GateUPhase', 'GateID', 'GateID2', 'GateX', 'GateY',
     'GateZ', 'GateH', 'GateS', 'GateSDG', 'GateT', 'GateTDG', 'GateSX',

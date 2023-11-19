@@ -1,171 +1,172 @@
 import pytest
-from mimiqcircuits import BitState
+from mimiqcircuits import BitString
 from bitarray import frozenbitarray, bitarray
 
 
 def test_init_int():
-    """Test BitState initialization from integer.
+    """Test BitString initialization from integer.
     """
     for i in [0, 1, 2, 3, 5, 9, 16, 32, 123, 12324]:
-        assert len(BitState(i)) == i
+        assert len(BitString(i)) == i
         for j in range(i):
-            assert BitState(i)[j] == 0
+            assert BitString(i)[j] == 0
 
 
 def test_init_str():
-    """Test BitState initialization from string.
+    """Test BitString initialization from string.
     """
     for s in ['', '1',  '0', '11', '10', '10111011', '00000000']:
-        assert BitState(s).to01() == s
+        assert BitString(s).to01() == s
 
 
 def test_init_bitarray():
-    """Test BitState initialization from bitarray.
+    """Test BitString initialization from bitarray.
     """
     for s in ['', '1',  '0', '11', '10', '10111011', '00000000']:
-        assert BitState(frozenbitarray(s)).to01() == s
-        assert BitState(bitarray(s)).to01() == s
+        assert BitString(frozenbitarray(s)).to01() == s
+        assert BitString(bitarray(s)).to01() == s
 
 
 def test_init_list():
-    """Test BitState initialization from list.
+    """Test BitString initialization from list.
     """
     for s in [[], [1], [0], [1, 0], [1, 1], [1, 0, 1, 1, 1, 0, 1, 1], [0, 0, 0, 0, 0]]:
-        bs = BitState(s)
+        bs = BitString(s)
         for j in range(len(s)):
             assert bs[j] == s[j]
 
     with pytest.raises(ValueError):
-        BitState([1, 0, 2])
+        BitString([1, 0, 2])
 
 
 def test_init_tuple():
-    """Test BitState initialization from tuple.
+    """Test BitString initialization from tuple.
     """
     for s in [(), (1,), (0,), (1, 0), (1, 1), (1, 0, 1, 1, 1, 0, 1, 1), (0, 0, 0, 0, 0)]:
-        bs = BitState(s)
+        bs = BitString(s)
         for j in range(len(s)):
             assert bs[j] == s[j]
 
     with pytest.raises(ValueError):
-        BitState((1, 2, 0))
+        BitString((1, 2, 0))
 
 
 def test_init_other():
-    """Test BitState initialization from other types.
+    """Test BitString initialization from other types.
     Should raise TypeError for any case that is not of the ones above.
     """
     with pytest.raises(TypeError):
-        BitState(1.0)
+        BitString(1.0)
 
     with pytest.raises(TypeError):
-        BitState(1+1j)
+        BitString(1+1j)
 
     with pytest.raises(TypeError):
-        BitState({1, 0, 1})
+        BitString({1, 0, 1})
 
     with pytest.raises(TypeError):
-        BitState({1: 0, 2: 1})
+        BitString({1: 0, 2: 1})
 
     with pytest.raises(TypeError):
-        BitState(None)
+        BitString(None)
 
 
 def test_init_fromnonzeros():
-    """Test BitState initialization from nonzeros.
+    """Test BitString initialization from nonzeros.
     """
-    assert BitState.fromnonzeros(0, []) == BitState(0)
-    assert BitState.fromnonzeros(1, []) == BitState(1)
-    assert BitState.fromnonzeros(1, [0]) == BitState('1')
-    assert BitState.fromnonzeros(2, [1]) == BitState('01')
-    assert BitState.fromnonzeros(3, [0, 2]) == BitState('101')
+    assert BitString.fromnonzeros(0, []) == BitString(0)
+    assert BitString.fromnonzeros(1, []) == BitString(1)
+    assert BitString.fromnonzeros(1, [0]) == BitString('1')
+    assert BitString.fromnonzeros(2, [1]) == BitString('01')
+    assert BitString.fromnonzeros(3, [0, 2]) == BitString('101')
 
     with pytest.raises(ValueError):
-        BitState.fromnonzeros(2, [0, 2])
+        BitString.fromnonzeros(2, [0, 2])
 
 
 def test_init_fromfunction():
-    """Test BitState initialization from function.
+    """Test BitString initialization from function.
     """
-    assert BitState.fromfunction(0, lambda x: 0) == BitState(0)
-    assert BitState.fromfunction(3, lambda x: 0) == BitState('000')
-    assert BitState.fromfunction(3, lambda x: 1) == BitState('111')
-    assert BitState.fromfunction(6, lambda x: x % 2 == 0) == BitState('101010')
+    assert BitString.fromfunction(0, lambda x: 0) == BitString(0)
+    assert BitString.fromfunction(3, lambda x: 0) == BitString('000')
+    assert BitString.fromfunction(3, lambda x: 1) == BitString('111')
+    assert BitString.fromfunction(6, lambda x: x %
+                                  2 == 0) == BitString('101010')
 
 
 def test_int_conversion():
-    """Test BitState to int conversion.
+    """Test BitString to int conversion.
     """
     for i in [0, 1, 2, 3, 5, 9, 16, 32, 123, 12324]:
-        assert BitState.fromint(31, i).tointeger() == i
+        assert BitString.fromint(31, i).tointeger() == i
 
 
 def test_zeros_nonzeros():
-    """Test BitState zeros and nonzeros methods.
+    """Test BitString zeros and nonzeros methods.
     """
-    assert BitState(0).zeros() == []
-    assert BitState(0).nonzeros() == []
-    assert BitState(3).zeros() == [0, 1, 2]
-    assert BitState(3).nonzeros() == []
-    assert BitState('101').zeros() == [1]
-    assert BitState('101').nonzeros() == [0, 2]
+    assert BitString(0).zeros() == []
+    assert BitString(0).nonzeros() == []
+    assert BitString(3).zeros() == [0, 1, 2]
+    assert BitString(3).nonzeros() == []
+    assert BitString('101').zeros() == [1]
+    assert BitString('101').nonzeros() == [0, 2]
 
 
 def test_num_qubits():
-    """Test BitState num_qubits method.
+    """Test BitString num_qubits method.
     """
-    assert BitState(0).num_qubits() == 0
-    assert BitState(1).num_qubits() == 1
-    assert BitState(2).num_qubits() == 2
-    assert BitState(1234).num_qubits() == 1234
+    assert BitString(0).num_qubits() == 0
+    assert BitString(1).num_qubits() == 1
+    assert BitString(2).num_qubits() == 2
+    assert BitString(1234).num_qubits() == 1234
 
 
 def test_len():
-    """Test BitState len method.
+    """Test BitString len method.
     """
-    assert len(BitState(0)) == 0
-    assert len(BitState(1)) == 1
-    assert len(BitState(2)) == 2
-    assert len(BitState(1234)) == 1234
+    assert len(BitString(0)) == 0
+    assert len(BitString(1)) == 1
+    assert len(BitString(2)) == 2
+    assert len(BitString(1234)) == 1234
 
 
 def test_bit_operations():
-    """Test BitState bit operations.
+    """Test BitString bit operations.
     """
-    assert BitState('0') & BitState('0') == BitState('0')
-    assert BitState('0') & BitState('1') == BitState('0')
-    assert BitState('1') & BitState('0') == BitState('0')
-    assert BitState('1') & BitState('1') == BitState('1')
-    assert BitState('0') | BitState('0') == BitState('0')
-    assert BitState('0') | BitState('1') == BitState('1')
-    assert BitState('1') | BitState('0') == BitState('1')
-    assert BitState('1') | BitState('1') == BitState('1')
-    assert BitState('0') ^ BitState('0') == BitState('0')
-    assert BitState('0') ^ BitState('1') == BitState('1')
-    assert BitState('1') ^ BitState('0') == BitState('1')
-    assert BitState('1') ^ BitState('1') == BitState('0')
-    assert ~BitState('0') == BitState('1')
-    assert ~BitState('1') == BitState('0')
+    assert BitString('0') & BitString('0') == BitString('0')
+    assert BitString('0') & BitString('1') == BitString('0')
+    assert BitString('1') & BitString('0') == BitString('0')
+    assert BitString('1') & BitString('1') == BitString('1')
+    assert BitString('0') | BitString('0') == BitString('0')
+    assert BitString('0') | BitString('1') == BitString('1')
+    assert BitString('1') | BitString('0') == BitString('1')
+    assert BitString('1') | BitString('1') == BitString('1')
+    assert BitString('0') ^ BitString('0') == BitString('0')
+    assert BitString('0') ^ BitString('1') == BitString('1')
+    assert BitString('1') ^ BitString('0') == BitString('1')
+    assert BitString('1') ^ BitString('1') == BitString('0')
+    assert ~BitString('0') == BitString('1')
+    assert ~BitString('1') == BitString('0')
 
-    assert BitState('110101001') & BitState(
-        '101011101') == BitState('100001001')
-    assert BitState('110101001') | BitState(
-        '101011101') == BitState('111111101')
-    assert BitState('110101001') ^ BitState(
-        '101011101') == BitState('011110100')
-    assert ~BitState('110101001') == BitState('001010110')
+    assert BitString('110101001') & BitString(
+        '101011101') == BitString('100001001')
+    assert BitString('110101001') | BitString(
+        '101011101') == BitString('111111101')
+    assert BitString('110101001') ^ BitString(
+        '101011101') == BitString('011110100')
+    assert ~BitString('110101001') == BitString('001010110')
 
 
 def test_repeat_concatenate():
-    """Test BitState repeat and concatenate methods.
+    """Test BitString repeat and concatenate methods.
     """
-    assert BitState('0') * 3 == BitState('000')
-    assert BitState('10') * 4 == BitState('10101010')
-    assert BitState('10011') + BitState('101') == BitState('10011101')
+    assert BitString('0') * 3 == BitString('000')
+    assert BitString('10') * 4 == BitString('10101010')
+    assert BitString('10011') + BitString('101') == BitString('10011101')
 
 
 def test_bitshifts():
-    """Test BitState bitshifts.
+    """Test BitString bitshifts.
     """
-    assert BitState('00110') << 2 == BitState('11000')
-    assert BitState('00110') >> 2 == BitState('00001')
+    assert BitString('00110') << 2 == BitString('11000')
+    assert BitString('00110') >> 2 == BitString('00001')

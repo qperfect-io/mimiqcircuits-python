@@ -50,8 +50,8 @@ def int_to_bitvec(x, pad, frozen=True):
         return bitarray(binary_str)
 
 
-class BitState:
-    """BitState for the quantum states.
+class BitString:
+    """BitString for the quantum states.
 
     Representation of the quantum state of a quantum register with definite
     values for each qubit.
@@ -59,35 +59,35 @@ class BitState:
     Examples:
         Initialization:
         >>> from mimiqcircuits import *
-        >>> BitState(16) # number of qubits
+        >>> BitString(16) # number of qubits
         bs"0000000000000000"
-        >>> BitState('10101') # binary string
+        >>> BitString('10101') # binary string
         bs"10101"
-        >>> BitState(bitarray('101010')) # bitarray
+        >>> BitString(bitarray('101010')) # bitarray
         bs"101010"
 
         Other initializations:
-        >>> BitState.fromnonzeros(16, [1, 3, 5, 7, 9, 11, 13, 15])
+        >>> BitString.fromnonzeros(16, [1, 3, 5, 7, 9, 11, 13, 15])
         bs"0101010101010101"
-        >>> BitState.fromfunction(16, lambda i: i % 2 == 1)
+        >>> BitString.fromfunction(16, lambda i: i % 2 == 1)
         bs"0101010101010101"
-        >>> BitState.fromstring('10101')
+        >>> BitString.fromstring('10101')
         bs"10101"
-        >>> BitState.fromint(16, 21)
+        >>> BitString.fromint(16, 21)
         bs"1010100000000000"
-        >>> BitState.fromint(16, 21, 'little')
+        >>> BitString.fromint(16, 21, 'little')
         bs"0000000000010101"
 
         Accessing the bits:
-        >>> bs = BitState(16)
+        >>> bs = BitString(16)
         >>> bs[0] # get the 0th bit
         0
         >>> bs[0:4] # get the first 4 bits
         bs"0000"
 
         Bitwise operations:
-        >>> bs1 = BitState('10101')
-        >>> bs2 = BitState('11100')
+        >>> bs1 = BitString('10101')
+        >>> bs2 = BitString('11100')
         >>> bs1 | bs2 # OR
         bs"11101"
         >>> bs1 & bs2 # AND
@@ -110,19 +110,19 @@ class BitState:
     _bits = bitarray(0)
 
     def __init__(self, arg):
-        """Initialize the BitState.
+        """Initialize the BitString.
 
-        If the number of qubits is given, then the BitState is initialized to
+        If the number of qubits is given, then the BitString is initialized to
         the all-zero state.
-        If a binary string or a bitarray is given, then the BitState is the
+        If a binary string or a bitarray is given, then the BitString is the
         corresponding state.
 
         Examples:
-            >>> BitState(16) # number of qubits
+            >>> BitString(16) # number of qubits
             bs"0000000000000000"
-            >>> BitState('10101') # binary string
+            >>> BitString('10101') # binary string
             bs"10101"
-            >>> BitState(bitarray('101010')) # bitarray
+            >>> BitString(bitarray('101010')) # bitarray
             bs"101010"
         """
         if isinstance(arg, int):
@@ -141,18 +141,18 @@ class BitState:
 
     @bits.setter
     def bits(self, bits):
-        raise AttributeError("Cannot set the bits of a BitState.")
+        raise AttributeError("Cannot set the bits of a BitString.")
 
     @staticmethod
     def fromnonzeros(num_qubits: int, nonzeros: list):
-        """Initialize a BitState with specific non-zero qubits.
+        """Initialize a BitString with specific non-zero qubits.
 
         Arguments:
-            num_qubits (int): The number of qubits in the BitState.
-            nonzeros (list): A list of non-zero qubit indices to set in the BitState.
+            num_qubits (int): The number of qubits in the BitString.
+            nonzeros (list): A list of non-zero qubit indices to set in the BitString.
 
         Returns:
-            A BitState with the specified non-zero qubits.
+            A BitString with the specified non-zero qubits.
         """
         bitstring = ''
 
@@ -162,47 +162,47 @@ class BitState:
         for i in range(num_qubits):
             bitstring += '1' if i in nonzeros else '0'
 
-        return BitState(bitstring)
+        return BitString(bitstring)
 
     @staticmethod
     def fromfunction(num_qubits: int, f: type[lambda: None]):
-        """Initialize a BitState from a function.
+        """Initialize a BitString from a function.
 
         Arguments:
-            num_qubits (int): The number of qubits in the BitState.
+            num_qubits (int): The number of qubits in the BitString.
             f (function): A function that takes an integer and returns a boolean.
 
         Returns:
-            A BitState.
+            A BitString.
         """
         bitstring = ''
         for i in range(num_qubits):
             bitstring += '1' if f(i) else '0'
-        return BitState(bitstring)
+        return BitString(bitstring)
 
     @staticmethod
     def fromstring(bitstring: str):
-        """Initialize a BitState from a string.
+        """Initialize a BitString from a string.
 
         Arguments:
-            bitstring (str): The string representation of the BitState.
+            bitstring (str): The string representation of the BitString.
 
         Returns:
-            A BitState.
+            A BitString.
         """
-        return BitState(bitstring)
+        return BitString(bitstring)
 
     @staticmethod
     def fromint(num_qubits: int, integer: int, endianess: str = 'big'):
-        """Initialize a BitState from an integer.
+        """Initialize a BitString from an integer.
 
         Arguments:
-            num_qubits (int): The number of qubits in the BitState.
-            integer (int): The integer value of the BitState.
+            num_qubits (int): The number of qubits in the BitString.
+            integer (int): The integer value of the BitString.
             endianess (str): The endianess of the integer. Default is 'big'.
 
         Returns:
-            A BitState.
+            A BitString.
         """
         if len(bin(integer)[2:]) > num_qubits:
             raise ValueError(
@@ -215,10 +215,10 @@ class BitState:
         else:
             raise ValueError("endian must be either 'big' or 'little'")
 
-        return BitState(bitstring[::-1])
+        return BitString(bitstring[::-1])
 
     def num_qubits(self):
-        """Return the number of qubits in the BitState.
+        """Return the number of qubits in the BitString.
         """
         return len(self.bits)
 
@@ -233,13 +233,13 @@ class BitState:
         return [i for i, bit in enumerate(self.bits) if not bit]
 
     def tointeger(self, endianess: str = 'big'):
-        """Return the integer value of the BitState.
+        """Return the integer value of the BitString.
 
         Arguments:
             endianess (str): The endianess of the integer. Default is 'big'.
 
         Returns:
-            The integer value of the BitState.
+            The integer value of the BitString.
         """
         if endianess == 'big':
             return bitvec_to_int(self.bits[::-1])
@@ -249,13 +249,13 @@ class BitState:
             raise ValueError("Invalid endianess. Must be 'big' or 'little'.")
 
     def to01(self, endianess='big'):
-        """Return the binary string representation of the BitState.
+        """Return the binary string representation of the BitString.
 
         Arguments:
             endianess (str): The endianess of the integer. Default is 'big'
 
         Retruns:
-            The binary string representation of the BitState.
+            The binary string representation of the BitString.
         """
         if endianess == 'big':
             return ''.join(map(str, self.bits))
@@ -265,13 +265,13 @@ class BitState:
             raise ValueError("Invalid endianess. Must be 'big' or 'little'.")
 
     def toindex(self, endianess: str = 'big'):
-        """Return the integer index of the BitState.
+        """Return the integer index of the BitString.
 
         Arguments:
             endianess (str): The endianess of the integer. Default is 'big'.
 
         Returns:
-            The integer index of the BitState.
+            The integer index of the BitString.
         """
         if endianess == 'big':
             return bitvec_to_int(self.bits[::-1])
@@ -281,12 +281,12 @@ class BitState:
             raise ValueError("endian must be either 'big' or 'little'")
 
     def __eq__(self, other):
-        if not isinstance(other, BitState):
+        if not isinstance(other, BitString):
             return False
         return self.bits == other.bits
 
     def __str__(self):
-        s = f"{len(self.bits)}-qubit BitState"
+        s = f"{len(self.bits)}-qubit BitString"
         nz = self.nonzeros()
         if len(nz) != 0:
             s += f" with {len(nz)} non-zero qubits:\n"
@@ -310,51 +310,53 @@ class BitState:
 
     def __getitem__(self, index):
         if type(index) is slice:
-            return BitState(self.bits[index])
+            return BitString(self.bits[index])
         return self.bits[index]
 
     def __or__(self, other):
-        if not isinstance(other, BitState):
-            raise TypeError("BitState can only be ORed with another BitState.")
-        return BitState(self.bits | other.bits)
+        if not isinstance(other, BitString):
+            raise TypeError(
+                "BitString can only be ORed with another BitString.")
+        return BitString(self.bits | other.bits)
 
     def __and__(self, other):
-        if not isinstance(other, BitState):
+        if not isinstance(other, BitString):
             raise TypeError(
-                "BitState can only be ANDed with another BitState.")
-        return BitState(self.bits & other.bits)
+                "BitString can only be ANDed with another BitString.")
+        return BitString(self.bits & other.bits)
 
     def __xor__(self, other):
-        if not isinstance(other, BitState):
+        if not isinstance(other, BitString):
             raise TypeError(
-                "BitState can only be XORed with another BitState.")
-        return BitState(self.bits ^ other.bits)
+                "BitString can only be XORed with another BitString.")
+        return BitString(self.bits ^ other.bits)
 
     def __invert__(self):
-        return BitState(~self.bits)
+        return BitString(~self.bits)
 
     def __lshift__(self, other):
         if not isinstance(other, int):
-            raise TypeError("BitState can only be left shifted by an integer.")
-        return BitState(self.bits << other)
+            raise TypeError(
+                "BitString can only be left shifted by an integer.")
+        return BitString(self.bits << other)
 
     def __rshift__(self, other):
         if not isinstance(other, int):
             raise TypeError(
-                "BitState can only be right shifted by an integer.")
-        return BitState(self.bits >> other)
+                "BitString can only be right shifted by an integer.")
+        return BitString(self.bits >> other)
 
     def __add__(self, other):
-        if not isinstance(other, BitState):
+        if not isinstance(other, BitString):
             raise TypeError(
-                "BitState can only be added with another BitState.")
-        return BitState(self.bits + other.bits)
+                "BitString can only be added with another BitString.")
+        return BitString(self.bits + other.bits)
 
     def __mul__(self, other):
         if not isinstance(other, int):
             raise TypeError(
-                "BitState can only be multiplied by an integer.")
-        return BitState(self.bits * other)
+                "BitString can only be multiplied by an integer.")
+        return BitString(self.bits * other)
 
 
-__all__ = ["BitState"]
+__all__ = ["BitString"]

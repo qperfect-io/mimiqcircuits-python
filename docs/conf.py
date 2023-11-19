@@ -6,6 +6,7 @@
 import datetime
 import os
 import sys
+from mimiqcircuits.__version__ import __version__
 
 import sphinx.ext.doctest
 sys.path.insert(0, os.path.abspath(".."))
@@ -16,7 +17,7 @@ sys.path.insert(0, os.path.abspath(".."))
 project = 'MIMIQ Circuits'
 copyright = f'2023-{datetime.date.today().year}, QPerfect'
 author = 'QPerfect'
-release = '0.3.1'
+release = __version__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

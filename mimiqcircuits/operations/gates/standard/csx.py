@@ -24,38 +24,37 @@ from symengine import pi
 class GateCSX(mctrl.Control):
     """Two qubit Controled-SX (control on second qubit) gate.
 
+    By convention, the first qubit is the control and second one is the
+    targets.
+
+
     **Matrix representation:**
 
     .. math::
 
         \\operatorname{CSX} =\\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
-            0 & \\frac{1+i}{\\sqrt{2}} & 0 & \\frac{1-i}{\\sqrt{2}} \\\\
-            0 & 0 & 1 & 0 \\\\
-            0 & \\frac{1-i}{\\sqrt{2}} & 0 & \\frac{1+i}{\\sqrt{2}}
+            0 & 1 & 0 & 0 \\\\
+            0 & 0 & \\frac{1+i}{\\sqrt{2}} & \\frac{1-i}{\\sqrt{2}} \\\\
+            0 & 0 & \\frac{1-i}{\\sqrt{2}} & \\frac{1+i}{\\sqrt{2}}
         \\end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> GateCSX(), GateCSX().num_controls, GateCSX().num_targets
-        (CX^(1/2), 1, 1)
+        >>> GateCSX(), GateCSX().num_controls, GateCSX().num_targets, GateCSX().num_qubits
+        (C(X^(1/2)), 1, 1, 2)
         >>> GateCSX().matrix()
+        [1, 0, 0, 0]
+        [0, 1, 0, 0]
+        [0, 0, 0.5 + 0.5*I, 0.5 - 0.5*I]
+        [0, 0, 0.5 - 0.5*I, 0.5 + 0.5*I]
+        <BLANKLINE>
         >>> c = Circuit().push(GateCSX(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── C(X^(1/2)) @ q0, q1
         >>> GateCSX().power(2), GateCSX().inverse()
-        (CX^(1.0), C(X^(1/2))†)
-        >>> GateCSX().decompose()
-        2-qubit circuit with 3 instructions:
-        ├── H @ q1
-        ├── CU1((1/2)*pi) @ q0, q1
-        └── H @ q1
-        2-qubit circuit with 3 instructions:
-        ├── H @ q1
-        ├── CU1((1/2)*pi) @ q0, q1
-        └── H @ q1
-        >>> GateCSX().matrix()
-        >>> c = Circuit().push(GateCSX(), 0, 1)
-        >>> GateCSX().power(2), GateCSX().inverse()
-        (CX^(1.0), C(X^(1/2))†)
+        (C(X^(1.0)), C((X^(1/2))†))
         >>> GateCSX().decompose()
         2-qubit circuit with 3 instructions:
         ├── H @ q1
@@ -84,32 +83,27 @@ class GateCSXDG(mctrl.Control):
     .. math::
         \\operatorname{CSX}^{\\dagger} =\\begin{pmatrix}
             1 & 0 & 0 & 0 \\\\
-            0 & \\frac{1-i}{\\sqrt{2}} & 0 & \\frac{1+i}{\\sqrt{2}} \\\\
-            0 & 0 & 1 & 0 \\\\
-            0 & \\frac{1+i}{\\sqrt{2}} & 0 & \\frac{1-i}{\\sqrt{2}}
+            0 & 1 & 0 & 0 \\\\
+            0 & 0 & \\frac{1-i}{\\sqrt{2}} & \\frac{1+i}{\\sqrt{2}} \\\\
+            0 & 0 & \\frac{1+i}{\\sqrt{2}} & \\frac{1-i}{\\sqrt{2}}
         \\end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> GateCSXDG(), GateCSXDG().num_controls, GateCSXDG().num_targets
-        (C(X^(1/2))†, 1, 1)
+        >>> GateCSXDG(), GateCSXDG().num_controls, GateCSXDG().num_targets, GateCSXDG().num_qubits
+        (C((X^(1/2))†), 1, 1, 2)
         >>> GateCSXDG().matrix()
+        [1, 0, 0, 0]
+        [0, 1, 0, 0]
+        [0, 0, 0.5 - 0.5*I, 0.5 + 0.5*I]
+        [0, 0, 0.5 + 0.5*I, 0.5 - 0.5*I]
+        <BLANKLINE>
         >>> c = Circuit().push(GateCSXDG(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instructions:
+        └── C((X^(1/2))†) @ q0, q1
         >>> GateCSXDG().power(2), GateCSXDG().inverse()
-        (C((X^(1/2))†)^(2), CX^(1/2))
-        >>> GateCSXDG().decompose()
-        2-qubit circuit with 3 instructions:
-        ├── H @ q1
-        ├── CU1((-1/2)*pi) @ q0, q1
-        └── H @ q1
-        2-qubit circuit with 3 instructions:
-        ├── H @ q1
-        ├── CU1((-1/2)*pi) @ q0, q1
-        └── H @ q1
-        >>> GateCSXDG().matrix()
-        >>> c = Circuit().push(GateCSXDG(), 0, 1)
-        >>> GateCSXDG().power(2), GateCSXDG().inverse()
-        (C((X^(1/2))†)^(2), CX^(1/2))
+        (C(((X^(1/2))†)^(2)), C(X^(1/2)))
         >>> GateCSXDG().decompose()
         2-qubit circuit with 3 instructions:
         ├── H @ q1

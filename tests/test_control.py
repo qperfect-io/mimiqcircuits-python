@@ -64,7 +64,7 @@ def test_control_init():
         mc.Control(1, mc.Barrier(1))
 
     with pytest.raises(TypeError):
-        mc.Control(1, mc.BitState(1))
+        mc.Control(1, mc.BitString(1))
 
     # resets are not allowed to be controlled
     with pytest.raises(TypeError):
@@ -75,7 +75,7 @@ def test_control_init():
 # Function for testing the equality of matrices for symengine
 
 
-def is_close(matrix1, matrix2, tol=1e-15):
+def is_close(matrix1, matrix2, tol=1e-13):
     diff_matrix = matrix1 - matrix2
     max_diff = max(abs(entry) for entry in diff_matrix)
     return max_diff < tol

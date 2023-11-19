@@ -39,21 +39,18 @@ class GateS(Power):
         >>> GateS()
         S
         >>> GateS().matrix()
+        [1, 0]
+        [0, 0.0 + 1.0*I]
+        <BLANKLINE>
         >>> c = Circuit().push(GateS(), 0)
+        >>> c
+        1-qubit circuit with 1 instructions:
+        └── S @ q0
         >>> GateS().power(2), GateS().inverse()
         (Z^(1.0), S†)
         >>> GateS().decompose()
         1-qubit circuit with 1 instructions:
-        └── S @ q0
-        1-qubit circuit with 1 instructions:
-        └── S @ q0
-        >>> GateS().matrix()
-        >>> c = Circuit().push(GateS(), 0)
-        >>> GateS().power(2), GateS().inverse()
-        (Z^(1.0), S†)
-        >>> GateS().decompose()
-        1-qubit circuit with 1 instructions:
-        └── S @ q0
+        └── U(0, 0, (1/2)*pi) @ q0
     """
     _name = 'S'
 
@@ -89,20 +86,17 @@ class GateSDG(Inverse):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateSDG()
-        Inverse
+        S†
         >>> GateSDG().matrix()
+        [1.0, 0]
+        [0, 6.12323399573677e-17 - 1.0*I]
+        <BLANKLINE>
         >>> c = Circuit().push(GateSDG(), 0)
-        >>> GateSDG().power(2), GateSDG().inverse()
-        (Inverse^(2), S)
-        >>> GateSDG().decompose()
+        >>> c
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, (-1/2)*pi) @ q0
-        1-qubit circuit with 1 instructions:
-        └── U(0, 0, (-1/2)*pi) @ q0
-        >>> GateSDG().matrix()
-        >>> c = Circuit().push(GateSDG(), 0)
+        └── S† @ q0
         >>> GateSDG().power(2), GateSDG().inverse()
-        (Inverse^(2), S)
+        (S†^(2), S)
         >>> GateSDG().decompose()
         1-qubit circuit with 1 instructions:
         └── U(0, 0, (-1/2)*pi) @ q0
@@ -116,9 +110,6 @@ class GateSDG(Inverse):
 
     def inverse(self):
         return GateS()
-
-    def __str__(self):
-        return f"{self.name}"
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]

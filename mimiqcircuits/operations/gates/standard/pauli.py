@@ -20,7 +20,7 @@ from mimiqcircuits.operations.gates.standard.phase import GateP
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.generalized.gphase import GPhase
 from mimiqcircuits.matrices import umatrixpi, gphasepi
-from symengine import pi
+from symengine import pi, Matrix
 from sympy import simplify
 
 
@@ -40,24 +40,13 @@ class GateX(mcg.Gate):
         >>> GateX()
         X
         >>> GateX().matrix()
-        Matrix([
-        [0, 1],
-        [1, 0]])
+        [0, 1]
+        [1, 0]
+        <BLANKLINE>
         >>> c = Circuit().push(GateX(), 0)
-        >>> GateX().power(2), GateX().inverse()
-        (ID, X)
-        >>> GateX().decompose()
-        1-qubit circuit with 2 instructions:
-        ├── U(pi, 0, pi) @ q0
-        └── GPhase(lmbda=(-1/2)*pi) @ q0
-        1-qubit circuit with 2 instructions:
-        ├── U(pi, 0, pi) @ q0
-        └── GPhase(lmbda=(-1/2)*pi) @ q0
-        >>> GateX().matrix()
-        Matrix([
-        [0, 1],
-        [1, 0]])
-        >>> c = Circuit().push(GateX(), 0)
+        >>> c
+        1-qubit circuit with 1 instructions:
+        └── X @ q0
         >>> GateX().power(2), GateX().inverse()
         (ID, X)
         >>> GateX().decompose()
@@ -77,7 +66,7 @@ class GateX(mcg.Gate):
         return power_nhilpotent(self, p)
 
     def matrix(self):
-        return simplify(umatrixpi(1, 0, 1) * gphasepi(-1/2))
+        return Matrix(simplify(umatrixpi(1, 0, 1) * gphasepi(-1/2)))
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
@@ -102,23 +91,9 @@ class GateY(mcg.Gate):
         >>> GateY()
         Y
         >>> GateY().matrix()
-        Matrix([
-        [0, -I],
-        [I,  0]])
-        >>> c = Circuit().push(GateY(), 0)
-        >>> GateY().power(2), GateY().inverse()
-        (ID, Y)
-        >>> GateY().decompose()
-        1-qubit circuit with 2 instructions:
-        ├── U(pi, (1/2)*pi, (1/2)*pi) @ q0
-        └── GPhase(lmbda=(-1/2)*pi) @ q0
-        1-qubit circuit with 2 instructions:
-        ├── U(pi, (1/2)*pi, (1/2)*pi) @ q0
-        └── GPhase(lmbda=(-1/2)*pi) @ q0
-        >>> GateY().matrix()
-        Matrix([
-        [0, -I],
-        [I,  0]])
+        [0, -I]
+        [I, 0]
+        <BLANKLINE>
         >>> c = Circuit().push(GateY(), 0)
         >>> GateY().power(2), GateY().inverse()
         (ID, Y)
@@ -139,7 +114,7 @@ class GateY(mcg.Gate):
         return power_nhilpotent(self, p)
 
     def matrix(self):
-        return simplify(umatrixpi(1, 1/2, 1/2) * gphasepi(-1/2))
+        return Matrix(simplify(umatrixpi(1, 1/2, 1/2) * gphasepi(-1/2)))
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
@@ -164,21 +139,9 @@ class GateZ(mcg.Gate):
         >>> GateZ()
         Z
         >>> GateZ().matrix()
-        Matrix([
-        [1,  0],
-        [0, -1]])
-        >>> c = Circuit().push(GateZ(), 0)
-        >>> GateZ().power(2), GateZ().inverse()
-        (ID, Z)
-        >>> GateZ().decompose()
-        1-qubit circuit with 1 instructions:
-        └── P(pi) @ q0
-        1-qubit circuit with 1 instructions:
-        └── P(pi) @ q0
-        >>> GateZ().matrix()
-        Matrix([
-        [1,  0],
-        [0, -1]])
+        [1, 0]
+        [0, -1]
+        <BLANKLINE>
         >>> c = Circuit().push(GateZ(), 0)
         >>> GateZ().power(2), GateZ().inverse()
         (ID, Z)
@@ -198,7 +161,7 @@ class GateZ(mcg.Gate):
         return power_nhilpotent(self, p)
 
     def matrix(self):
-        return simplify(umatrixpi(0, 0, 1))
+        return Matrix(simplify(umatrixpi(0, 0, 1)))
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]

@@ -30,16 +30,15 @@ class Reset(Operation):
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Reset(), 0)
-            1-qubit circuit with 1 instructions:
-            └── Reset @ q0
-
+        1-qubit circuit with 1 instructions:
+        └── Reset @ q0
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Reset(),(0,1,2))
-            3-qubit circuit with 3 instructions:
-            ├── Reset @ q0
-            ├── Reset @ q1
-            └── Reset @ q2
+        3-qubit circuit with 3 instructions:
+        ├── Reset @ q0
+        ├── Reset @ q1
+        └── Reset @ q2
     """
     _name = 'Reset'
     _num_qubits = 1

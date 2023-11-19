@@ -23,7 +23,7 @@ def test_init():
     with pytest.raises(ValueError):
         mc.Power(2, 0)
     with pytest.raises(ValueError):
-        mc.Power(2, mc.BitState(0))
+        mc.Power(2, mc.BitString(0))
 
 
 def test_matrix():

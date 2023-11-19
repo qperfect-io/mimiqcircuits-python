@@ -17,6 +17,7 @@
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from symengine import Matrix
+import sympy as sp
 
 
 class GateSWAP(mcg.Gate):
@@ -47,17 +48,11 @@ class GateSWAP(mcg.Gate):
         >>> c = Circuit().push(GateSWAP(), 0, 1)
         >>> GateSWAP().power(2), GateSWAP().inverse()
         (SWAP^(2), SWAP)
-        (SWAP^(2), SWAP)
-        >>> GateSWAP().matrix()
-        [1, 0, 0, 0]
-        [0, 0, 1, 0]
-        [0, 1, 0, 0]
-        [0, 0, 0, 1]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateSWAP(), 0, 1)
-        >>> GateSWAP().power(2), GateSWAP().inverse()
-        (SWAP^(2), SWAP)
         >>> GateSWAP().decompose()
+        2-qubit circuit with 3 instructions:
+        ├── CX @ q0, q1
+        ├── CX @ q1, q0
+        └── CX @ q0, q1
     """
     _name = 'SWAP'
 
@@ -65,9 +60,9 @@ class GateSWAP(mcg.Gate):
     _qregsizes = [2]
 
     def matrix(self):
-        return Matrix([
+        return Matrix(sp.simplify(Matrix([
             [1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]
-        ])
+        ])))
 
     def inverse(self):
         return self

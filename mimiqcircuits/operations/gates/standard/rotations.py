@@ -19,7 +19,8 @@ from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.generalized.gphase import GPhase
 from mimiqcircuits.operations.gates.standard.deprecated import GateU3
 from mimiqcircuits.matrices import umatrix, gphase
-from symengine import pi
+from symengine import pi, Matrix
+import sympy as sp
 
 
 class GateRX(mcg.Gate):
@@ -43,24 +44,13 @@ class GateRX(mcg.Gate):
         >>> GateRX(theta)
         RX(theta)
         >>> GateRX(theta).matrix()
-        [(1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta)), (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - (I*sin(theta) + cos(theta)))]
-        [(1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - (I*sin(theta) + cos(theta))), (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta))]
+        [cos((1/2)*theta), -I*sin((1/2)*theta)]
+        [-I*sin((1/2)*theta), cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateRX(theta), 0)
-        >>> GateRX(theta).power(2), GateRX(theta).inverse()
-        (RX(2*theta), RX(-theta))
-        >>> GateRX(theta).decompose()
-        1-qubit circuit with 2 instructions:
-        ├── U(theta, (-1/2)*pi, (1/2)*pi) @ q0
-        └── GPhase(lmbda=(-1/2)*theta) @ q0
-        1-qubit circuit with 2 instructions:
-        ├── U(theta, (-1/2)*pi, (1/2)*pi) @ q0
-        └── GPhase(lmbda=(-1/2)*theta) @ q0
-        >>> GateRX(theta).matrix()
-        [(1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta)), (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - (I*sin(theta) + cos(theta)))]
-        [(1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - (I*sin(theta) + cos(theta))), (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta))]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateRX(theta), 0)
+        >>> c
+        1-qubit circuit with 1 instructions:
+        └── RX(theta) @ q0
         >>> GateRX(theta).power(2), GateRX(theta).inverse()
         (RX(2*theta), RX(-theta))
         >>> GateRX(theta).decompose()
@@ -79,7 +69,7 @@ class GateRX(mcg.Gate):
         self.theta = theta
 
     def matrix(self):
-        return gphase(-self.theta / 2) * umatrix(self.theta, -pi / 2, pi / 2)
+        return Matrix(sp.simplify(gphase(-self.theta / 2) * umatrix(self.theta, -pi / 2, pi / 2)))
 
     def inverse(self):
         return GateRX(-self.theta)
@@ -115,24 +105,13 @@ class GateRY(mcg.Gate):
         >>> GateRY(theta)
         RY(theta)
         >>> GateRY(theta).matrix()
-        [(1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta)), -1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - (I*sin(theta) + cos(theta)))]
-        [1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - (I*sin(theta) + cos(theta))), (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta))]
+        [cos((1/2)*theta), -sin((1/2)*theta)]
+        [sin((1/2)*theta), cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateRY(theta), 0)
-        >>> GateRY(theta).power(2), GateRY(theta).inverse()
-        (RY(2*theta), RY(-theta))
-        >>> GateRY(theta).decompose()
-        1-qubit circuit with 2 instructions:
-        ├── U(theta, 0, 0) @ q0
-        └── GPhase(lmbda=(-1/2)*theta) @ q0
-        1-qubit circuit with 2 instructions:
-        ├── U(theta, 0, 0) @ q0
-        └── GPhase(lmbda=(-1/2)*theta) @ q0
-        >>> GateRY(theta).matrix()
-        [(1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta)), -1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - (I*sin(theta) + cos(theta)))]
-        [1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 - (I*sin(theta) + cos(theta))), (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta))]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateRY(theta), 0)
+        >>> c
+        1-qubit circuit with 1 instructions:
+        └── RY(theta) @ q0
         >>> GateRY(theta).power(2), GateRY(theta).inverse()
         (RY(2*theta), RY(-theta))
         >>> GateRY(theta).decompose()
@@ -151,7 +130,7 @@ class GateRY(mcg.Gate):
         self.theta = theta
 
     def matrix(self):
-        return gphase(-self.theta / 2) * umatrix(self.theta, 0, 0)
+        return Matrix(sp.simplify(gphase(-self.theta / 2) * umatrix(self.theta, 0, 0)))
 
     def inverse(self):
         return GateRY(-self.theta)
@@ -187,24 +166,13 @@ class GateRZ(mcg.Gate):
         >>> GateRZ(lmbda)
         RZ(lambda)
         >>> GateRZ(lmbda).matrix()
-        [-I*sin((1/2)*lambda) + cos((1/2)*lambda), 0]
-        [0, (-I*sin((1/2)*lambda) + cos((1/2)*lambda))*(I*sin(lambda) + cos(lambda))]
+        [exp(-1/2*I*lambda), 0]
+        [0, exp(1/2*I*lambda)]
         <BLANKLINE>
         >>> c = Circuit().push(GateRZ(lmbda), 0)
-        >>> GateRZ(lmbda).power(2), GateRZ(lmbda).inverse()
-        (RZ(2*lambda), RZ(-lambda))
-        >>> GateRZ(lmbda).decompose()
-        1-qubit circuit with 2 instructions:
-        ├── U(0, 0, lambda) @ q0
-        └── GPhase(lmbda=(-1/2)*lambda) @ q0
-        1-qubit circuit with 2 instructions:
-        ├── U(0, 0, lambda) @ q0
-        └── GPhase(lmbda=(-1/2)*lambda) @ q0
-        >>> GateRZ(lmbda).matrix()
-        [-I*sin((1/2)*lambda) + cos((1/2)*lambda), 0]
-        [0, (-I*sin((1/2)*lambda) + cos((1/2)*lambda))*(I*sin(lambda) + cos(lambda))]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateRZ(lmbda), 0)
+        >>> c
+        1-qubit circuit with 1 instructions:
+        └── RZ(lambda) @ q0
         >>> GateRZ(lmbda).power(2), GateRZ(lmbda).inverse()
         (RZ(2*lambda), RZ(-lambda))
         >>> GateRZ(lmbda).decompose()
@@ -223,7 +191,7 @@ class GateRZ(mcg.Gate):
         self.lmbda = lmbda
 
     def matrix(self):
-        return gphase(-self.lmbda / 2) * umatrix(0, 0, self.lmbda)
+        return Matrix(sp.simplify(gphase(-self.lmbda / 2) * umatrix(0, 0, self.lmbda)))
 
     def inverse(self):
         return GateRZ(-self.lmbda)
@@ -260,20 +228,8 @@ class GateR(mcg.Gate):
         >>> GateR(theta, phi)
         R(theta, phi)
         >>> GateR(theta, phi).matrix()
-        [(1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta)), -1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(sin(phi) + I*cos(phi))*(1 - (I*sin(theta) + cos(theta)))]
-        [1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(sin(phi) - I*cos(phi))*(1 - (I*sin(theta) + cos(theta))), (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta))]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateR(theta, phi), 0)
-        >>> GateR(theta, phi).power(2), GateR(theta, phi).inverse()
-        (R(2*theta, phi), R(-theta, phi))
-        >>> GateR(theta, phi).decompose()
-        1-qubit circuit with 1 instructions:
-        └── U3(theta, phi + (-1/2)*pi, -phi + (1/2)*pi) @ q0
-        1-qubit circuit with 1 instructions:
-        └── U3(theta, phi + (-1/2)*pi, -phi + (1/2)*pi) @ q0
-        >>> GateR(theta, phi).matrix()
-        [(1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta)), -1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(sin(phi) + I*cos(phi))*(1 - (I*sin(theta) + cos(theta)))]
-        [1/2*I*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(sin(phi) - I*cos(phi))*(1 - (I*sin(theta) + cos(theta))), (1/2)*(-I*sin((1/2)*theta) + cos((1/2)*theta))*(1 + I*sin(theta) + cos(theta))]
+        [cos((1/2)*theta), -(sin(phi) + I*cos(phi))*sin((1/2)*theta)]
+        [(sin(phi) - I*cos(phi))*sin((1/2)*theta), cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateR(theta, phi), 0)
         >>> GateR(theta, phi).power(2), GateR(theta, phi).inverse()
@@ -294,7 +250,7 @@ class GateR(mcg.Gate):
         self.phi = phi
 
     def matrix(self):
-        return GateU3(self.theta, self.phi - pi / 2, -self.phi+pi / 2).matrix()
+        return Matrix(sp.simplify(GateU3(self.theta, self.phi - pi / 2, -self.phi+pi / 2).matrix()))
 
     def inverse(self):
         return GateR(-self.theta, self.phi)
