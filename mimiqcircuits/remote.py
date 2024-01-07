@@ -19,6 +19,7 @@ import hashlib
 import tempfile
 import json
 import os
+import shutil
 from mimiqcircuits.circuit import Circuit
 from mimiqcircuits.qcsresults import QCSResults
 from mimiqcircuits.__version__ import __version__
@@ -170,7 +171,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                         f"File {circuit} not found.")
 
                 circuit_filename = os.path.join(tmpdir, CIRCUITQASM_FILE)
-                os.path.copy(circuit, circuit_filename)
+                shutil.copyfile(circuit, circuit_filename)
             else:
                 raise TypeError(
                     "circuit must be a Circuit object or a OPENQASM file")
