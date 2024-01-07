@@ -31,7 +31,7 @@ optional = true
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "^7.2.6"
-furo = "^2023.7.26"
+pydata-sphinx-theme = "^0.15.1"
 jupyter-sphinx = "^0.4.0"
 sphinx-copybutton = "^0.5.2"
 sphinx-inline-tabs = "^2023.4.21"
