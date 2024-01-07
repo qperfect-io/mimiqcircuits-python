@@ -18,10 +18,7 @@ from mimiqcircuits.proto import circuit_pb
 import mimiqcircuits as mc
 import symengine as se
 from fractions import Fraction
-import numpy as np
 import inspect
-import symengine as se
-import sympy as sp
 
 GATEENUMMAP = {
     "GateU": circuit_pb.GateType.GateU,
@@ -110,7 +107,10 @@ def toproto_param(param):
     elif isinstance(param, se.Integer):
         arg.argvalue_value.integer_value = param.p
 
-    elif isinstance(param, se.RealDouble):  # Handle RealDouble
+    elif isinstance(param, (se.Rational, se.Float)):
+        arg.argvalue_value.double_value = param
+
+    elif isinstance(param, se.RealDouble):
         arg.argvalue_value.double_value = param.real
 
     elif isinstance(param, se.Symbol):
@@ -204,7 +204,10 @@ def toproto_operation(operation):
     if isinstance(operation, mc.GateCustom):
         return toproto_custom(operation)
 
-    if isinstance(operation, (mc.QFT, mc.GPhase, mc.PhaseGradient)):
+    if isinstance(operation, mc.GateCall):
+        return toproto_gatecall(operation)
+
+    if isinstance(operation, (mc.QFT, mc.GPhase, mc.PhaseGradient, mc.Diffusion, mc.PolynomialOracle)):
         return toproto_generalized(operation)
 
     elif isinstance(operation, mc.Gate):
@@ -235,8 +238,6 @@ def toproto_operation(operation):
     elif isinstance(operation, mc.IfStatement):
         return toproto_ifstatement(operation)
 
-    elif isinstance(operation, (mc.QFT, mc.PhaseGradient, mc.GPhase)):
-        return toproto_generalized(operation)
     else:
         raise NotImplementedError("Operation not implemented")
 
@@ -275,6 +276,9 @@ def fromproto_operation(operation_proto):
 
     elif operation_proto.HasField("generalized"):
         return fromproto_generalized(operation_proto.generalized)
+
+    elif operation_proto.HasField("gatecall"):
+        return fromproto_gatecall(operation_proto.gatecall)
 
 
 def toproto_measure(operation):
@@ -392,16 +396,23 @@ def fromproto_inverse(inverse_proto):
     operation = fromproto_operation(inverse_proto.operation)
     return mc.Inverse(operation)
 
+
 def toproto_complex(complex_matrix):
     complex_args = []
-    new_matrix = [complex_matrix[i, j] for i in range(complex_matrix.rows) for j in range(complex_matrix.cols)]
-    print (new_matrix)
+    new_matrix = [complex_matrix[i, j] for i in range(
+        complex_matrix.rows) for j in range(complex_matrix.cols)]
+
     for val in new_matrix:
-        arg = toproto_param(val)
+        real_arg = circuit_pb.Arg(
+            argvalue_value=circuit_pb.ArgValue(double_value=val.real))
+        imag_arg = circuit_pb.Arg(
+            argvalue_value=circuit_pb.ArgValue(double_value=val.imag))
+
         complex_arg = circuit_pb.ComplexArg()
-        complex_arg.real.CopyFrom(arg)
-        complex_arg.imag.CopyFrom(arg)
-        complex_args.nd(complex_arg)
+        complex_arg.real.CopyFrom(real_arg)
+        complex_arg.imag.CopyFrom(imag_arg)
+
+        complex_args.append(complex_arg)
 
     return complex_args
 
@@ -410,12 +421,13 @@ def toproto_custom(custom):
     complex_args = toproto_complex(custom.matrix)
     return circuit_pb.Operation(custom=circuit_pb.GateCustom(matrix=complex_args, nqubits=custom.num_qubits))
 
+
 def fromproto_complex(complex_args):
     complex_matrix = []
     for complex_arg in complex_args:
-        real_val = fromproto_param(complex_arg.real)
-        imag_val = fromproto_param(complex_arg.imag)
-        complex_matrix.append((real_val))
+        real_val = complex_arg.real.argvalue_value.double_value
+        imag_val = complex_arg.imag.argvalue_value.double_value
+        complex_matrix.append(complex(real_val, imag_val))
 
     return se.Matrix(complex_matrix)
 
@@ -427,7 +439,6 @@ def fromproto_custom(custom_proto):
     return mc.GateCustom(complex_matrix)
 
 
-
 def toproto_generalized(generalized_gate):
     args = []
     for param in generalized_gate.getparams():
@@ -435,7 +446,7 @@ def toproto_generalized(generalized_gate):
         args.append(arg_proto)
 
     generalized_proto = circuit_pb.Generalized(
-        name=generalized_gate._name, args=args, regsizes=generalized_gate._qregsizes)
+        name=generalized_gate._name, args=args, regsizes=generalized_gate._params)
     return circuit_pb.Operation(generalized=generalized_proto)
 
 
@@ -444,6 +455,8 @@ def fromproto_generalized(generalized_proto):
         "QFT": mc.QFT,
         "PhaseGradient": mc.PhaseGradient,
         "GPhase": mc.GPhase,
+        "Diffusion": mc.Diffusion,
+        "PolynomialOracle": mc.PolynomialOracle,
     }
 
     name = generalized_proto.name
@@ -453,6 +466,32 @@ def fromproto_generalized(generalized_proto):
         return generalized_constructors[name](*generalized_proto.regsizes, *args)
     else:
         raise NotImplementedError(f"Unrecognized generalized operation {name}")
+
+
+def toproto_gatedecl(decl):
+    instructions_proto = list(map(toproto_instruction, decl.instructions))
+    arguments = [circuit_pb.Symbol(value=arg) for arg in decl.arguments]
+    return circuit_pb.GateDecl(name=decl.name, args=arguments, instructions=instructions_proto)
+
+
+def fromproto_gatedecl(gatedecl_proto):
+    instructions = [fromproto_instruction(inst)
+                    for inst in gatedecl_proto.instructions]
+    arguments = [str(symbol) for symbol in gatedecl_proto.args]
+    return mc.GateDecl(name=gatedecl_proto.name, arguments=arguments, instructions=instructions)
+
+
+def toproto_gatecall(gatecall):
+    decl_proto = toproto_gatedecl(gatecall._decl)
+    args_proto = [toproto_param(arg) for arg in gatecall._args]
+    return circuit_pb.Operation(
+        gatecall=circuit_pb.GateCall(decl=decl_proto, args=args_proto))
+
+
+def fromproto_gatecall(gatecall_proto):
+    decl = fromproto_gatedecl(gatecall_proto.decl)
+    args = [fromproto_param(arg) for arg in gatecall_proto.args]
+    return mc.GateCall(decl, args)
 
 
 exported_functions = {

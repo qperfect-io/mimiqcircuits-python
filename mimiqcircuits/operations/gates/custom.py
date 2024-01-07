@@ -16,10 +16,9 @@
 
 import mimiqcircuits.operations.gates.gate as mcg
 from numpy import ndarray
-from numpy.linalg import inv
-import  symengine as se
-
+import symengine as se
 import sympy as sp
+from math import log
 
 
 class GateCustom(mcg.Gate):
@@ -29,42 +28,47 @@ Examples:
     >>> from mimiqcircuits import Circuit, GateCustom
     >>> import numpy as np
     >>> matrix = np.array([[1, 0, 0, 0],
-    ...                    [0, 1, 1j, 0],
-    ...                    [0, 0, 0, 1],
-    ...                    [0, 0, 1, 0]])
+    ...                    [0, 1, 0, 0],
+    ...                    [0, 0, 0, -1j],
+    ...                    [0, 0, 1j, 0]])
     >>> c = Circuit()
     >>> c.push(GateCustom(matrix), 0, 1)
     2-qubit circuit with 1 instructions:
-    └── Custom([[1.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I], [0.0 + 0.0*I, 1.0 + 0.0*I, 0.0 + 1.0*I, 0.0 + 0.0*I], [0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 1.0 + 0.0*I], [0.0 + 0.0*I, 0.0 + 0.0*I, 1.0 + 0.0*I, 0.0 + 0.0*I]]) @ q0, q1
+    └── Custom([[1.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I], [0.0 + 0.0*I, 1.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I], [0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, -0.0 - 1.0*I], [0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 1.0*I, 0.0 + 0.0*I]]) @ q[0,1]
+    <BLANKLINE>
 """
     _name = 'Custom'
     _num_qubits = None
     _qregsizes = None
 
-
     def __init__(self, matrix):
         super().__init__()
-        
+
         if isinstance(matrix, ndarray):
             mat = se.Matrix(matrix.tolist())
         elif isinstance(matrix, se.Matrix):
             mat = matrix
         else:
-            raise TypeError(f"{type(matrix)} not supported in GateCustom, use symengine.Matrix or numpy.ndarray.")
-        
+            raise TypeError(
+                f"{type(matrix)} not supported in GateCustom, use symengine.Matrix or numpy.ndarray.")
+
         if mat.rows != mat.cols:
             raise ValueError("Matrix is not square")
-        
-        num_qubits = int(se.log(mat.rows, 2))
 
-        
-        self._matrix = mat
+        tolerance = 1e-15
+        if not all(abs((mat.conjugate().transpose() * mat)[i, j] - (1 if i == j else 0)) < tolerance
+                   for i in range(mat.rows) for j in range(mat.cols)):
+            raise ValueError("Matrix is not unitary")
+
+        num_qubits = log(mat.rows, 2)
+
+        self.matrix = mat
         self._num_qubits = num_qubits
         self._qregsizes = [num_qubits,]
 
     @property
-    def matrix(self):
-        return self._matrix
+    def _matrix(self):
+        return self.matrix
 
     @property
     def num_qubits(self):
@@ -72,15 +76,16 @@ Examples:
 
     def inverse(self):
         return GateCustom(self.matrix.inv())
-    
+
     def __str__(self):
         return f'{self.name}({self.matrix.tolist()})'
 
     def evaluate(self, d):
         sympy_matrix = sp.Matrix(self.matrix)
-        matrix = sympy_matrix.applyfunc(lambda entry: entry.subs(d) if not isinstance(entry, (float, int)) else entry)
+        matrix = sympy_matrix.applyfunc(lambda entry: entry.subs(
+            d) if not isinstance(entry, (float, int)) else entry)
         evaluated_matrix = se.Matrix(matrix.tolist())
         return GateCustom(evaluated_matrix)
 
-        
+
 __all__ = ['Custom']

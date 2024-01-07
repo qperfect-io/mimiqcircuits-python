@@ -17,53 +17,58 @@
 import mimiqcircuits as mc
 from mimiqcircuits.operations.utils import power_nhilpotent
 from mimiqcircuits.matrices import gphasepi, umatrixpi
-from symengine import pi, Matrix
-import sympy as sp
+from mimiqcircuits.operations.utils import control_one_defined
+from symengine import pi
 
 
 class GateH(mc.Gate):
-    """Single qubit Hadamard gate.
+    r"""Single qubit Hadamard gate.
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{H} = \\frac{1}{\\sqrt{2}} \\begin{pmatrix}
-            1 & 1 \\\\
+        \operatorname{H} = \frac{1}{\sqrt{2}} \begin{pmatrix}
+            1 & 1 \\
             1 & -1
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateH()
         H
         >>> GateH().matrix()
-        [(1/2)*sqrt(2), (1/2)*sqrt(2)]
-        [(1/2)*sqrt(2), (-1/2)*sqrt(2)]
+        [0.707106781186548, 0.707106781186548]
+        [0.707106781186548, -0.707106781186548]
         <BLANKLINE>
         >>> c = Circuit().push(GateH(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── H @ q0
+        └── H @ q[0]
+        <BLANKLINE>
         >>> GateH().power(2), GateH().inverse()
         (ID, H)
         >>> GateH().decompose()
         1-qubit circuit with 2 instructions:
-        ├── U((1/2)*pi, 0, pi) @ q0
-        └── GPhase(lmbda=(-1/4)*pi) @ q0
+        ├── U((1/2)*pi, 0, pi) @ q[0]
+        └── GPhase((-1/4)*pi) @ q[0]
+        <BLANKLINE>
     """
     _name = 'H'
 
     _num_qubits = 1
-    _qragsizes = [1]
+    _qregsizes = [1]
 
     def inverse(self):
         return self
 
-    def power(self, p):
+    def _power(self, p):
         return power_nhilpotent(self, p)
 
-    def matrix(self):
-        return Matrix(sp.simplify(gphasepi(-1/4) * umatrixpi(1/2, 0, 1)))
+    def _control(self, n):
+        return control_one_defined(self, n)
+
+    def _matrix(self):
+        return gphasepi(-1/4) * umatrixpi(1/2, 0, 1)
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]

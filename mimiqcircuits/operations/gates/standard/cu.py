@@ -23,55 +23,56 @@ from symengine import pi
 
 
 class GateCU(mctrl.Control):
-    """Two qubit generic unitary gate.
-
-    equivalent to the [qiskit CU-Gate](https://qiskit.org/documentation/stubs/qiskit.circuit.library.CUGate.html)
+    r"""Two qubit generic unitary gate.
 
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{CU}(\\theta, \\phi, \\lambda, \\gamma) = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & e^{i\\gamma}\\cos\\frac{\\theta}{2} & -e^{i(\\gamma+\\lambda)}\\sin\\frac{\\theta}{2} \\\\
-            0 & 0 & e^{i(\\gamma+\\phi)}\\sin\\frac{\\theta}{2} & e^{i(\\gamma+\\phi+\\lambda)}\\cos\\frac{\\theta}{2}
-        \\end{pmatrix}
+        \operatorname{CU}(\theta, \phi, \lambda, \gamma) = \frac{1}{2} e^{i\gamma} \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 1 + e^{i\theta} & -i e^{i\lambda}(1 - e^{i\theta}) \\
+            0 & 0 & i e^{i\phi}(1 - e^{i\theta}) & e^{i(\phi + \lambda)}(1 + e^{i\theta})\\
+        \end{pmatrix}
 
     Parameters:
         theta (float): Euler angle 1 in radians.
         phi (float): Euler angle 2 in radians.
-        lambda (float): Euler angle 3 in radians.
+        lmbda (float): Euler angle 3 in radians.
         gamma (float): Global phase of the CU gate.
 
     Examples:
+
         >>> from mimiqcircuits import *
         >>> from symengine import *
         >>> theta, phi, lmbda, gamma = symbols('theta phi lambda gamma')
         >>> GateCU(theta, phi, lmbda, gamma), GateCU(theta, phi, lmbda, gamma).num_controls, GateCU(theta, phi, lmbda, gamma).num_targets, GateCU(theta, phi, lmbda, gamma).num_qubits
         (CUPhase(theta, phi, lambda, gamma), 1, 1, 2)
         >>> GateCU(theta, phi, lmbda, gamma).matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, (1/2)*exp(I*gamma)*(1 + exp(I*theta)), 1/2*I*exp(I*(gamma + lambda))*(-1 + exp(I*theta))]
-        [0, 0, 1/2*I*exp(I*(gamma + phi))*(1 - exp(I*theta)), (1/2)*exp(I*(gamma + lambda + phi))*(1 + exp(I*theta))]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
+        [0, 0, 0.5*exp(I*gamma)*(1 + exp(I*theta)), (0.0 + 0.5*I)*exp(I*(gamma + lambda))*(-1 + exp(I*theta))]
+        [0, 0, (0.0 + 0.5*I)*exp(I*(gamma + phi))*(1 - exp(I*theta)), 0.5*exp(I*(gamma + lambda + phi))*(1 + exp(I*theta))]
         <BLANKLINE>
         >>> c = Circuit().push(GateCU(theta, phi, lmbda, gamma), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CUPhase(theta, phi, lambda, gamma) @ q0, q1
+        └── CUPhase(theta, phi, lambda, gamma) @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCU(theta, phi, lmbda, gamma).power(2), GateCU(theta, phi, lmbda, gamma).inverse()
         (C(UPhase(theta, phi, lambda, gamma)^(2)), CUPhase(-theta, -lambda, -phi, -gamma))
         >>> GateCU(theta, phi, lmbda, gamma).decompose()
         2-qubit circuit with 8 instructions:
-        ├── CGPhase(lmbda=theta) @ q0, q1
-        ├── U((1/2)*theta, 0, lambda) @ q1
-        ├── CX @ q0, q1
-        ├── U((1/2)*theta, (-1/2)*(lambda + phi - 2*pi), pi) @ q1
-        ├── CX @ q0, q1
-        ├── P(-(lambda - phi)) @ q1
-        ├── P((1/2)*(lambda + phi + theta)) @ q0
-        └── GPhase(lmbda=(-1/2)*theta) @ q0, q1
+        ├── CGPhase(theta) @ q[0], q[1]
+        ├── U((1/2)*theta, 0, lambda) @ q[1]
+        ├── CX @ q[0], q[1]
+        ├── U((1/2)*theta, (-1/2)*(lambda + phi - 2*pi), pi) @ q[1]
+        ├── CX @ q[0], q[1]
+        ├── P(-(lambda - phi)) @ q[1]
+        ├── P((1/2)*(lambda + phi + theta)) @ q[0]
+        └── GPhase((-1/2)*theta) @ q[0,1]
+        <BLANKLINE>
     """
 
     def __init__(self, *args, **kwargs):

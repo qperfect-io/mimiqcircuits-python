@@ -16,20 +16,19 @@
 
 import mimiqcircuits as mc
 from mimiqcircuits.matrices import pmatrix
-from symengine import Matrix
-import sympy as sp
+from mimiqcircuits.operations.utils import control_one_defined
 
 
 class GateP(mc.Gate):
-    """Single qubit Phase gate.
+    r"""Single qubit Phase gate.
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{P}(\\lambda) = \\begin{pmatrix}
-            1 & 0 \\\\
-            0 & e^{i\\lambda}
-        \\end{pmatrix}
+        \operatorname{P}(\lambda) = \begin{pmatrix}
+            1 & 0 \\
+            0 & e^{i\lambda}
+        \end{pmatrix}
 
     Parameters:
         lambda: Phase angle
@@ -41,37 +40,42 @@ class GateP(mc.Gate):
         >>> GateP(lmbda)
         P(lambda)
         >>> GateP(lmbda).matrix()
-        [1, 0]
+        [1.0, 0]
         [0, exp(I*lambda)]
         <BLANKLINE>
         >>> c = Circuit().push(GateP(lmbda), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── P(lambda) @ q0
+        └── P(lambda) @ q[0]
+        <BLANKLINE>
         >>> GateP(lmbda).power(2), GateP(lmbda).inverse()
         (P(2*lambda), P(-lambda))
         >>> GateP(lmbda).decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, lambda) @ q0
+        └── U(0, 0, lambda) @ q[0]
+        <BLANKLINE>
     """
     _name = 'P'
 
     _num_qubits = 1
-    _qragsizes = [1]
+    _qregsizes = [1]
 
     _parnames = ('lmbda',)
 
     def __init__(self, lmbda):
         self.lmbda = lmbda
 
-    def matrix(self):
-        return Matrix(sp.simplify((pmatrix(self.lmbda))))
+    def _matrix(self):
+        return (pmatrix(self.lmbda))
 
     def inverse(self):
         return GateP(-self.lmbda)
 
-    def power(self, p):
+    def _power(self, p):
         return GateP(self.lmbda * p)
+
+    def _control(self, n):
+        return control_one_defined(n, self, mc.GateCP(self.lmbda), mc.GateCCP(self.lmbda))
 
     def _decompose(self, circ, qubits, bits):
         q = qubits

@@ -31,18 +31,21 @@ class Reset(Operation):
         >>> c= Circuit()
         >>> c.push(Reset(), 0)
         1-qubit circuit with 1 instructions:
-        └── Reset @ q0
+        └── Reset @ q[0]
+        <BLANKLINE>
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Reset(),(0,1,2))
         3-qubit circuit with 3 instructions:
-        ├── Reset @ q0
-        ├── Reset @ q1
-        └── Reset @ q2
+        ├── Reset @ q[0]
+        ├── Reset @ q[1]
+        └── Reset @ q[2]
+        <BLANKLINE>
     """
     _name = 'Reset'
     _num_qubits = 1
     _num_bits = 0
+    _qregsizes = [1]
 
     def inverse(self):
         raise TypeError('Reset is not inversible')

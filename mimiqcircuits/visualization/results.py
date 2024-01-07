@@ -58,7 +58,8 @@ def _plothist(outcomes, counts, title, nobitstrings=False):
             plt.text(i, bottom, outcome.to01(), ha='center',
                      rotation=90, color="black", size=6, family="monospace")
 
-    plt.xticks(rotation=60, fontsize=10)
+    plt.xticks(rotation=90, fontsize=8)
+    plt.yticks(rotation=0, fontsize=8)
     plt.xlim(-1, nbars)
     plt.ylabel(f"counts ({nsamples} samples)")
     plt.title(title)
@@ -92,7 +93,10 @@ def plothistogram(results, num_outcomes=15, mimiqstyle=True, nobitstrings=False)
         return _plothist(outcomes, counts, title, nobitstrings=nobitstrings)
 
     with plt.style.context("mimiqcircuits.visualization.mimiq"):
-        return _plothist(outcomes, counts, title,)
+        fig = _plothist(outcomes, counts, title)
+
+    plt.show()
+    return fig
 
 
 __all__ = ["plothistogram"]

@@ -16,49 +16,52 @@
 
 import mimiqcircuits as mc
 from mimiqcircuits.matrices import umatrixpi
-import symengine as se
-import sympy as sp
 
 
 class GateID(mc.Gate):
-    """Single qubit Identity gate.
+    r"""Single qubit Identity gate.
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{ID} = \\begin{pmatrix}
-            1 & 0 \\\\
+        \operatorname{ID} = \begin{pmatrix}
+            1 & 0 \\
             0 & 1
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateID()
         ID
         >>> GateID().matrix()
-        [1, 0]
-        [0, 1]
+        [1.0, 0]
+        [0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateID(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── ID @ q0
+        └── ID @ q[0]
+        <BLANKLINE>
         >>> GateID().power(2), GateID().inverse()
-        (ID^(2), ID)
+        (ID, ID)
         >>> GateID().decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, 0) @ q0
+        └── U(0, 0, 0) @ q[0]
+        <BLANKLINE>
     """
     _name = 'ID'
 
     _num_qubits = 1
-    _qragsizes = [1]
+    _qregsizes = [1]
 
     def inverse(self):
         return self
 
-    def matrix(self):
-        return se.Matrix(sp.simplify(umatrixpi(0, 0, 0)))
+    def _power(self, n):
+        return self
+
+    def _matrix(self):
+        return umatrixpi(0, 0, 0)
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
@@ -67,8 +70,7 @@ class GateID(mc.Gate):
 
 
 class GateID2(mc.Control):
-
-    """Two-qubit identity gate
+    r"""Two-qubit identity gate
 
     See also :func:`GateID` and :func:`Parallel`
 
@@ -77,32 +79,34 @@ class GateID2(mc.Control):
     **Matrix representation:**
 
     .. math::
-        \\operatorname{ID2} = \\begin{pmatrix}
-            1 & 0 & 0 & 0\\\\
-            0 & 1 & 0 & 0\\\\
-            0 & 0 & 1 & 0\\\\
-            0 & 0 & 0 & 1\\\\
-        \\end{pmatrix}
+        \operatorname{ID2} = \begin{pmatrix}
+            1 & 0 & 0 & 0\\
+            0 & 1 & 0 & 0\\
+            0 & 0 & 1 & 0\\
+            0 & 0 & 0 & 1\\
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateID2()
         CID
         >>> GateID2().matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, 1, 0]
-        [0, 0, 0, 1]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
+        [0, 0, 1.0, 0]
+        [0, 0, 0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateID2(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CID @ q0, q1
+        └── CID @ q[0], q[1]
+        <BLANKLINE>
         >>> GateID2().power(2), GateID2().inverse()
-        (C(ID^(2)), CID)
+        (CID, CID)
         >>> GateID2().decompose()
         2-qubit circuit with 1 instructions:
-        └── CID @ q0, q1
+        └── CID @ q[0], q[1]
+        <BLANKLINE>
     """
     _name = 'ID2'
 

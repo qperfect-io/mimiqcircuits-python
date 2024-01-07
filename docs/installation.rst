@@ -1,6 +1,6 @@
-###############
-Getting started
-###############
+############
+Installation
+############
 
 .. _installation:
 
@@ -9,7 +9,7 @@ Installation
 
 Let's get started using MIMIQ Circuits Python!
 
-MIMIQ Circuits is compatible with Python 3.8 or later versions. To get started,
+MIMIQ Circuits is compatible with Python 3.9 or later versions. To get started,
 ensure that you have Python installed on your local system. You can download
 Python from `Python Download <https://wiki.python.org/moin/BeginnersGuide/Download>`__.
 
@@ -85,7 +85,7 @@ it is recommended to install the extra support for visualization:
     pip3 install "mimiqcircuits[visualization] @ git+https://github.com/qperfect-io/mimiqcircuits-python.git"
 
 
-.. warning::
+.. warning:: Jupyter Kernel
 
     If you are using Jupyter, you need to install the Jupyter kernel for your
     virtual environment. To do this, run the following command:

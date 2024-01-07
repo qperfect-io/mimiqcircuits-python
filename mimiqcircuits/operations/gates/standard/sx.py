@@ -14,20 +14,21 @@
 # limitations under the License.
 #
 
+from mimiqcircuits.operations.utils import control_one_defined
 import mimiqcircuits as mc
 from symengine import pi
 
 
 class GateSX(mc.Power):
-    """Single qubit :math:`\\sqrt{X}` gate.
+    r"""Single qubit :math:`\sqrt{X}` gate.
 
     **Matrix representation:**
 
     .. math::
-        \\sqrt{\\operatorname{X}} = \\frac{1}{2} \\begin{pmatrix}
-            1+i & 1-i \\\\
-            1-i & 1+i
-        \\end{pmatrix}
+        \sqrt{\operatorname{X}} = \frac{1}{2} \begin{pmatrix}
+            1+i & 1-i \\
+            1-i & 1+i\\
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -40,15 +41,17 @@ class GateSX(mc.Power):
         >>> c = Circuit().push(GateSX(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── X^(1/2) @ q0
+        └── X^(1/2) @ q[0]
+        <BLANKLINE>
         >>> GateSX().power(2), GateSX().inverse()
-        (X^(1.0), (X^(1/2))†)
+        (X, (X^(1/2))†)
         >>> GateSX().decompose()
         1-qubit circuit with 4 instructions:
-        ├── S† @ q0
-        ├── H @ q0
-        ├── S† @ q0
-        └── GPhase(lmbda=(1/4)*pi) @ q0
+        ├── S† @ q[0]
+        ├── H @ q[0]
+        ├── S† @ q[0]
+        └── GPhase((1/4)*pi) @ q[0]
+        <BLANKLINE>
     """
 
     def __init__(self):
@@ -56,6 +59,22 @@ class GateSX(mc.Power):
 
     def inverse(self):
         return GateSXDG()
+
+    def _control(self, n):
+        return control_one_defined(n, self, mc.GateCSX())
+
+    def _power(self, p):
+        pmod = p % 2
+
+        if pmod == 0:
+            return mc.GateX()
+        else:
+            if p in {3, 7, 11}:
+                return mc.GateSXDG()
+            elif p in {5, 9, 13}:
+                return self
+            else:
+                return mc.Power(self, p)
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
@@ -67,15 +86,15 @@ class GateSX(mc.Power):
 
 
 class GateSXDG(mc.Inverse):
-    """Single qubit :math:`\\sqrt{X}^\\dagger` gate (conjugate transpose of the :math:`\\sqrt{X}` gate).
+    r"""Single qubit :math:`\sqrt{X}^\dagger` gate (conjugate transpose of the :math:`\sqrt{X}` gate).
 
     **Matrix representation:**
 
     .. math::
-        \\sqrt{\\operatorname{X}}^\\dagger = \\frac{1}{2} \\begin{pmatrix}
-            1-i & 1+i \\\\
-            1+i & 1-i
-        \\end{pmatrix}
+        \sqrt{\operatorname{X}}^\dagger = \frac{1}{2} \begin{pmatrix}
+            1-i & 1+i \\
+            1+i & 1-i\\
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -88,15 +107,17 @@ class GateSXDG(mc.Inverse):
         >>> c = Circuit().push(GateSXDG(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── (X^(1/2))† @ q0
+        └── (X^(1/2))† @ q[0]
+        <BLANKLINE>
         >>> GateSXDG().power(2), GateSXDG().inverse()
         (((X^(1/2))†)^(2), X^(1/2))
         >>> GateSXDG().decompose()
         1-qubit circuit with 4 instructions:
-        ├── GPhase(lmbda=(-1/4)*pi) @ q0
-        ├── S @ q0
-        ├── H @ q0
-        └── S @ q0
+        ├── GPhase((-1/4)*pi) @ q[0]
+        ├── S @ q[0]
+        ├── H @ q[0]
+        └── S @ q[0]
+        <BLANKLINE>
     """
 
     def __init__(self):
@@ -104,6 +125,9 @@ class GateSXDG(mc.Inverse):
 
     def inverse(self):
         return GateSX()
+
+    def _control(self, n):
+        return control_one_defined(n, self, mc.GateCSXDG())
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]

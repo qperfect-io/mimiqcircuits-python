@@ -83,7 +83,19 @@ from mimiqcircuits.remote import MimiqConnection
 
 import mimiqcircuits.matrices as matrices
 
-# Add any other imports or definitions you want to expose here
+from mimiqcircuits.gatedecl import GateCall, GateDecl, gatedecl
+
+from mimiqcircuits.lazy import control, parallel, inverse, power, LazyArg, LazyExpr
+
+from mimiqcircuits.operations.gates.generalized.diffusion import Diffusion
+
+from mimiqcircuits.operations.gates.generalized.polynomialoracle import PolynomialOracle
+
+from mimiqcircuits.visualization.results import plothistogram
+from mimiqcircuits.qcsresults import QCSResults, save_results, load_results
+
+
+# Export specific classes, and functions.
 
 __all__ = [
     'Circuit', 'BitString', 'Operation', 'Control', 'Parallel', 'Inverse',
@@ -96,5 +108,8 @@ __all__ = [
     'GateCP', 'GateCU', 'GateCRX', 'GateCRY', 'GateCRZ', 'GateRXX', 'GateRYY',
     'GateRZZ', 'GateRZX', 'GateXXplusYY', 'GateXXminusYY', 'GateCCX',
     'GateC3X', 'GateCCP', 'GateCSWAP', 'GPhase', 'QFT', 'PhaseGradient',
-    'Instruction', 'GateP', 'MimiqConnection', 'matrices'
+    'Instruction', 'GateP', 'MimiqConnection', 'matrices', 'GateCall',
+    'GateDecl', 'gatedecl', 'control', 'parallel', 'inverse', 'power',
+    'LazyArg', 'LazyExpr', 'Diffusion', 'PolynomialOracle', 'plothistogram',
+    'QCSResults', 'save_results', 'load_results'
 ]

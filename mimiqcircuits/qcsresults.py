@@ -7,7 +7,7 @@ class QCSResults:
     """
     Represents the results of quantum computations obtained from quantum cloud services (QCS).
 
-    Attributes:
+    Args:
         simulator (str): The name of the quantum simulator.
         version (str): The version of the quantum simulator.
         fidelities (list): List of fidelity estimates from different executions.
@@ -17,13 +17,6 @@ class QCSResults:
         amplitudes (dict): Dictionary of statevector amplitudes for different quantum states.
         timings (dict): Dictionary of timing information for different phases of the computation.
 
-    Methods:
-        histogram(): Calculates and returns a histogram of classical states and their occurrences.
-        saveproto(filename): Saves the QCSResults object to a Protocol Buffers file.
-        loadproto(filename): Loads a QCSResults object from a Protocol Buffers file.
-
-        Note:
-            The :func:`loadproto` method is a static method and should be called on the class, not on an instance of the class.
 """
 
     def __init__(self, simulator=None, version=None, fidelities=None, avggateerrors=None, cstates=None, zstates=None, amplitudes=None, timings=None):
@@ -119,15 +112,34 @@ class QCSResults:
         return hist
 
     def saveproto(self, filename):
+        """Save QCSResults object to a Protocol Buffers file.
+        """
         with open(filename, "wb") as f:
             return f.write(toproto_qcsr(self).SerializeToString())
 
     @staticmethod
     def loadproto(filename):
+        """Load QCSResults object from a Protocol Buffers file.
+
+        The :func:`loadproto` method is a static method and should be called on the class,
+        not on an instance of the class.
+        """
         qcs_results_proto = qcsresults_pb.QCSResults()
         with open(filename, "rb") as f:
             qcs_results_proto.ParseFromString(f.read())
         return fromproto_qcsr(qcs_results_proto)
+
+
+def save_results(filename, results):
+    """Saves the results to a ProtoBuf file.
+    """
+    return results.saveproto(filename)
+
+
+def load_results(filename):
+    """Loads QCSResults from a ProtoBuf file.
+    """
+    return QCSResults.loadproto(filename)
 
 
 __all__ = ['QCSResults']

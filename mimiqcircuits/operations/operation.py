@@ -30,7 +30,7 @@ class Operation(ABC):
     _qregsizes = None
 
     _num_bits = None
-    _num_cregs = 1
+    _num_cregs = 0
     _cregsizes = None
 
     _parnames = ()
@@ -131,7 +131,7 @@ class Operation(ABC):
         return False
 
     def _decompose(self, circ, qubits, bits):
-        circ.push(self, *qubits, *bits)
+        return circ.push(self, *qubits, *bits)
 
     def decompose(self):
         return self._decompose(mc.Circuit(), range(self.num_qubits), range(self.num_bits))

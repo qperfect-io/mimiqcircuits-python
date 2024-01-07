@@ -3,44 +3,45 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-##############
-MIMIQ Circuits
-##############
+Introduction
+============
 
 MIMIQ Circuits is a quantum computing framework and high performance simulator
-developed by QPerfect that allows you to develop and run your quantum
+developed by QPerfect. It allows you to develop and run your quantum
 algorithms beyond the limits of today's noisy intermediate scale quantum (NISQ)
 computers.
 
-.. _alpha-release:
+Quick Start
+-----------
 
-Alpha Release
-=============
+:file:`mimiqcircuits.py` is a `Python Language <https://docs.python.org/3/>`_ package containing all the utilities and programming interfaces (APIs) 
+ to build quantum systems, connect, and execute simulations on `QPerfect's MIMIQ-CIRC <https://qperfect.io/>`_ 
+ large-scale quantum circuit simulator.
 
-MIMIQ Circuits is currently in the alpha stage and open to test for early
-adopters. We are continuously refining and enhance our tools so we value any
-feedback you may have to ensure that MIMIQ Circuits meets and exceeds your
-expectations. If you want access to MIMIQ Circuits, we encourage you register
-on `our website <https://qperfect.io/index.php/mimiq-circuits>`__.
+To install :file:`mimiqcircuits.py` you can use the following command:
 
-Embark on this quantum computing journey with us during the beta stage of MIMIQ
-Circuits, and take part in the large scale quantum revolution!
+.. code-block:: bash
+
+  pip install "mimiqcircuits @ git+https://github.com/qperfect-io/mimiqcircuits-python.git"
+
+
+For more details on installation, please refer to the :ref:`installation` page. 
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
 
 Contents
-========
+--------
 
 .. toctree::
-   about
-   getting_started
-   basics
+   installation
+   tutorial
+   manual/index
    API References <apidocs/mimiqcircuits>
    GitHub <https://github.com/qperfect-io/mimiqcircuits-python>
    Julia APIs <https://mimiq.qperfect.io/docs/julia/>

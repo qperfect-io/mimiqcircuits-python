@@ -15,6 +15,7 @@
 #
 
 from mimiqcircuits.operations.power import Power
+from mimiqcircuits.operations.control import Control
 from mimiqcircuits.operations.gates.standard.id import GateID
 
 
@@ -28,5 +29,18 @@ def power_nhilpotent(op, pow):
             return GateID()
         else:
             return GateID().control(op.num_qubits - 1)
+    elif pmod == 1:
+        return op
     else:
         return Power(op, pmod)
+
+
+def control_one_defined(n, op, cop, ccop=None, c3op=None):
+    if n == 1:
+        return cop
+    elif n == 2 and ccop is not None:
+        return ccop
+    elif n == 3 and c3op is not None:
+        return c3op
+    else:
+        return Control(n, op)

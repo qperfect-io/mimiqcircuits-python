@@ -18,10 +18,12 @@ import mimiqcircuits.operations.control as mctrl
 from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
 from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
+import mimiqcircuits as mc
+from symengine import pi
 
 
 class GateCX(mctrl.Control):
-    """Two qubit Controlled-X gate (or CNOT).
+    r"""Two qubit Controlled-X gate (or CNOT).
 
     By convention, the first qubit is the control and the second is
     the target
@@ -29,44 +31,50 @@ class GateCX(mctrl.Control):
     **Matrix representation:**
 
     .. math::
-        \\operatorname{CX} = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & 0 & 1 \\\\
+        \operatorname{CX} = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 0 & 1 \\
             0 & 0 & 1 & 0
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCX(), GateCX().num_controls, GateCX().num_targets
         (CX, 1, 1)
         >>> GateCX().matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, 0, 1]
-        [0, 0, 1, 0]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
+        [0, 0, 0, 1.0]
+        [0, 0, 1.0, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateCX(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CX @ q0, q1
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCX().power(2), GateCX().inverse()
         (CID, CX)
         >>> GateCX().decompose()
         2-qubit circuit with 1 instructions:
-        └── CX @ q0, q1
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
     """
 
+
+class GateCX(mctrl.Control):
     def __init__(self):
         super().__init__(1, GateX())
 
     def _decompose(self, circ, qubits, bits):
-        circ.push(self, *qubits)
+        c, t = qubits
+        circ.push(mc.Control(1, mc.GateU(pi, 0, pi)), c, t)
+        circ.push(mc.Control(1, mc.GPhase(1, pi/2)), c, t)
         return circ
 
 
 class GateCY(mctrl.Control):
-    """Two qubit Controlled-Y gate.
+    r"""Two qubit Controlled-Y gate.
 
     By convention, the first qubit is the control and the second is
     the target
@@ -74,34 +82,36 @@ class GateCY(mctrl.Control):
     **Matrix representation:**
 
     .. math::
-        \\operatorname{CY} = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & 0 & -i \\\\
+        \operatorname{CY} = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 0 & -i \\
             0 & 0 & i & 0
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCY(), GateCY().num_controls, GateCY().num_targets
         (CY, 1, 1)
         >>> GateCY().matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, 0, -I]
-        [0, 0, I, 0]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
+        [0, 0, 0, -0.0 - 1.0*I]
+        [0, 0, 0.0 + 1.0*I, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateCY(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CY @ q0, q1
+        └── CY @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCY().power(2), GateCY().inverse()
         (CID, CY)
         >>> GateCY().decompose()
         2-qubit circuit with 3 instructions:
-        ├── S† @ q1
-        ├── CX @ q0, q1
-        └── S @ q0
+        ├── S† @ q[1]
+        ├── CX @ q[0], q[1]
+        └── S @ q[0]
+        <BLANKLINE>
     """
 
     def __init__(self):
@@ -116,7 +126,7 @@ class GateCY(mctrl.Control):
 
 
 class GateCZ(mctrl.Control):
-    """Two qubit Controlled-Z gate.
+    r"""Two qubit Controlled-Z gate.
 
     By convention, the first qubit is the control and the second is
     the target
@@ -124,34 +134,36 @@ class GateCZ(mctrl.Control):
     **Matrix representation:**
 
     .. math::
-        \\operatorname{CZ} = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & 1 & 0 \\\\
+        \operatorname{CZ} = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 1 & 0 \\
             0 & 0 & 0 & -1
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCZ(), GateCZ().num_controls, GateCZ().num_targets
         (CZ, 1, 1)
         >>> GateCZ().matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, 1, 0]
-        [0, 0, 0, -1]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
+        [0, 0, 1.0, 0]
+        [0, 0, 0, -1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateCZ(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CZ @ q0, q1
+        └── CZ @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCZ().power(2), GateCZ().inverse()
         (CID, CZ)
         >>> GateCZ().decompose()
         2-qubit circuit with 3 instructions:
-        ├── H @ q1
-        ├── CX @ q0, q1
-        └── H @ q1
+        ├── H @ q[1]
+        ├── CX @ q[0], q[1]
+        └── H @ q[1]
+        <BLANKLINE>
     """
 
     def __init__(self):

@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 from symengine import pi
 import mimiqcircuits as mc
 
@@ -30,38 +29,40 @@ class GateCCX(mc.Control):
         >>> GateCCX(), GateCCX().num_controls, GateCCX().num_targets, GateCCX().num_qubits
         (C₂X, 2, 1, 3)
         >>> GateCCX().matrix()
-        [1, 0, 0, 0, 0, 0, 0, 0]
-        [0, 1, 0, 0, 0, 0, 0, 0]
-        [0, 0, 1, 0, 0, 0, 0, 0]
-        [0, 0, 0, 1, 0, 0, 0, 0]
-        [0, 0, 0, 0, 1, 0, 0, 0]
-        [0, 0, 0, 0, 0, 1, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 1]
-        [0, 0, 0, 0, 0, 0, 1, 0]
+        [1.0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 1.0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 1.0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 1.0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 1.0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 1.0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 1.0]
+        [0, 0, 0, 0, 0, 0, 1.0, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateCCX(), 0, 1, 2)
         >>> c
         3-qubit circuit with 1 instructions:
-        └── C₂X @ q0, q1, q2
+        └── C₂X @ q[0,1], q[2]
+        <BLANKLINE>
         >>> GateCCX().power(2), GateCCX().inverse()
         (C₂ID, C₂X)
         >>> GateCCX().decompose()
         3-qubit circuit with 15 instructions:
-        ├── H @ q2
-        ├── CX @ q1, q2
-        ├── T† @ q2
-        ├── CX @ q0, q2
-        ├── T @ q2
-        ├── CX @ q1, q2
-        ├── T† @ q2
-        ├── CX @ q0, q2
-        ├── T @ q1
-        ├── T @ q2
-        ├── CX @ q0, q1
-        ├── H @ q2
-        ├── T @ q0
-        ├── T† @ q1
-        └── CX @ q0, q1
+        ├── H @ q[2]
+        ├── CX @ q[1], q[2]
+        ├── T† @ q[2]
+        ├── CX @ q[0], q[2]
+        ├── T @ q[2]
+        ├── CX @ q[1], q[2]
+        ├── T† @ q[2]
+        ├── CX @ q[0], q[2]
+        ├── T @ q[1]
+        ├── T @ q[2]
+        ├── CX @ q[0], q[1]
+        ├── H @ q[2]
+        ├── T @ q[0]
+        ├── T† @ q[1]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
     """
 
     def __init__(self):
@@ -79,8 +80,8 @@ class GateCCX(mc.Control):
         circ.push(mc.GateCX(), c1, t)
         circ.push(mc.GateT(), c2)
         circ.push(mc.GateT(), t)
-        circ.push(mc.GateCX(), c1, c2)
         circ.push(mc.GateH(), t)
+        circ.push(mc.GateCX(), c1, c2)
         circ.push(mc.GateT(), c1)
         circ.push(mc.GateT().inverse(), c2)
         circ.push(mc.GateCX(), c1, c2)
@@ -88,7 +89,7 @@ class GateCCX(mc.Control):
 
 
 class GateC3X(mc.Control):
-    """Four qubit Controlled-Controlled-Controlled-X gate.
+    r"""Four qubit Controlled-Controlled-Controlled-X gate.
 
     By convention, the first three qubits are the controls and the fourth is
     the target
@@ -98,62 +99,54 @@ class GateC3X(mc.Control):
         >>> GateC3X(), GateC3X().num_controls, GateC3X().num_targets, GateC3X().num_qubits
         (C₃X, 3, 1, 4)
         >>> GateC3X().matrix()
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+        [1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateC3X(), 0, 1, 2, 3)
         >>> c
         4-qubit circuit with 1 instructions:
-        └── C₃X @ q0, q1, q2, q3
+        └── C₃X @ q[0,1,2], q[3]
+        <BLANKLINE>
         >>> GateC3X().power(2), GateC3X().inverse()
         (C₃ID, C₃X)
         >>> GateC3X().decompose()
         4-qubit circuit with 31 instructions:
-        ├── H @ q3
-        ├── P((1/8)*pi) @ q0
-        ├── P((1/8)*pi) @ q1
-        ├── P((1/8)*pi) @ q2
-        ├── P((1/8)*pi) @ q3
-        ├── CX @ q0, q1
-        ├── P((-1/8)*pi) @ q1
-        ├── CX @ q0, q1
-        ├── CX @ q1, q2
-        ├── P((-1/8)*pi) @ q2
-        ├── CX @ q0, q2
-        ├── P((1/8)*pi) @ q2
-        ├── CX @ q1, q2
-        ├── P((-1/8)*pi) @ q2
-        ├── CX @ q0, q2
-        ├── CX @ q2, q3
-        ├── P((-1/8)*pi) @ q3
-        ├── CX @ q1, q3
-        ├── P((1/8)*pi) @ q3
-        ├── CX @ q2, q3
-        ├── P((-1/8)*pi) @ q3
-        ├── CX @ q0, q3
-        ├── P((1/8)*pi) @ q3
-        ├── CX @ q2, q3
-        ├── P((-1/8)*pi) @ q3
-        ├── CX @ q1, q3
-        ├── P((1/8)*pi) @ q3
-        ├── CX @ q2, q3
-        ├── P((-1/8)*pi) @ q3
-        ├── CX @ q0, q3
-        └── H @ q3
+        ├── H @ q[3]
+        ├── P((1/8)*pi) @ q[0]
+        ├── P((1/8)*pi) @ q[1]
+        ├── P((1/8)*pi) @ q[2]
+        ├── P((1/8)*pi) @ q[3]
+        ├── CX @ q[0], q[1]
+        ├── P((-1/8)*pi) @ q[1]
+        ├── CX @ q[0], q[1]
+        ├── CX @ q[1], q[2]
+        ├── P((-1/8)*pi) @ q[2]
+        ├── CX @ q[0], q[2]
+        ├── P((1/8)*pi) @ q[2]
+        ├── CX @ q[1], q[2]
+        ├── P((-1/8)*pi) @ q[2]
+        ├── CX @ q[0], q[2]
+        ├── CX @ q[2], q[3]
+        ├── P((-1/8)*pi) @ q[3]
+        ├── CX @ q[1], q[3]
+        ├── P((1/8)*pi) @ q[3]
+        ⋮   ⋮
+        └── H @ q[3]
+        <BLANKLINE>
     """
 
     def __init__(self):

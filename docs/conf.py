@@ -44,8 +44,9 @@ master_doc = 'index'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'pydata_sphinx_theme'
+html_logo = '_static/qperfect_logo.png'
 html_static_path = ['_static']
 html_theme_options = {
-    'announcement': 'MIMIQ Circuits is in early development. Check out our website at <a href="https://www.qperfect.io">www.qperfect.io</a> or contact us at <a href="mailto:contact@qperfect.io">constact@qperfect.io</a>',
+    'announcement': f'MIMIQ Circuits version <span style="font-weight: bold; color: #3498db;">{release}</span> is in early development. Check out our website at <a href="https://www.qperfect.io">www.qperfect.io</a> or contact us at <a href="mailto:contact@qperfect.io">constact@qperfect.io</a>',
     "show_toc_level": 1,
 }

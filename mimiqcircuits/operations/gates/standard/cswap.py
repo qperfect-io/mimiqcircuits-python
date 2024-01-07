@@ -21,7 +21,7 @@ from mimiqcircuits.operations.gates.standard.cnx import GateCCX
 
 
 class GateCSWAP(mctrl.Control):
-    """Three qubit Controlled-SWAP gate.
+    r"""Three qubit Controlled-SWAP gate.
 
     By convention, the first qubit is the control and last two are the
     targets.
@@ -31,29 +31,31 @@ class GateCSWAP(mctrl.Control):
         >>> GateCSWAP(), GateCSWAP().num_controls, GateCSWAP().num_targets, GateCSWAP().num_qubits
         (CSWAP, 1, 2, 3)
         >>> GateCSWAP().matrix()
-        [1, 0, 0, 0, 0, 0, 0, 0]
-        [0, 1, 0, 0, 0, 0, 0, 0]
-        [0, 0, 1, 0, 0, 0, 0, 0]
-        [0, 0, 0, 1, 0, 0, 0, 0]
-        [0, 0, 0, 0, 1, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 1, 0]
-        [0, 0, 0, 0, 0, 1, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 1]
+        [1.0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 1.0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 1.0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 1.0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 1.0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 1.0, 0]
+        [0, 0, 0, 0, 0, 1.0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateCSWAP(), 0, 1, 2)
         >>> GateCSWAP().power(2), GateCSWAP().inverse()
-        (C(SWAP^(2)), CSWAP)
+        (C₂ID, CSWAP)
         >>> c = Circuit().push(GateCSWAP(), 0, 1, 2)
         >>> c
         3-qubit circuit with 1 instructions:
-        └── CSWAP @ q0, q1, q2
+        └── CSWAP @ q[0], q[1,2]
+        <BLANKLINE>
         >>> GateCSWAP().power(2), GateCSWAP().inverse()
-        (C(SWAP^(2)), CSWAP)
+        (C₂ID, CSWAP)
         >>> GateCSWAP().decompose()
         3-qubit circuit with 3 instructions:
-        ├── CX @ q2, q1
-        ├── C₂X @ q0, q1, q2
-        └── CX @ q2, q1
+        ├── CX @ q[2], q[1]
+        ├── C₂X @ q[0,1], q[2]
+        └── CX @ q[2], q[1]
+        <BLANKLINE>
     """
 
     def __init__(self):

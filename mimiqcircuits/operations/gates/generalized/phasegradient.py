@@ -16,6 +16,7 @@
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.phase import GateP
+import mimiqcircuits.lazy as lz
 from symengine import pi
 
 
@@ -43,7 +44,8 @@ class PhaseGradient(mcg.Gate):
         >>> c=Circuit()
         >>> c.push(PhaseGradient(2),9,8)
         10-qubit circuit with 1 instructions:
-        └── PhaseGradient @ q9, q8
+        └── PhaseGradient @ q[9,8]
+        <BLANKLINE>
 
     """
     _name = "PhaseGradient"
@@ -54,17 +56,25 @@ class PhaseGradient(mcg.Gate):
 
         self._num_qubits = num_qubits
         self._qregsizes = [num_qubits,]
+        self._params = [num_qubits]
 
         self._num_bits = 0
 
+    def __new__(cls, *args):
+        if len(args) == 0:
+            return lz.LazyExpr(PhaseGradient, lz.LazyArg())
+        elif len(args) == 1:
+            return object.__new__(cls)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
     def _decompose(self, circ, qubits, bits):
-        q = qubits[::-1]
-        for i in q:
-            phase = 1 * pi / 2.0**(i - 1)
-            circ.push(GateP(phase), q[i])
+        for i in range(len(qubits) - 1, -1, -1):
+            phase = 1 * pi / 2.0**(i)
+            circ.push(GateP(phase), qubits[i])
         return circ
-    
-    def matrix(self):
+
+    def _matrix(self):
         raise NotImplementedError(
             "Matrix representation for PhaseGradient is not implemented.")
 

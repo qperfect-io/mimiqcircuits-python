@@ -15,7 +15,6 @@
 #
 
 from mimiqcircuits.operations.operation import Operation
-from mimiqcircuits.bitstrings import BitString
 
 
 class IfStatement(Operation):
@@ -29,7 +28,8 @@ class IfStatement(Operation):
         >>> c.push(IfStatement(GateX(), 1,1), 0,0)
         init if -> operation= X
         1-qubit circuit with 1 instructions:
-        └── If(X, 1) @ q0, c0
+        └── If(X, 1) @ q[0], c[0]
+        <BLANKLINE>
     """
     _name = 'If'
 
@@ -61,24 +61,24 @@ class IfStatement(Operation):
 
         self._num_bits = num_bits
         self._num_cregs = 1
-        self._cresizes = [num_bits, ]
+        self._cregsizes = [num_bits, ]
 
         self._op = op
         self._val = val
 
-    @ property
+    @property
     def op(self):
         return self._op
 
-    @ op.setter
+    @op.setter
     def op(self, op):
         raise ValueError("Cannot set op. Read only parameter.")
 
-    @ property
+    @property
     def val(self):
         return self._val
 
-    @ val.setter
+    @val.setter
     def val(self, val):
         raise ValueError("Cannot set val. Read only parameter.")
 
@@ -96,6 +96,9 @@ class IfStatement(Operation):
 
     def __str__(self):
         return f'If({self.op}, {self.val})'
+
+    def evaluate(self, d):
+        return IfStatement(self.op.evaluate(d), self.num_bits, self.val)
 
 
 # export operations

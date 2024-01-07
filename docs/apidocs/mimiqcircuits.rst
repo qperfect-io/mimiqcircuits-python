@@ -1,3 +1,5 @@
+.. _mimiqcircuits-module:
+
 mimiqcircuits package
 =====================
 

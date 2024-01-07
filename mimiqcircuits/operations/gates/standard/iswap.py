@@ -19,55 +19,55 @@ from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
 from mimiqcircuits.operations.gates.standard.s import GateS
 from symengine import Matrix, I
-import sympy as sp
 
 
 class GateISWAP(mcg.Gate):
-    """ Two qubit ISWAP gate.
+    r""" Two qubit ISWAP gate.
 
     See Also :func:`GateISWAPDG` and :func:`GateSWAP`
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{ISWAP} = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 0 & i & 0 \\\\
-            0 & i & 0 & 0 \\\\
+        \operatorname{ISWAP} = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 0 & i & 0 \\
+            0 & i & 0 & 0 \\
             0 & 0 & 0 & 1
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateISWAP()
         ISWAP
         >>> GateISWAP().matrix()
-        [1, 0, 0, 0]
-        [0, 0, I, 0]
-        [0, I, 0, 0]
-        [0, 0, 0, 1]
+        [1.0, 0, 0, 0]
+        [0, 0, 0.0 + 1.0*I, 0]
+        [0, 0.0 + 1.0*I, 0, 0]
+        [0, 0, 0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateISWAP(), 0, 1)
         >>> GateISWAP().power(2), GateISWAP().inverse()
         (ISWAP^(2), ISWAP†)
         >>> GateISWAP().decompose()
         2-qubit circuit with 6 instructions:
-        ├── S @ q0
-        ├── S @ q1
-        ├── H @ q0
-        ├── CX @ q0, q1
-        ├── CX @ q1, q0
-        └── H @ q1
+        ├── S @ q[0]
+        ├── S @ q[1]
+        ├── H @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── CX @ q[1], q[0]
+        └── H @ q[1]
+        <BLANKLINE>
     """
     _name = 'ISWAP'
 
     _num_qubits = 2
-    _qragsizes = [2]
+    _qregsizes = [2]
 
-    def matrix(self):
-        return Matrix(sp.simplify(Matrix([
+    def _matrix(self):
+        return Matrix([
             [1, 0, 0, 0], [0, 0, I, 0], [0, I, 0, 0], [0, 0, 0, 1]
-        ])))
+        ])
 
     def _decompose(self, circ, qubits, bits):
         c, t = qubits

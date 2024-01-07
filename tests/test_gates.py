@@ -1,6 +1,7 @@
 import numpy as np
 import mimiqcircuits as mc
 import symengine as se
+from scipy.linalg import qr
 
 
 # Function for testing the equality of matrices for symengine
@@ -21,8 +22,8 @@ def _checknpgate(gatetype, n, invtype=None):
     mi = gatetype_instance.inverse().matrix()
     id = m * mi
     assert id.rows == id.cols
-    # identity_matrix = se.eye(id.rows)
-    # assert is_close(identity_matrix, id)
+    identity_matrix = se.eye(id.rows)
+    assert is_close(identity_matrix, id)
 
 
 def _check_param_gate(gatetype, n, params=None, invtype=None):
@@ -42,8 +43,8 @@ def _check_param_gate(gatetype, n, params=None, invtype=None):
     mi = gatetype_instance.inverse().matrix()
     id = m * mi
     assert id.rows == id.cols
-    # identity_matrix = se.eye(id.rows)
-    # assert is_close(identity_matrix, id)
+    identity_matrix = se.eye(id.rows)
+    assert is_close(identity_matrix, id)
 
 
 theta = 0.5333 * np.pi
@@ -244,14 +245,18 @@ def test_GateXXminusYY():
     _check_param_gate(mc.GateXXminusYY, 2, [theta, beta])
 
 
+
 def _check_custom_gate(N):
     M = 2**N
-    mat = np.random.rand(M, M)
-    gate = mc.GateCustom(mat)
+
+    # Generate a random unitary matrix using SciPy's qr decomposition
+    mat,_ = qr(np.random.rand(M, M) + 1j * np.random.rand(M, M))
+    sym_mat = se.Matrix(mat.tolist())
+
+    gate = mc.GateCustom(sym_mat)
 
     assert isinstance(gate, mc.GateCustom)
-    assert np.array_equal(gate.matrix, mat)
-
+    assert is_close(gate.matrix, sym_mat)
 
 def test_GateCustom():
     N = 2

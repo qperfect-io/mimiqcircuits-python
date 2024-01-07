@@ -17,6 +17,7 @@
 from mimiqcircuits.operations.operation import Operation
 import mimiqcircuits as mc
 import copy
+import numpy as np
 
 
 def _allunique(lst):
@@ -39,15 +40,15 @@ class Instruction:
     Raises:
         TypeError: If operation is not a subclass of Gate or qubits is not a tuple.
         ValueError: If qubits contains less than 1 or more than 2 elements.
-        
+
     Examples:
-    
+
         >>> from mimiqcircuits import *
         >>> Instruction(GateX(),(0,),())
-        X @ q0
+        X @ q[0]
         >>> Instruction(Barrier(4),(0,1,2,3),())
-        Barrier @ q0, q1, q2, q3
-       
+        Barrier @ q[0,1,2,3]
+
     """
     _operation = None
     _qubits = None
@@ -123,15 +124,17 @@ class Instruction:
     def bits(self, _):
         raise AttributeError("bits is a read-only attribute")
 
-    def __str__(self):
-        base = f'{self.operation}'
-        qtargets = ', '.join(map(lambda q: f'q{q}', self.qubits))
-        ctargets = ', '.join(map(lambda q: f'c{q}', self.bits))
-        targets = ', '.join(filter(lambda x: x != '', [qtargets, ctargets]))
-        return base + ' @ ' + targets
-
     def __repr__(self):
         return str(self)
+
+    def get_operation(self):
+        return self._operation
+
+    def get_qubits(self):
+        return self._qubits
+
+    def get_bits(self):
+        return self._bits
 
     def __eq__(self, other):
         if not isinstance(other, Instruction):
@@ -155,3 +158,74 @@ class Instruction:
 
     def evaluate(self, d):
         return Instruction(self.operation.evaluate(d), self.qubits, self.bits)
+
+    def __str__(self):
+        compact = False
+        op = str(self.operation)
+        nq = len(self.qubits)
+        nb = len(self.bits)
+        space = "" if compact else " "
+        targets = ""
+        if nq != 0 or nb != 0:
+            targets = f"{space}@{space}"
+
+            if nq != 0:
+                q_partition = _partition(
+                    self.get_qubits(), np.cumsum(self.operation.qregsizes))
+                q_targets = f",{space}".join(
+                    f"q{_string_with_square(_find_unit_range(x),',')}" for x in q_partition)
+                targets += f",".join(q_targets.split(","))
+
+            if nb != 0:
+                c_partition = _partition(
+                    self.get_bits(), np.cumsum(self.operation.cregsizes))
+                c_targets = f", {space}".join(
+                    f", c{_string_with_square(x, ',')}" for x in c_partition)
+                targets += c_targets
+
+            return f"{op}{targets}"
+
+
+def _partition(arr, indices):
+    vec = list(arr)
+    partitions = [vec[: indices[0]]]
+
+    for i in range(1, len(indices)):
+        partitions.append(vec[indices[i - 1]: indices[i]])
+
+    return partitions
+
+
+def _string_with_square(arr, sep):
+    return "[" + sep.join(map(lambda e: sep.join(map(str, e)) if isinstance(e, list) else str(e), arr)) + "]"
+
+
+def _find_unit_range(arr):
+    if len(arr) < 2:
+        return arr
+
+    narr = []
+    rangestart = arr[0]
+    rangestop = arr[0]
+
+    for v in arr[1:]:
+        if v == rangestop + 1:
+            rangestop = v
+        elif rangestart == rangestop:
+            narr.append(rangestart)
+            rangestart = v
+            rangestop = v
+        else:
+            narr.append(list(range(rangestart, rangestop + 1)))
+            rangestart = v
+            rangestop = v
+
+    if rangestart == rangestop:
+        narr.append(rangestart)
+    else:
+        narr.append(list(range(rangestart, rangestop + 1)))
+
+    return narr
+
+
+__all__ = ['Instruction']

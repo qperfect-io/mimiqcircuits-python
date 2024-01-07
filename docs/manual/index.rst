@@ -1,0 +1,6 @@
+Manual
+======
+
+.. toctree::
+    execution
+    openqasm

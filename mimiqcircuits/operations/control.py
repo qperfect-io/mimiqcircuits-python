@@ -19,6 +19,7 @@ import mimiqcircuits.operations.decompositions.control as ctrldecomp
 from mimiqcircuits.printutils import print_wrapped_parens
 import symengine as se
 import sympy as sp
+import mimiqcircuits.lazy as lz
 
 
 class Control(mc.Operation):
@@ -31,16 +32,17 @@ class Control(mc.Operation):
         >>> c = Circuit()
         >>> c.push(Control(3,GateX()),1,2,3,4)
         5-qubit circuit with 1 instructions:
-        └── C₃X @ q1, q2, q3, q4
+        └── C₃X @ q[1,2,3], q[4]
+        <BLANKLINE>
         >>> Control(2, GateX()).matrix()
-        [1, 0, 0, 0, 0, 0, 0, 0]
-        [0, 1, 0, 0, 0, 0, 0, 0]
-        [0, 0, 1, 0, 0, 0, 0, 0]
-        [0, 0, 0, 1, 0, 0, 0, 0]
-        [0, 0, 0, 0, 1, 0, 0, 0]
-        [0, 0, 0, 0, 0, 1, 0, 0]
-        [0, 0, 0, 0, 0, 0, 0, 1]
-        [0, 0, 0, 0, 0, 0, 1, 0]
+        [1.0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 1.0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 1.0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 1.0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 1.0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 1.0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 1.0]
+        [0, 0, 0, 0, 0, 0, 1.0, 0]
         <BLANKLINE>
     """
     _name = 'Control'
@@ -49,7 +51,7 @@ class Control(mc.Operation):
 
     _num_bits = 0
     _num_cregs = 0
-
+    _num_qregs = 2
     _num_controls = None
 
     _op = None
@@ -62,8 +64,9 @@ class Control(mc.Operation):
         else:
             raise TypeError("Operation must be an Operation object or type.")
 
-        if isinstance(op, mc.Barrier) or isinstance(op, mc.Reset):
-            raise TypeError("Barriers cannot be controlled operations.")
+        if isinstance(operation, (mc.Barrier, mc.Reset, mc.Measure)):
+            raise TypeError(
+                f"{operation.__class__.__name__} cannot be controlled operation.")
 
         if op.num_bits != 0:
             raise TypeError(
@@ -81,16 +84,15 @@ class Control(mc.Operation):
             self._num_qubits = op.op.num_qubits + op.num_controls + num_controls
             self._num_controls = op.num_controls + num_controls
             self._op = op.op
-            self._parnames = op.op.parnames
-            self._qregsizes = op.op.qregsizes
-            self._num_qregs = op.op.num_qregs
+            self._qregsizes = [self._num_controls]
+            self._qregsizes.extend(op.op.qregsizes)
+
         else:
             self._num_qubits = op.num_qubits + num_controls
             self._num_controls = num_controls
             self._op = op
-            self._qregsizes = op.qregsizes
-            self._num_qregs = op.num_qregs
-            self._parnames = op.parnames
+            self._qregsizes = [num_controls]
+            self._qregsizes.extend(op.qregsizes)
 
     def matrix(self):
         Mdim = 2 ** self.op.num_qubits
@@ -99,7 +101,7 @@ class Control(mc.Operation):
         mat[Ldim - Mdim:, Ldim - Mdim:] = self.op.matrix()
         for i in range(0, Ldim - Mdim):
             mat[i, i] = 1
-        return se.Matrix(sp.simplify(mat))
+        return se.Matrix(sp.simplify(sp.Matrix(mat).evalf()))
 
     @property
     def num_controls(self):
@@ -128,11 +130,38 @@ class Control(mc.Operation):
     def inverse(self):
         return Control(self.num_controls, self.op.inverse())
 
-    def control(self, num_controls):
-        return Control(self.num_controls + num_controls, self.op)
+    def control(self, *args):
+        if len(args) == 0:
+            return lz.control(self)
+        elif len(args) == 1:
+            num_controls = args[0]
+            return Control(self.num_controls + num_controls, self.op)
+        else:
+            raise ValueError("Invalid number of arguments.")
 
-    def power(self, p):
-        return Control(self.num_controls, self.op.power(p))
+    def _power(self, pwr):
+        return Control(self.num_controls, self.op.power(pwr))
+
+    def power(self, *args):
+        if len(args) == 0:
+            return lz.power(self)
+        elif len(args) == 1:
+            p = args[0]
+            return self._power(p)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
+    def parallel(self, *args):
+        if len(args) == 0:
+            return lz.parallel(self)
+        elif len(args) == 1:
+            num_repeats = args[0]
+            return mc.Parallel(num_repeats, self)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
+    def __pow__(self, p):
+        return self.power(p)
 
     def iswrapper(self):
         return True
@@ -145,17 +174,48 @@ class Control(mc.Operation):
 
         return f"C{ctext}{print_wrapped_parens(self.op)}"
 
-    def evaluate(self, param_dict):
-        if not isinstance(self.op, (mc.Gate)):
-            new_control = Control(self.num_controls, self.op)
-            if hasattr(new_control.op.op, 'evaluate'):
-                new_control._op = new_control.op.op.evaluate(param_dict)
-        else:
-            new_control = Control(self.num_controls, self.op)
-            if hasattr(new_control._op, 'evaluate'):
-                new_control._op = new_control._op.evaluate(param_dict)
-
-        return new_control
+    def evaluate(self, d):
+        ncontrol = self.num_controls
+        return self.op.evaluate(d).control(ncontrol)
 
     def _decompose(self, circ, qubits, bits):
-        return ctrldecomp.control_decompose(circ, self.op, qubits[:-1], qubits[-1])
+        decompose_map = {
+            (2, mc.GateX): mc.GateCCX._decompose,
+            (1, mc.GateX): mc.GateCX._decompose,
+            (1, mc.GateY): mc.GateCY._decompose,
+            (1, mc.GateZ): mc.GateCZ._decompose,
+            (3, mc.GateX): mc.GateC3X._decompose,
+            (2, mc.GateP): mc.GateCP._decompose,
+            (2, mc.GateP): mc.GateCCP._decompose,
+            (1, mc.GateRX): mc.GateCRX._decompose,
+            (1, mc.GateRY): mc.GateCRY._decompose,
+            (1, mc.GateRZ): mc.GateCRZ._decompose,
+            (1, mc.GateSWAP): mc.GateCSWAP._decompose,
+            (1, mc.GateUPhase): mc.GateCU._decompose,
+            (1, mc.GateH): mc.GateCH._decompose,
+            (1, mc.GateSX): mc.GateCSX._decompose,
+            (1, mc.GateS): mc.GateCS._decompose,
+            (1, mc.GateSXDG): mc.GateCSXDG._decompose,
+            (1, mc.GateSDG): mc.GateCSDG._decompose,
+
+        }
+
+        key = (self.num_controls, type(self.op))
+        if key in decompose_map:
+            return decompose_map[key](self, circ, qubits, bits)
+
+        elif self.num_controls == 1 and self.num_qubits != 1:
+
+            newcirc = self.op._decompose(mc.Circuit(), qubits[1:], bits)
+
+            for inst in newcirc:
+                return circ.push(Control(1, inst._operation), qubits[0], qubits[1:])
+
+        elif not isinstance(self.op, Control) and self.op.num_qubits > 1:
+            return circ.push(self, *qubits)
+
+        else:
+            return ctrldecomp.control_decompose(circ, self.op, qubits[:-1], qubits[-1])
+
+
+__all__ = ['Control']

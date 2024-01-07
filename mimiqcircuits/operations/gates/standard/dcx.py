@@ -15,14 +15,12 @@
 #
 
 import mimiqcircuits.operations.gates.gate as mcg
-from mimiqcircuits.operations.gates.standard.pauli import GateX
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from symengine import Matrix
-import sympy as sp
 
 
 class GateDCX(mcg.Gate):
-    """Two qubit double-CNOT gate.
+    r"""Two qubit double-CNOT gate.
 
     A two qubit Clifford gate consisting of two back-to-back CNOTs with
     alternate controls.
@@ -30,45 +28,53 @@ class GateDCX(mcg.Gate):
     **Matrix representation:**
 
     .. math::
-        \\operatorname{DCX} =\\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 0 & 0 & 1 \\\\
-            0 & 1 & 0 & 0 \\\\
+        \operatorname{DCX} =\begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 0 & 0 & 1 \\
+            0 & 1 & 0 & 0 \\
             0 & 0 & 1 & 0
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # gate initialization
+
         >>> GateDCX()
         DCX
+        >>> # actual matrix of the gate
+
         >>> GateDCX().matrix()
         [1.0, 0, 0, 0]
         [0, 0, 0, 1.0]
         [0, 1.0, 0, 0]
         [0, 0, 1.0, 0]
         <BLANKLINE>
+        >>> # add to a circuit
+
         >>> c = Circuit().push(GateDCX(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── DCX @ q0, q1
+        └── DCX @ q[0,1]
+        <BLANKLINE>
         >>> GateDCX().power(2), GateDCX().inverse()
         (DCX^(2), DCX†)
         >>> GateDCX().decompose()
         2-qubit circuit with 2 instructions:
-        ├── CX @ q0, q1
-        └── CX @ q1, q0
+        ├── CX @ q[0], q[1]
+        └── CX @ q[1], q[0]
+        <BLANKLINE>
     """
     _num_qubits = 2
     _qregsizes = [2]
     _name = 'DCX'
 
-    def matrix(self):
-        return Matrix(sp.simplify(Matrix([
+    def _matrix(self):
+        return Matrix([
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 1.0],
             [0.0, 1.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0]
-        ])))
+        ])
 
     def _decompose(self, circ, qubits, bits):
         a, b = qubits

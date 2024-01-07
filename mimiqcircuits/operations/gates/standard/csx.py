@@ -19,10 +19,11 @@ from mimiqcircuits.operations.gates.standard.hadamard import GateH
 from mimiqcircuits.operations.gates.standard.deprecated import GateU1
 import mimiqcircuits.operations.control as mctrl
 from symengine import pi
+import mimiqcircuits as mc
 
 
 class GateCSX(mctrl.Control):
-    """Two qubit Controled-SX (control on second qubit) gate.
+    r"""Two qubit Controled-SX gate.
 
     By convention, the first qubit is the control and second one is the
     targets.
@@ -32,38 +33,53 @@ class GateCSX(mctrl.Control):
 
     .. math::
 
-        \\operatorname{CSX} =\\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & \\frac{1+i}{\\sqrt{2}} & \\frac{1-i}{\\sqrt{2}} \\\\
-            0 & 0 & \\frac{1-i}{\\sqrt{2}} & \\frac{1+i}{\\sqrt{2}}
-        \\end{pmatrix}
+        \operatorname{CSX} =\begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & \frac{1+i}{2} & \frac{1-i}{2} \\
+            0 & 0 & \frac{1-i}{2} & \frac{1+i}{2}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCSX(), GateCSX().num_controls, GateCSX().num_targets, GateCSX().num_qubits
         (C(X^(1/2)), 1, 1, 2)
         >>> GateCSX().matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
         [0, 0, 0.5 + 0.5*I, 0.5 - 0.5*I]
         [0, 0, 0.5 - 0.5*I, 0.5 + 0.5*I]
         <BLANKLINE>
         >>> c = Circuit().push(GateCSX(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── C(X^(1/2)) @ q0, q1
+        └── C(X^(1/2)) @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCSX().power(2), GateCSX().inverse()
-        (C(X^(1.0)), C((X^(1/2))†))
+        (CX, C((X^(1/2))†))
         >>> GateCSX().decompose()
         2-qubit circuit with 3 instructions:
-        ├── H @ q1
-        ├── CU1((1/2)*pi) @ q0, q1
-        └── H @ q1
+        ├── H @ q[1]
+        ├── CU1((1/2)*pi) @ q[0], q[1]
+        └── H @ q[1]
+        <BLANKLINE>
     """
 
     def __init__(self):
         super().__init__(1, GateSX())
+
+    def _power(self, p):
+        pmod = p % 2
+
+        if pmod == 0:
+            return mc.GateCX()
+        else:
+            if p in {3, 7, 11}:
+                return mc.GateCSXDG()
+            elif p in {5, 9, 13}:
+                return self
+            else:
+                return mc.Power(self, p)
 
     def _decompose(self, circ, qubits, bits):
         a, b = qubits
@@ -76,39 +92,41 @@ class GateCSX(mctrl.Control):
 
 
 class GateCSXDG(mctrl.Control):
-    """Two qubit :math:`{CSX}^\\dagger` gate.
+    r"""Two qubit :math:`{CSX}^\dagger` gate.
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{CSX}^{\\dagger} =\\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & \\frac{1-i}{\\sqrt{2}} & \\frac{1+i}{\\sqrt{2}} \\\\
-            0 & 0 & \\frac{1+i}{\\sqrt{2}} & \\frac{1-i}{\\sqrt{2}}
-        \\end{pmatrix}
+        \operatorname{CSX}^{\dagger} =\begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & \frac{1-i}{2} & \frac{1+i}{2} \\
+            0 & 0 & \frac{1+i}{2} & \frac{1-i}{2}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCSXDG(), GateCSXDG().num_controls, GateCSXDG().num_targets, GateCSXDG().num_qubits
         (C((X^(1/2))†), 1, 1, 2)
         >>> GateCSXDG().matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
         [0, 0, 0.5 - 0.5*I, 0.5 + 0.5*I]
         [0, 0, 0.5 + 0.5*I, 0.5 - 0.5*I]
         <BLANKLINE>
         >>> c = Circuit().push(GateCSXDG(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── C((X^(1/2))†) @ q0, q1
+        └── C((X^(1/2))†) @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCSXDG().power(2), GateCSXDG().inverse()
         (C(((X^(1/2))†)^(2)), C(X^(1/2)))
         >>> GateCSXDG().decompose()
         2-qubit circuit with 3 instructions:
-        ├── H @ q1
-        ├── CU1((-1/2)*pi) @ q0, q1
-        └── H @ q1
+        ├── H @ q[1]
+        ├── CU1((-1/2)*pi) @ q[0], q[1]
+        └── H @ q[1]
+        <BLANKLINE>
     """
 
     def __init__(self):

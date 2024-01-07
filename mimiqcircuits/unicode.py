@@ -14,5 +14,8 @@
 # limitations under the License.
 #
 
-NAMES_TO_UNICODE = { 'lmbda': 'λ', 'phi': 'ϕ', 'theta': 'θ', 'gamma': 'γ', 'beta': 'β'}
-UNICODE_TO_NAMES = { 'λ': 'lmbda', 'ϕ': 'phi', 'θ': 'theta', 'γ': 'gamma' , 'β': 'beta'}
+NAMES_TO_UNICODE = {'lmbda': 'λ', 'phi': 'ϕ',
+                    'theta': 'θ', 'gamma': 'γ', 'beta': 'β'}
+
+UNICODE_TO_NAMES = {'λ': 'lmbda', 'ϕ': 'phi',
+                    'θ': 'theta', 'γ': 'gamma', 'β': 'beta'}

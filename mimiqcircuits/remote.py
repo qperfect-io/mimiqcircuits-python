@@ -39,7 +39,7 @@ MAX_BONDDIM = 2**12
 DEFAULT_BONDDIM = 256
 
 # default time limit
-DEFAULT_TIME_LIMIT = 5 * 60
+DEFAULT_TIME_LIMIT = 5
 
 # default algorithm
 DEFAULT_ALGORITHM = "auto"
@@ -101,34 +101,35 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             ValueError: If bonddim, nsamples, or timelimit exceeds the allowed limits.
 
         Examples:
+            ...
 
             >>> from mimiqcircuits import *
-            >>> conn = MimiqConnection(url = "https://mimiq.qperfect.io")
+            >>> conn = MimiqConnection(url = "https://mimiq.qperfect.io/api")
             >>> conn.connect()
-            Starting authentication server on port 39991 (http://localhost:39991)
+            Starting authentication server on port 44099 (http://localhost:44099)
             >>> c = Circuit()
             >>> c.push(GateH(),range(10))
             10-qubit circuit with 10 instructions:
-            ├── H @ q0
-            ├── H @ q1
-            ├── H @ q2
-            ├── H @ q3
-            ├── H @ q4
-            ├── H @ q5
-            ├── H @ q6
-            ├── H @ q7
-            ├── H @ q8
-            └── H @ q9
+            ├── H @ q[0]
+            ├── H @ q[1]
+            ├── H @ q[2]
+            ├── H @ q[3]
+            ├── H @ q[4]
+            ├── H @ q[5]
+            ├── H @ q[6]
+            ├── H @ q[7]
+            ├── H @ q[8]
+            └── H @ q[9]
             >>> job=conn.execute(c,algorithm="auto")
             >>> res=conn.get_results(job)
             >>> res
             QCSResults:
-            ├── simulator: MIMIQ-StateVector 0.10.3
-            ├── apply time: 4.5893e-05s
-            ├── amplitudes time: 3.7e-08s
-            ├── total time: 0.000349207s
-            ├── compression time: 6.669e-06s
-            ├── sample time: 0.000249403s
+            ├── simulator: MIMIQ-StateVector 0.12.1
+            ├── amplitudes time: 1.16e-07s
+            ├── total time: 0.001320324s
+            ├── compression time: 1.717e-05s
+            ├── sample time: 0.000999485s
+            ├── apply time: 0.000115216s
             ├── fidelity estimate (min,max): (1.000, 1.000)
             ├── average ≥2-qubit gate error (min,max): (0.000, 0.000)
             ├── 1 executions
@@ -227,11 +228,17 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         """
         while not self.isJobDone(execution):
             sleep(interval)
+            if self.isJobCanceled(execution):
+                raise RuntimeError("Remote job canceled.")
 
         infos = self.requestInfo(execution)
 
         if infos['status'] == "ERROR":
-            raise RuntimeError("Remote job errored.")
+            if 'errorMessage' in infos:
+                msg = infos['errorMessage']
+                raise RuntimeError(f"Remote job errored: {msg}")
+            else:
+                raise RuntimeError("Remote job errored.")
 
         with tempfile.TemporaryDirectory() as tmpdir:
             names = self.downloadResults(execution, destdir=tmpdir)
@@ -260,15 +267,15 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         with tempfile.TemporaryDirectory() as tmpdir:
             names = self.downloadJobFiles(execution, destdir=tmpdir)
 
-            if CIRCUITPB_FILE not in names or CIRCUITQASM_FILE not in names:
+            if CIRCUITPB_FILE not in names and CIRCUITQASM_FILE not in names:
                 raise RuntimeError(
                     "File not found in inputs. Update Your library.")
 
-            if "parameters.jl" not in names:
+            if "parameters.json" not in names:
                 raise RuntimeError(
                     "File not found in inputs. Update Your library.")
 
-            with open(os.path.join(tmpdir, "parameters.jl"), "r") as f:
+            with open(os.path.join(tmpdir, "parameters.json"), "r") as f:
                 parameters = json.load(f)
 
             if CIRCUITPB_FILE in names:

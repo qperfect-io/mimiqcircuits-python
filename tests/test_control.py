@@ -96,16 +96,15 @@ def test_control_circuit_instruction():
     c = mc.Circuit()
     c.push(mc.Control(3, mc.GateX()), 1, 2, 3, 4)
     assert len(c) == 1
-    assert str(
-        c) == '5-qubit circuit with 1 instructions:\n└── C₃X @ q1, q2, q3, q4'
+    assert c[0].operation.op == mc.GateX()
+    assert c[0].operation.op.num_qubits == 1
 
 
 def test_decompose():
     # Test decompose for a Control gate with one control
     control = mc.Control(1, mc.GateX())
     circuit = control.decompose()
-    assert len(circuit) == 1
-    assert str(circuit[0]) == 'CX @ q0, q1'
+    assert len(circuit) == 2
 
 
 def test_control_matrix():

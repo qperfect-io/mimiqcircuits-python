@@ -18,28 +18,29 @@ you have built the circuit, you can proceed with the simulation.
 
 A simple circuit with 4 Hadamard gates on 4 different qubits is given by
 
+>>> from mimiqcircuits import *
 >>> c = Circuit()
 >>> c
 empty circuit
 >>> for i in range(4):
->>>     c.push(GateH(), i)
->>>
+...     c=c.push(GateH(), i)
 >>> c
-4-qubit circuit with 4 gates
- ├── H @ q0
- ├── H @ q1
- ├── H @ q2
- └── H @ q3
+4-qubit circuit with 4 instructions:
+├── H @ q0
+├── H @ q1
+├── H @ q2
+└── H @ q3
 
 or simply
 
->>> c.push(GateH(), *range(4))
->>> c
-4-qubit circuit with 4 gates
- ├── H @ q0
- ├── H @ q1
- ├── H @ q2
- └── H @ q3
+>>> from mimiqcircuits import *
+>>> c = Circuit()
+>>> c.push(GateH(), range(4))
+4-qubit circuit with 4 instructions:
+├── H @ q0
+├── H @ q1
+├── H @ q2
+└── H @ q3
 
 We are using a `@` notation to indicates that a quantum operation, in this case
 a Hadamard gate `H`, is applied to one or many qubits. Hadamard gates are single
@@ -60,73 +61,56 @@ operations include:
 * Adding gates or quantum operations (e.g. with `circuit.push(gate,
   target_qubits)`),
 
+>>> from mimiqcircuits import *
 >>> c = Circuit()
 >>> c
 empty circuit
 >>> c.push(GateX(), 0)
->>> c
-1-qubit circuit with 1 gates
- └── X @ q0
+1-qubit circuit with 1 instructions:
+└── X @ q0
 >>> c.push(GateCX(), 0, 1)
->>> c
-2-qubit circuit with 2 gates
- ├── X @ q0
- └── CX @ q0, q1
+2-qubit circuit with 2 instructions:
+├── X @ q0
+└── CX @ q0, q1
 >>> c.push(Barrier(2), 0, 1)
->>> c
-2-qubit circuit with 3 gates
- ├── X @ q0
- ├── CX @ q0, q1
- └── Barrier @ q0, q1
+2-qubit circuit with 3 instructions:
+├── X @ q0
+├── CX @ q0, q1
+└── Barrier @ q0, q1
 >>> c.push(GateCX(), 1, 0)
->>> c
-2-qubit circuit with 4 gates
- ├── X @ q0
- ├── CX @ q0, q1
- ├── Barrier @ q0, q1
- └── CX @ q1, q0
+2-qubit circuit with 4 instructions:
+├── X @ q0
+├── CX @ q0, q1
+├── Barrier @ q0, q1
+└── CX @ q1, q0
 
 * Taking the inverse of a circuit or any other object (with `object.inverse()`)
-
->>> c
-2-qubit circuit with 4 gates
- ├── H @ q0
- ├── H @ q1
- ├── CRX(theta=0.7853981633974483) @ q0, q1
- └── S @ q1
+ 
 >>> c.inverse()
-2-qubit circuit with 4 gates
- ├── SDG @ q1
- ├── CRX(theta=-0.7853981633974483) @ q0, q1
- ├── H @ q1
- └── H @ q0
+2-qubit circuit with 4 instructions:
+├── CX @ q1, q0
+├── Barrier @ q0, q1
+├── CX @ q0, q1
+└── X @ q0
 
 * Appending a circuit to another (with `circuit.append(circuit_to_append)`)
 
->>> c
-4-qubit circuit with 4 gates
- ├── H @ q0
- ├── H @ q1
- ├── H @ q2
- └── H @ q3
->>> c2
-4-qubit circuit with 3 gates
- ├── CX @ q0, q1
- ├── CX @ q1, q2
- └── CX @ q2, q3
+>>> c2= c.inverse()
 >>> c.append(c2)
 >>> c
-4-qubit circuit with 7 gates
- ├── H @ q0
- ├── H @ q1
- ├── H @ q2
- ├── H @ q3
- ├── CX @ q0, q1
- ├── CX @ q1, q2
- └── CX @ q2, q3
+2-qubit circuit with 8 instructions:
+├── X @ q0
+├── CX @ q0, q1
+├── Barrier @ q0, q1
+├── CX @ q1, q0
+├── CX @ q1, q0
+├── Barrier @ q0, q1
+├── CX @ q0, q1
+└── X @ q0
+
 
 Bit Strings
-==========
+============
 
 We define *bit strings* as the computational states of a multi qubit system in
 which each qubit string is determined. These states are often indicated by the
@@ -145,7 +129,7 @@ such system can be written as a sum over *bit strings* with complex coefficients
 For example, for a 2 qubit system:
 
 .. math::
-   :nowrap:
+   
 
     \ket{\psi} =
     c_0 \ket{00} + c_1 \ket{10} + c_2 \ket{01} + c_3 \ket{11}
@@ -161,7 +145,7 @@ Few things you can do with `BitString`:
 
 >>> x = BitString(4)
 >>> x
-BitString('0000')
+bs"0000"
 >>> print(x)
 4-qubit BitString:
 └── |0000⟩
@@ -170,14 +154,14 @@ BitString('0000')
   (converting from its binary representation)
 
 >>> BitString.fromnonzeros(10, [1,3,8])
-BitString('0101000010')
+bs"0101000010"
 >>> BitString.fromint(10, 5)
-BitString('1010000000')
+bs"1010000000"
 
 * Create a bit string using a generator function (lambda function in this case):
 
 >>> BitString.fromfunction(10, lambda i: i % 2 == 0)
-BitString('1010101010')
+bs"1010101010"
 
 * Convert a BitString to a string or integer
 

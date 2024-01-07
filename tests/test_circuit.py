@@ -66,16 +66,16 @@ def test_Circuit():
     # should not have negative targets
     with pytest.raises(ValueError):
         c = mc.Circuit()
-        circuit.push(mc.GateCH(), -1, 2)
+        c.push(mc.GateCH(), -1, 2)
 
     with pytest.raises(ValueError):
         c = mc.Circuit()
-        circuit.push(mc.GateCH(), 1, -2)
+        c.push(mc.GateCH(), 1, -2)
 
     # should not add a gate with two equal qubits
     with pytest.raises(ValueError):
         c = mc.Circuit()
-        circuit.push(mc.GateCH(), 1, 1)
+        c.push(mc.GateCH(), 1, 1)
 
     # instruction should only get a tuple
     with pytest.raises(TypeError):
@@ -87,9 +87,11 @@ def test_Circuit():
 
     # Test add_barrier
     c = mc.Circuit()
-    c.push(mc.Barrier(), range(0, 3))
+    c.push(mc.Barrier(1), range(0, 3))
     assert len(c.instructions) == 3
     assert isinstance(c.instructions[0].operation, mc.Barrier)
+    assert isinstance(c.instructions[1].operation, mc.Barrier)
+    assert isinstance(c.instructions[2].operation, mc.Barrier)
     assert c.instructions[0].qubits == (0, )
 
     # Test add_measure()
@@ -104,18 +106,16 @@ def test_Circuit():
 
     c.push(mc.Measure(), [0, 1], [2, 3])
     assert len(c.instructions) == 6
-    assert isinstance(c.instructions[3].operation, mc.Measure)
+    assert isinstance(c.instructions[5].operation, mc.Measure)
     assert c.instructions[2].qubits == (2,)
     assert c.instructions[2].bits == ()
-
-    assert isinstance(c.instructions[3].operation, mc.Measure)
-    assert c.instructions[3].qubits == (3,)
-    assert c.instructions[3].bits == (1,)
+    assert c.instructions[4].qubits == (0,)
+    assert c.instructions[4].bits == (2,)
 
     # Test add_reset
     c.push(mc.Reset(), 4)
     assert len(c.instructions) == 7
-    assert isinstance(c.instructions[4].operation, mc.Measure)
+    assert isinstance(c.instructions[6].operation, mc.Reset)
     assert c.instructions[4].qubits == (0,)
 
     # Test add_barrier_all
@@ -232,6 +232,9 @@ def test_remove():
     c.push(mc.Barrier(4), *range(4))
     c.push(mc.GateCX(), 0, 1)
     c.push(mc.GateCX(), 1, 2)
+    assert len(c.instructions) == 7
+    c.remove(-1)
+    assert len(c.instructions) == 6
 
 
 def test_circuitDepth():
@@ -343,6 +346,6 @@ def test_checkEquality():
         mc.GateRX(0.3), (0,))
     assert mc.Instruction(mc.GateRX(0.2), (0,)) == mc.Instruction(
         mc.GateRX(0.2), (0,))
-    assert mc.Barrier() == mc.Barrier()
+    assert mc.Barrier(1) == mc.Barrier(1)
     assert mc.GateRX(0.2) != mc.GateRX(0.3)
     assert mc.GateRY(0.1) != mc.GateRX(0.1)

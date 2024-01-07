@@ -23,8 +23,8 @@ from symengine import pi
 
 
 class GateCRX(mctrl.Control):
-    """Two qubit Controlled-RX gate.
-    
+    r"""Two qubit Controlled-RX gate.
+
     By convention, the first qubit is the control and the second is
     the target
 
@@ -33,12 +33,12 @@ class GateCRX(mctrl.Control):
     **Matrix representation:**
 
     .. math::
-        \\operatorname{CRX}(\\theta) = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & \\cos\\frac{\\theta}{2} & -i\\sin\\frac{\\theta}{2} \\\\
-            0 & 0 & -i\\sin\\frac{\\theta}{2} & \\cos\\frac{\\theta}{2}
-        \\end{pmatrix}
+        \operatorname{CRX}(\theta) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & \cos\frac{\theta}{2} & -i\sin\frac{\theta}{2} \\
+            0 & 0 & -i\sin\frac{\theta}{2} & \cos\frac{\theta}{2}
+        \end{pmatrix}
 
     Parameters:
         theta: The rotation angle in radians.
@@ -50,23 +50,25 @@ class GateCRX(mctrl.Control):
         >>> GateCRZ(theta), GateCRZ(theta).num_controls, GateCRZ(theta).num_targets, GateCRZ(theta).num_qubits
         (CRZ(theta), 1, 1, 2)
         >>> GateCRZ(theta).matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
         [0, 0, exp(-1/2*I*theta), 0]
         [0, 0, 0, exp(1/2*I*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCRZ(theta), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CRZ(theta) @ q0, q1
+        └── CRZ(theta) @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCRZ(theta).power(2), GateCRZ(theta).inverse()
         (CRZ(2*theta), CRZ(-theta))
         >>> GateCRZ(theta).decompose()
         2-qubit circuit with 4 instructions:
-        ├── RZ((1/2)*theta) @ q1
-        ├── CX @ q0, q1
-        ├── RZ((-1/2)*theta) @ q1
-        └── CX @ q0, q1
+        ├── RZ((1/2)*theta) @ q[1]
+        ├── CX @ q[0], q[1]
+        ├── RZ((-1/2)*theta) @ q[1]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
     """
 
     def __init__(self, *args, **kwargs):
@@ -84,8 +86,8 @@ class GateCRX(mctrl.Control):
 
 
 class GateCRY(mctrl.Control):
-    """Two qubit Controlled-RY gate.
-    
+    r"""Two qubit Controlled-RY gate.
+
     By convention, the first qubit is the control and the second is
     the target
 
@@ -94,12 +96,12 @@ class GateCRY(mctrl.Control):
     **Matrix representation:**
 
     .. math::
-        \\operatorname{CRY}(\\theta) = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & \\cos\\frac{\\theta}{2} & -i\\sin\\frac{\\theta}{2} \\\\
-            0 & 0 &  \\sin\\frac{\\theta}{2} & \\cos\\frac{\\theta}{2}
-        \\end{pmatrix}
+        \operatorname{CRY}(\theta) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & \cos\frac{\theta}{2} & -\sin\frac{\theta}{2} \\
+            0 & 0 &  \sin\frac{\theta}{2} & \cos\frac{\theta}{2}
+        \end{pmatrix}
 
 
     Parameters:
@@ -112,23 +114,25 @@ class GateCRY(mctrl.Control):
         >>> GateCRY(theta), GateCRY(theta).num_controls, GateCRY(theta).num_targets, GateCRY(theta).num_qubits
         (CRY(theta), 1, 1, 2)
         >>> GateCRY(theta).matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, cos((1/2)*theta), -sin((1/2)*theta)]
-        [0, 0, sin((1/2)*theta), cos((1/2)*theta)]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
+        [0, 0, 1.0*cos((1/2)*theta), -1.0*sin((1/2)*theta)]
+        [0, 0, 1.0*sin((1/2)*theta), 1.0*cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCRY(theta), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CRY(theta) @ q0, q1
+        └── CRY(theta) @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCRY(theta).power(2), GateCRY(theta).inverse()
         (CRY(2*theta), CRY(-theta))
         >>> GateCRY(theta).decompose()
         2-qubit circuit with 4 instructions:
-        ├── RY((1/2)*theta) @ q1
-        ├── CX @ q0, q1
-        ├── RY((-1/2)*theta) @ q1
-        └── CX @ q0, q1
+        ├── RY((1/2)*theta) @ q[1]
+        ├── CX @ q[0], q[1]
+        ├── RY((-1/2)*theta) @ q[1]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
     """
 
     def __init__(self, *args, **kwargs):
@@ -145,8 +149,8 @@ class GateCRY(mctrl.Control):
 
 
 class GateCRZ(mctrl.Control):
-    """Two qubit Controlled-RZ gate.
-    
+    r"""Two qubit Controlled-RZ gate.
+
     By convention, the first qubit is the control and the second is
     the target
 
@@ -155,12 +159,12 @@ class GateCRZ(mctrl.Control):
     **Matrix representation:**
 
     .. math::
-        \\operatorname{CRZ}(\\theta) = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & e^{-i\\frac{\\lambda}{2}} & 0 \\\\
-            0 & 0 & 0 & e^{i\\frac{\\lambda}{2}}
-        \\end{pmatrix}
+        \operatorname{CRZ}(\theta) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & e^{-i\frac{\lambda}{2}} & 0 \\
+            0 & 0 & 0 & e^{i\frac{\lambda}{2}}
+        \end{pmatrix}
 
     Parameters:
         theta: The rotation angle in radians.
@@ -172,23 +176,25 @@ class GateCRZ(mctrl.Control):
         >>> GateCRZ(lmbda), GateCRZ(lmbda).num_controls, GateCRZ(lmbda).num_targets, GateCRZ(lmbda).num_qubits
         (CRZ(lambda), 1, 1, 2)
         >>> GateCRZ(lmbda).matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
         [0, 0, exp(-1/2*I*lambda), 0]
         [0, 0, 0, exp(1/2*I*lambda)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCRZ(lmbda), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CRZ(lambda) @ q0, q1
+        └── CRZ(lambda) @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCRZ(lmbda).power(2), GateCRZ(lmbda).inverse()
         (CRZ(2*lambda), CRZ(-lambda))
         >>> GateCRZ(lmbda).decompose()
         2-qubit circuit with 4 instructions:
-        ├── RZ((1/2)*lambda) @ q1
-        ├── CX @ q0, q1
-        ├── RZ((-1/2)*lambda) @ q1
-        └── CX @ q0, q1
+        ├── RZ((1/2)*lambda) @ q[1]
+        ├── CX @ q[0], q[1]
+        ├── RZ((-1/2)*lambda) @ q[1]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
     """
 
     def __init__(self, *args, **kwargs):

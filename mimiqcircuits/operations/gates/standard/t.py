@@ -19,36 +19,39 @@ from mimiqcircuits.operations.inverse import Inverse
 from mimiqcircuits.operations.gates.standard.s import GateS
 from mimiqcircuits.operations.gates.standard.u import GateU
 from symengine import pi
+import mimiqcircuits as mc
 
 
 class GateT(Power):
-    """ Single qubit T gate.
+    r""" Single qubit T gate.
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{T} = \\begin{pmatrix}
-            1 & 0 \\\\
-            0 & \\exp\\left(\\frac{i\\pi}{4}\\right)
-        \\end{pmatrix}
+        \operatorname{T} = \begin{pmatrix}
+            1 & 0 \\
+            0 & \exp\left(\frac{i\pi}{4}\right)
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateT()
         T
         >>> GateT().matrix()
-        [1, 0]
-        [0, 0.707106781186548 + 0.707106781186547*I]
+        [1.0, 0]
+        [0, 0.707106781186548 + 0.707106781186548*I]
         <BLANKLINE>
         >>> c = Circuit().push(GateT(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── T @ q0
+        └── T @ q[0]
+        <BLANKLINE>
         >>> GateT().power(2), GateT().inverse()
-        (S^(1.0), T†)
+        (S, T†)
         >>> GateT().decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, (1/4)*pi) @ q0
+        └── U(0, 0, (1/4)*pi) @ q[0]
+        <BLANKLINE>
     """
     _name = 'T'
 
@@ -61,6 +64,22 @@ class GateT(Power):
     def inverse(self):
         return GateTDG()
 
+    def _power(self, p):
+        if p == 1:
+            return self
+
+        elif p == 2:
+            return mc.GateS()
+
+        elif p == 4:
+            return mc.GateZ()
+
+        elif p == 6:
+            return mc.GateSDG()
+
+        else:
+            return mc.Power(self, p)
+
     def __str__(self):
         return f"{self.name}"
 
@@ -71,15 +90,15 @@ class GateT(Power):
 
 
 class GateTDG(Inverse):
-    """Single qubit T-dagger gate (conjugate transpose of the T gate).
+    r"""Single qubit T-dagger gate (conjugate transpose of the T gate).
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{T}^\\dagger = \\begin{pmatrix}
-            1 & 0 \\\\
-            0 & \\exp\\left(\\frac{-i\\pi}{4}\\right)
-        \\end{pmatrix}
+        \operatorname{T}^\dagger = \begin{pmatrix}
+            1 & 0 \\
+            0 & \exp\left(\frac{-i\pi}{4}\right)
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -87,17 +106,19 @@ class GateTDG(Inverse):
         T†
         >>> GateTDG().matrix()
         [1.0, 0]
-        [0, 0.707106781186548 - 0.707106781186547*I]
+        [0, 0.707106781186547 - 0.707106781186547*I]
         <BLANKLINE>
         >>> c = Circuit().push(GateTDG(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── T† @ q0
+        └── T† @ q[0]
+        <BLANKLINE>
         >>> GateTDG().power(2), GateTDG().inverse()
         (T†^(2), T)
         >>> GateTDG().decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, (-1/4)*pi) @ q0
+        └── U(0, 0, (-1/4)*pi) @ q[0]
+        <BLANKLINE>
     """
 
     def __init__(self):

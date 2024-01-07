@@ -18,22 +18,21 @@ import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.generalized.gphase import GPhase
 from mimiqcircuits.matrices import pmatrix, umatrix, gphase
-from symengine import pi, Matrix
-import sympy as sp
+from symengine import pi
 
 
 class GateU1(mcg.Gate):
-    """Single qubit generic unitary gate :math:`{U_1}`.
+    r"""Single qubit generic unitary gate :math:`{U_1}`.
 
     Equivalent to :func:`GateP`
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{U1}(\\lambda) = \\begin{pmatrix}
-            1 & 0 \\\\
-            0 & e^{i\\lambda}
-        \\end{pmatrix}
+        \operatorname{U1}(\lambda) = \begin{pmatrix}
+            1 & 0 \\
+            0 & e^{i\lambda}
+        \end{pmatrix}
 
     Parameters:
         lambda (float): Euler angle 3 in radians.
@@ -45,18 +44,20 @@ class GateU1(mcg.Gate):
         >>> GateU1(lmbda)
         U1(lambda)
         >>> GateU1(lmbda).matrix()
-        [1, 0]
+        [1.0, 0]
         [0, exp(I*lambda)]
         <BLANKLINE>
         >>> c = Circuit().push(GateU1(lmbda), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── U1(lambda) @ q0
+        └── U1(lambda) @ q[0]
+        <BLANKLINE>
         >>> GateU1(lmbda).power(2), GateU1(lmbda).inverse()
-        (U1(lambda)^(2), U1(-lambda))
+        (U1(2*lambda), U1(-lambda))
         >>> GateU1(lmbda).decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, lambda) @ q0
+        └── U(0, 0, lambda) @ q[0]
+        <BLANKLINE>
     """
     _name = 'U1'
 
@@ -68,11 +69,14 @@ class GateU1(mcg.Gate):
     def __init__(self, lmbda):
         self.lmbda = lmbda
 
-    def matrix(self):
-        return Matrix(sp.simplify(pmatrix(self.lmbda)))
+    def _matrix(self):
+        return pmatrix(self.lmbda)
 
     def inverse(self):
         return GateU1(-self.lmbda)
+
+    def _power(self, pwr):
+        return GateU1(pwr * self.lmbda)
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
@@ -81,17 +85,16 @@ class GateU1(mcg.Gate):
 
 
 class GateU2(mcg.Gate):
-    """Single qubit generic unitary gate :math:`{U_2}`.
+    r"""Single qubit generic unitary gate :math:`{U_2}`.
 
-    Equivalent to :func:`GateU2DG`
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{U2}(\\phi,\\lambda) = \\frac{1}{\\sqrt{2}}\\begin{pmatrix}
-            1 & -e^{i\\lambda} \\\\
-            e^{i\\phi} & e^{i(\\phi+\\lambda)}
-        \\end{pmatrix}
+        \operatorname{U2}(\phi,\lambda) = \frac{1}{\sqrt{2}}e^{-(\phi+\lambda)/2}\begin{pmatrix}
+            1 & -e^{i\lambda} \\
+            e^{i\phi} & e^{i(\phi+\lambda)}
+        \end{pmatrix}
 
     Parameters:
         phi: Euler angle in radians.
@@ -104,19 +107,21 @@ class GateU2(mcg.Gate):
         >>> GateU2(phi, lmbda)
         U2(phi, lambda)
         >>> GateU2(phi, lmbda).matrix()
-        [(1/2 - 1/2*I)*(sin((1/2)*lambda + (1/2)*phi + (1/4)*pi) + I*cos((1/2)*lambda + (1/2)*phi + (1/4)*pi)), (-1/2 - 1/2*I)*exp(I*lambda - I*((1/2)*lambda + (1/2)*phi + (1/4)*pi))]
-        [(1/2 + 1/2*I)*exp(I*phi + I*((-1/2)*lambda + (-1/2)*phi + (-1/4)*pi)), (1/2 + 1/2*I)*exp(I*(lambda + phi) + I*((-1/2)*lambda + (-1/2)*phi + (-1/4)*pi))]
+        [(0.5 + 0.5*I)*exp(-I*((1/2)*lambda + (1/2)*phi + (1/4)*pi)), (-0.5 - 0.5*I)*exp(I*lambda - I*((1/2)*lambda + (1/2)*phi + (1/4)*pi))]
+        [(0.5 + 0.5*I)*exp(I*phi - I*((1/2)*lambda + (1/2)*phi + (1/4)*pi)), (0.5 + 0.5*I)*exp(I*(lambda + phi) - I*((1/2)*lambda + (1/2)*phi + (1/4)*pi))]
         <BLANKLINE>
         >>> c = Circuit().push(GateU2(phi, lmbda), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── U2(phi, lambda) @ q0
+        └── U2(phi, lambda) @ q[0]
+        <BLANKLINE>
         >>> GateU2(phi, lmbda).power(2), GateU2(phi, lmbda).inverse()
         (U2(phi, lambda)^(2), U2(-lambda - pi, -phi + pi))
         >>> GateU2(phi, lmbda).decompose()
         1-qubit circuit with 2 instructions:
-        ├── GPhase(lmbda=(-1/2)*(lambda + phi + (1/2)*pi)) @ q0
-        └── U((1/2)*pi, phi, lambda) @ q0
+        ├── GPhase((-1/2)*(lambda + phi + (1/2)*pi)) @ q[0]
+        └── U((1/2)*pi, phi, lambda) @ q[0]
+        <BLANKLINE>
     """
     _name = 'U2'
 
@@ -129,8 +134,8 @@ class GateU2(mcg.Gate):
         self.phi = phi
         self.lmbda = lmbda
 
-    def matrix(self):
-        return Matrix(sp.simplify(gphase(-(self.phi + self.lmbda + pi/2)/2) * umatrix(pi/2, self.phi, self.lmbda)))
+    def _matrix(self):
+        return gphase(-(self.phi + self.lmbda + pi/2)/2) * umatrix(pi/2, self.phi, self.lmbda)
 
     def inverse(self):
         return GateU2(-self.lmbda - pi, -self.phi + pi)
@@ -143,15 +148,18 @@ class GateU2(mcg.Gate):
 
 
 class GateU3(mcg.Gate):
-    """Single qubit generic unitary gate :math:`{U_3}`.
+    r"""Single qubit generic unitary gate :math:`{U_3}`.
+
+    This gate is equivalent to :func:`GateU` up to a global phase, :math:`\operatorname{U3}(\theta,\phi,\lambda) = e^{-i(\phi + \lambda + \theta)/2} \operatorname{U}(\theta,\phi,\lambda)` 
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{U3}(\\theta,\\phi,\\lambda) = \\begin{pmatrix}
-            \\cos\\frac{\\theta}{2} & -e^{i\\lambda}\\sin\\frac{\\theta}{2} \\\\
-            e^{i\\phi}\\sin\\frac{\\theta}{2} & e^{i(\\phi+\\lambda)}\\cos\\frac{\\theta}{2}
-        \\end{pmatrix}
+        \operatorname{U3}(\theta,\phi,\lambda) = \frac{1}{2}e^{-i(\phi + \lambda + \theta)/2}
+        \begin{pmatrix}
+        1 + e^{i\theta} & -i e^{i\lambda}(1 - e^{i\theta}) \\
+        i e^{i\phi}(1 - e^{i\theta}) & e^{i(\phi + \lambda)}(1 + e^{i\theta})
+        \end{pmatrix}
 
     Parameters:
         theta: Euler angle 1 in radians.
@@ -165,16 +173,17 @@ class GateU3(mcg.Gate):
         >>> GateU3(theta, phi, lmbda)
         U3(theta, phi, lambda)
         >>> GateU3(theta, phi, lmbda).matrix()
-        [(1/2)*exp(I*((-1/2)*lambda + (-1/2)*phi + (-1/2)*theta))*(1 + exp(I*theta)), 1/2*I*exp(I*lambda - I*((1/2)*lambda + (1/2)*phi + (1/2)*theta))*(-1 + exp(I*theta))]
-        [1/2*I*exp(I*phi + I*((-1/2)*lambda + (-1/2)*phi + (-1/2)*theta))*(1 - exp(I*theta)), (1/2)*exp(I*(lambda + phi) + I*((-1/2)*lambda + (-1/2)*phi + (-1/2)*theta))*(1 + exp(I*theta))]
+        [0.5*exp(I*((-1/2)*lambda + (-1/2)*phi + (-1/2)*theta))*(1.0 + exp(I*theta)), (0.0 + 0.5*I)*exp(I*lambda + I*((-1/2)*lambda + (-1/2)*phi + (-1/2)*theta))*(-1.0 + exp(I*theta))]
+        [(-0.0 - 0.5*I)*exp(I*phi - I*((1/2)*lambda + (1/2)*phi + (1/2)*theta))*(-1.0 + exp(I*theta)), 0.5*exp(I*(lambda + phi) + I*((-1/2)*lambda + (-1/2)*phi + (-1/2)*theta))*(1.0 + exp(I*theta))]
         <BLANKLINE>
         >>> c = Circuit().push(GateU3(theta, phi, lmbda), 0)
         >>> GateU3(theta, phi, lmbda).power(2), GateU3(theta, phi, lmbda).inverse()
         (U3(theta, phi, lambda)^(2), U3(-theta, -lambda, -phi))
         >>> GateU3(theta, phi, lmbda).decompose()
         1-qubit circuit with 2 instructions:
-        ├── GPhase(lmbda=(-1/2)*(lambda + phi + theta)) @ q0
-        └── U(theta, phi, lambda) @ q0
+        ├── GPhase((-1/2)*(lambda + phi + theta)) @ q[0]
+        └── U(theta, phi, lambda) @ q[0]
+        <BLANKLINE>
     """
     _name = 'U3'
 
@@ -188,8 +197,8 @@ class GateU3(mcg.Gate):
         self.phi = phi
         self.lmbda = lmbda
 
-    def matrix(self):
-        return Matrix(sp.simplify(gphase(-(self.phi + self.lmbda + self.theta) / 2) * umatrix(self.theta, self.phi, self.lmbda)))
+    def _matrix(self):
+        return gphase(-(self.phi + self.lmbda + self.theta) / 2) * umatrix(self.theta, self.phi, self.lmbda)
 
     def inverse(self):
         return GateU3(-self.theta, -self.lmbda, -self.phi)

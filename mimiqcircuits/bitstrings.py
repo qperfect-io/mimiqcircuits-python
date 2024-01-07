@@ -57,16 +57,25 @@ class BitString:
     values for each qubit.
 
     Examples:
+
         Initialization:
+
         >>> from mimiqcircuits import *
+        >>> from bitarray import bitarray
         >>> BitString(16) # number of qubits
         bs"0000000000000000"
         >>> BitString('10101') # binary string
         bs"10101"
+        >>> BitString([1,0,0,0,1]) # binary string
+        bs"10001"
+        >>> BitString((1,0,0,0,1)) # binary string
+        bs"10001"
+
         >>> BitString(bitarray('101010')) # bitarray
         bs"101010"
 
         Other initializations:
+
         >>> BitString.fromnonzeros(16, [1, 3, 5, 7, 9, 11, 13, 15])
         bs"0101010101010101"
         >>> BitString.fromfunction(16, lambda i: i % 2 == 1)
@@ -79,6 +88,7 @@ class BitString:
         bs"0000000000010101"
 
         Accessing the bits:
+
         >>> bs = BitString(16)
         >>> bs[0] # get the 0th bit
         0
@@ -86,6 +96,7 @@ class BitString:
         bs"0000"
 
         Bitwise operations:
+
         >>> bs1 = BitString('10101')
         >>> bs2 = BitString('11100')
         >>> bs1 | bs2 # OR
@@ -102,6 +113,7 @@ class BitString:
         bs"00101"
 
         Other operations:
+
         >>> bs1 + bs2 # concatenation
         bs"1010111100"
         >>> bs1 * 2 # repetition
@@ -131,7 +143,7 @@ class BitString:
             bitstring = arg
         else:
             raise TypeError(
-                "Invalid input type. Expected 'str', 'int', 'bitarray', 'frozenbitarray'")
+                "Invalid input type. Expected 'str', 'int', 'bitarray', 'list', 'tuple', 'frozenbitarray'")
 
         self._bits = frozenbitarray(bitstring)
 

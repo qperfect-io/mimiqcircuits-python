@@ -25,26 +25,31 @@ class Measure(Operation):
     This operation is non-reversible
 
     Examples:
-    
+
         Adding Measure operation to the Circuit (The qubits (first arg) and the bits (second arg) can be: range, list, tuple, set or int)
 
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Measure(),0,0)
         1-qubit circuit with 1 instructions:
-        └── Measure @ q0, c0
+        └── Measure @ q[0], c[0]
+        <BLANKLINE>
 
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Measure(), range(0,3), range(0,3))
         3-qubit circuit with 3 instructions:
-        ├── Measure @ q0, c0
-        ├── Measure @ q1, c1
-        └── Measure @ q2, c2
+        ├── Measure @ q[0], c[0]
+        ├── Measure @ q[1], c[1]
+        └── Measure @ q[2], c[2]
+        <BLANKLINE>
     """
     _name = 'Measure'
     _num_bits = 1
     _num_qubits = 1
+    _num_cregs = 1
+    _qregsizes = [1]
+    _cregsizes = [1]
 
     def inverse(self):
         raise TypeError('Measure is not inversible')

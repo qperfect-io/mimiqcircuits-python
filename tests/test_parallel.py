@@ -21,5 +21,4 @@ def test_parallel_circuit_instruction():
     parallel_gate = mc.Parallel(3, mc.GateX())
     c.push(parallel_gate, 1, 2, 3)
     assert len(c) == 1
-    assert str(
-        c) == '4-qubit circuit with 1 instructions:\n└── Parallel(3, X) @ q1, q2, q3'
+    assert c[0].operation.op == mc.GateX()

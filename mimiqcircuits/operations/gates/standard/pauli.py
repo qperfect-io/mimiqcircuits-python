@@ -15,58 +15,64 @@
 #
 
 import mimiqcircuits.operations.gates.gate as mcg
-from mimiqcircuits.operations.utils import power_nhilpotent
+from mimiqcircuits.operations.utils import (
+    power_nhilpotent, control_one_defined)
 from mimiqcircuits.operations.gates.standard.phase import GateP
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.generalized.gphase import GPhase
 from mimiqcircuits.matrices import umatrixpi, gphasepi
-from symengine import pi, Matrix
-from sympy import simplify
+import mimiqcircuits as mc
+from symengine import pi
 
 
 class GateX(mcg.Gate):
-    """ Single qubit Pauli-X gate.
+    r""" Single qubit Pauli-X gate.
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{X} = \\begin{pmatrix}
-            0 & 1 \\\\
+        \operatorname{X} = \begin{pmatrix}
+            0 & 1 \\
             1 & 0
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateX()
         X
         >>> GateX().matrix()
-        [0, 1]
-        [1, 0]
+        [0, 1.0]
+        [1.0, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateX(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── X @ q0
+        └── X @ q[0]
+        <BLANKLINE>
         >>> GateX().power(2), GateX().inverse()
         (ID, X)
         >>> GateX().decompose()
         1-qubit circuit with 2 instructions:
-        ├── U(pi, 0, pi) @ q0
-        └── GPhase(lmbda=(-1/2)*pi) @ q0
+        ├── U(pi, 0, pi) @ q[0]
+        └── GPhase((-1/2)*pi) @ q[0]
+        <BLANKLINE>
     """
     _name = 'X'
 
     _num_qubits = 1
-    _qragsizes = [1]
+    _qregsizes = [1]
 
     def inverse(self):
         return self
 
-    def power(self, p):
+    def _power(self, p):
         return power_nhilpotent(self, p)
 
-    def matrix(self):
-        return Matrix(simplify(umatrixpi(1, 0, 1) * gphasepi(-1/2)))
+    def _control(self, n):
+        return control_one_defined(n, self, mc.GateCX(), mc.GateCCX(), mc.GateC3X())
+
+    def _matrix(self):
+        return umatrixpi(1, 0, 1) * gphasepi(-1/2)
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
@@ -76,45 +82,49 @@ class GateX(mcg.Gate):
 
 
 class GateY(mcg.Gate):
-    """Single qubit Pauli-Y gate.
+    r"""Single qubit Pauli-Y gate.
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{Y} = \\begin{pmatrix}
-            0 & -i \\\\
+        \operatorname{Y} = \begin{pmatrix}
+            0 & -i \\
             i & 0
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateY()
         Y
         >>> GateY().matrix()
-        [0, -I]
-        [I, 0]
+        [0, -0.0 - 1.0*I]
+        [0.0 + 1.0*I, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateY(), 0)
         >>> GateY().power(2), GateY().inverse()
         (ID, Y)
         >>> GateY().decompose()
         1-qubit circuit with 2 instructions:
-        ├── U(pi, (1/2)*pi, (1/2)*pi) @ q0
-        └── GPhase(lmbda=(-1/2)*pi) @ q0
+        ├── U(pi, (1/2)*pi, (1/2)*pi) @ q[0]
+        └── GPhase((-1/2)*pi) @ q[0]
+        <BLANKLINE>
     """
     _name = 'Y'
 
     _num_qubits = 1
-    _qragsizes = [1]
+    _qregsizes = [1]
 
     def inverse(self):
         return self
 
-    def power(self, p):
+    def _power(self, p):
         return power_nhilpotent(self, p)
 
-    def matrix(self):
-        return Matrix(simplify(umatrixpi(1, 1/2, 1/2) * gphasepi(-1/2)))
+    def _control(self, n):
+        return control_one_defined(n, self, mc.GateCY())
+
+    def _matrix(self):
+        return umatrixpi(1, 1/2, 1/2) * gphasepi(-1/2)
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
@@ -124,44 +134,48 @@ class GateY(mcg.Gate):
 
 
 class GateZ(mcg.Gate):
-    """Single qubit Pauli-Z gate.
+    r"""Single qubit Pauli-Z gate.
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{Z} = \\begin{pmatrix}
-            1 & 0 \\\\
+        \operatorname{Z} = \begin{pmatrix}
+            1 & 0 \\
             0 & -1
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateZ()
         Z
         >>> GateZ().matrix()
-        [1, 0]
-        [0, -1]
+        [1.0, 0]
+        [0, -1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateZ(), 0)
         >>> GateZ().power(2), GateZ().inverse()
         (ID, Z)
         >>> GateZ().decompose()
         1-qubit circuit with 1 instructions:
-        └── P(pi) @ q0
+        └── P(pi) @ q[0]
+        <BLANKLINE>
     """
     _name = 'Z'
 
     _num_qubits = 1
-    _qragsizes = [1]
+    _qregsizes = [1]
 
     def inverse(self):
         return self
 
-    def power(self, p):
+    def _power(self, p):
         return power_nhilpotent(self, p)
 
-    def matrix(self):
-        return Matrix(simplify(umatrixpi(0, 0, 1)))
+    def _control(self, n):
+        return control_one_defined(n, self, mc.GateCZ())
+
+    def _matrix(self):
+        return umatrixpi(0, 0, 1)
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]

@@ -20,8 +20,8 @@ from mimiqcircuits.operations.gates.standard.phase import GateP
 
 
 class GateCP(mctrl.Control):
-    """Two qubit Controlled-Phase gate.
-    
+    r"""Two qubit Controlled-Phase gate.
+
     By convention, the first qubit is the control and the second is
     the target
 
@@ -30,12 +30,12 @@ class GateCP(mctrl.Control):
     **Matrix representation:**
 
     .. math::
-        \\operatorname{CP}(\\lambda) = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & 1 & 0 \\\\
-            0 & 0 & 0 & e^{i\\lambda}
-        \\end{pmatrix}
+        \operatorname{CP}(\lambda) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 1 & 0 \\
+            0 & 0 & 0 & e^{i\lambda}
+        \end{pmatrix}
 
     Parameters:
         lambda: Phase angle in radians.
@@ -47,22 +47,24 @@ class GateCP(mctrl.Control):
         >>> GateCP(lmbda), GateCP(lmbda).num_controls, GateCP(lmbda).num_targets, GateCP(lmbda).num_qubits
         (CP(lambda), 1, 1, 2)
         >>> GateCP(lmbda).matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, 1, 0]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
+        [0, 0, 1.0, 0]
         [0, 0, 0, exp(I*lambda)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCP(lmbda), 10, 11)
         >>> c
         12-qubit circuit with 1 instructions:
-        └── CP(lambda) @ q10, q11
+        └── CP(lambda) @ q[10], q[11]
+        <BLANKLINE>
         >>> GateCP(lmbda).decompose()
         2-qubit circuit with 5 instructions:
-        ├── P((1/2)*lambda) @ q0
-        ├── CX @ q0, q1
-        ├── P((-1/2)*lambda) @ q1
-        ├── CX @ q0, q1
-        └── P((1/2)*lambda) @ q1
+        ├── P((1/2)*lambda) @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── P((-1/2)*lambda) @ q[1]
+        ├── CX @ q[0], q[1]
+        └── P((1/2)*lambda) @ q[1]
+        <BLANKLINE>
     """
 
     def __init__(self, *args, **kwargs):

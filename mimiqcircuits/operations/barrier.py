@@ -15,6 +15,7 @@
 #
 
 from mimiqcircuits.operations.operation import Operation
+import mimiqcircuits.lazy as lz
 
 
 class Barrier(Operation):
@@ -25,24 +26,26 @@ class Barrier(Operation):
     operation from being applied across it.
 
     Examples:
-    
+
         Adding Barrier operation to the Circuit (The args can be: range, list,
         tuple, set or int)
 
         >>> from mimiqcircuits import *
         >>> c= Circuit()
-        >>> c.push(Barrier(), 1)
+        >>> c.push(Barrier(1), 1)
         2-qubit circuit with 1 instructions:
-        └── Barrier @ q1
+        └── Barrier @ q[1]
+        <BLANKLINE>
 
         >>> from mimiqcircuits import *
         >>> c= Circuit()
-        >>> c.push(Barrier(), range(0,4))
+        >>> c.push(Barrier(1), range(0,4))
         4-qubit circuit with 4 instructions:
-        ├── Barrier @ q0
-        ├── Barrier @ q1
-        ├── Barrier @ q2
-        └── Barrier @ q3
+        ├── Barrier @ q[0]
+        ├── Barrier @ q[1]
+        ├── Barrier @ q[2]
+        └── Barrier @ q[3]
+        <BLANKLINE>
 
         Adding Barrier to the circuit as a multi-qubits gate
 
@@ -50,13 +53,14 @@ class Barrier(Operation):
         >>> c= Circuit()
         >>> c.push(Barrier(5),1,2,3,4,5)
         6-qubit circuit with 1 instructions:
-        └── Barrier @ q1, q2, q3, q4, q5
+        └── Barrier @ q[1,2,3,4,5]
+        <BLANKLINE>
     """
     _name = 'Barrier'
     _num_qubits = None
     _num_bits = 0
 
-    def __init__(self, num_qubits=1):
+    def __init__(self, num_qubits):
         """
         Initialize a barrier operation
 
@@ -72,6 +76,15 @@ class Barrier(Operation):
             raise ValueError("Number of qubits must be greater than 0")
 
         self._num_qubits = num_qubits
+        self._qregsizes = [num_qubits]
+
+    def __new__(self, *args):
+        if len(args) == 0:
+            return lz.LazyExpr(Barrier, lz.LazyArg())
+        elif len(args) == 1:
+            return object.__new__(self)
+        else:
+            raise ValueError("Invalid number of arguments.")
 
     def inverse(self):
         return self

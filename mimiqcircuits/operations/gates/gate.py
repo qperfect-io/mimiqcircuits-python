@@ -15,11 +15,12 @@
 #
 
 from abc import abstractmethod
-from mimiqcircuits.operations.operation import (
-    Operation
-)
+from mimiqcircuits.operations.operation import Operation
+import mimiqcircuits.lazy as lz
 
 import mimiqcircuits as mc
+from symengine import Matrix
+import sympy as sp
 
 
 class Gate(Operation):
@@ -32,8 +33,11 @@ class Gate(Operation):
     _cregsizes = ()
 
     @abstractmethod
-    def matrix(self):
+    def _matrix(self):
         pass
+
+    def matrix(self):
+        return Matrix(sp.simplify(sp.Matrix((self._matrix().tolist())).evalf()))
 
     def iswrapper(self):
         return False
@@ -41,11 +45,44 @@ class Gate(Operation):
     def inverse(self):
         return mc.Inverse(self)
 
-    def power(self, pwr):
+    def _power(self, pwr):
         return mc.Power(self, pwr)
 
-    def control(self, num_controls):
+    def power(self, *args):
+        if len(args) == 0:
+            return lz.power(self)
+        elif len(args) == 1:
+            pwr = args[0]
+            return self._power(pwr)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
+    def __pow__(self, pwr):
+        return self.power(pwr)
+
+    def _control(self, num_controls):
         return mc.Control(num_controls, self)
+
+    def control(self, *args):
+        if len(args) == 0:
+            return lz.control(self)
+        elif len(args) == 1:
+            num_controls = args[0]
+            return self._control(num_controls)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
+    def _parallel(self, num_repeats):
+        return mc.Parallel(num_repeats, self)
+
+    def parallel(self, *args):
+        if len(args) == 0:
+            return lz.parallel(self)
+        elif len(args) == 1:
+            num_repeats = args[0]
+            return self._parallel(num_repeats)
+        else:
+            raise ValueError("Invalid number of arguments.")
 
     def __str__(self):
         pars = ''
@@ -62,18 +99,15 @@ class Gate(Operation):
         if len(self.parnames) == 0:
             return self
 
-        else:
-            params = self.getparams()
+        params = self.getparams()
 
-            for i in range(len(params)):
-                if isinstance(params[i], (int, float)):
-                    continue
+        for i in range(len(params)):
+            if isinstance(params[i], (int, float)):
+                continue
 
-                params[i] = params[i].subs(d)
-                if isinstance(self, mc.GPhase):
-                    return  type(self)(self.num_qubits, *params)
+            params[i] = params[i].subs(d)
 
-            return type(self)(*params)
-        
-        
+        return type(self)(*params)
+
+
 __all__ = ['Gate']

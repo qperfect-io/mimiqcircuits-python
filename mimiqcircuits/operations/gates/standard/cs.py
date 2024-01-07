@@ -21,7 +21,7 @@ from symengine import pi
 
 
 class GateCS(mctrl.Control):
-    """Controlled-S gate.
+    r"""Two qubit Controlled-S gate.
 
     By convention, the first qubit is the control and the second is
     the target
@@ -31,32 +31,34 @@ class GateCS(mctrl.Control):
     **Matrix representation:**:
 
     .. math::
-        \\operatorname{CS} =\\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & 1 & 0 \\\\
+        \operatorname{CS} =\begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 1 & 0 \\
             0 & 0 & 0 & i
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCS(), GateCS().num_controls, GateCS().num_targets, GateCS().num_qubits
         (CS, 1, 1, 2)
         >>> GateCS().matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
-        [0, 0, 1, 0]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
+        [0, 0, 1.0, 0]
         [0, 0, 0, 0.0 + 1.0*I]
         <BLANKLINE>
         >>> c = Circuit().push(GateCS(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CS @ q0, q1
+        └── CS @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCS().power(2), GateCS().inverse()
-        (C(Z^(1.0)), CS†)
+        (CZ, CS†)
         >>> GateCS().decompose()
         2-qubit circuit with 1 instructions:
-        └── CP((1/2)*pi) @ q0, q1
+        └── CP((1/2)*pi) @ q[0], q[1]
+        <BLANKLINE>
     """
 
     def __init__(self):
@@ -71,7 +73,7 @@ class GateCS(mctrl.Control):
 
 
 class GateCSDG(mctrl.Control):
-    """Two qubit Controlled-S gate.
+    r"""Adjoint of two qubit Controlled-S gate.
 
     By convention, the first qubit is the control and the second is
     the target
@@ -79,32 +81,34 @@ class GateCSDG(mctrl.Control):
     **Matrix representation:**
 
     .. math::
-        \\operatorname{CS}^{\\dagger} = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
-            0 & 0 & 1 & 0 \\\\
+        \operatorname{CS}^{\dagger} = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 1 & 0 \\
             0 & 0 & 0 & -i
-            \\end{pmatrix}
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCSDG(), GateCSDG().num_controls, GateCSDG().num_targets, GateCSDG().num_qubits
         (CS†, 1, 1, 2)
         >>> GateCSDG().matrix()
-        [1, 0, 0, 0]
-        [0, 1, 0, 0]
+        [1.0, 0, 0, 0]
+        [0, 1.0, 0, 0]
         [0, 0, 1.0, 0]
         [0, 0, 0, 6.12323399573677e-17 - 1.0*I]
         <BLANKLINE>
         >>> c = Circuit().push(GateCSDG(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CS† @ q0, q1
+        └── CS† @ q[0], q[1]
+        <BLANKLINE>
         >>> GateCSDG().power(2), GateCSDG().inverse()
         (C(S†^(2)), CS)
         >>> GateCSDG().decompose()
         2-qubit circuit with 1 instructions:
-        └── CP((-1/2)*pi) @ q0, q1
+        └── CP((-1/2)*pi) @ q[0], q[1]
+        <BLANKLINE>
     """
 
     def __init__(self):

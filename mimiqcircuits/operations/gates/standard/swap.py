@@ -16,56 +16,65 @@
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
+from mimiqcircuits.operations.utils import (
+    power_nhilpotent, control_one_defined)
+import mimiqcircuits as mc
 from symengine import Matrix
-import sympy as sp
 
 
 class GateSWAP(mcg.Gate):
-    """Two qubit SWAP gate.
+    r"""Two qubit SWAP gate.
 
     See Also :func:`GateISWAP`
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{SWAP} = \\begin{pmatrix}
-            1 & 0 & 0 & 0 \\\\
-            0 & 0 & 1 & 0 \\\\
-            0 & 1 & 0 & 0 \\\\
+        \operatorname{SWAP} = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 0 & 1 & 0 \\
+            0 & 1 & 0 & 0 \\
             0 & 0 & 0 & 1
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateSWAP()
         SWAP
         >>> GateSWAP().matrix()
-        [1, 0, 0, 0]
-        [0, 0, 1, 0]
-        [0, 1, 0, 0]
-        [0, 0, 0, 1]
+        [1.0, 0, 0, 0]
+        [0, 0, 1.0, 0]
+        [0, 1.0, 0, 0]
+        [0, 0, 0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateSWAP(), 0, 1)
         >>> GateSWAP().power(2), GateSWAP().inverse()
-        (SWAP^(2), SWAP)
+        (CID, SWAP)
         >>> GateSWAP().decompose()
         2-qubit circuit with 3 instructions:
-        ├── CX @ q0, q1
-        ├── CX @ q1, q0
-        └── CX @ q0, q1
+        ├── CX @ q[0], q[1]
+        ├── CX @ q[1], q[0]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
     """
     _name = 'SWAP'
 
     _num_qubits = 2
     _qregsizes = [2]
 
-    def matrix(self):
-        return Matrix(sp.simplify(Matrix([
+    def _matrix(self):
+        return Matrix([
             [1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]
-        ])))
+        ])
 
     def inverse(self):
         return self
+
+    def _power(self, p):
+        return power_nhilpotent(self, p)
+
+    def _control(self, n):
+        return control_one_defined(n, self, mc.GateCSWAP())
 
     def _decompose(self, circ, qubits, bits):
         c, t = qubits

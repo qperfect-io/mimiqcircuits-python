@@ -19,6 +19,7 @@ from functools import reduce
 import mimiqcircuits as mc
 import symengine as se
 import sympy as sp
+import mimiqcircuits.lazy as lz
 
 
 class Parallel(mc.Operation):
@@ -31,7 +32,8 @@ class Parallel(mc.Operation):
         >>> c= Circuit()
         >>> c.push(Parallel(3,GateX()),1,2,3)
         4-qubit circuit with 1 instructions:
-        └── Parallel(3, X) @ q1, q2, q3
+        └── Parallel(3, X) @ q[1], q[2], q[3]
+        <BLANKLINE>
     """
     _name = 'Parallel'
     _num_qubits = None
@@ -42,6 +44,10 @@ class Parallel(mc.Operation):
     def __init__(self, num_repeats, op: mc.Operation):
         if not isinstance(op, mc.Operation):
             raise ValueError("op must be an Operation")
+
+        if isinstance(op, (mc.Barrier, mc.Reset, mc.Measure)):
+            raise TypeError(
+                f"{op.__class__.__name__} cannot be Paralleled operation.")
 
         if self.num_bits != 0:
             raise ValueError(
@@ -55,10 +61,12 @@ class Parallel(mc.Operation):
         self._num_qubits = op.num_qubits * num_repeats
         self._num_repeats = num_repeats
         self._op = op
+        self._qregsizes = [1] * self._num_qubits
+        self._num_qregs = self._num_qubits
 
     def matrix(self):
-        op_matrix = se.Matrix(sp.simplify(self.op.matrix()))
-        return reduce(np.kron, [op_matrix] * (self._num_repeats))
+        op_matrix = se.Matrix(sp.simplify(sp.Matrix(self.op.matrix()).evalf()))
+        return se.Matrix(reduce(np.kron, [op_matrix] * (self._num_repeats)).tolist())
 
     @property
     def num_repeats(self):
@@ -82,27 +90,47 @@ class Parallel(mc.Operation):
     def inverse(self):
         return Parallel(self.num_repeats, self.op.inverse())
 
+    def power(self, *args):
+        if len(args) == 0:
+            return lz.power(self)
+        elif len(args) == 1:
+            pwr = args[0]
+            return mc.Power(self.op, pwr).parallel(self.num_repeats)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
+    def control(self, *args):
+        if len(args) == 0:
+            return lz.control(self)
+        elif len(args) == 1:
+            num_controls = args[0]
+            return mc.Control(num_controls, self)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
+    def parallel(self, *args):
+        if len(args) == 0:
+            return lz.parallel(self)
+        elif len(args) == 1:
+            num_repeats = args[0]
+            return Parallel(self.num_repeats * num_repeats, self.op)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
     def _decompose(self, circ, qubits, bits):
+        nq = self.op.num_qubits
         for i in range(self.num_repeats):
-            q = [q[j] for j in range(
-                i * self.op.num_qubits, (i + 1) * self.op.num_qubits)]
-            circ.push(self.op, *qubits)
+            q = [qubits[j] for j in range(
+                i * nq, (i + 1) * nq)]
+            circ.push(self.op, *q)
         return circ
 
     def __str__(self):
         return f'Parallel({self.num_repeats}, {self.op})'
 
-    def evaluate(self, param_dict):
-        if not isinstance(self.op, (mc.Gate)):
-            new_parallel = Parallel(self.num_repeats, self.op)
-            if hasattr(new_parallel.op.op, 'evaluate'):
-                new_parallel._op = new_parallel.op.op.evaluate(param_dict)
-        else:
-            new_parallel = Parallel(self.num_repeats, self.op)
-            if hasattr(new_parallel._op, 'evaluate'):
-                new_parallel._op = new_parallel._op.evaluate(param_dict)
-
-        return new_parallel
+    def evaluate(self, d):
+        repeat = self.num_repeats
+        return self.op.evaluate(d).parallel(repeat)
 
 
 # export operations

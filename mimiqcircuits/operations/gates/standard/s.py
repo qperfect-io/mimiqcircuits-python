@@ -18,39 +18,43 @@ from mimiqcircuits.operations.power import Power
 from mimiqcircuits.operations.inverse import Inverse
 from mimiqcircuits.operations.gates.standard.pauli import GateZ
 from mimiqcircuits.operations.gates.standard.u import GateU
+from mimiqcircuits.operations.utils import control_one_defined
+import mimiqcircuits as mc
 from symengine import pi
 
 
 class GateS(Power):
-    """Single qubit gate S.
+    r"""Single qubit gate S.
 
-    It induces a :math:`\\frac{\\pi}{2}` phase gate.
+    It induces a :math:`\frac{\pi}{2}` phase gate.
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{S} = \\begin{pmatrix}
-            1 & 0 \\\\
+        \operatorname{S} = \begin{pmatrix}
+            1 & 0 \\
             0 & i
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateS()
         S
         >>> GateS().matrix()
-        [1, 0]
+        [1.0, 0]
         [0, 0.0 + 1.0*I]
         <BLANKLINE>
         >>> c = Circuit().push(GateS(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── S @ q0
+        └── S @ q[0]
+        <BLANKLINE>
         >>> GateS().power(2), GateS().inverse()
-        (Z^(1.0), S†)
+        (Z, S†)
         >>> GateS().decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, (1/2)*pi) @ q0
+        └── U(0, 0, (1/2)*pi) @ q[0]
+        <BLANKLINE>
     """
     _name = 'S'
 
@@ -63,6 +67,30 @@ class GateS(Power):
     def inverse(self):
         return GateSDG()
 
+    def _power(self, p):
+        if p == 1:
+            return self
+        elif p == 2:
+            return GateZ()
+
+        elif p == 3:
+            return GateSDG()
+
+        elif p == 4:
+            return mc.GateID()
+
+        elif p == 5:
+            return self
+
+        elif p == 6:
+            return GateZ()
+
+        else:
+            return mc.Power(self, p)
+
+    def _control(self, n):
+        return control_one_defined(n, self, mc.GateCS())
+
     def __str__(self):
         return f"{self.name}"
 
@@ -73,15 +101,15 @@ class GateS(Power):
 
 
 class GateSDG(Inverse):
-    """Single qubit S-dagger gate (conjugate transpose of the S gate).
+    r"""Single qubit S-dagger gate (conjugate transpose of the S gate).
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{S}^\\dagger = \\begin{pmatrix}
-            1 & 0 \\\\
+        \operatorname{S}^\dagger = \begin{pmatrix}
+            1 & 0 \\
             0 & -i
-        \\end{pmatrix}
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -94,12 +122,14 @@ class GateSDG(Inverse):
         >>> c = Circuit().push(GateSDG(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── S† @ q0
+        └── S† @ q[0]
+        <BLANKLINE>
         >>> GateSDG().power(2), GateSDG().inverse()
         (S†^(2), S)
         >>> GateSDG().decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, (-1/2)*pi) @ q0
+        └── U(0, 0, (-1/2)*pi) @ q[0]
+        <BLANKLINE>
     """
 
     def __init__(self):
@@ -110,6 +140,9 @@ class GateSDG(Inverse):
 
     def inverse(self):
         return GateS()
+
+    def _control(self, n):
+        return control_one_defined(n, self, mc.GateCSDG())
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]

@@ -19,7 +19,7 @@ import mimiqcircuits as mc
 
 
 class GateCCP(mc.Control):
-    """Three qubit Controlled-Controlled-Phase gate.
+    r"""Three qubit Controlled-Controlled-Phase gate.
 
     By convention, the first two qubits are the controls and the third is the
     target
@@ -34,28 +34,30 @@ class GateCCP(mc.Control):
         >>> GateCCP(lmbda), GateCCP(lmbda).num_controls, GateCCP(lmbda).num_targets, GateCCP(lmbda).num_qubits
         (C₂P(lmbda), 2, 1, 3)
         >>> GateCCP(lmbda).matrix()
-        [1, 0, 0, 0, 0, 0, 0, 0]
-        [0, 1, 0, 0, 0, 0, 0, 0]
-        [0, 0, 1, 0, 0, 0, 0, 0]
-        [0, 0, 0, 1, 0, 0, 0, 0]
-        [0, 0, 0, 0, 1, 0, 0, 0]
-        [0, 0, 0, 0, 0, 1, 0, 0]
-        [0, 0, 0, 0, 0, 0, 1, 0]
+        [1.0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 1.0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 1.0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 1.0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 1.0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 1.0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 1.0, 0]
         [0, 0, 0, 0, 0, 0, 0, exp(I*lmbda)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCCP(lmbda), 0, 1, 2)
         >>> c
         3-qubit circuit with 1 instructions:
-        └── C₂P(lmbda) @ q0, q1, q2
+        └── C₂P(lmbda) @ q[0,1], q[2]
+        <BLANKLINE>
         >>> GateCCP(lmbda).power(2), GateCCP(lmbda).inverse()
         (C₂P(2*lmbda), C₂P(-lmbda))
         >>> GateCCP(lmbda).decompose()
         3-qubit circuit with 5 instructions:
-        ├── CP((1/2)*lmbda) @ q1, q2
-        ├── CX @ q0, q1
-        ├── CP((-1/2)*lmbda) @ q1, q2
-        ├── CX @ q0, q1
-        └── CP((1/2)*lmbda) @ q0, q2
+        ├── CP((1/2)*lmbda) @ q[1], q[2]
+        ├── CX @ q[0], q[1]
+        ├── CP((-1/2)*lmbda) @ q[1], q[2]
+        ├── CX @ q[0], q[1]
+        └── CP((1/2)*lmbda) @ q[0], q[2]
+        <BLANKLINE>
     """
 
     def __init__(self, *args, **kwargs):

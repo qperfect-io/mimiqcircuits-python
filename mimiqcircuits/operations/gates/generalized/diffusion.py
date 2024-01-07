@@ -14,83 +14,74 @@
 # limitations under the License.
 #
 
-import mimiqcircuits.operations.gates.gate as mcg
-from mimiqcircuits.operations.gates.standard.cphase import GateCP
-from mimiqcircuits.operations.gates.standard.hadamard import GateH
-import mimiqcircuits.lazy as lz
+import mimiqcircuits as mc
 from symengine import pi
 
 
-class QFT(mcg.Gate):
+class Diffusion(mc.Gate):
     """
-    Quantum Fourier transform.
-
-    Performs the quantum Fourier transform on a register of `n` qubits.
+    Grover's diffusion operator.
 
     Args:
-        n (int): The number of qubits in the quantum register.
+        num_qubits (int): The number of qubits.
 
     Raises:
-        ValueError: If the number of qubits is less than 1.
+        ValueError: If the number of qubits is not an integer or less than 1.
 
     Returns:
-        QFT: The Quantum Fourier Transform operation.
+        Diffusion: Grover's diffusion operator.
 
     Attributes:
-        name (str): The name of the operation.
-        num_qubits (int): The number of qubits in the quantum register.
-        qregsizes (list of int): The sizes of the quantum registers.
+        num_qubits (int): The number of qubits for the diffusion operator.
 
     Examples:
 
         >>> from mimiqcircuits import *
-        >>> c=Circuit()
-        >>> c.push(QFT(2),1,2)
+        >>> c = Circuit()
+        >>> c.push(Diffusion(2), 1, 2)
         3-qubit circuit with 1 instructions:
-        └── QFT @ q[1,2]
+        └── Diffusion @ q[1,2]
         <BLANKLINE>
 
     """
-    _name = "QFT"
+    _name = "Diffusion"
     _num_qregs = 1
     _num_qubits = None
 
     def __init__(self, num_qubits):
+        if not isinstance(num_qubits, int):
+            raise ValueError("Number of qubits must be an integer.")
+
         if num_qubits < 1:
-            raise ValueError("Number of qubits must be greater than 0")
+            raise ValueError("Number of qubits must be at least 1.")
 
         super().__init__()
 
         self._num_qubits = num_qubits
         self._qregsizes = [num_qubits]
         self._params = [num_qubits]
+        self._params = [num_qubits]
 
     def __new__(cls, *args):
         if len(args) == 0:
-            return lz.LazyExpr(QFT, lz.LazyArg())
+            return mc.LazyExpr(Diffusion, mc.LazyArg())
         elif len(args) == 1:
             return object.__new__(cls)
         else:
             raise ValueError("Invalid number of arguments.")
 
+    def __str__(self):
+        return "Diffusion"
+
     def _matrix(self):
         raise NotImplementedError(
-            "Matrix representation for Quantum Fourier Transform is not implemented.")
+            "Matrix representation for Diffusion operator is not implemented.")
 
     def _decompose(self, circ, qubits, bits):
-        q = qubits[::-1]
-
-        circ.push(GateH(), q[0])
-
-        for i in range(1, self.num_qubits):
-
-            for j in range(i):
-                angle = pi / (2.0**(i-j))
-                circ.push(GateCP(angle), q[i], q[j])
-
-            circ.push(GateH(), q[i])
-            
+        circ.push(mc.GateRY(pi / 2), qubits)
+        circ.push(mc.control(self.num_qubits - 1, mc.GateZ()), *qubits)
+        circ.push(mc.GateRY(pi / 2), qubits)
         return circ
 
 
-__all__ = ['QFT']
+__all__ = ['Diffusion']

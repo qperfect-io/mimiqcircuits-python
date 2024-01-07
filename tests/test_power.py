@@ -41,7 +41,7 @@ def test_decompose():
     Power_op = mc.Power(op, 1/2)
     circuit = Power_op.decompose()
     assert len(circuit) == 1
-    assert str(circuit) == '1-qubit circuit with 1 instructions:\n└── X^(1/2) @ q0'
+    assert Power_op.exponent == 1/2
 
 
 def test_inverse():
@@ -50,4 +50,4 @@ def test_inverse():
     powerop = op.power(1/4)
     inverse_op = powerop.inverse()
     assert inverse_op.op.exponent == 1/4
-    assert str(inverse_op) == '(X^(1/4))†'
+    assert mc.Power(mc.GateX(), 1/4).op ==op

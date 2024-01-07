@@ -18,54 +18,55 @@ import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.interactions import GateRZX
 from mimiqcircuits.operations.gates.standard.pauli import GateX
 from symengine import sqrt, I, pi, Matrix
-import sympy as sp
 
 
 class GateECR(mcg.Gate):
-    """Two qubit ECR (echo) gate.
+    r"""Two qubit ECR (echo) gate.
 
     **Matrix representation:**
 
     .. math::
-        \\operatorname{ECR} =\\begin{pmatrix}
-            0 & \\frac{1}{\\sqrt{2}} & 0 & \\frac{i}{\\sqrt{2}} \\ \\\\
-            \\frac{1}{\\sqrt{2}} & 0 & \\frac{-i}{\\sqrt{2}} & 0 \\\\
-            0 & \\frac{i}{\\sqrt{2}} & 0 & \\frac{i}{\\sqrt{2}} \\\\
-            \\frac{-i}{\\sqrt{2}} & 0 & \\frac{1}{\\sqrt{2}} & 0
-        \\end{pmatrix}
+        \operatorname{ECR} =\begin{pmatrix}
+            0 & \frac{1}{\sqrt{2}} & 0 & \frac{i}{\sqrt{2}} \\
+            \frac{1}{\sqrt{2}} & 0 & \frac{-i}{\sqrt{2}} & 0 \\
+            0 & \frac{i}{\sqrt{2}} & 0 & \frac{1}{\sqrt{2}} \\
+            \frac{-i}{\sqrt{2}} & 0 & \frac{1}{\sqrt{2}} & 0
+        \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateECR()
         ECR
         >>> GateECR().matrix()
-        [0, (1/2)*sqrt(2), 0, (0.0 + 0.5*I)*sqrt(2)]
-        [(1/2)*sqrt(2), 0, -1/2*I*sqrt(2), 0]
-        [0, 1/2*I*sqrt(2), 0, (1/2)*sqrt(2)]
-        [-1/2*I*sqrt(2), 0, (1/2)*sqrt(2), 0]
+        [0, 0.707106781186548, 0, 0.0 + 0.707106781186548*I]
+        [0.707106781186548, 0, -0.0 - 0.707106781186548*I, 0]
+        [0, 0.0 + 0.707106781186548*I, 0, 0.707106781186548]
+        [-0.0 - 0.707106781186548*I, 0, 0.707106781186548, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateECR(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── ECR @ q0, q1
+        └── ECR @ q[0,1]
+        <BLANKLINE>
         >>> GateECR().power(2), GateECR().inverse()
         (ECR^(2), ECR)
         >>> GateECR().decompose()
         2-qubit circuit with 3 instructions:
-        ├── RZX((1/4)*pi) @ q0, q1
-        ├── X @ q0
-        └── RZX((-1/4)*pi) @ q0, q1
+        ├── RZX((1/4)*pi) @ q[0,1]
+        ├── X @ q[0]
+        └── RZX((-1/4)*pi) @ q[0,1]
+        <BLANKLINE>
     """
     _name = 'ECR'
 
     _num_qubits = 2
     _qregsizes = [2]
 
-    def matrix(self):
-        return Matrix(sp.simplify(1/sqrt(2) * Matrix([[0, 1, 0, 1j],
+    def _matrix(self):
+        return 1/sqrt(2) * Matrix([[0, 1, 0, 1j],
                                    [1, 0, -I, 0],
                                    [0, I, 0, 1],
-                                   [-I, 0, 1, 0]])))
+                                   [-I, 0, 1, 0]])
 
     def inverse(self):
         return self

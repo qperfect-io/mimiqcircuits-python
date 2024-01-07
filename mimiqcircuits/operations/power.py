@@ -16,7 +16,7 @@
 
 
 from fractions import Fraction
-from symengine import Matrix, expand
+from symengine import Matrix
 from mimiqcircuits.printutils import print_wrapped_parens
 import sympy as sp
 import mimiqcircuits as mc
@@ -24,7 +24,7 @@ import mimiqcircuits as mc
 
 class Power(mc.Operation):
     """Power operation.
-    
+
     Represents a Power operation raised to a specified exponent.
 
     Examples:
@@ -32,19 +32,22 @@ class Power(mc.Operation):
         >>> c= Circuit()
         >>> c.push(Power(GateX(),1/2),1)
         2-qubit circuit with 1 instructions:
-        └── X^(1/2) @ q1
+        └── X^(1/2) @ q[1]
+        <BLANKLINE>
         >>> c.push(Power(GateX(),5),1)
         2-qubit circuit with 2 instructions:
-        ├── X^(1/2) @ q1
-        └── X^(5) @ q1
+        ├── X^(1/2) @ q[1]
+        └── X^(5) @ q[1]
+        <BLANKLINE>
         >>> c.decompose()
         2-qubit circuit with 6 instructions:
-        ├── X^(1/2) @ q1
-        ├── X @ q1
-        ├── X @ q1
-        ├── X @ q1
-        ├── X @ q1
-        └── X @ q1
+        ├── X^(1/2) @ q[1]
+        ├── X @ q[1]
+        ├── X @ q[1]
+        ├── X @ q[1]
+        ├── X @ q[1]
+        └── X @ q[1]
+        <BLANKLINE>
     """
     _name = 'Power'
 
@@ -68,6 +71,10 @@ class Power(mc.Operation):
             raise ValueError(
                 "Power operation cannot act on classical bits.")
 
+        if isinstance(op, (mc.Barrier,  mc.Reset, mc.Measure)):
+            raise TypeError(
+                f"{op.__class__.__name__} cannot be powered operation.")
+
         super().__init__()
 
         self._exponent = exponent
@@ -76,6 +83,8 @@ class Power(mc.Operation):
         self._num_qregs = op.num_qregs
         self._qregsizes = op.qregsizes
         self._parnames = op.parnames
+        if isinstance(op, mc.Power):
+            self._op = op.op.power(self._exponent)
 
     @property
     def op(self):
@@ -96,25 +105,46 @@ class Power(mc.Operation):
     def iswrapper(self):
         return True
 
-    def power(self, exponent):
-        return Power(self.op, self.exponent * exponent)
+    def _power(self, pwr):
+        return self.op.power(pwr * self._exponent)
+
+    def power(self, *args):
+        if len(args) == 0:
+            return mc.power(self)
+        elif len(args) == 1:
+            exponent = args[0]
+            return self._power(exponent)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
+    def __pow__(self, exponent):
+        return self.power(exponent)
 
     def inverse(self):
         return mc.Inverse(self)
 
-    def control(self, num_controls):
-        return mc.Control(num_controls, self)
+    def control(self, *args):
+        if len(args) == 0:
+            return mc.control(self)
+        elif len(args) == 1:
+            num_controls = args[0]
+            return mc.Control(num_controls, self)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
+    def parallel(self, *args):
+        if len(args) == 0:
+            return mc.parallel(self)
+        elif len(args) == 1:
+            num_repeats = args[0]
+            return mc.Parallel(num_repeats, self)
+        else:
+            raise ValueError("Invalid number of arguments.")
 
     def matrix(self):
         matrix = sp.Matrix(self.op.matrix().tolist())
         pow_matrix = matrix**(self.exponent)
-        return Matrix(sp.simplify(Matrix(pow_matrix.tolist())))
-
-    def decompose(self):
-        c = mc.Circuit()
-        qubits = [j for j in range(0, self.num_qubits)]
-        c.push(self, *qubits)
-        return c
+        return Matrix(sp.simplify(sp.Matrix(pow_matrix.tolist()).evalf()))
 
     def __str__(self):
         fraction = Fraction(self.exponent).limit_denominator(100)
@@ -122,6 +152,9 @@ class Power(mc.Operation):
             return f"{print_wrapped_parens(self.op)}^({fraction})"
         else:
             return f"{print_wrapped_parens(self.op)}^({self.exponent})"
+
+    def __repr__(self):
+        return self.__str__()
 
     def evaluate(self, d):
         exponent = self.exponent
@@ -135,7 +168,7 @@ class Power(mc.Operation):
             circ.push(self, *qubits)
 
         return circ
-    
+
     def decompose(self):
         return self._decompose(mc.Circuit(), range(self.num_qubits), range(self.num_bits))
 

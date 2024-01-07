@@ -14,15 +14,13 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.operations.operation import Operation
-from mimiqcircuits.operations.barrier import Barrier
-import mimiqcircuits.instruction as mi
+import mimiqcircuits as mc
 import copy
 from collections.abc import Iterable
 from itertools import repeat
 from mimiqcircuits.proto.circuitproto import *
 from mimiqcircuits.proto import circuit_pb
-import mimiqcircuits.operations.gates.custom as gc
+import shutil
 
 
 class Circuit:
@@ -50,78 +48,86 @@ class Circuit:
 
         >>> c.push(GateX(), 0)
         1-qubit circuit with 1 instructions:
-        └── X @ q0
+        └── X @ q[0]
+        <BLANKLINE>
 
         Add a Controlled-NOT (CX) gate with control qubit 0 and target qubit 1
 
         >>> c.push(GateCX(), 0, 1)
         2-qubit circuit with 2 instructions:
-        ├── X @ q0
-        └── CX @ q0, q1
+        ├── X @ q[0]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
 
-        Add a Parametric GateR gate with parameters np.pi and np.pi
+        Add a Parametric GateRX gate with parameters pi/4
 
         >>> c.push(GateRX(pi / 4),0)
         2-qubit circuit with 3 instructions:
-        ├── X @ q0
-        ├── CX @ q0, q1
-        └── RX((1/4)*pi) @ q0
+        ├── X @ q[0]
+        ├── CX @ q[0], q[1]
+        └── RX((1/4)*pi) @ q[0]
+        <BLANKLINE>
 
         Add a Reset gate on qubit 0
 
         >>> c.push(Reset(), 0)
         2-qubit circuit with 4 instructions:
-        ├── X @ q0
-        ├── CX @ q0, q1
-        ├── RX((1/4)*pi) @ q0
-        └── Reset @ q0
+        ├── X @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── RX((1/4)*pi) @ q[0]
+        └── Reset @ q[0]
+        <BLANKLINE>
 
         Add a Barrier gate on qubits 0 and 1
 
         >>> c.push(Barrier(2), 0, 1)
         2-qubit circuit with 5 instructions:
-        ├── X @ q0
-        ├── CX @ q0, q1
-        ├── RX((1/4)*pi) @ q0
-        ├── Reset @ q0
-        └── Barrier @ q0, q1
+        ├── X @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── RX((1/4)*pi) @ q[0]
+        ├── Reset @ q[0]
+        └── Barrier @ q[0,1]
+        <BLANKLINE>
 
         Add a Measurement gate on qubit 0, storing the result in bit 0.
 
         >>> c.push(Measure(), 0, 0)
         2-qubit circuit with 6 instructions:
-        ├── X @ q0
-        ├── CX @ q0, q1
-        ├── RX((1/4)*pi) @ q0
-        ├── Reset @ q0
-        ├── Barrier @ q0, q1
-        └── Measure @ q0, c0
+        ├── X @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── RX((1/4)*pi) @ q[0]
+        ├── Reset @ q[0]
+        ├── Barrier @ q[0,1]
+        └── Measure @ q[0], c[0]
+        <BLANKLINE>
 
-        Add a Control gate with multi-GateX as the target gates. The first 3
-        targets are the control qubits.
+        Add a Control gate with GateX as the target gate. The first 3
+        qubits are the control qubits.
 
         >>> c.push(Control(3, GateX()), 0, 1, 2, 3)
         4-qubit circuit with 7 instructions:
-        ├── X @ q0
-        ├── CX @ q0, q1
-        ├── RX((1/4)*pi) @ q0
-        ├── Reset @ q0
-        ├── Barrier @ q0, q1
-        ├── Measure @ q0, c0
-        └── C₃X @ q0, q1, q2, q3
+        ├── X @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── RX((1/4)*pi) @ q[0]
+        ├── Reset @ q[0]
+        ├── Barrier @ q[0,1]
+        ├── Measure @ q[0], c[0]
+        └── C₃X @ q[0,1,2], q[3]
+        <BLANKLINE>
 
         Add a 3-qubit Parallel gate with GateX
 
         >>> c.push(Parallel(3,GateX()),0, 1, 2)
         4-qubit circuit with 8 instructions:
-        ├── X @ q0
-        ├── CX @ q0, q1
-        ├── RX((1/4)*pi) @ q0
-        ├── Reset @ q0
-        ├── Barrier @ q0, q1
-        ├── Measure @ q0, c0
-        ├── C₃X @ q0, q1, q2, q3
-        └── Parallel(3, X) @ q0, q1, q2
+        ├── X @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── RX((1/4)*pi) @ q[0]
+        ├── Reset @ q[0]
+        ├── Barrier @ q[0,1]
+        ├── Measure @ q[0], c[0]
+        ├── C₃X @ q[0,1,2], q[3]
+        └── Parallel(3, X) @ q[0], q[1], q[2]
+        <BLANKLINE>
 
         To add operations without constructing them first, use the
         `c.emplace(...)` function.
@@ -139,7 +145,7 @@ class Circuit:
         :func:`GateID`
 
     **Single qubit gates (parametric)**
-        :func:`GateU` :func:`GateUPpase`
+        :func:`GateU` :func:`GateUPhase`
         :func:`GateP`
         :func:`GateRX` :func:`GateRY` :func:`GateRZ` :func:`GateP`
 
@@ -147,7 +153,8 @@ class Circuit:
         :func:`GateCX` :func:`GateCY` :func:`GateCZ`
         :func:`GateCH`
         :func:`GateSWAP` :func:`GateISWAP`
-        :func:`GateCS` :func:`GateCSX`
+        :func:`GateCS` :func:`GateCSX` 
+        :func:`GateECR` :func:`GateDCX` 
 
     **Two qubit gates (parametric)**
         :func:`GateCU`
@@ -168,6 +175,10 @@ class Circuit:
     **Composite operations**
         :func:`Control` :func:`Parallel`
 
+    **Power & Inverse operations**
+        :func:`Power`
+        :func:`Inverse`
+
     **Generalized gates**
         :func:`GPhase` :func:`QFT` :func:`PhaseGradient`
     """
@@ -182,7 +193,7 @@ class Circuit:
                 "Circuit should be initialized with a list of Instruction")
 
         for instruction in instructions:
-            if not isinstance(instruction, mi.Instruction):
+            if not isinstance(instruction, mc.Instruction):
                 raise TypeError(
                     "Non Gate object passed to constructor.")
 
@@ -249,88 +260,97 @@ class Circuit:
             >>> c = Circuit()
             >>> c.push(GateH(), 0)
             1-qubit circuit with 1 instructions:
-            └── H @ q0
+            └── H @ q[0]
+            <BLANKLINE>
             >>> c.push(GateT(), 0)
             1-qubit circuit with 2 instructions:
-            ├── H @ q0
-            └── T @ q0
+            ├── H @ q[0]
+            └── T @ q[0]
+            <BLANKLINE>
             >>> c.push(GateH(), [0,2])
             3-qubit circuit with 4 instructions:
-            ├── H @ q0
-            ├── T @ q0
-            ├── H @ q0
-            └── H @ q2
+            ├── H @ q[0]
+            ├── T @ q[0]
+            ├── H @ q[0]
+            └── H @ q[2]
+            <BLANKLINE>
             >>> c.push(GateS(), 0)
             3-qubit circuit with 5 instructions:
-            ├── H @ q0
-            ├── T @ q0
-            ├── H @ q0
-            ├── H @ q2
-            └── S @ q0
+            ├── H @ q[0]
+            ├── T @ q[0]
+            ├── H @ q[0]
+            ├── H @ q[2]
+            └── S @ q[0]
+            <BLANKLINE>
             >>> c.push(GateCX(), [2, 0], 1)
             3-qubit circuit with 7 instructions:
-            ├── H @ q0
-            ├── T @ q0
-            ├── H @ q0
-            ├── H @ q2
-            ├── S @ q0
-            ├── CX @ q2, q1
-            └── CX @ q0, q1
+            ├── H @ q[0]
+            ├── T @ q[0]
+            ├── H @ q[0]
+            ├── H @ q[2]
+            ├── S @ q[0]
+            ├── CX @ q[2], q[1]
+            └── CX @ q[0], q[1]
+            <BLANKLINE>
             >>> c.push(GateH(), 0)
             3-qubit circuit with 8 instructions:
-            ├── H @ q0
-            ├── T @ q0
-            ├── H @ q0
-            ├── H @ q2
-            ├── S @ q0
-            ├── CX @ q2, q1
-            ├── CX @ q0, q1
-            └── H @ q0
+            ├── H @ q[0]
+            ├── T @ q[0]
+            ├── H @ q[0]
+            ├── H @ q[2]
+            ├── S @ q[0]
+            ├── CX @ q[2], q[1]
+            ├── CX @ q[0], q[1]
+            └── H @ q[0]
+            <BLANKLINE>
             >>> c.push(Barrier(3), *range(3)) # equivalent to c.push(Barrier(3), 0, 1, 2)
             3-qubit circuit with 9 instructions:
-            ├── H @ q0
-            ├── T @ q0
-            ├── H @ q0
-            ├── H @ q2
-            ├── S @ q0
-            ├── CX @ q2, q1
-            ├── CX @ q0, q1
-            ├── H @ q0
-            └── Barrier @ q0, q1, q2
+            ├── H @ q[0]
+            ├── T @ q[0]
+            ├── H @ q[0]
+            ├── H @ q[2]
+            ├── S @ q[0]
+            ├── CX @ q[2], q[1]
+            ├── CX @ q[0], q[1]
+            ├── H @ q[0]
+            └── Barrier @ q[0,1,2]
+            <BLANKLINE>
             >>> c.push(Measure(), range(3), range(3))
             3-qubit circuit with 12 instructions:
-            ├── H @ q0
-            ├── T @ q0
-            ├── H @ q0
-            ├── H @ q2
-            ├── S @ q0
-            ├── CX @ q2, q1
-            ├── CX @ q0, q1
-            ├── H @ q0
-            ├── Barrier @ q0, q1, q2
-            ├── Measure @ q0, c0
-            ├── Measure @ q1, c1
-            └── Measure @ q2, c2
+            ├── H @ q[0]
+            ├── T @ q[0]
+            ├── H @ q[0]
+            ├── H @ q[2]
+            ├── S @ q[0]
+            ├── CX @ q[2], q[1]
+            ├── CX @ q[0], q[1]
+            ├── H @ q[0]
+            ├── Barrier @ q[0,1,2]
+            ├── Measure @ q[0], c[0]
+            ├── Measure @ q[1], c[1]
+            └── Measure @ q[2], c[2]
+            <BLANKLINE>
             >>> c
             3-qubit circuit with 12 instructions:
-            ├── H @ q0
-            ├── T @ q0
-            ├── H @ q0
-            ├── H @ q2
-            ├── S @ q0
-            ├── CX @ q2, q1
-            ├── CX @ q0, q1
-            ├── H @ q0
-            ├── Barrier @ q0, q1, q2
-            ├── Measure @ q0, c0
-            ├── Measure @ q1, c1
-            └── Measure @ q2, c2
+            ├── H @ q[0]
+            ├── T @ q[0]
+            ├── H @ q[0]
+            ├── H @ q[2]
+            ├── S @ q[0]
+            ├── CX @ q[2], q[1]
+            ├── CX @ q[0], q[1]
+            ├── H @ q[0]
+            ├── Barrier @ q[0,1,2]
+            ├── Measure @ q[0], c[0]
+            ├── Measure @ q[1], c[1]
+            └── Measure @ q[2], c[2]
+            <BLANKLINE>
         """
         N = 0
         M = 0
         L = len(args)
 
-        if isinstance(operation, mi.Instruction):
+        if isinstance(operation, mc.Instruction):
             if L != 0:
                 raise (ValueError(
                     "No extra arguments allowed when pushing an instruction."))
@@ -338,7 +358,7 @@ class Circuit:
             self.instructions.append(operation)
             return self
 
-        if not isinstance(operation, Operation):
+        if not isinstance(operation, mc.Operation):
             raise (TypeError("Non Operation object passed to push."))
 
         N = operation.num_qubits
@@ -374,16 +394,42 @@ class Circuit:
                 f"Invalid target type for {arg} of type {type(larg)}")
 
         for tg in zip(*targets):
-            if operation == Barrier:
+            if operation == mc.Barrier:
                 self.instructions.append(
-                    mi.Instruction(Barrier(N), (*tg,), ()))
+                    mc.Instruction(mc.Barrier(N), (*tg,), ()))
             else:
-                self.instructions.append(mi.Instruction(
+                self.instructions.append(mc.Instruction(
                     operation, (*tg[:N],), (*tg[N:],)))
 
         return self
 
-    def emplace(self, operation, *args):
+    def _emplace_operation(self, op, regs):
+        lr = len(regs)
+        lq = op.num_qregs
+        lc = op.num_cregs
+
+        qr = op.qregsizes
+        for i in range(lq):
+            if len(regs[i]) != qr[i]:
+                raise ValueError(
+                    f"Wrong size for {i}th quantum register. Expected {qr[i]} but got {len(regs[i])}.")
+
+        cr = op.cregsizes
+
+        for i in range(lc):
+            if len(regs[lq + i]) != cr[i]:
+                raise ValueError(
+                    f"Wrong size for {i}th classical register. Expected {cr[i]} but got {len(regs[lq + i])}.")
+
+        targets = []
+        for reg in regs:
+            targets.extend(reg)
+
+        self.push(op, *targets)
+
+        return self
+
+    def emplace(self, op, *regs):
         """
         Constructs and adds an Operation to the end of the circuit.
 
@@ -399,56 +445,40 @@ class Circuit:
                 every classical register supported.
 
         Examples:
-        
+
             >>> from mimiqcircuits import *
             >>> c = Circuit()
-            >>> c.emplace(GateX, [0])
+            >>> c.emplace(GateX(), [0])
             1-qubit circuit with 1 instructions:
-            └── X @ q0
-            >>> c.emplace(GateRX, [0.2], [0])
+            └── X @ q[0]
+            <BLANKLINE>
+            >>> c.emplace(GateRX(0.2), [0])
             1-qubit circuit with 2 instructions:
-            ├── X @ q0
-            └── RX(0.2) @ q0
-            >>> c.emplace(QFT, range(10))
+            ├── X @ q[0]
+            └── RX(0.2) @ q[0]
+            <BLANKLINE>
+            >>> c.emplace(QFT(), range(10))
             10-qubit circuit with 3 instructions:
-            ├── X @ q0
-            ├── RX(0.2) @ q0
-            └── QFT @ q0, q1, q2, q3, q4, q5, q6, q7, q8, q9
+            ├── X @ q[0]
+            ├── RX(0.2) @ q[0]
+            └── QFT @ q[0,1,2,3,4,5,6,7,8,9]
+            <BLANKLINE>
+
         """
-        if not issubclass(operation, Operation):
-            raise TypeError("Non Operation type passed to emplace.")
 
-        nqr = operation._num_qregs
-        ncr = operation._num_cregs
-
-        if len(operation._parnames) == 0:
-            np = 0
+        if isinstance(op, mc.LazyExpr):
+            self._emplace_operation(op(*[len(reg) for reg in regs]), regs)
+        elif isinstance(op, mc.Parallel):
+            if any((isinstance(reg, Iterable) and len(reg) != 1) for reg in regs):
+                raise ValueError(
+                    "Each iterable should contain exactly one qubit.")
+            self.push(op, *regs)
+        elif isinstance(op, mc.Operation):
+            self._emplace_operation(op, regs)
+        elif isinstance(op, type) and issubclass(op, mc.Operation):
+            self._emplace_operation(op, regs)
         else:
-            np = 1
-
-        if len(args) != nqr + ncr + np:
-            raise ValueError(
-                f"Wrong number of arguments. Expected {nqr + ncr + np} lists, got {len(args)}")
-
-        opargs = []
-        if operation._num_qubits is None:
-            opargs.extend([len(x) for x in args[np:nqr+np]])
-        if operation._num_bits is None:
-            opargs.extend([len(x) for x in args[nqr+np:]])
-        if np != 0:
-            opargs.extend(args[0])
-
-        op = operation(*opargs)
-
-        qubits = []
-        for q in args[np:np+nqr]:
-            qubits.extend(q)
-
-        bits = []
-        for b in args[np+nqr:]:
-            bits.extend(b)
-
-        self.push(op, *qubits, *bits)
+            raise TypeError("Invalid type passed to emplace")
 
         return self
 
@@ -477,22 +507,25 @@ class Circuit:
             >>> c= Circuit()
             >>> c.push(GateX(), 0)
             1-qubit circuit with 1 instructions:
-            └── X @ q0
+            └── X @ q[0]
+            <BLANKLINE>
             >>> c.push(GateCX(),0,1)
             2-qubit circuit with 2 instructions:
-            ├── X @ q0
-            └── CX @ q0, q1
+            ├── X @ q[0]
+            └── CX @ q[0], q[1]
+            <BLANKLINE>
             >>> c.insert(1, GateH(), 0)
             2-qubit circuit with 3 instructions:
-            ├── X @ q0
-            ├── H @ q0
-            └── CX @ q0, q1
+            ├── X @ q[0]
+            ├── H @ q[0]
+            └── CX @ q[0], q[1]
+            <BLANKLINE>
         """
         N = 0
         M = 0
         L = len(args)
 
-        if isinstance(operation, mi.Instruction):
+        if isinstance(operation, mc.Instruction):
             if L != 0:
                 raise (ValueError(
                     "No extra arguments allowed when inserting an instruction."))
@@ -500,10 +533,10 @@ class Circuit:
             self.instructions.insert(index, operation)
             return self
 
-        if operation == Barrier:
+        if operation == mc.Barrier:
             N = L
         else:
-            if not isinstance(operation, Operation):
+            if not isinstance(operation, mc.Operation):
                 raise (TypeError("Non Operation object passed to push."))
 
             N = operation.num_qubits
@@ -514,11 +547,11 @@ class Circuit:
                 f"Wrong number of target qubits and bits, given {L} for a {N} qubits + {M} bits operation."
             ))
 
-        if operation == Barrier:
+        if operation == mc.Barrier:
             self.instructions.insert(
-                index, mi.Instruction(Barrier(N), (*args,), ()))
+                index, mc.Instruction(mc.Barrier(N), (*args,), ()))
         else:
-            self.instructions.insert(index, mi.Instruction(
+            self.instructions.insert(index, mc.Instruction(
                 operation, (*args[:N],), (*args[N:],)))
 
         return self
@@ -597,20 +630,34 @@ class Circuit:
         return self.instructions[index]
 
     def __str__(self):
+        compact = False
+        lines = shutil.get_terminal_size().lines
+
         n = len(self)
 
-        if n == 0:
-            return 'empty circuit'
+        output = ""
 
-        nq = self.num_qubits()
-        output = f'{nq}-qubit circuit with {n} instructions:'
+        if not compact and n > 0:
+            nq = self.num_qubits()
+            output += f'{nq}-qubit circuit with {n} instructions:\n'
 
-        # iterate from the second gate
-        for g in self.instructions[:-1]:
-            output += f'\n├── {g}'
+            if lines - 4 <= 0:
+                output += "└── ...\n"
+            else:
+                max_display = min(n, lines - 4)
 
-        g = self.instructions[-1]
-        output += f'\n└── {g}'
+                for g in self.instructions[:max_display - 1]:
+                    output += f'├── {g}\n'
+
+                if n > max_display:
+                    output += '⋮   ⋮\n'
+
+                g = self.instructions[-1]
+                output += f'└── {g}\n'
+
+        else:
+            if n == 0:
+                output += 'empty circuit'
 
         return output
 
@@ -633,7 +680,7 @@ class Circuit:
         d = [0 for _ in range(self.num_qubits() + self.num_bits())]
 
         for g in self:
-            if isinstance(g.operation, Barrier):
+            if isinstance(g.operation, mc.Barrier):
                 continue
             nq = self.num_qubits()
             optargets = g.qubits + tuple(map(lambda x: x + nq, g.bits))

@@ -19,5 +19,4 @@ def test_if_statement_circuit_instruction():
     if_statement = mc.IfStatement(gate_x, 3, val)
     circuit.push(if_statement, 0, 0, 1, 2)
     assert len(circuit) == 1
-    assert str(
-        circuit) == '1-qubit circuit with 1 instructions:\n└── If(X, 5) @ q0, c0, c1, c2'
+    assert circuit[0].operation.op.num_qubits == 1

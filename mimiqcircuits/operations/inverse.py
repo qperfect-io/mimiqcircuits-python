@@ -17,6 +17,7 @@
 import mimiqcircuits as mc
 import sympy as sp
 import symengine as se
+import mimiqcircuits.lazy as lz
 from mimiqcircuits.printutils import print_wrapped_parens
 
 
@@ -34,13 +35,14 @@ class Inverse(mc.Operation):
     Examples:
         >>> from mimiqcircuits import *
         >>> Inverse(GateP(1)).matrix()
-        [1, 0]
-        [0, exp(-I)]
+        [1.0, 0]
+        [0, 0.54030230586814 - 0.841470984807897*I]
         <BLANKLINE>
         >>> c = Circuit()
         >>> c.push(Inverse(GateP(1)), 1)
         2-qubit circuit with 1 instructions:
-        └── P(1)† @ q1
+        └── P(1)† @ q[1]
+        <BLANKLINE>
     """
     _name = 'Inverse'
     _num_qubits = None
@@ -57,6 +59,10 @@ class Inverse(mc.Operation):
             op = operation
         else:
             raise ValueError("Operation must be an Operation object or type.")
+
+        if isinstance(op, (mc.Barrier, mc.Reset, mc.Measure)):
+            raise TypeError(
+                f"{op.__class__.__name__} cannot be Inversed operation.")
 
         if op.num_bits != 0:
             raise ValueError("Cannot inverte operation with classical bits.")
@@ -77,14 +83,41 @@ class Inverse(mc.Operation):
     def inverse(self):
         return self.op
 
-    def power(self, pwr):
+    def _power(self, pwr):
         return mc.Power(self, pwr)
 
-    def control(self, num_controls):
-        return mc.Control(num_controls, self)
+    def power(self, *args):
+        if len(args) == 0:
+            return lz.power(self)
+        elif len(args) == 1:
+            pwr = args[0]
+            return self._power(pwr)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
+    def __pow__(self, pwr):
+        return self.power(pwr)
+
+    def control(self, *args):
+        if len(args) == 0:
+            return lz.control(self)
+        elif len(args) == 1:
+            num_controls = args[0]
+            return mc.Control(num_controls, self)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
+    def parallel(self, *args):
+        if len(args) == 0:
+            return lz.parallel(self)
+        elif len(args) == 1:
+            num_repeats = args[0]
+            return mc.Parallel(num_repeats, self)
+        else:
+            raise ValueError("Invalid number of arguments.")
 
     def matrix(self):
-        return se.Matrix(sp.simplify(self.op.matrix().inv()))
+        return se.Matrix(sp.simplify(sp.Matrix(self.op.matrix().inv()).evalf()))
 
     def evaluate(self, d):
         return self.op.evaluate(d).inverse()
