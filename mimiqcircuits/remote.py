@@ -180,10 +180,10 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         if (algorithm == "auto" or algorithm == "mps") and entdim is None:
             entdim = DEFAULT_ENTDIM
 
-        if bonddim < MIN_BONDDIM or bonddim > MAX_BONDDIM:
+        if bonddim is not None and (bonddim < MIN_BONDDIM or bonddim > MAX_BONDDIM):
             raise ValueError(f"bonddim must be between {MIN_BONDDIM} and {MAX_BONDDIM}")
 
-        if entdim < MIN_ENTDIM or entdim > MAX_ENTDIM:
+        if entdim is not None and (entdim < MIN_ENTDIM or entdim > MAX_ENTDIM):
             raise ValueError(f"entdim must be between {MIN_ENTDIM} and {MAX_ENTDIM}")
 
         if nsamples > MAX_SAMPLES:
