@@ -16,8 +16,7 @@
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.u import GateU
-from mimiqcircuits.operations.gates.generalized.gphase import GPhase
-from mimiqcircuits.matrices import pmatrix, umatrix, gphase
+from mimiqcircuits.matrices import pmatrix, umatrix
 from symengine import pi
 
 
@@ -56,15 +55,16 @@ class GateU1(mcg.Gate):
         (U1(2*lambda), U1(-lambda))
         >>> GateU1(lmbda).decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, lambda) @ q[0]
+        └── U(0, 0, lambda, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'U1'
+
+    _name = "U1"
 
     _num_qubits = 1
     _qregsizes = [1]
 
-    _parnames = ('lmbda',)
+    _parnames = ("lmbda",)
 
     def __init__(self, lmbda):
         self.lmbda = lmbda
@@ -107,8 +107,8 @@ class GateU2(mcg.Gate):
         >>> GateU2(phi, lmbda)
         U2(phi, lambda)
         >>> GateU2(phi, lmbda).matrix()
-        [(0.5 + 0.5*I)*exp(-I*((1/2)*lambda + (1/2)*phi + (1/4)*pi)), (-0.5 - 0.5*I)*exp(I*lambda - I*((1/2)*lambda + (1/2)*phi + (1/4)*pi))]
-        [(0.5 + 0.5*I)*exp(I*phi - I*((1/2)*lambda + (1/2)*phi + (1/4)*pi)), (0.5 + 0.5*I)*exp(I*(lambda + phi) - I*((1/2)*lambda + (1/2)*phi + (1/4)*pi))]
+        [0.707106781186548, -0.707106781186548*exp(I*lambda)]
+        [0.707106781186548*exp(I*phi), 0.707106781186548*exp(I*(lambda + phi))]
         <BLANKLINE>
         >>> c = Circuit().push(GateU2(phi, lmbda), 0)
         >>> c
@@ -116,34 +116,33 @@ class GateU2(mcg.Gate):
         └── U2(phi, lambda) @ q[0]
         <BLANKLINE>
         >>> GateU2(phi, lmbda).power(2), GateU2(phi, lmbda).inverse()
-        (U2(phi, lambda)^(2), U2(-lambda - pi, -phi + pi))
+        (U2(phi, lambda)**2, U2(-lambda - pi, -phi + pi))
         >>> GateU2(phi, lmbda).decompose()
-        1-qubit circuit with 2 instructions:
-        ├── GPhase((-1/2)*(lambda + phi + (1/2)*pi)) @ q[0]
-        └── U((1/2)*pi, phi, lambda) @ q[0]
+        1-qubit circuit with 1 instructions:
+        └── U((1/2)*pi, phi, lambda, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'U2'
+
+    _name = "U2"
 
     _num_qubits = 1
     _qregsizes = [1]
 
-    _parnames = ('phi', 'lmbda')
+    _parnames = ("phi", "lmbda")
 
     def __init__(self, phi, lmbda):
         self.phi = phi
         self.lmbda = lmbda
 
     def _matrix(self):
-        return gphase(-(self.phi + self.lmbda + pi/2)/2) * umatrix(pi/2, self.phi, self.lmbda)
+        return umatrix(pi / 2, self.phi, self.lmbda)
 
     def inverse(self):
         return GateU2(-self.lmbda - pi, -self.phi + pi)
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
-        circ.push(GPhase(1, -(self.lmbda + self.phi + pi/2)/2), q)
-        circ.push(GateU(pi/2, self.phi, self.lmbda), q)
+        circ.push(GateU(pi / 2, self.phi, self.lmbda), q)
         return circ
 
 
@@ -173,24 +172,24 @@ class GateU3(mcg.Gate):
         >>> GateU3(theta, phi, lmbda)
         U3(theta, phi, lambda)
         >>> GateU3(theta, phi, lmbda).matrix()
-        [0.5*exp(I*((-1/2)*lambda + (-1/2)*phi + (-1/2)*theta))*(1.0 + exp(I*theta)), (0.0 + 0.5*I)*exp(I*lambda + I*((-1/2)*lambda + (-1/2)*phi + (-1/2)*theta))*(-1.0 + exp(I*theta))]
-        [(-0.0 - 0.5*I)*exp(I*phi - I*((1/2)*lambda + (1/2)*phi + (1/2)*theta))*(-1.0 + exp(I*theta)), 0.5*exp(I*(lambda + phi) + I*((-1/2)*lambda + (-1/2)*phi + (-1/2)*theta))*(1.0 + exp(I*theta))]
+        [1.0*cos((1/2)*theta), -exp(I*lambda)*sin((1/2)*theta)]
+        [exp(I*phi)*sin((1/2)*theta), exp(I*(lambda + phi))*cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateU3(theta, phi, lmbda), 0)
         >>> GateU3(theta, phi, lmbda).power(2), GateU3(theta, phi, lmbda).inverse()
-        (U3(theta, phi, lambda)^(2), U3(-theta, -lambda, -phi))
+        (U3(theta, phi, lambda)**2, U3(-theta, -lambda, -phi))
         >>> GateU3(theta, phi, lmbda).decompose()
-        1-qubit circuit with 2 instructions:
-        ├── GPhase((-1/2)*(lambda + phi + theta)) @ q[0]
-        └── U(theta, phi, lambda) @ q[0]
+        1-qubit circuit with 1 instructions:
+        └── U(theta, phi, lambda, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'U3'
+
+    _name = "U3"
 
     _num_qubits = 1
     _qregsizes = [1]
 
-    _parnames = ('theta', 'phi', 'lmbda')
+    _parnames = ("theta", "phi", "lmbda")
 
     def __init__(self, theta, phi, lmbda):
         self.theta = theta
@@ -198,13 +197,12 @@ class GateU3(mcg.Gate):
         self.lmbda = lmbda
 
     def _matrix(self):
-        return gphase(-(self.phi + self.lmbda + self.theta) / 2) * umatrix(self.theta, self.phi, self.lmbda)
+        return umatrix(self.theta, self.phi, self.lmbda)
 
     def inverse(self):
         return GateU3(-self.theta, -self.lmbda, -self.phi)
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
-        circ.push(GPhase(1, -(self.theta+self.phi + self.lmbda)/2), q)
         circ.push(GateU(self.theta, self.phi, self.lmbda), q)
         return circ

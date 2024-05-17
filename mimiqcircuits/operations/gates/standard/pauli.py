@@ -15,14 +15,11 @@
 #
 
 import mimiqcircuits.operations.gates.gate as mcg
-from mimiqcircuits.operations.utils import (
-    power_nhilpotent, control_one_defined)
+from mimiqcircuits.operations.utils import power_idempotent, control_one_defined
 from mimiqcircuits.operations.gates.standard.phase import GateP
 from mimiqcircuits.operations.gates.standard.u import GateU
-from mimiqcircuits.operations.gates.generalized.gphase import GPhase
-from mimiqcircuits.matrices import umatrixpi, gphasepi
 import mimiqcircuits as mc
-from symengine import pi
+from symengine import pi, I, Matrix
 
 
 class GateX(mcg.Gate):
@@ -52,12 +49,12 @@ class GateX(mcg.Gate):
         >>> GateX().power(2), GateX().inverse()
         (ID, X)
         >>> GateX().decompose()
-        1-qubit circuit with 2 instructions:
-        ├── U(pi, 0, pi) @ q[0]
-        └── GPhase((-1/2)*pi) @ q[0]
+        1-qubit circuit with 1 instructions:
+        └── U(pi, 0, pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'X'
+
+    _name = "X"
 
     _num_qubits = 1
     _qregsizes = [1]
@@ -66,18 +63,29 @@ class GateX(mcg.Gate):
         return self
 
     def _power(self, p):
-        return power_nhilpotent(self, p)
+        pmod = p % 2
+
+        # sqrt(X) = SX
+        if pmod == 1 / 2:
+            return mc.GateSX()
+
+        # SX * SX^3 = X * X = ID => SX^3 = SXDG
+        if pmod == 3 / 2:
+            return mc.GateSXDG()
+
+        # X^(2n) = ID
+        # X^(2n + 1) = X
+        return power_idempotent(self, p)
 
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCX(), mc.GateCCX(), mc.GateC3X())
 
     def _matrix(self):
-        return umatrixpi(1, 0, 1) * gphasepi(-1/2)
+        return Matrix([[0, 1], [1, 0]])
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
         circ.push(GateU(pi, 0, pi), q)
-        circ.push(GPhase(1, -pi/2), q)
         return circ
 
 
@@ -104,12 +112,12 @@ class GateY(mcg.Gate):
         >>> GateY().power(2), GateY().inverse()
         (ID, Y)
         >>> GateY().decompose()
-        1-qubit circuit with 2 instructions:
-        ├── U(pi, (1/2)*pi, (1/2)*pi) @ q[0]
-        └── GPhase((-1/2)*pi) @ q[0]
+        1-qubit circuit with 1 instructions:
+        └── U(pi, (1/2)*pi, (1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'Y'
+
+    _name = "Y"
 
     _num_qubits = 1
     _qregsizes = [1]
@@ -118,18 +126,19 @@ class GateY(mcg.Gate):
         return self
 
     def _power(self, p):
-        return power_nhilpotent(self, p)
+        # Y^(2n) = ID
+        # Y^(2n + 1) = Y
+        return power_idempotent(self, p)
 
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCY())
 
     def _matrix(self):
-        return umatrixpi(1, 1/2, 1/2) * gphasepi(-1/2)
+        return Matrix([[0, -I], [I, 0]])
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
         circ.push(GateU(pi, pi/2, pi/2), q)
-        circ.push(GPhase(1, -pi/2), q)
         return circ
 
 
@@ -160,7 +169,8 @@ class GateZ(mcg.Gate):
         └── P(pi) @ q[0]
         <BLANKLINE>
     """
-    _name = 'Z'
+
+    _name = "Z"
 
     _num_qubits = 1
     _qregsizes = [1]
@@ -169,13 +179,33 @@ class GateZ(mcg.Gate):
         return self
 
     def _power(self, p):
-        return power_nhilpotent(self, p)
+        pmod = p % 2
+
+        # sqrt(Z) = S
+        if pmod == 1 / 2:
+            return mc.GateS()
+
+        # S * S^3 = Z * Z = ID => S^3 = SDG
+        if pmod == 3 / 2:
+            return mc.GateSDG()
+
+        # sqrt(S) = T
+        if pmod == 1 / 4:
+            return mc.GateT()
+
+        # T * T^7 = S^2 * S^2 = Z * Z = ID => T^7 = TDG
+        if pmod == 7 / 4:
+            return mc.GateTDG()
+
+        # Z^(2n) = ID
+        # Z^(2n + 1) = Z
+        return power_idempotent(self, p)
 
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCZ())
 
     def _matrix(self):
-        return umatrixpi(0, 0, 1)
+        return Matrix([[1, 0], [0, -1]])
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]

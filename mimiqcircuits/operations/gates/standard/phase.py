@@ -25,9 +25,11 @@ class GateP(mc.Gate):
     **Matrix representation:**
 
     .. math::
-        \operatorname{P}(\lambda) = \begin{pmatrix}
+        \operatorname{P}(\lambda) =
+        \operatorname{U}(0,0,\lambda) =
+        \begin{pmatrix}
             1 & 0 \\
-            0 & e^{i\lambda}
+            0 & \mathrm{e}^{i\lambda}
         \end{pmatrix}
 
     Parameters:
@@ -52,7 +54,7 @@ class GateP(mc.Gate):
         (P(2*lambda), P(-lambda))
         >>> GateP(lmbda).decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, lambda) @ q[0]
+        └── U(0, 0, lambda, 0.0) @ q[0]
         <BLANKLINE>
     """
     _name = 'P'

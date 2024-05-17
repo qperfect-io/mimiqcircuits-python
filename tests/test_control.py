@@ -104,7 +104,7 @@ def test_decompose():
     # Test decompose for a Control gate with one control
     control = mc.Control(1, mc.GateX())
     circuit = control.decompose()
-    assert len(circuit) == 2
+    assert len(circuit) == 1
 
 
 def test_control_matrix():

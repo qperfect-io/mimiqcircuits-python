@@ -19,94 +19,97 @@ import mimiqcircuits as mc
 
 class GateDecl:
     """
-Simple declaration of gates using the @gatedecl decorator.
+    Simple declaration of gates using the @gatedecl decorator.
 
-Examples:
+    Examples:
 
-    **First way**
+        **First way**
 
-    >>> from symengine import symbols
-    >>> from mimiqcircuits import *
+        >>> from symengine import symbols
+        >>> from mimiqcircuits import *
 
-    Define symbols for the gate arguments
+        Define symbols for the gate arguments
 
-    >>> x, y = symbols('x y')
+        >>> x, y = symbols('x y')
 
-    Declare a gate using the @gatedecl decorator
+        Declare a gate using the @gatedecl decorator
 
-    >>> @gatedecl("ansatz")
-    ... def ansatz(x):
-    ...     insts = [
-    ...         Instruction(GateX(), (1,)),
-    ...         Instruction(GateRX(x), (2,))
-    ...     ]
-    ...     return insts
+        >>> @gatedecl("ansatz")
+        ... def ansatz(x):
+        ...     insts = [
+        ...         Instruction(GateX(), (1,)),
+        ...         Instruction(GateRX(x), (2,))
+        ...     ]
+        ...     return insts
 
-    Create a GateDecl object using the decorator
+        Create a GateDecl object using the decorator
 
-    >>> ansatz(x)
-    gate ansatz(x) =
-    ├── X @ q[1]
-    └── RX(x) @ q[2]
-    <BLANKLINE>
+        >>> ansatz(x)
+        gate ansatz(x) =
+        ├── X @ q[1]
+        └── RX(x) @ q[2]
+        <BLANKLINE>
 
-    >>> ansatz(y)
-    gate ansatz(y) =
-    ├── X @ q[1]
-    └── RX(y) @ q[2]
-    <BLANKLINE>
+        >>> ansatz(y)
+        gate ansatz(y) =
+        ├── X @ q[1]
+        └── RX(y) @ q[2]
+        <BLANKLINE>
 
-    Decompose the GateCall into a quantum circuit
+        Decompose the GateCall into a quantum circuit
 
-    >>> GateCall(ansatz(x), (1.57,)).decompose()
-    3-qubit circuit with 2 instructions:
-    ├── X @ q[1]
-    └── RX(1.57) @ q[2]
-    <BLANKLINE>
+        >>> GateCall(ansatz(x), (1.57,)).decompose()
+        3-qubit circuit with 2 instructions:
+        ├── X @ q[1]
+        └── RX(1.57) @ q[2]
+        <BLANKLINE>
 
-    >>> GateCall(ansatz(y), (1.57,)).decompose()
-    3-qubit circuit with 2 instructions:
-    ├── X @ q[1]
-    └── RX(1.57) @ q[2]
-    <BLANKLINE>
+        >>> GateCall(ansatz(y), (1.57,)).decompose()
+        3-qubit circuit with 2 instructions:
+        ├── X @ q[1]
+        └── RX(1.57) @ q[2]
+        <BLANKLINE>
 
-    **Second Way**
+        **Second Way**
 
-    >>> from symengine import *
-    >>> from mimiqcircuits import *
+        >>> from symengine import *
+        >>> from mimiqcircuits import *
 
-    Define symbols for the gate arguments
+        Define symbols for the gate arguments
 
-    >>> x, y = symbols('x y')
+        >>> x, y = symbols('x y')
 
-    Create a GateDecl object using the GateDecl class
+        Create a GateDecl object using the GateDecl class
 
-    >>> gate_decl = GateDecl("ansatz", ('x','y'), [Instruction(GateXXplusYY(x,y), (1,2)), Instruction(GateRX(x),(2,))])
-    >>> GateCall(gate_decl, (2,4))
-    ansatz(2, 4)
+        >>> gate_decl = GateDecl("ansatz", ('x','y'), [Instruction(GateXXplusYY(x,y), (1,2)), Instruction(GateRX(x),(2,))])
+        >>> GateCall(gate_decl, (2,4))
+        ansatz(2, 4)
 
-    Decompose the GateCall into a quantum circuit
+        Decompose the GateCall into a quantum circuit
 
-    >>> GateCall(gate_decl, (2,4)).decompose()
-    3-qubit circuit with 2 instructions:
-    ├── XXplusYY(2, 4) @ q[1,2]
-    └── RX(2) @ q[2]
-    <BLANKLINE>
+        >>> GateCall(gate_decl, (2,4)).decompose()
+        3-qubit circuit with 2 instructions:
+        ├── XXplusYY(2, 4) @ q[1,2]
+        └── RX(2) @ q[2]
+        <BLANKLINE>
 
-    Add to Circuit
+        Add to Circuit
 
-    >>> g = GateCall(gate_decl, (2,4))
-    >>> c = Circuit()
-    >>> c.push(g,10,22)
-    23-qubit circuit with 1 instructions:
-    └── ansatz(2, 4) @ q[10,22]
-    <BLANKLINE>
-"""
+        >>> g = GateCall(gate_decl, (2,4))
+        >>> c = Circuit()
+        >>> c.push(g,10,22)
+        23-qubit circuit with 1 instructions:
+        └── ansatz(2, 4) @ q[10,22]
+        <BLANKLINE>
+    """
+
     _num_qubits = None
     _num_bits = None
-    _name = 'GateDecl'
+    _name = "GateDecl"
 
-    def __init__(self, name: str, arguments: Tuple[str, ...], instructions: List[mc.Instruction]):
+    def __init__(
+        self, name: str, arguments: Tuple[str, ...], instructions: List[mc.Instruction]
+    ):
         if not all(isinstance(arg, str) for arg in arguments):
             raise TypeError("All GateDecl arguments must be strings.")
 
@@ -143,9 +146,9 @@ Examples:
 
 
 class GateCall(mc.Gate):
-    """GateCall
-    """
-    _name = 'GateCall'
+    """GateCall"""
+
+    _name = "GateCall"
     _num_bits = 0
     _num_qubits = None
 
@@ -176,8 +179,10 @@ class GateCall(mc.Gate):
         return str(self)
 
     def evaluate(self, d):
-        new_args = [arg.subs(d) if not isinstance(
-            arg, (int, float)) else arg for arg in self._args]
+        new_args = [
+            arg.subs(d) if not isinstance(arg, (int, float)) else arg
+            for arg in self._args
+        ]
         return type(self)(self._decl, tuple(new_args))
 
 
@@ -185,11 +190,14 @@ def gatedecl(name):
     def decorator(func):
         def wrapper(*args, **kwargs):
             instructions = func(*args, **kwargs)
-            arguments = [str(arg) for arg in args] + \
-                [f"{key}={value}" for key, value in kwargs.items()]
+            arguments = [str(arg) for arg in args] + [
+                f"{key}={value}" for key, value in kwargs.items()
+            ]
             return GateDecl(name, arguments, instructions)
+
         return wrapper
+
     return decorator
 
 
-__all__ = ['GateCall', 'GateDecl', 'gatedecl']
+__all__ = ["GateCall", "GateDecl", "gatedecl"]

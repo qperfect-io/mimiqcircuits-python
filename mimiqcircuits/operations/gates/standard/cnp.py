@@ -1,4 +1,3 @@
-
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
 #

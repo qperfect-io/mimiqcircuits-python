@@ -16,6 +16,7 @@
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.interactions import GateRZX
+from mimiqcircuits.operations.utils import power_idempotent
 from mimiqcircuits.operations.gates.standard.pauli import GateX
 from symengine import sqrt, I, pi, Matrix
 
@@ -38,10 +39,10 @@ class GateECR(mcg.Gate):
         >>> GateECR()
         ECR
         >>> GateECR().matrix()
-        [0, 0.707106781186548, 0, 0.0 + 0.707106781186548*I]
-        [0.707106781186548, 0, -0.0 - 0.707106781186548*I, 0]
-        [0, 0.0 + 0.707106781186548*I, 0, 0.707106781186548]
-        [-0.0 - 0.707106781186548*I, 0, 0.707106781186548, 0]
+        [0, 0, 0.707106781186548, 0.0 + 0.707106781186548*I]
+        [0, 0, 0.0 + 0.707106781186548*I, 0.707106781186548]
+        [0.707106781186548, -0.0 - 0.707106781186548*I, 0, 0]
+        [-0.0 - 0.707106781186548*I, 0.707106781186548, 0, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateECR(), 0, 1)
         >>> c
@@ -49,7 +50,7 @@ class GateECR(mcg.Gate):
         └── ECR @ q[0,1]
         <BLANKLINE>
         >>> GateECR().power(2), GateECR().inverse()
-        (ECR^(2), ECR)
+        (Parallel(2, ID), ECR)
         >>> GateECR().decompose()
         2-qubit circuit with 3 instructions:
         ├── RZX((1/4)*pi) @ q[0,1]
@@ -57,24 +58,29 @@ class GateECR(mcg.Gate):
         └── RZX((-1/4)*pi) @ q[0,1]
         <BLANKLINE>
     """
-    _name = 'ECR'
+
+    _name = "ECR"
 
     _num_qubits = 2
     _qregsizes = [2]
 
     def _matrix(self):
-        return 1/sqrt(2) * Matrix([[0, 1, 0, 1j],
-                                   [1, 0, -I, 0],
-                                   [0, I, 0, 1],
-                                   [-I, 0, 1, 0]])
+        return Matrix([[0, 0, 1, I],
+                       [0, 0, I, 1],
+                       [1, -I, 0, 0],
+                       [-I, 1, 0, 0]]) / sqrt(2)
 
     def inverse(self):
         return self
 
+    def _power(self, p):
+        return power_idempotent(self, p)
+
     def _decompose(self, circ, qubits, bits):
         a, b = qubits
 
-        circ.push(GateRZX(pi/4), a, b)
+        circ.push(GateRZX(pi / 4), a, b)
         circ.push(GateX(), a)
-        circ.push(GateRZX(-pi/4), a, b)
+        circ.push(GateRZX(-pi / 4), a, b)
         return circ
+

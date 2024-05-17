@@ -1,6 +1,7 @@
 from mimiqcircuits.proto.qcsrproto import toproto_qcsr, fromproto_qcsr
 from mimiqcircuits.proto import qcsresults_pb
 from mimiqcircuits.bitstrings import bitvec_to_int
+from statistics import mean, median, stdev
 
 
 class QCSResults:
@@ -11,15 +12,25 @@ class QCSResults:
         simulator (str): The name of the quantum simulator.
         version (str): The version of the quantum simulator.
         fidelities (list): List of fidelity estimates from different executions.
-        avggateerrors (list): List of average ≥2-qubit gate errors from different executions.
+        avggateerrors (list): List of average multi-qubit gate errors from different executions.
         cstates (list): List of classical states obtained from executions.
         zstates (list): Not used in the current implementation.
         amplitudes (dict): Dictionary of statevector amplitudes for different quantum states.
         timings (dict): Dictionary of timing information for different phases of the computation.
 
-"""
+    """
 
-    def __init__(self, simulator=None, version=None, fidelities=None, avggateerrors=None, cstates=None, zstates=None, amplitudes=None, timings=None):
+    def __init__(
+        self,
+        simulator=None,
+        version=None,
+        fidelities=None,
+        avggateerrors=None,
+        cstates=None,
+        zstates=None,
+        amplitudes=None,
+        timings=None,
+    ):
         self.simulator = simulator
         self.version = version
         self.fidelities = fidelities if fidelities is not None else []
@@ -36,58 +47,81 @@ class QCSResults:
         for key, value in self.timings.items():
             result_str += f"├── {key} time: {value}s\n"
         result_str += f"├── fidelity estimate (min,max): ({min(self.fidelities):.3f}, {max(self.fidelities):.3f})\n"
-        result_str += f"├── average ≥2-qubit gate error (min,max): ({min(self.avggateerrors):.3f}, {max(self.avggateerrors):.3f})\n"
+        result_str += f"├── average multi-qubit gate error (min,max): ({min(self.avggateerrors):.3f}, {max(self.avggateerrors):.3f})\n"
         result_str += f"├── {len(self.fidelities)} executions\n"
         result_str += f"├── {len(self.amplitudes)} amplitudes\n"
         result_str += f"└── {len(self.cstates)} samples"
         return result_str
 
     def _repr_html_(self):
-        html_output = "<h3>QCSResults</h3>"
+        html_output = "<table><tbody>"
 
-        html_output += "<h4>Simulator</h4>"
-        html_output += "<table>"
-        html_output += f"<tr><td>{self.simulator} {self.version}</td></tr>"
-        html_output += "</table>"
+        # QCSResults Header
+        html_output += '<tr><td colspan=2 style="text-align:center;"><strong>QCSResults</strong></td></tr>'
+        html_output += "<tr><td colspan=2><hr></td></tr>"
 
-        html_output += "<h4>Timings</h4>"
-        html_output += "<table>"
+        # Simulator Information
+        html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Simulator</strong></td></tr>'
+        html_output += f'<tr><td colspan=2 style="text-align:center;">{self.simulator} {self.version}</td></tr>'
+        html_output += "<tr><td colspan=2><hr></td></tr>"
+
+        # Timings
+        html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Timings</strong></td></tr>'
         for key, value in self.timings.items():
-            html_output += f"<tr><td>{key} time</td><td>{value}s</td></tr>"
-        html_output += "</table>"
+            html_output += f'<tr><td style="text-align:left;">{key} time</td><td>{value}s</td></tr>'
+        html_output += "<tr><td colspan=2><hr></td></tr>"
 
-        html_output += "<h4>Accuracy</h4>"
-        html_output += "<table>"
-        html_output += "<tr><td>Estimate</td><td>minimum</td><td>maximum</td></tr>"
-        html_output += f"<tr><td>Fidelity</td><td>{min(self.fidelities):.3f}</td><td>{max(self.fidelities):.3f}</td></tr>"
-        html_output += f"<tr><td>Average (>=2)-qubit gate error</td><td>{min(self.avggateerrors):.3f}</td><td>{max(self.avggateerrors):.3f}</td></tr>"
-        html_output += "</table>"
+        # Fidelity Estimates
+        if self.fidelities:
+            html_output += "<tr><td colspan=2></td></tr>"
+            html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Fidelity estimate</strong></td></tr>'
+            if len(self.fidelities) == 1:
+                html_output += f'<tr><td style="text-align:left;">Single run value</td><td>{round(self.fidelities[0], 3)}</td></tr>'
+            else:
+                html_output += f'<tr><td style="text-align:left;">Mean</td><td>{round(mean(self.fidelities), 3)}</td></tr>'
+                html_output += f'<tr><td style="text-align:left;">Median</td><td>{round(median(self.fidelities), 3)}</td></tr>'
+                html_output += f'<tr><td style="text-align:left;">Standard Deviation</td><td>{round(stdev(self.fidelities), 3)}</td></tr>'
+            html_output += "<tr><td colspan=2><hr></td></tr>"
 
-        html_output += "<h4>Statistics</h4>"
-        html_output += "<table>"
-        html_output += f"<tr><td>Executions</td><td>{len(self.fidelities)}</td></tr>"
-        html_output += f"<tr><td>Amplitudes</td><td>{len(self.amplitudes)}</td></tr>"
-        html_output += f"<tr><td>Samples</td><td>{len(self.cstates)}</td></tr>"
-        html_output += "</table>"
+        # Average Multiqubit Error Estimates
+        if self.avggateerrors:
+            html_output += "<tr><td colspan=2></td></tr>"
+            html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Average multiqubit error estimate</strong></td></tr>'
+            if len(self.avggateerrors) == 1:
+                html_output += f'<tr><td style="text-align:left;">Single run value</td><td>{round(self.avggateerrors[0], 3)}</td></tr>'
+            else:
+                html_output += f'<tr><td style="text-align:left;">Mean</td><td>{round(mean(self.avggateerrors), 3)}</td></tr>'
+                html_output += f'<tr><td style="text-align:left;">Median</td><td>{round(median(self.avggateerrors), 3)}</td></tr>'
+                html_output += f'<tr><td style="text-align:left;">Standard Deviation</td><td>{round(stdev(self.avggateerrors), 3)}</td></tr>'
+            html_output += "<tr><td colspan=2><hr></td></tr>"
 
-        if len(self.cstates) > 0:
+        # Statistics
+        html_output += "<tr><td colspan=2></td></tr>"
+        html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Statistics</strong></td></tr>'
+        html_output += f'<tr><td style="text-align:left;">Number of executions</td><td>{len(self.fidelities)}</td></tr>'
+        html_output += f'<tr><td style="text-align:left;">Number of samples</td><td>{len(self.cstates)}</td></tr>'
+        html_output += f'<tr><td style="text-align:left;">Number of amplitudes</td><td>{len(self.amplitudes)}</td></tr>'
+        html_output += "<tr><td colspan=2><hr></td></tr>"
+
+        # Sampled Classical States
+        if self.cstates:
+            html_output += "<tr><td colspan=2></td></tr>"
+            html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Samples</strong></td></tr>'
             hist = self.histogram()
             outcomes = sorted(hist, key=hist.get, reverse=True)[0:10]
-
-            html_output += "<h4>Sampled Classical States</h4>"
-            html_output += "<table>"
-            html_output += "<tr><td>Hex</td><td>Bitstring</td><td>Counts</td>"
             for bs in outcomes:
-                html_output += f"<tr><td>{hex(bitvec_to_int(bs))}</td><td>{bs.to01()}</td><td>{hist[bs]}</td></tr>"
-            html_output += "</table>"
+                html_output += f'<tr><td style="text-align:left;font-family: monospace;">{hex(bitvec_to_int(bs))}</td><td style="text-align:left;font-family: monospace;">{bs.to01()}</td><td style="font-family: monospace;">{hist[bs]}</td></tr>'
+            html_output += "<tr><td colspan=2><hr></td></tr>"
 
-        if len(self.amplitudes) > 0:
-            html_output += "<h4>Statevector Amplitudes</h4>"
-            html_output += "<table>"
-            html_output += "<tr><td>Hex</td><td>Bitstring</td><td>Amplitude</td>"
+        # Statevector Amplitudes
+        if self.amplitudes:
+            html_output += "<tr><td colspan=2></td></tr>"
+            html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Statevector Amplitudes</strong></td></tr>'
             for bs, amp in self.amplitudes.items():
-                html_output += f"<tr><td>{hex(bitvec_to_int(bs.bits))}</td><td>{bs.to01()}</td><td>{amp:.3f}</td></tr>"
-            html_output += "</table>"
+                html_output += f'<tr><td style="text-align:left;">{hex(bitvec_to_int(bs.bits))}</td><td style="text-align:left;">{bs.to01()}</td><td>{amp:.3f}</td></tr>'
+            html_output += "<tr><td colspan=2><hr></td></tr>"
+
+        html_output += "</tbody></table>"
 
         return html_output
 
@@ -112,8 +146,7 @@ class QCSResults:
         return hist
 
     def saveproto(self, filename):
-        """Save QCSResults object to a Protocol Buffers file.
-        """
+        """Save QCSResults object to a Protocol Buffers file."""
         with open(filename, "wb") as f:
             return f.write(toproto_qcsr(self).SerializeToString())
 
@@ -131,15 +164,13 @@ class QCSResults:
 
 
 def save_results(filename, results):
-    """Saves the results to a ProtoBuf file.
-    """
+    """Saves the results to a ProtoBuf file."""
     return results.saveproto(filename)
 
 
 def load_results(filename):
-    """Loads QCSResults from a ProtoBuf file.
-    """
+    """Loads QCSResults from a ProtoBuf file."""
     return QCSResults.loadproto(filename)
 
 
-__all__ = ['QCSResults']
+__all__ = ["QCSResults"]

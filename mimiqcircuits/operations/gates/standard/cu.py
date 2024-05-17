@@ -16,15 +16,12 @@
 
 import mimiqcircuits.operations.control as mctrl
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
-from mimiqcircuits.operations.gates.standard.u import GateU, GateUPhase
+from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.standard.phase import GateP
-from mimiqcircuits.operations.gates.generalized.gphase import GPhase
-from symengine import pi
 
 
 class GateCU(mctrl.Control):
-    r"""Two qubit generic unitary gate.
-
+    r"""Two qubit controlled unitary gate.
 
     **Matrix representation:**
 
@@ -32,8 +29,8 @@ class GateCU(mctrl.Control):
         \operatorname{CU}(\theta, \phi, \lambda, \gamma) = \frac{1}{2} e^{i\gamma} \begin{pmatrix}
             1 & 0 & 0 & 0 \\
             0 & 1 & 0 & 0 \\
-            0 & 0 & 1 + e^{i\theta} & -i e^{i\lambda}(1 - e^{i\theta}) \\
-            0 & 0 & i e^{i\phi}(1 - e^{i\theta}) & e^{i(\phi + \lambda)}(1 + e^{i\theta})\\
+            0 & 0 & e^{i\gamma} \cos\left(\frac{\theta}{2}\right) & -e^{i\gamma} e^{i\lambda}\sin\left(\frac{\theta}{2}\right) \\
+            0 & 0 & e^{i\gamma} \mathrm{e}^{i\phi}\sin\left(\frac{\theta}{2}\right) & e^{i\gamma} \mathrm{e}^{i(\phi+\lambda)}\cos\left(\frac{\theta}{2}\right)
         \end{pmatrix}
 
     Parameters:
@@ -48,35 +45,34 @@ class GateCU(mctrl.Control):
         >>> from symengine import *
         >>> theta, phi, lmbda, gamma = symbols('theta phi lambda gamma')
         >>> GateCU(theta, phi, lmbda, gamma), GateCU(theta, phi, lmbda, gamma).num_controls, GateCU(theta, phi, lmbda, gamma).num_targets, GateCU(theta, phi, lmbda, gamma).num_qubits
-        (CUPhase(theta, phi, lambda, gamma), 1, 1, 2)
+        (CU(theta, phi, lambda, gamma), 1, 1, 2)
         >>> GateCU(theta, phi, lmbda, gamma).matrix()
         [1.0, 0, 0, 0]
         [0, 1.0, 0, 0]
-        [0, 0, 0.5*exp(I*gamma)*(1 + exp(I*theta)), (0.0 + 0.5*I)*exp(I*(gamma + lambda))*(-1 + exp(I*theta))]
-        [0, 0, (0.0 + 0.5*I)*exp(I*(gamma + phi))*(1 - exp(I*theta)), 0.5*exp(I*(gamma + lambda + phi))*(1 + exp(I*theta))]
+        [0, 0, exp(I*gamma)*cos((1/2)*theta), -exp(I*(gamma + lambda))*sin((1/2)*theta)]
+        [0, 0, exp(I*(gamma + phi))*sin((1/2)*theta), exp(I*(gamma + lambda + phi))*cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCU(theta, phi, lmbda, gamma), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CUPhase(theta, phi, lambda, gamma) @ q[0], q[1]
+        └── CU(theta, phi, lambda, gamma) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCU(theta, phi, lmbda, gamma).power(2), GateCU(theta, phi, lmbda, gamma).inverse()
-        (C(UPhase(theta, phi, lambda, gamma)^(2)), CUPhase(-theta, -lambda, -phi, -gamma))
+        (C(U(theta, phi, lambda, gamma)**2), CU(-theta, -lambda, -phi, -gamma))
         >>> GateCU(theta, phi, lmbda, gamma).decompose()
-        2-qubit circuit with 8 instructions:
-        ├── CGPhase(theta) @ q[0], q[1]
-        ├── U((1/2)*theta, 0, lambda) @ q[1]
+        2-qubit circuit with 7 instructions:
+        ├── P(gamma) @ q[0]
+        ├── P((1/2)*(lambda + phi)) @ q[0]
+        ├── P((1/2)*(lambda - phi)) @ q[1]
         ├── CX @ q[0], q[1]
-        ├── U((1/2)*theta, (-1/2)*(lambda + phi - 2*pi), pi) @ q[1]
+        ├── U((-1/2)*theta, 0, (-1/2)*(lambda + phi), 0.0) @ q[1]
         ├── CX @ q[0], q[1]
-        ├── P(-(lambda - phi)) @ q[1]
-        ├── P((1/2)*(lambda + phi + theta)) @ q[0]
-        └── GPhase((-1/2)*theta) @ q[0,1]
+        └── U((1/2)*theta, phi, 0, 0.0) @ q[1]
         <BLANKLINE>
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(1, GateUPhase(*args, **kwargs))
+        super().__init__(1, GateU(*args, **kwargs))
 
         self.theta = args[0]
         self.phi = args[1]
@@ -84,15 +80,18 @@ class GateCU(mctrl.Control):
         self.gamma = args[3]
 
     def _decompose(self, circ, qubits, bits):
-        a, b = qubits
-        circ.push(mctrl.Control(1, GPhase(1, self.theta)), a, b)
-        circ.push(GateU((self.theta)/2, 0, self.lmbda), b)
-        circ.push(GateCX(), a, b)
-        circ.push(GateU(self.theta/2, -(self.phi +
-                  self.lmbda - 2*pi)/2, pi), b)
-        circ.push(GateCX(), a, b)
-        circ.push(GateP(-(self.lmbda - self.phi)), b)
-        circ.push(GateP((self.lmbda + self.phi + self.theta)/2), a)
-        circ.push(GPhase(2, -self.theta/2), a, b)
+        c, t = qubits
+        theta = self.op.theta
+        phi = self.op.phi
+        lmbda = self.op.lmbda
+        gamma = self.op.gamma
+
+        circ.push(GateP(gamma), c)
+        circ.push(GateP((lmbda + phi) / 2), c)
+        circ.push(GateP((lmbda - phi) / 2), t)
+        circ.push(GateCX(), c, t)
+        circ.push(GateU(-theta / 2, 0, -(lmbda + phi) / 2), t)
+        circ.push(GateCX(), c, t)
+        circ.push(GateU(theta / 2, phi, 0), t)
 
         return circ

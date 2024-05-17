@@ -1,7 +1,9 @@
 import mimiqcircuits as mc
 import numpy as np
 import pytest
-
+from symengine import symbols
+from mimiqcircuits import *
+from random import random
 
 def test_Circuit():
     c = mc.Circuit()
@@ -349,3 +351,70 @@ def test_checkEquality():
     assert mc.Barrier(1) == mc.Barrier(1)
     assert mc.GateRX(0.2) != mc.GateRX(0.3)
     assert mc.GateRY(0.1) != mc.GateRX(0.1)
+
+# Test symbolics Circuit
+def test_is_symbolic():
+    x, y = symbols("x y")
+
+    circuit = mc.Circuit()
+
+    circuit.push(mc.GateH(), 0)
+    assert not circuit.is_symbolic()
+
+    circuit.push(mc.GateP(x+y), 0)
+    assert circuit.is_symbolic()
+
+    evaluated_circuit = circuit.evaluate({x: 1, y: 2})
+    assert not evaluated_circuit.is_symbolic()
+
+    evaluated_circuit.push(mc.GateRZ(y), 1)
+    assert evaluated_circuit.is_symbolic()
+
+    fully_evaluated_circuit = evaluated_circuit.evaluate({y: 0.5})
+    assert not fully_evaluated_circuit.is_symbolic()
+
+# Test symbolics Power
+@pytest.mark.parametrize("test_input,expected", [
+    (Power(GateX(), 2), False),
+    (Power(GateT(), 1), False),
+    (Power(GateXXplusYY(random(), random()), 2), False),
+    (Power(GateRX(symbols('x')), 2), True),
+    (Power(GateP(symbols('x')), 3), True),
+    (Power(GateP(random()), 3), False),
+    (Power(GateU(random(), random(), random()), 3), False),
+    (Power(GateU(random(), random(), symbols('x')), 2), True),
+    (Power(GateU(symbols('x'), random(), random()), 3), True),
+])
+def test_power(test_input, expected):
+    assert test_input.is_symbolic() == expected
+
+# Test symbolics Inverse
+@pytest.mark.parametrize("test_input,expected", [
+    (Inverse(GateX()), False),
+    (Inverse(GateT()), False),
+    (Inverse(GateRX(symbols('x'))), True),
+    (Inverse(GateRX(random())), False),  
+])
+def test_inverse(test_input, expected):
+    assert test_input.is_symbolic() == expected
+
+# Test symbolics Control
+@pytest.mark.parametrize("test_input,expected", [
+    (Control(3, GateP(symbols('x'))), True),
+    (Control(3, GateXXplusYY(symbols('x'), symbols('x + y'))), True),
+    (Control(3, GateR(symbols('x'), symbols('y'))), True),
+    (Control(4, GateP(random())), False),
+])
+def test_control(test_input, expected):
+    assert test_input.is_symbolic() == expected
+
+# Test symbolics combination of operations
+@pytest.mark.parametrize("test_input,expected", [
+    (Control(3, Inverse(Power(GateP(symbols('x')),2))), True),
+    (Control(3, Power(Inverse(GateXXplusYY(symbols('x'), symbols('x + y'))),2)), True),
+    (Control(3, Inverse(GateR(symbols('x'), symbols('y')))), True),
+    (Control(3, Inverse(GateR(symbols('x'), symbols('y')))).evaluate({symbols('x'):1, symbols('y'):3}), False),
+    (Control(4, Power(GateP(random()),3)), False),
+])
+def test_combination(test_input, expected):
+    assert test_input.is_symbolic() == expected

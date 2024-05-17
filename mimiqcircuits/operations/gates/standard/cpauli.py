@@ -19,7 +19,6 @@ from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
 from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
 import mimiqcircuits as mc
-from symengine import pi
 
 
 class GateCX(mctrl.Control):
@@ -61,15 +60,12 @@ class GateCX(mctrl.Control):
         <BLANKLINE>
     """
 
-
-class GateCX(mctrl.Control):
     def __init__(self):
         super().__init__(1, GateX())
 
     def _decompose(self, circ, qubits, bits):
         c, t = qubits
-        circ.push(mc.Control(1, mc.GateU(pi, 0, pi)), c, t)
-        circ.push(mc.Control(1, mc.GPhase(1, pi/2)), c, t)
+        circ.push(mc.GateCX(), c, t)
         return circ
 
 
@@ -110,7 +106,7 @@ class GateCY(mctrl.Control):
         2-qubit circuit with 3 instructions:
         ├── S† @ q[1]
         ├── CX @ q[0], q[1]
-        └── S @ q[0]
+        └── S @ q[1]
         <BLANKLINE>
     """
 
@@ -121,7 +117,7 @@ class GateCY(mctrl.Control):
         c, t = qubits
         circ.push(GateSDG(), t)
         circ.push(GateCX(), c, t)
-        circ.push(GateS(), c)
+        circ.push(GateS(), t)
         return circ
 
 

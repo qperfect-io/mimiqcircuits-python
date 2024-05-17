@@ -16,8 +16,7 @@
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
-from mimiqcircuits.operations.utils import (
-    power_nhilpotent, control_one_defined)
+from mimiqcircuits.operations.utils import power_idempotent, control_one_defined
 import mimiqcircuits as mc
 from symengine import Matrix
 
@@ -49,7 +48,7 @@ class GateSWAP(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateSWAP(), 0, 1)
         >>> GateSWAP().power(2), GateSWAP().inverse()
-        (CID, SWAP)
+        (Parallel(2, ID), SWAP)
         >>> GateSWAP().decompose()
         2-qubit circuit with 3 instructions:
         ├── CX @ q[0], q[1]
@@ -57,21 +56,22 @@ class GateSWAP(mcg.Gate):
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
-    _name = 'SWAP'
+
+    _name = "SWAP"
 
     _num_qubits = 2
     _qregsizes = [2]
 
     def _matrix(self):
-        return Matrix([
-            [1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]
-        ])
+        return Matrix([[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]])
 
     def inverse(self):
         return self
 
     def _power(self, p):
-        return power_nhilpotent(self, p)
+        # SWAP^(2n) = ID
+        # SWAP^(2n + 1) = SWAP
+        return power_idempotent(self, p)
 
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCSWAP())

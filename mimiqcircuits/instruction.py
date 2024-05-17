@@ -50,29 +50,32 @@ class Instruction:
         Barrier @ q[0,1,2,3]
 
     """
+
     _operation = None
     _qubits = None
     _bits = None
 
     def __init__(self, operation, qubits=None, bits=None):
-
         if qubits is None:
             qubits = tuple()
 
         if bits is None:
             bits = tuple()
 
-        if (not isinstance(qubits, tuple)):
+        if not isinstance(qubits, tuple):
             raise TypeError(
-                f"Target qubits should be given in a tuple of integers. Given {qubits} of type {type(qubits)}.")
+                f"Target qubits should be given in a tuple of integers. Given {qubits} of type {type(qubits)}."
+            )
 
-        if (not isinstance(bits, tuple)):
+        if not isinstance(bits, tuple):
             raise TypeError(
-                f"Target bits should be given in a tuple of integers. Given {bits} of type {type(bits)}.")
+                f"Target bits should be given in a tuple of integers. Given {bits} of type {type(bits)}."
+            )
 
         if not isinstance(operation, Operation):
             raise TypeError(
-                f"Operation must be a subclass of Operation. Given {operation} of type f{type(operation)}")
+                f"Operation must be a subclass of Operation. Given {operation} of type f{type(operation)}"
+            )
 
         if not _allunique(qubits):
             raise ValueError("Duplicated qubit target in instruction")
@@ -90,11 +93,13 @@ class Instruction:
 
         if len(qubits) != operation.num_qubits:
             raise ValueError(
-                f"Wrong number of target qubits for operation {operation} wanted  {operation.num_qubits}, given {len(qubits)}")
+                f"Wrong number of target qubits for operation {operation} wanted  {operation.num_qubits}, given {len(qubits)}"
+            )
 
         if len(bits) != operation.num_bits:
             raise ValueError(
-                f"Wrong number of target bits for operation {operation} wanted  {operation.num_bits}, given {len(bits)}")
+                f"Wrong number of target bits for operation {operation} wanted  {operation.num_bits}, given {len(bits)}"
+            )
 
         self._operation = operation
         self._qubits = qubits
@@ -136,10 +141,20 @@ class Instruction:
     def get_bits(self):
         return self._bits
 
+    def get_operation(self):
+        return self.operation
+
+    def asciiwidth(self):
+        return self.operation.asciiwidth(self._qubits, self._bits)
+
     def __eq__(self, other):
         if not isinstance(other, Instruction):
             return False
-        return (self.operation == other.operation) and (self.qubits == other.qubits) and (self.bits == other.bits)
+        return (
+            (self.operation == other.operation)
+            and (self.qubits == other.qubits)
+            and (self.bits == other.bits)
+        )
 
     def inverse(self):
         return Instruction(self.operation.inverse(), self.qubits, self.bits)
@@ -171,16 +186,21 @@ class Instruction:
 
             if nq != 0:
                 q_partition = _partition(
-                    self.get_qubits(), np.cumsum(self.operation.qregsizes))
+                    self.get_qubits(), np.cumsum(self.operation.qregsizes)
+                )
                 q_targets = f",{space}".join(
-                    f"q{_string_with_square(_find_unit_range(x),',')}" for x in q_partition)
+                    f"q{_string_with_square(_find_unit_range(x),',')}"
+                    for x in q_partition
+                )
                 targets += f",".join(q_targets.split(","))
 
             if nb != 0:
                 c_partition = _partition(
-                    self.get_bits(), np.cumsum(self.operation.cregsizes))
+                    self.get_bits(), np.cumsum(self.operation.cregsizes)
+                )
                 c_targets = f", {space}".join(
-                    f", c{_string_with_square(x, ',')}" for x in c_partition)
+                    f", c{_string_with_square(x, ',')}" for x in c_partition
+                )
                 targets += c_targets
 
             return f"{op}{targets}"
@@ -191,13 +211,19 @@ def _partition(arr, indices):
     partitions = [vec[: indices[0]]]
 
     for i in range(1, len(indices)):
-        partitions.append(vec[indices[i - 1]: indices[i]])
+        partitions.append(vec[indices[i - 1] : indices[i]])
 
     return partitions
 
 
 def _string_with_square(arr, sep):
-    return "[" + sep.join(map(lambda e: sep.join(map(str, e)) if isinstance(e, list) else str(e), arr)) + "]"
+    return (
+        "["
+        + sep.join(
+            map(lambda e: sep.join(map(str, e)) if isinstance(e, list) else str(e), arr)
+        )
+        + "]"
+    )
 
 
 def _find_unit_range(arr):
@@ -228,4 +254,4 @@ def _find_unit_range(arr):
     return narr
 
 
-__all__ = ['Instruction']
+__all__ = ["Instruction"]

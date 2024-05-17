@@ -56,7 +56,8 @@ class Barrier(Operation):
         └── Barrier @ q[1,2,3,4,5]
         <BLANKLINE>
     """
-    _name = 'Barrier'
+
+    _name = "Barrier"
     _num_qubits = None
     _num_bits = 0
 
@@ -90,14 +91,17 @@ class Barrier(Operation):
         return self
 
     def power(self, p):
-        raise TypeError('Barrier^p is not defined.')
+        raise TypeError("Barrier^p is not defined.")
 
     def control(self, num_qubits):
-        raise TypeError('Controlled Barrier is not defined.')
+        raise TypeError("Controlled Barrier is not defined.")
 
     def iswrapper(self):
         return False
 
+    def asciiwidth(self, qubits, bits):
+        return 1
+
 
 # export operations
-__all__ = ['Barrier']
+__all__ = ["Barrier"]

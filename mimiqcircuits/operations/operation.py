@@ -17,12 +17,16 @@
 from abc import ABC, abstractmethod
 import copy
 import mimiqcircuits as mc
+import symengine as se
+import sympy as sp
+from mimiqcircuits.canvas import _gate_name_padding
 
 
 class Operation(ABC):
     """
     Abstract base class for quantum operations.
     """
+
     _name = None
 
     _num_qubits = None
@@ -41,7 +45,7 @@ class Operation(ABC):
 
     @num_qubits.setter
     def num_qubits(self, value):
-        raise ValueError('Cannot set num_qubits. Read only parameter.')
+        raise ValueError("Cannot set num_qubits. Read only parameter.")
 
     @property
     def num_qregs(self):
@@ -49,7 +53,7 @@ class Operation(ABC):
 
     @num_qregs.setter
     def num_qregs(self, value):
-        raise ValueError('Cannot set num_qregs. Read only parameter.')
+        raise ValueError("Cannot set num_qregs. Read only parameter.")
 
     @property
     def num_bits(self):
@@ -57,7 +61,7 @@ class Operation(ABC):
 
     @num_bits.setter
     def num_bits(self, value):
-        raise ValueError('Cannot set num_bits. Read only parameter.')
+        raise ValueError("Cannot set num_bits. Read only parameter.")
 
     @property
     def num_cregs(self):
@@ -65,7 +69,7 @@ class Operation(ABC):
 
     @num_cregs.setter
     def num_cregs(self, value):
-        raise ValueError('Cannot set num_cregs. Read only parameter.')
+        raise ValueError("Cannot set num_cregs. Read only parameter.")
 
     @property
     def qregsizes(self):
@@ -73,7 +77,7 @@ class Operation(ABC):
 
     @qregsizes.setter
     def qregsizes(self, value):
-        raise ValueError('Cannot set qregsizes. Read only parameter.')
+        raise ValueError("Cannot set qregsizes. Read only parameter.")
 
     @property
     def cregsizes(self):
@@ -81,7 +85,7 @@ class Operation(ABC):
 
     @cregsizes.setter
     def cregsizes(self, value):
-        raise ValueError('Cannot set cregsizes. Read only parameter.')
+        raise ValueError("Cannot set cregsizes. Read only parameter.")
 
     @property
     def name(self):
@@ -89,22 +93,28 @@ class Operation(ABC):
 
     @name.setter
     def name(self, value):
-        raise ValueError('Cannot set name. Read only parameter.')
+        raise ValueError("Cannot set name. Read only parameter.")
 
-    @ property
+    @property
     def parnames(self):
         return self._parnames
 
-    @ parnames.setter
+    @parnames.setter
     def parnames(self, value):
-        raise ValueError('Cannot set parnames. Read only parameter.')
+        raise ValueError("Cannot set parnames. Read only parameter.")
 
     def getparams(self):
-        return [getattr(self, pn) for pn in self.parnames]
+        return [getattr(self, pn) for pn in self._parnames]
+
+    def is_symbolic(self):
+        return any(
+            isinstance(param, (se.Basic, sp.Basic, str)) and not param.is_number
+            for param in self.getparams()
+        )
 
     def getparam(self, pn):
         if pn not in self.parnames:
-            raise ValueError(f'Parameter {pn} not found.')
+            raise ValueError(f"Parameter {pn} not found.")
         return getattr(self, pn)
 
     def __str__(self):
@@ -114,8 +124,7 @@ class Operation(ABC):
         return str(self)
 
     def __eq__(self, other):
-        return isinstance(other, type(self)) and\
-            self.__dict__ == other.__dict__
+        return isinstance(other, type(self)) and self.__dict__ == other.__dict__
 
     def copy(self):
         return copy.copy(self)
@@ -134,11 +143,20 @@ class Operation(ABC):
         return circ.push(self, *qubits, *bits)
 
     def decompose(self):
-        return self._decompose(mc.Circuit(), range(self.num_qubits), range(self.num_bits))
+        return self._decompose(
+            mc.Circuit(), range(self.num_qubits), range(self.num_bits)
+        )
 
     def evaluate(self, d):
         return self
 
+    def asciiwidth(self, qubits, bits):
+        namepadding = _gate_name_padding(qubits, bits)
+        return namepadding + len(self.name)
+
+    def get_operation(self):
+        return self
+
 
 # export operations
-__all__ = ['Operation']
+__all__ = ["Operation"]

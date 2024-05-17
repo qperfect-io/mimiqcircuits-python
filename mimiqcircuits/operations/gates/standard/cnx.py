@@ -57,8 +57,8 @@ class GateCCX(mc.Control):
         ├── CX @ q[0], q[2]
         ├── T @ q[1]
         ├── T @ q[2]
-        ├── CX @ q[0], q[1]
         ├── H @ q[2]
+        ├── CX @ q[0], q[1]
         ├── T @ q[0]
         ├── T† @ q[1]
         └── CX @ q[0], q[1]
@@ -155,31 +155,31 @@ class GateC3X(mc.Control):
     def _decompose(self, circ, qubits, bits):
         a, b, c, d = qubits
         circ.push(mc.GateH(), d)
-        circ.push(mc.GateP(pi/8), qubits)
+        circ.push(mc.GateP(pi / 8), qubits)
         circ.push(mc.GateCX(), a, b)
-        circ.push(mc.GateP(-pi/8), b)
+        circ.push(mc.GateP(-pi / 8), b)
         circ.push(mc.GateCX(), a, b)
         circ.push(mc.GateCX(), b, c)
-        circ.push(mc.GateP(-pi/8), c)
+        circ.push(mc.GateP(-pi / 8), c)
         circ.push(mc.GateCX(), a, c)
-        circ.push(mc.GateP(pi/8), c)
+        circ.push(mc.GateP(pi / 8), c)
         circ.push(mc.GateCX(), b, c)
-        circ.push(mc.GateP(-pi/8), c)
+        circ.push(mc.GateP(-pi / 8), c)
         circ.push(mc.GateCX(), a, c)
         circ.push(mc.GateCX(), c, d)
-        circ.push(mc.GateP(-pi/8), d)
+        circ.push(mc.GateP(-pi / 8), d)
         circ.push(mc.GateCX(), b, d)
-        circ.push(mc.GateP(pi/8), d)
+        circ.push(mc.GateP(pi / 8), d)
         circ.push(mc.GateCX(), c, d)
-        circ.push(mc.GateP(-pi/8), d)
+        circ.push(mc.GateP(-pi / 8), d)
         circ.push(mc.GateCX(), a, d)
-        circ.push(mc.GateP(pi/8), d)
+        circ.push(mc.GateP(pi / 8), d)
         circ.push(mc.GateCX(), c, d)
-        circ.push(mc.GateP(-pi/8), d)
+        circ.push(mc.GateP(-pi / 8), d)
         circ.push(mc.GateCX(), b, d)
-        circ.push(mc.GateP(pi/8), d)
+        circ.push(mc.GateP(pi / 8), d)
         circ.push(mc.GateCX(), c, d)
-        circ.push(mc.GateP(-pi/8), d)
+        circ.push(mc.GateP(-pi / 8), d)
         circ.push(mc.GateCX(), a, d)
         circ.push(mc.GateH(), d)
         return circ

@@ -119,6 +119,7 @@ class BitString:
         >>> bs1 * 2 # repetition
         bs"1010110101"
     """
+
     _bits = bitarray(0)
 
     def __init__(self, arg):
@@ -138,12 +139,13 @@ class BitString:
             bs"101010"
         """
         if isinstance(arg, int):
-            bitstring = arg * '0'
+            bitstring = arg * "0"
         elif isinstance(arg, (str, bitarray, frozenbitarray, list, tuple)):
             bitstring = arg
         else:
             raise TypeError(
-                "Invalid input type. Expected 'str', 'int', 'bitarray', 'list', 'tuple', 'frozenbitarray'")
+                "Invalid input type. Expected 'str', 'int', 'bitarray', 'list', 'tuple', 'frozenbitarray'"
+            )
 
         self._bits = frozenbitarray(bitstring)
 
@@ -166,13 +168,13 @@ class BitString:
         Returns:
             A BitString with the specified non-zero qubits.
         """
-        bitstring = ''
+        bitstring = ""
 
         if not all(0 <= i < num_qubits for i in nonzeros):
             raise ValueError("Invalid nonzero index.")
 
         for i in range(num_qubits):
-            bitstring += '1' if i in nonzeros else '0'
+            bitstring += "1" if i in nonzeros else "0"
 
         return BitString(bitstring)
 
@@ -187,9 +189,9 @@ class BitString:
         Returns:
             A BitString.
         """
-        bitstring = ''
+        bitstring = ""
         for i in range(num_qubits):
-            bitstring += '1' if f(i) else '0'
+            bitstring += "1" if f(i) else "0"
         return BitString(bitstring)
 
     @staticmethod
@@ -205,7 +207,7 @@ class BitString:
         return BitString(bitstring)
 
     @staticmethod
-    def fromint(num_qubits: int, integer: int, endianess: str = 'big'):
+    def fromint(num_qubits: int, integer: int, endianess: str = "big"):
         """Initialize a BitString from an integer.
 
         Arguments:
@@ -217,12 +219,11 @@ class BitString:
             A BitString.
         """
         if len(bin(integer)[2:]) > num_qubits:
-            raise ValueError(
-                "Integer is too large for the given number of qubits.")
+            raise ValueError("Integer is too large for the given number of qubits.")
 
-        if endianess == 'little':
+        if endianess == "little":
             bitstring = bin(integer)[2:].zfill(num_qubits)[::-1]
-        elif endianess == 'big':
+        elif endianess == "big":
             bitstring = bin(integer)[2:].zfill(num_qubits)
         else:
             raise ValueError("endian must be either 'big' or 'little'")
@@ -230,21 +231,18 @@ class BitString:
         return BitString(bitstring[::-1])
 
     def num_qubits(self):
-        """Return the number of qubits in the BitString.
-        """
+        """Return the number of qubits in the BitString."""
         return len(self.bits)
 
     def nonzeros(self):
-        """Return the indices of the non-zero qubits.
-        """
+        """Return the indices of the non-zero qubits."""
         return [i for i, bit in enumerate(self.bits) if bit]
 
     def zeros(self):
-        """Return the indices of the zero qubits.
-        """
+        """Return the indices of the zero qubits."""
         return [i for i, bit in enumerate(self.bits) if not bit]
 
-    def tointeger(self, endianess: str = 'big'):
+    def tointeger(self, endianess: str = "big"):
         """Return the integer value of the BitString.
 
         Arguments:
@@ -253,14 +251,14 @@ class BitString:
         Returns:
             The integer value of the BitString.
         """
-        if endianess == 'big':
+        if endianess == "big":
             return bitvec_to_int(self.bits[::-1])
-        elif endianess == 'little':
+        elif endianess == "little":
             return bitvec_to_int(self.bits)
         else:
             raise ValueError("Invalid endianess. Must be 'big' or 'little'.")
 
-    def to01(self, endianess='big'):
+    def to01(self, endianess="big"):
         """Return the binary string representation of the BitString.
 
         Arguments:
@@ -269,14 +267,14 @@ class BitString:
         Retruns:
             The binary string representation of the BitString.
         """
-        if endianess == 'big':
-            return ''.join(map(str, self.bits))
-        elif endianess == 'little':
-            return ''.join(map(str, reversed(self.bits)))
+        if endianess == "big":
+            return "".join(map(str, self.bits))
+        elif endianess == "little":
+            return "".join(map(str, reversed(self.bits)))
         else:
             raise ValueError("Invalid endianess. Must be 'big' or 'little'.")
 
-    def toindex(self, endianess: str = 'big'):
+    def toindex(self, endianess: str = "big"):
         """Return the integer index of the BitString.
 
         Arguments:
@@ -285,9 +283,9 @@ class BitString:
         Returns:
             The integer index of the BitString.
         """
-        if endianess == 'big':
+        if endianess == "big":
             return bitvec_to_int(self.bits[::-1])
-        elif endianess == 'little':
+        elif endianess == "little":
             return bitvec_to_int(self.bits)
         else:
             raise ValueError("endian must be either 'big' or 'little'")
@@ -327,20 +325,17 @@ class BitString:
 
     def __or__(self, other):
         if not isinstance(other, BitString):
-            raise TypeError(
-                "BitString can only be ORed with another BitString.")
+            raise TypeError("BitString can only be ORed with another BitString.")
         return BitString(self.bits | other.bits)
 
     def __and__(self, other):
         if not isinstance(other, BitString):
-            raise TypeError(
-                "BitString can only be ANDed with another BitString.")
+            raise TypeError("BitString can only be ANDed with another BitString.")
         return BitString(self.bits & other.bits)
 
     def __xor__(self, other):
         if not isinstance(other, BitString):
-            raise TypeError(
-                "BitString can only be XORed with another BitString.")
+            raise TypeError("BitString can only be XORed with another BitString.")
         return BitString(self.bits ^ other.bits)
 
     def __invert__(self):
@@ -348,26 +343,22 @@ class BitString:
 
     def __lshift__(self, other):
         if not isinstance(other, int):
-            raise TypeError(
-                "BitString can only be left shifted by an integer.")
+            raise TypeError("BitString can only be left shifted by an integer.")
         return BitString(self.bits << other)
 
     def __rshift__(self, other):
         if not isinstance(other, int):
-            raise TypeError(
-                "BitString can only be right shifted by an integer.")
+            raise TypeError("BitString can only be right shifted by an integer.")
         return BitString(self.bits >> other)
 
     def __add__(self, other):
         if not isinstance(other, BitString):
-            raise TypeError(
-                "BitString can only be added with another BitString.")
+            raise TypeError("BitString can only be added with another BitString.")
         return BitString(self.bits + other.bits)
 
     def __mul__(self, other):
         if not isinstance(other, int):
-            raise TypeError(
-                "BitString can only be multiplied by an integer.")
+            raise TypeError("BitString can only be multiplied by an integer.")
         return BitString(self.bits * other)
 
 

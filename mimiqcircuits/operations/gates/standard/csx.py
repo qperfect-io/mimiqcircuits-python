@@ -43,7 +43,7 @@ class GateCSX(mctrl.Control):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCSX(), GateCSX().num_controls, GateCSX().num_targets, GateCSX().num_qubits
-        (C(X^(1/2)), 1, 1, 2)
+        (CSX, 1, 1, 2)
         >>> GateCSX().matrix()
         [1.0, 0, 0, 0]
         [0, 1.0, 0, 0]
@@ -53,10 +53,10 @@ class GateCSX(mctrl.Control):
         >>> c = Circuit().push(GateCSX(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── C(X^(1/2)) @ q[0], q[1]
+        └── CSX @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSX().power(2), GateCSX().inverse()
-        (CX, C((X^(1/2))†))
+        (CX, CSX†)
         >>> GateCSX().decompose()
         2-qubit circuit with 3 instructions:
         ├── H @ q[1]
@@ -68,24 +68,11 @@ class GateCSX(mctrl.Control):
     def __init__(self):
         super().__init__(1, GateSX())
 
-    def _power(self, p):
-        pmod = p % 2
-
-        if pmod == 0:
-            return mc.GateCX()
-        else:
-            if p in {3, 7, 11}:
-                return mc.GateCSXDG()
-            elif p in {5, 9, 13}:
-                return self
-            else:
-                return mc.Power(self, p)
-
     def _decompose(self, circ, qubits, bits):
         a, b = qubits
 
         circ.push(GateH(), b)
-        circ.push(GateU1(pi/2).control(1), a, b)
+        circ.push(GateU1(pi / 2).control(1), a, b)
         circ.push(GateH(), b)
 
         return circ
@@ -107,7 +94,7 @@ class GateCSXDG(mctrl.Control):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCSXDG(), GateCSXDG().num_controls, GateCSXDG().num_targets, GateCSXDG().num_qubits
-        (C((X^(1/2))†), 1, 1, 2)
+        (CSX†, 1, 1, 2)
         >>> GateCSXDG().matrix()
         [1.0, 0, 0, 0]
         [0, 1.0, 0, 0]
@@ -117,10 +104,10 @@ class GateCSXDG(mctrl.Control):
         >>> c = Circuit().push(GateCSXDG(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── C((X^(1/2))†) @ q[0], q[1]
+        └── CSX† @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSXDG().power(2), GateCSXDG().inverse()
-        (C(((X^(1/2))†)^(2)), C(X^(1/2)))
+        (C(SX†**2), CSX)
         >>> GateCSXDG().decompose()
         2-qubit circuit with 3 instructions:
         ├── H @ q[1]
@@ -136,7 +123,7 @@ class GateCSXDG(mctrl.Control):
         a, b = range(self.num_qubits)
 
         circ.push(GateH(), b)
-        circ.push(GateU1(-pi/2).control(1), a, b)
+        circ.push(GateU1(-pi / 2).control(1), a, b)
         circ.push(GateH(), b)
 
         return circ

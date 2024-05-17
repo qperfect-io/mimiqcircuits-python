@@ -15,6 +15,9 @@
 #
 
 from mimiqcircuits.operations.operation import Operation
+import symengine as se
+import sympy as sp
+from mimiqcircuits.canvas import _find_unit_range, _string_with_square
 
 
 class IfStatement(Operation):
@@ -31,7 +34,8 @@ class IfStatement(Operation):
         └── If(X, 1) @ q[0], c[0]
         <BLANKLINE>
     """
-    _name = 'If'
+
+    _name = "If"
 
     _num_qubits = None
 
@@ -61,7 +65,9 @@ class IfStatement(Operation):
 
         self._num_bits = num_bits
         self._num_cregs = 1
-        self._cregsizes = [num_bits, ]
+        self._cregsizes = [
+            num_bits,
+        ]
 
         self._op = op
         self._val = val
@@ -85,6 +91,9 @@ class IfStatement(Operation):
     def iswrapper(self):
         return True
 
+    def getparams(self):
+        return self.op.getparams()
+
     def inverse(self):
         raise NotImplementedError("Inverse not implemented for IfStatement")
 
@@ -95,11 +104,41 @@ class IfStatement(Operation):
         raise NotImplementedError("Control not implemented for IfStatement")
 
     def __str__(self):
-        return f'If({self.op}, {self.val})'
+        return f"If({self.op}, {self.val})"
 
     def evaluate(self, d):
         return IfStatement(self.op.evaluate(d), self.num_bits, self.val)
 
+    def get_unwrapped_value(self):
+        v = sp.simplify(self.val)
+        if isinstance(v, sp.Number):
+            return float(v)
+        elif isinstance(v, sp.pi):
+            return sp.pi.evalf()
+        elif isinstance(v, sp.E):
+            return sp.E.evalf()
+
+    def get_operation(self):
+        return self.op
+
+    # def asciiwidth(self, qubits, bits):
+    #     val = self.get_unwrapped_value()
+    #     gw = self.op.asciiwidth( qubits, [])
+    #     bstr = _string_with_square(_find_unit_range(bits), ",")
+    #     iw = len(f"c{bstr} == 0x{val:1}") +4 # Note: Python uses `len()` to get string length
+    #     return max(gw, iw)
+
+    def ascii_width(self, qubits, bits):
+        val = self.get_unwrapped_value()
+        gw = self.get_operation().ascii_width(qubits, [])
+
+        # MimiqCircuitsBase._string_with_square and MimiqCircuitsBase._findunitrange are placeholders
+        # Assuming these need to be translated similarly
+        bstr = _string_with_square(_find_unit_range(bits), ",")
+        iw = len(f"c{bstr} == 0x{val}") + 3  # :x formats val as hex
+
+        return max(gw, iw)
+
 
 # export operations
-__all__ = ['IfStatement']
+__all__ = ["IfStatement"]

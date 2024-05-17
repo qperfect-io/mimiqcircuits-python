@@ -25,6 +25,14 @@ def cispi(x):
     return cos(pi * x) + I * sin(pi * x)
 
 
+def cospi(x):
+    return cos(pi * x)
+
+
+def sinpi(x):
+    return sin(pi * x)
+
+
 def pmatrixpi(lmbda):
     return Matrix([[1, 0], [0, cispi(lmbda)]])
 
@@ -61,31 +69,30 @@ def gphasepi(lmbda):
     return cispi(lmbda)
 
 
-def umatrix_old(theta, phi, lmbda, gamma=0.0):
+def umatrix(theta, phi, lmbda, gamma=0.0):
     costheta2 = cos(theta / 2)
     sintheta2 = sin(theta / 2)
-    return Matrix([
-        [cis(gamma) * costheta2, -cis(lmbda + gamma) * sintheta2],
-        [cis(phi + gamma) * sintheta2, cis(phi + lmbda + gamma) * costheta2]
-    ])
-
-
-def umatrix(theta, phi, lmbda, gamma=0):
-    return cis(gamma)/2 * Matrix([
-        [1 + cis(theta), -I*cis(lmbda)*(1-cis(theta))],
-        [I*cis(phi)*(1-cis(theta)), cis(phi + lmbda) * (1+cis(theta))]
-    ])
+    return Matrix(
+        [
+            [cis(gamma) * costheta2, -cis(lmbda + gamma) * sintheta2],
+            [cis(phi + gamma) * sintheta2, cis(phi + lmbda + gamma) * costheta2],
+        ]
+    )
 
 
 def umatrixpi(theta, phi, lmbda, gamma=0):
-    return cispi(gamma)/2 * Matrix([
-        [1 + cispi(theta), -I*cispi(lmbda)*(1-cispi(theta))],
-        [I*cispi(phi)*(1-cispi(theta)), cispi(phi + lmbda) * (1+cispi(theta))]
-    ])
+    costheta2 = cospi(theta / 2)
+    sintheta2 = sinpi(theta / 2)
+    return Matrix(
+        [
+            [cispi(gamma) * costheta2, -cispi(lmbda + gamma) * sintheta2],
+            [cispi(phi + gamma) * sintheta2, cispi(phi + lmbda + gamma) * costheta2],
+        ]
+    )
 
 
 def rxmatrixpi(theta):
-    return umatrixpi(theta, -1/2, 1/2)
+    return umatrixpi(theta, -1 / 2, 1 / 2)
 
 
 def rxmatrix(theta):

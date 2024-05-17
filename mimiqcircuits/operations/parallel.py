@@ -35,7 +35,8 @@ class Parallel(mc.Operation):
         └── Parallel(3, X) @ q[1], q[2], q[3]
         <BLANKLINE>
     """
-    _name = 'Parallel'
+
+    _name = "Parallel"
     _num_qubits = None
     _num_bits = 0
     _num_repeats = None
@@ -46,16 +47,15 @@ class Parallel(mc.Operation):
             raise ValueError("op must be an Operation")
 
         if isinstance(op, (mc.Barrier, mc.Reset, mc.Measure)):
-            raise TypeError(
-                f"{op.__class__.__name__} cannot be Paralleled operation.")
+            raise TypeError(f"{op.__class__.__name__} cannot be Paralleled operation.")
 
         if self.num_bits != 0:
-            raise ValueError(
-                "Parallel operations cannot act on classical bits.")
+            raise ValueError("Parallel operations cannot act on classical bits.")
 
         if num_repeats < 2:
             raise ValueError(
-                f"Parallel operations must have at least two repeats. If one, just use {op}.")
+                f"Parallel operations must have at least two repeats. If one, just use {op}."
+            )
 
         super().__init__()
         self._num_qubits = op.num_qubits * num_repeats
@@ -74,7 +74,7 @@ class Parallel(mc.Operation):
 
     @num_repeats.setter
     def num_repeats(self, value):
-        raise ValueError('Cannot set num_repeats. Read only parameter.')
+        raise ValueError("Cannot set num_repeats. Read only parameter.")
 
     @property
     def op(self):
@@ -86,6 +86,9 @@ class Parallel(mc.Operation):
 
     def iswrapper(self):
         return True
+
+    def _getparams(self):
+        return self.op.getparams()
 
     def inverse(self):
         return Parallel(self.num_repeats, self.op.inverse())
@@ -120,18 +123,20 @@ class Parallel(mc.Operation):
     def _decompose(self, circ, qubits, bits):
         nq = self.op.num_qubits
         for i in range(self.num_repeats):
-            q = [qubits[j] for j in range(
-                i * nq, (i + 1) * nq)]
+            q = [qubits[j] for j in range(i * nq, (i + 1) * nq)]
             circ.push(self.op, *q)
         return circ
 
     def __str__(self):
-        return f'Parallel({self.num_repeats}, {self.op})'
+        return f"Parallel({self.num_repeats}, {self.op})"
 
     def evaluate(self, d):
         repeat = self.num_repeats
         return self.op.evaluate(d).parallel(repeat)
 
+    def get_operation(self):
+        return self.op
+
 
 # export operations
-__all__ = ['Parallel']
+__all__ = ["Parallel"]

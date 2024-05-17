@@ -53,13 +53,14 @@ class GateS(Power):
         (Z, S†)
         >>> GateS().decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, (1/2)*pi) @ q[0]
+        └── U(0, 0, (1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'S'
+
+    _name = "S"
 
     def __init__(self):
-        super().__init__(GateZ(), 1/2)
+        super().__init__(GateZ(), 1 / 2)
 
     def isopalias(self):
         return True
@@ -68,25 +69,31 @@ class GateS(Power):
         return GateSDG()
 
     def _power(self, p):
-        if p == 1:
-            return self
-        elif p == 2:
-            return GateZ()
+        pmod = p % 4
 
-        elif p == 3:
-            return GateSDG()
+        # sqrt(S) = T
+        if pmod == 1 / 2:
+            return mc.GateT()
 
-        elif p == 4:
+        # T * T^7 = S^2 * S^2 = Z * Z = ID => T^7 = TDG
+        if pmod == 7 / 2:
+            return mc.GateTDG()
+
+        # Z^(2n) = ID => S^(4n) = ID
+        if p % 4 == 0:
             return mc.GateID()
 
-        elif p == 5:
-            return self
+        # Z^(2n + 1) = Z => S^(4n + 1) = S
+        if p % 4 == 1:
+            return mc.GateS()
 
-        elif p == 6:
-            return GateZ()
+        #  S^(4n + 3) = SDG
+        if p % 4 == 3:
+            return mc.GateSDG()
 
-        else:
-            return mc.Power(self, p)
+        # sqrt(Z) = S
+        if p % 2 == 0:
+            return mc.GateZ().power(p / 2)
 
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCS())
@@ -96,7 +103,7 @@ class GateS(Power):
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
-        circ.push(GateU(0, 0, pi/2), q)
+        circ.push(GateU(0, 0, pi / 2), q)
         return circ
 
 
@@ -125,10 +132,10 @@ class GateSDG(Inverse):
         └── S† @ q[0]
         <BLANKLINE>
         >>> GateSDG().power(2), GateSDG().inverse()
-        (S†^(2), S)
+        (S†**2, S)
         >>> GateSDG().decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, (-1/2)*pi) @ q[0]
+        └── U(0, 0, (-1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
 
@@ -146,5 +153,5 @@ class GateSDG(Inverse):
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
-        circ.push(GateU(0, 0, -pi/2), q)
+        circ.push(GateU(0, 0, -pi / 2), q)
         return circ

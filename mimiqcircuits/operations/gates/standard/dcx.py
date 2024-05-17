@@ -17,6 +17,7 @@
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from symengine import Matrix
+import mimiqcircuits as mc
 
 
 class GateDCX(mcg.Gate):
@@ -30,51 +31,60 @@ class GateDCX(mcg.Gate):
     .. math::
         \operatorname{DCX} =\begin{pmatrix}
             1 & 0 & 0 & 0 \\
+            0 & 0 & 1 & 0 \\
             0 & 0 & 0 & 1 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & 1 & 0
+            0 & 1 & 0 & 0
         \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> # gate initialization
-
         >>> GateDCX()
         DCX
-        >>> # actual matrix of the gate
-
         >>> GateDCX().matrix()
         [1.0, 0, 0, 0]
+        [0, 0, 1.0, 0]
         [0, 0, 0, 1.0]
         [0, 1.0, 0, 0]
-        [0, 0, 1.0, 0]
         <BLANKLINE>
-        >>> # add to a circuit
-
         >>> c = Circuit().push(GateDCX(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
         └── DCX @ q[0,1]
         <BLANKLINE>
         >>> GateDCX().power(2), GateDCX().inverse()
-        (DCX^(2), DCX†)
+        (DCX†, DCX†)
         >>> GateDCX().decompose()
         2-qubit circuit with 2 instructions:
         ├── CX @ q[0], q[1]
         └── CX @ q[1], q[0]
         <BLANKLINE>
     """
+
     _num_qubits = 2
     _qregsizes = [2]
-    _name = 'DCX'
+    _name = "DCX"
 
     def _matrix(self):
-        return Matrix([
-            [1.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-            [0.0, 1.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0]
-        ])
+        return Matrix(
+            [
+                [1.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+                [0.0, 1.0, 0.0, 0.0],
+            ]
+        )
+
+    def _power(self, p):
+        pmod = p % 3
+
+        if pmod == 1:
+            return self
+
+        if pmod == 2:
+            return mc.Inverse(self)
+
+        if pmod == 0:
+            return mc.GateID().parallel(2)
 
     def _decompose(self, circ, qubits, bits):
         a, b = qubits

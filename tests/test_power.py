@@ -2,7 +2,8 @@ import pytest
 import mimiqcircuits as mc
 import sympy as sp
 import symengine as se
-
+import random 
+from numpy import pi
 
 def test_init():
     # Test initialization of the Power operation
@@ -50,4 +51,24 @@ def test_inverse():
     powerop = op.power(1/4)
     inverse_op = powerop.inverse()
     assert inverse_op.op.exponent == 1/4
-    assert mc.Power(mc.GateX(), 1/4).op ==op
+    assert mc.Power(mc.GateX(), 1/4).op == op
+
+
+def is_close(matrix1, matrix2, tol=1e-7):
+    matrix1 = sp.Matrix(matrix1).evalf()  
+    matrix2 = sp.Matrix(matrix2).evalf()  
+
+    diff_matrix = matrix1 - matrix2
+
+    for entry in diff_matrix:
+        abs_value = sp.Abs(entry).evalf()
+        if abs_value > tol:
+            return False
+    return True
+
+def test_poweru():
+    for _ in range(100):
+        pwr =100 * (random.random() - 0.4)
+        g = mc.GateU(random.random() * 4 * pi, random.random() * 2,
+                     random.random() * 2 * pi, random.random() * 2 * pi)
+        assert is_close(sp.Matrix(g.matrix()).evalf()**pwr , sp.Matrix(g.power(pwr).matrix().tolist()))

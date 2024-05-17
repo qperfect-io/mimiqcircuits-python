@@ -77,11 +77,11 @@ class GateCRX(mctrl.Control):
     def _decompose(self, circ, qubits, bits):
         c, t = qubits
         theta = self.op.theta
-        circ.push(GateP(pi/2), t)
+        circ.push(GateP(pi / 2), t)
         circ.push(GateCX(), c, t)
-        circ.push(GateU(-theta/2, 0, 0), t)
+        circ.push(GateU(-theta / 2, 0, 0), t)
         circ.push(GateCX(), c, t)
-        circ.push(GateU(theta/2, -pi/2, 0), t)
+        circ.push(GateU(theta / 2, -pi / 2, 0), t)
         return circ
 
 
@@ -116,8 +116,8 @@ class GateCRY(mctrl.Control):
         >>> GateCRY(theta).matrix()
         [1.0, 0, 0, 0]
         [0, 1.0, 0, 0]
-        [0, 0, 1.0*cos((1/2)*theta), -1.0*sin((1/2)*theta)]
-        [0, 0, 1.0*sin((1/2)*theta), 1.0*cos((1/2)*theta)]
+        [0, 0, cos((1/2)*theta), -sin((1/2)*theta)]
+        [0, 0, sin((1/2)*theta), cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateCRY(theta), 0, 1)
         >>> c
@@ -141,9 +141,9 @@ class GateCRY(mctrl.Control):
     def _decompose(self, circ, qubits, bits):
         c, t = qubits
         theta = self.op.theta
-        circ.push(GateRY(theta/2), t)
+        circ.push(GateRY(theta / 2), t)
         circ.push(GateCX(), c, t)
-        circ.push(GateRY(-theta/2), t)
+        circ.push(GateRY(-theta / 2), t)
         circ.push(GateCX(), c, t)
         return circ
 
@@ -203,8 +203,8 @@ class GateCRZ(mctrl.Control):
     def _decompose(self, circ, qubits, bits):
         c, t = qubits
         lmbda = self.op.lmbda
-        circ.push(GateRZ(lmbda/2), t)
+        circ.push(GateRZ(lmbda / 2), t)
         circ.push(GateCX(), c, t)
-        circ.push(GateRZ(-lmbda/2), t)
+        circ.push(GateRZ(-lmbda / 2), t)
         circ.push(GateCX(), c, t)
         return circ

@@ -44,7 +44,8 @@ class Measure(Operation):
         └── Measure @ q[2], c[2]
         <BLANKLINE>
     """
-    _name = 'Measure'
+
+    _name = "Measure"
     _num_bits = 1
     _num_qubits = 1
     _num_cregs = 1
@@ -52,13 +53,13 @@ class Measure(Operation):
     _cregsizes = [1]
 
     def inverse(self):
-        raise TypeError('Measure is not inversible')
+        raise TypeError("Measure is not inversible")
 
     def power(self, p):
-        raise TypeError('Measure^p is not defined.')
+        raise TypeError("Measure^p is not defined.")
 
     def control(self, num_qubits):
-        raise TypeError('Controlled Measure is not defined.')
+        raise TypeError("Controlled Measure is not defined.")
 
     def iswrapper(self):
         return False
@@ -70,6 +71,13 @@ class Measure(Operation):
 
         return Measure()
 
+    def asciiwidth(self, _, bits):
+        bit = bits[0]
+        return max(3, 1 + len(str(bit)))
+
+    def get_operation(self):
+        return self
+
 
 # export operations
-__all__ = ['Measure']
+__all__ = ["Measure"]

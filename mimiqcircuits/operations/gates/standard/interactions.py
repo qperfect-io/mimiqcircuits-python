@@ -49,7 +49,7 @@ class GateRXX(mc.Gate):
         └── RXX(theta) @ q[0,1]
         <BLANKLINE>
         >>> GateRXX(theta).power(2), GateRXX(theta).inverse()
-        (RXX(theta)^(2), RXX(-theta))
+        (RXX(theta)**2, RXX(-theta))
         >>> GateRXX(theta).matrix()
         [cos((1/2)*theta), 0, 0, -I*sin((1/2)*theta)]
         [0, cos((1/2)*theta), -I*sin((1/2)*theta), 0]
@@ -140,7 +140,7 @@ class GateRYY(mc.Gate):
         └── RYY(theta) @ q[0,1]
         <BLANKLINE>
         >>> GateRYY(theta).power(2), GateRYY(theta).inverse()
-        (RYY(theta)^(2), RYY(-theta))
+        (RYY(theta)**2, RYY(-theta))
         >>> GateRYY(theta).decompose()
         2-qubit circuit with 7 instructions:
         ├── RX((1/2)*pi) @ q[0]
@@ -225,7 +225,7 @@ class GateRZZ(mc.Gate):
         └── RZZ(theta) @ q[0,1]
         <BLANKLINE>
         >>> GateRZZ(theta).power(2), GateRZZ(theta).inverse()
-        (RZZ(theta)^(2), RZZ(-theta))
+        (RZZ(theta)**2, RZZ(-theta))
         >>> GateRZZ(theta).decompose()
         2-qubit circuit with 3 instructions:
         ├── CX @ q[0], q[1]
@@ -295,7 +295,7 @@ class GateRZX(mc.Gate):
         └── RZX(theta) @ q[0,1]
         <BLANKLINE>
         >>> GateRZX(theta).power(2), GateRZX(theta).inverse()
-        (RZX(theta)^(2), RZX(-theta))
+        (RZX(theta)**2, RZX(-theta))
         >>> GateRZX(theta).decompose()
         2-qubit circuit with 5 instructions:
         ├── H @ q[1]
@@ -350,8 +350,8 @@ class GateXXplusYY(mc.Gate):
     .. math::
         \operatorname{(XX+YY)}(\theta, \beta)= \begin{pmatrix}
             1 & 0 & 0 & 0 \\
-            0 & \cos(\frac{\theta}{2}) & -i\sin(\frac{\theta}{2})e^{-i\beta} & 0 \\
-            0 & -i\sin(\frac{\theta}{2})e^{i\beta} & \cos(\frac{\theta}{2}) & 0 \\
+            0 & \cos(\frac{\theta}{2}) & -i\sin(\frac{\theta}{2})e^{i\beta} & 0\\
+            0 & -i\sin(\frac{\theta}{2})e^{-i\beta} & \cos(\frac{\theta}{2}) & 0\\
             0 & 0 & 0 & 1
         \end{pmatrix}
 
@@ -367,8 +367,8 @@ class GateXXplusYY(mc.Gate):
         XXplusYY(theta, beta)
         >>> GateXXplusYY(theta, beta).matrix()
         [1.0, 0, 0, 0]
-        [0, cos((1/2)*theta), I*(I*sin(beta) - cos(beta))*sin((1/2)*theta), 0]
-        [0, (sin(beta) - I*cos(beta))*sin((1/2)*theta), cos((1/2)*theta), 0]
+        [0, cos((1/2)*theta), (sin(beta) - I*cos(beta))*sin((1/2)*theta), 0]
+        [0, I*(I*sin(beta) - cos(beta))*sin((1/2)*theta), cos((1/2)*theta), 0]
         [0, 0, 0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateXXplusYY(theta, beta), 0, 1)
@@ -377,12 +377,12 @@ class GateXXplusYY(mc.Gate):
         └── XXplusYY(theta, beta) @ q[0,1]
         <BLANKLINE>
         >>> GateXXplusYY(theta, beta).power(2), GateXXplusYY(theta, beta).inverse()
-        (XXplusYY(theta, beta)^(2), XXplusYY(-theta, beta))
+        (XXplusYY(theta, beta)**2, XXplusYY(-theta, beta))
         >>> GateXXplusYY(theta, beta).decompose()
         2-qubit circuit with 14 instructions:
         ├── RZ(beta) @ q[0]
         ├── RZ((-1/2)*pi) @ q[1]
-        ├── X^(1/2) @ q[1]
+        ├── SX @ q[1]
         ├── RZ((1/2)*pi) @ q[1]
         ├── S @ q[0]
         ├── CX @ q[1], q[0]
@@ -391,8 +391,8 @@ class GateXXplusYY(mc.Gate):
         ├── CX @ q[1], q[0]
         ├── S† @ q[0]
         ├── RZ((-1/2)*pi) @ q[1]
-        ├── (X^(1/2))† @ q[1]
-        ├── RZ((-1/2)*pi) @ q[1]
+        ├── SX† @ q[1]
+        ├── RZ((1/2)*pi) @ q[1]
         └── RZ(-beta) @ q[0]
         <BLANKLINE>
     """
@@ -413,8 +413,8 @@ class GateXXplusYY(mc.Gate):
 
         return Matrix([
             [1, 0, 0, 0],
-            [0, cos2, -I * sin2 * cis(-beta), 0],
-            [0, -I * sin2 * cis(beta), cos2, 0],
+            [0, cos2, -I * sin2 * cis(beta), 0],
+            [0, -I * sin2 * cis(-beta), cos2, 0],
             [0, 0, 0, 1]
         ])
 
@@ -436,7 +436,7 @@ class GateXXplusYY(mc.Gate):
         circ.push(mc.GateSDG(), a)
         circ.push(mc.GateRZ(-pi/2), b)
         circ.push(mc.GateSXDG(), b)
-        circ.push(mc.GateRZ(-pi/2), b)
+        circ.push(mc.GateRZ(pi/2), b)
         circ.push(mc.GateRZ(-self.beta), a)
 
         return circ
@@ -479,12 +479,12 @@ class GateXXminusYY(mc.Gate):
         └── XXminusYY(theta, beta) @ q[0,1]
         <BLANKLINE>
         >>> GateXXminusYY(theta, beta).power(2), GateXXminusYY(theta, beta).inverse()
-        (XXminusYY(theta, beta)^(2), XXminusYY(-theta, beta))
+        (XXminusYY(theta, beta)**2, XXminusYY(-theta, beta))
         >>> GateXXminusYY(theta, beta).decompose()
         2-qubit circuit with 14 instructions:
         ├── RZ(-beta) @ q[1]
         ├── RZ((-1/2)*pi) @ q[0]
-        ├── X^(1/2) @ q[0]
+        ├── SX @ q[0]
         ├── RZ((1/2)*pi) @ q[0]
         ├── S @ q[1]
         ├── CX @ q[0], q[1]
@@ -493,7 +493,7 @@ class GateXXminusYY(mc.Gate):
         ├── CX @ q[0], q[1]
         ├── S† @ q[1]
         ├── RZ((-1/2)*pi) @ q[0]
-        ├── S† @ q[0]
+        ├── SX† @ q[0]
         ├── RZ((1/2)*pi) @ q[0]
         └── RZ(beta) @ q[1]
         <BLANKLINE>
@@ -537,7 +537,7 @@ class GateXXminusYY(mc.Gate):
         circ.push(mc.GateCX(), a, b)
         circ.push(mc.GateSDG(), b)
         circ.push(mc.GateRZ(-pi/2), a)
-        circ.push(mc.GateSDG(), a)
+        circ.push(mc.GateSXDG(), a)
         circ.push(mc.GateRZ(pi/2), a)
         circ.push(mc.GateRZ(self.beta), b)
 

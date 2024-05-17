@@ -1,40 +1,39 @@
 [tool.poetry]
 name = "mimiqcircuits"
-version = "0.7.2"
+version = "0.8.1"
 description = ""
 authors = ["QPerfect <guido.masella@qperfect.io>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-numpy = "^1.20"
-mimiqlink = {git = "https://github.com/qperfect-io/mimiqlink-python.git"}
-bitarray = "^2.7.3"
-scipy = {version = "^1.11.2", python = ">=3.9,<3.13"}
-pygal = "^3.0.0"
-symengine = "^0.10.0"
+numpy = "^1.26"
+mimiqlink = { git = "https://github.com/qperfect-io/mimiqlink-python.git" }
+bitarray = "^2.9"
+symengine = "^0.11"
 sympy = "^1.12"
-protobuf = "3.20.1"
-matplotlib = "^3.8.2"
+protobuf = "^5.26"
+matplotlib = "^3.8"
 
 [tool.poetry.extras]
 visualization = ["matplotlib"]
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.3.1"
-pytest-accept = "^0.1.9"
-pytest-doctest-import = "^0.1.1"
-pytest-benchmark = "^4.0.0"
+pytest = "^8.2"
+pytest-accept = "^0.1"
+pytest-doctest-import = "^0.1"
+pytest-benchmark = "^4.0"
+scipy = "^1.13"
 
 [tool.poetry.group.docs]
 optional = true
 
 [tool.poetry.group.docs.dependencies]
-sphinx = "^7.2.6"
-pydata-sphinx-theme = "^0.15.1"
-jupyter-sphinx = "^0.4.0"
-sphinx-copybutton = "^0.5.2"
-sphinx-inline-tabs = "^2023.4.21"
+sphinx = "^7.3"
+pydata-sphinx-theme = "^0.15"
+jupyter-sphinx = "^0.5"
+sphinx-copybutton = "^0.5"
+sphinx-inline-tabs = "^2023.4"
 
 [build-system]
 requires = ["poetry-core"]

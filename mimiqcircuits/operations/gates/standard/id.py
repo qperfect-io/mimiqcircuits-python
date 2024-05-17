@@ -46,7 +46,7 @@ class GateID(mc.Gate):
         (ID, ID)
         >>> GateID().decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, 0) @ q[0]
+        └── U(0, 0, 0, 0.0) @ q[0]
         <BLANKLINE>
     """
     _name = 'ID'
@@ -67,48 +67,3 @@ class GateID(mc.Gate):
         q = qubits[0]
         circ.push(mc.GateU(0, 0, 0), q)
         return circ
-
-
-class GateID2(mc.Control):
-    r"""Two-qubit identity gate
-
-    See also :func:`GateID` and :func:`Parallel`
-
-    The gate is implemented as a parallel application of a GateID.
-
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{ID2} = \begin{pmatrix}
-            1 & 0 & 0 & 0\\
-            0 & 1 & 0 & 0\\
-            0 & 0 & 1 & 0\\
-            0 & 0 & 0 & 1\\
-        \end{pmatrix}
-
-    Examples:
-        >>> from mimiqcircuits import *
-        >>> GateID2()
-        CID
-        >>> GateID2().matrix()
-        [1.0, 0, 0, 0]
-        [0, 1.0, 0, 0]
-        [0, 0, 1.0, 0]
-        [0, 0, 0, 1.0]
-        <BLANKLINE>
-        >>> c = Circuit().push(GateID2(), 0, 1)
-        >>> c
-        2-qubit circuit with 1 instructions:
-        └── CID @ q[0], q[1]
-        <BLANKLINE>
-        >>> GateID2().power(2), GateID2().inverse()
-        (CID, CID)
-        >>> GateID2().decompose()
-        2-qubit circuit with 1 instructions:
-        └── CID @ q[0], q[1]
-        <BLANKLINE>
-    """
-    _name = 'ID2'
-
-    def __init__(self):
-        super().__init__(1, GateID())

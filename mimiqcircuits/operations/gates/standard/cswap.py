@@ -42,14 +42,14 @@ class GateCSWAP(mctrl.Control):
         <BLANKLINE>
         >>> c = Circuit().push(GateCSWAP(), 0, 1, 2)
         >>> GateCSWAP().power(2), GateCSWAP().inverse()
-        (C₂ID, CSWAP)
+        (C(Parallel(2, ID)), CSWAP)
         >>> c = Circuit().push(GateCSWAP(), 0, 1, 2)
         >>> c
         3-qubit circuit with 1 instructions:
         └── CSWAP @ q[0], q[1,2]
         <BLANKLINE>
         >>> GateCSWAP().power(2), GateCSWAP().inverse()
-        (C₂ID, CSWAP)
+        (C(Parallel(2, ID)), CSWAP)
         >>> GateCSWAP().decompose()
         3-qubit circuit with 3 instructions:
         ├── CX @ q[2], q[1]

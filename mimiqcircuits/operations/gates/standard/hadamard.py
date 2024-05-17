@@ -15,10 +15,10 @@
 #
 
 import mimiqcircuits as mc
-from mimiqcircuits.operations.utils import power_nhilpotent
+from mimiqcircuits.operations.utils import power_idempotent
 from mimiqcircuits.matrices import gphasepi, umatrixpi
 from mimiqcircuits.operations.utils import control_one_defined
-from symengine import pi
+from symengine import pi, sqrt, Matrix
 
 
 class GateH(mc.Gate):
@@ -48,12 +48,12 @@ class GateH(mc.Gate):
         >>> GateH().power(2), GateH().inverse()
         (ID, H)
         >>> GateH().decompose()
-        1-qubit circuit with 2 instructions:
-        ├── U((1/2)*pi, 0, pi) @ q[0]
-        └── GPhase((-1/4)*pi) @ q[0]
+        1-qubit circuit with 1 instructions:
+        └── U((1/2)*pi, 0, pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'H'
+
+    _name = "H"
 
     _num_qubits = 1
     _qregsizes = [1]
@@ -62,16 +62,17 @@ class GateH(mc.Gate):
         return self
 
     def _power(self, p):
-        return power_nhilpotent(self, p)
+        # H^(2n) = ID
+        # H^(2n+1) = H
+        return power_idempotent(self, p)
 
     def _control(self, n):
         return control_one_defined(self, n)
 
     def _matrix(self):
-        return gphasepi(-1/4) * umatrixpi(1/2, 0, 1)
+        return Matrix([[1, 1], [1, -1]]) / sqrt(2)
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
         circ.push(mc.GateU(pi/2, 0, pi), q)
-        circ.push(mc.GPhase(1, -pi/4), q)
         return circ

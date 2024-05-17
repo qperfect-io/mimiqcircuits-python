@@ -34,23 +34,22 @@ from mimiqcircuits.operations.gates.gate import Gate
 
 from mimiqcircuits.operations.gates.custom import GateCustom
 
-from mimiqcircuits.operations.gates.standard.u import GateU, GateUPhase
-from mimiqcircuits.operations.gates.standard.id import GateID, GateID2
+from mimiqcircuits.operations.gates.standard.u import GateU
+from mimiqcircuits.operations.gates.standard.id import GateID
 from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
 from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
 from mimiqcircuits.operations.gates.standard.sx import GateSX, GateSXDG
 from mimiqcircuits.operations.gates.standard.rotations import (
-    GateRX, GateRY, GateRZ, GateR
+    GateRX,
+    GateRY,
+    GateRZ,
+    GateR,
 )
-from mimiqcircuits.operations.gates.standard.deprecated import (
-    GateU1, GateU2, GateU3
-)
+from mimiqcircuits.operations.gates.standard.deprecated import GateU1, GateU2, GateU3
 
-from mimiqcircuits.operations.gates.standard.cpauli import (
-    GateCX, GateCY, GateCZ
-)
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX, GateCY, GateCZ
 from mimiqcircuits.operations.gates.standard.chadamard import GateCH
 from mimiqcircuits.operations.gates.standard.phase import GateP
 from mimiqcircuits.operations.gates.standard.swap import GateSWAP
@@ -61,21 +60,21 @@ from mimiqcircuits.operations.gates.standard.ecr import GateECR
 from mimiqcircuits.operations.gates.standard.dcx import GateDCX
 from mimiqcircuits.operations.gates.standard.cphase import GateCP
 from mimiqcircuits.operations.gates.standard.cu import GateCU
-from mimiqcircuits.operations.gates.standard.crotations import (
-    GateCRX, GateCRY, GateCRZ
-)
+from mimiqcircuits.operations.gates.standard.crotations import GateCRX, GateCRY, GateCRZ
 from mimiqcircuits.operations.gates.standard.interactions import (
-    GateRXX, GateRYY, GateRZZ, GateRZX, GateXXplusYY, GateXXminusYY
+    GateRXX,
+    GateRYY,
+    GateRZZ,
+    GateRZX,
+    GateXXplusYY,
+    GateXXminusYY,
 )
 from mimiqcircuits.operations.gates.standard.cnx import GateCCX, GateC3X
 from mimiqcircuits.operations.gates.standard.cnp import GateCCP
 from mimiqcircuits.operations.gates.standard.cswap import GateCSWAP
 
-from mimiqcircuits.operations.gates.generalized.gphase import GPhase
 from mimiqcircuits.operations.gates.generalized.qft import QFT
-from mimiqcircuits.operations.gates.generalized.phasegradient import (
-    PhaseGradient
-)
+from mimiqcircuits.operations.gates.generalized.phasegradient import PhaseGradient
 
 from mimiqcircuits.instruction import Instruction
 
@@ -93,23 +92,91 @@ from mimiqcircuits.operations.gates.generalized.polynomialoracle import Polynomi
 
 from mimiqcircuits.visualization.results import plothistogram
 from mimiqcircuits.qcsresults import QCSResults, save_results, load_results
-
+from mimiqcircuits.canvas import AsciiCanvas, AsciiCircuit
 
 # Export specific classes, and functions.
 
 __all__ = [
-    'Circuit', 'BitString', 'Operation', 'Control', 'Parallel', 'Inverse',
-    'Power', 'Barrier', 'IfStatement', 'Measure', 'Reset', 'Gate',
-    'GateCustom', 'GateU', 'GateUPhase', 'GateID', 'GateID2', 'GateX', 'GateY',
-    'GateZ', 'GateH', 'GateS', 'GateSDG', 'GateT', 'GateTDG', 'GateSX',
-    'GateSXDG', 'GateRX', 'GateRY', 'GateRZ', 'GateR', 'GateU1', 'GateU2',
-    'GateU3', 'GateCX', 'GateCY', 'GateCZ', 'GateCH', 'GateSWAP', 'GateISWAP',
-    'GateCS', 'GateCSDG', 'GateCSX', 'GateCSXDG', 'GateECR', 'GateDCX',
-    'GateCP', 'GateCU', 'GateCRX', 'GateCRY', 'GateCRZ', 'GateRXX', 'GateRYY',
-    'GateRZZ', 'GateRZX', 'GateXXplusYY', 'GateXXminusYY', 'GateCCX',
-    'GateC3X', 'GateCCP', 'GateCSWAP', 'GPhase', 'QFT', 'PhaseGradient',
-    'Instruction', 'GateP', 'MimiqConnection', 'matrices', 'GateCall',
-    'GateDecl', 'gatedecl', 'control', 'parallel', 'inverse', 'power',
-    'LazyArg', 'LazyExpr', 'Diffusion', 'PolynomialOracle', 'plothistogram',
-    'QCSResults', 'save_results', 'load_results'
+    "Circuit",
+    "BitString",
+    "Operation",
+    "Control",
+    "Parallel",
+    "Inverse",
+    "Power",
+    "Barrier",
+    "IfStatement",
+    "Measure",
+    "Reset",
+    "Gate",
+    "GateCustom",
+    "GateU",
+    "GateID",
+    "GateX",
+    "GateY",
+    "GateZ",
+    "GateH",
+    "GateS",
+    "GateSDG",
+    "GateT",
+    "GateTDG",
+    "GateSX",
+    "GateSXDG",
+    "GateRX",
+    "GateRY",
+    "GateRZ",
+    "GateR",
+    "GateU1",
+    "GateU2",
+    "GateU3",
+    "GateCX",
+    "GateCY",
+    "GateCZ",
+    "GateCH",
+    "GateSWAP",
+    "GateISWAP",
+    "GateCS",
+    "GateCSDG",
+    "GateCSX",
+    "GateCSXDG",
+    "GateECR",
+    "GateDCX",
+    "GateCP",
+    "GateCU",
+    "GateCRX",
+    "GateCRY",
+    "GateCRZ",
+    "GateRXX",
+    "GateRYY",
+    "GateRZZ",
+    "GateRZX",
+    "GateXXplusYY",
+    "GateXXminusYY",
+    "GateCCX",
+    "GateC3X",
+    "GateCCP",
+    "GateCSWAP",
+    "QFT",
+    "PhaseGradient",
+    "Instruction",
+    "GateP",
+    "MimiqConnection",
+    "matrices",
+    "GateCall",
+    "GateDecl",
+    "gatedecl",
+    "control",
+    "parallel",
+    "inverse",
+    "power",
+    "LazyArg",
+    "LazyExpr",
+    "Diffusion",
+    "PolynomialOracle",
+    "plothistogram",
+    "QCSResults",
+    "save_results",
+    "load_results",
+    "AsciiCanvas",
+    "AsciiCircuit",
 ]

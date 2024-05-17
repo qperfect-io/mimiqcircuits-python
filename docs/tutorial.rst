@@ -199,7 +199,7 @@ which returns a :class:`~mimiqcircuits.QCSResults` structure.
 
 .. code:: python
 
-  res = conn.getresults(job)
+  res = conn.get_results(job)
 
 .. code:: 
 

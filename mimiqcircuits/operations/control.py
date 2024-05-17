@@ -45,7 +45,8 @@ class Control(mc.Operation):
         [0, 0, 0, 0, 0, 0, 1.0, 0]
         <BLANKLINE>
     """
-    _name = 'Control'
+
+    _name = "Control"
 
     _num_qubits = None
 
@@ -66,15 +67,14 @@ class Control(mc.Operation):
 
         if isinstance(operation, (mc.Barrier, mc.Reset, mc.Measure)):
             raise TypeError(
-                f"{operation.__class__.__name__} cannot be controlled operation.")
+                f"{operation.__class__.__name__} cannot be controlled operation."
+            )
 
         if op.num_bits != 0:
-            raise TypeError(
-                "Power operation cannot act on classical bits.")
+            raise TypeError("Power operation cannot act on classical bits.")
 
         if num_controls < 1:
-            raise ValueError(
-                "Controlled operations must have at least one control.")
+            raise ValueError("Controlled operations must have at least one control.")
 
         super().__init__()
 
@@ -95,10 +95,10 @@ class Control(mc.Operation):
             self._qregsizes.extend(op.qregsizes)
 
     def matrix(self):
-        Mdim = 2 ** self.op.num_qubits
+        Mdim = 2**self.op.num_qubits
         Ldim = 2 ** (self.op.num_qubits + self.num_controls)
         mat = se.zeros(Ldim, Ldim)
-        mat[Ldim - Mdim:, Ldim - Mdim:] = self.op.matrix()
+        mat[Ldim - Mdim :, Ldim - Mdim :] = self.op.matrix()
         for i in range(0, Ldim - Mdim):
             mat[i, i] = 1
         return se.Matrix(sp.simplify(sp.Matrix(mat).evalf()))
@@ -109,7 +109,7 @@ class Control(mc.Operation):
 
     @num_controls.setter
     def num_controls(self, value):
-        raise ValueError('Cannot set num_controls. Read only parameter.')
+        raise ValueError("Cannot set num_controls. Read only parameter.")
 
     @property
     def num_targets(self):
@@ -117,7 +117,7 @@ class Control(mc.Operation):
 
     @num_targets.setter
     def num_targets(self, value):
-        raise ValueError('Cannot set num_targets. Read only parameter.')
+        raise ValueError("Cannot set num_targets. Read only parameter.")
 
     @property
     def op(self):
@@ -129,6 +129,12 @@ class Control(mc.Operation):
 
     def inverse(self):
         return Control(self.num_controls, self.op.inverse())
+
+    def getparams(self):
+        return self.op.getparams()
+
+    def get_operation(self):
+        return self.op
 
     def control(self, *args):
         if len(args) == 0:
@@ -185,19 +191,18 @@ class Control(mc.Operation):
             (1, mc.GateY): mc.GateCY._decompose,
             (1, mc.GateZ): mc.GateCZ._decompose,
             (3, mc.GateX): mc.GateC3X._decompose,
-            (2, mc.GateP): mc.GateCP._decompose,
+            (1, mc.GateP): mc.GateCP._decompose,
             (2, mc.GateP): mc.GateCCP._decompose,
             (1, mc.GateRX): mc.GateCRX._decompose,
             (1, mc.GateRY): mc.GateCRY._decompose,
             (1, mc.GateRZ): mc.GateCRZ._decompose,
             (1, mc.GateSWAP): mc.GateCSWAP._decompose,
-            (1, mc.GateUPhase): mc.GateCU._decompose,
+            (1, mc.GateU): mc.GateCU._decompose,
             (1, mc.GateH): mc.GateCH._decompose,
             (1, mc.GateSX): mc.GateCSX._decompose,
             (1, mc.GateS): mc.GateCS._decompose,
             (1, mc.GateSXDG): mc.GateCSXDG._decompose,
             (1, mc.GateSDG): mc.GateCSDG._decompose,
-
         }
 
         key = (self.num_controls, type(self.op))
@@ -205,7 +210,6 @@ class Control(mc.Operation):
             return decompose_map[key](self, circ, qubits, bits)
 
         elif self.num_controls == 1 and self.num_qubits != 1:
-
             newcirc = self.op._decompose(mc.Circuit(), qubits[1:], bits)
 
             for inst in newcirc:
@@ -218,4 +222,4 @@ class Control(mc.Operation):
             return ctrldecomp.control_decompose(circ, self.op, qubits[:-1], qubits[-1])
 
 
-__all__ = ['Control']
+__all__ = ["Control"]

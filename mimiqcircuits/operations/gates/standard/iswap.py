@@ -48,7 +48,7 @@ class GateISWAP(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateISWAP(), 0, 1)
         >>> GateISWAP().power(2), GateISWAP().inverse()
-        (ISWAP^(2), ISWAP†)
+        (ISWAP**2, ISWAP†)
         >>> GateISWAP().decompose()
         2-qubit circuit with 6 instructions:
         ├── S @ q[0]

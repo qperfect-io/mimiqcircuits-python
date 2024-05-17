@@ -17,6 +17,7 @@
 from mimiqcircuits.proto import circuit_pb
 import mimiqcircuits as mc
 import symengine as se
+from symengine import *
 from fractions import Fraction
 import inspect
 
@@ -47,7 +48,6 @@ GATEENUMMAP = {
     "GateRZX": circuit_pb.GateType.GateRZX,
     "GateXXplusYY": circuit_pb.GateType.GateXXplusYY,
     "GateXXminusYY": circuit_pb.GateType.GateXXminusYY,
-    "GateUPhase": circuit_pb.GateType.GateUPhase,
 }
 
 
@@ -207,7 +207,7 @@ def toproto_operation(operation):
     if isinstance(operation, mc.GateCall):
         return toproto_gatecall(operation)
 
-    if isinstance(operation, (mc.QFT, mc.GPhase, mc.PhaseGradient, mc.Diffusion, mc.PolynomialOracle)):
+    if isinstance(operation, (mc.QFT, mc.PhaseGradient, mc.Diffusion, mc.PolynomialOracle)):
         return toproto_generalized(operation)
 
     elif isinstance(operation, mc.Gate):
@@ -399,35 +399,61 @@ def fromproto_inverse(inverse_proto):
 
 def toproto_complex(complex_matrix):
     complex_args = []
-    new_matrix = [complex_matrix[i, j] for i in range(
-        complex_matrix.rows) for j in range(complex_matrix.cols)]
 
-    for val in new_matrix:
-        real_arg = circuit_pb.Arg(
-            argvalue_value=circuit_pb.ArgValue(double_value=val.real))
-        imag_arg = circuit_pb.Arg(
-            argvalue_value=circuit_pb.ArgValue(double_value=val.imag))
+    for i in range(complex_matrix.rows):
+        for j in range(complex_matrix.cols):
+            val = complex_matrix[i, j]
 
-        complex_arg = circuit_pb.ComplexArg()
-        complex_arg.real.CopyFrom(real_arg)
-        complex_arg.imag.CopyFrom(imag_arg)
+            if isinstance(val, se.Symbol):
+                # If val is a symbolic variable, create only real argument
+                real_arg = circuit_pb.Arg(
+                    symbol_value=circuit_pb.Symbol(value=str(val)))
+                imag_arg = circuit_pb.Arg(
+                    symbol_value=circuit_pb.Symbol(value=str(0.0)))
+                complex_arg = circuit_pb.ComplexArg()
+                complex_arg.real.CopyFrom(real_arg)
+                complex_arg.imag.CopyFrom(imag_arg)
+            else:
+                # If val is a number, create real and imaginary arguments
+                real_arg = circuit_pb.Arg(
+                    argvalue_value=circuit_pb.ArgValue(double_value=val.real))
+                imag_arg = circuit_pb.Arg(
+                    argvalue_value=circuit_pb.ArgValue(double_value=val.imag))
+                complex_arg = circuit_pb.ComplexArg()
+                complex_arg.real.CopyFrom(real_arg)
+                complex_arg.imag.CopyFrom(imag_arg)
 
-        complex_args.append(complex_arg)
+            complex_args.append(complex_arg)
 
     return complex_args
 
 
 def toproto_custom(custom):
-    complex_args = toproto_complex(custom.matrix)
+    complex_args = toproto_complex(custom.matrix.T)
     return circuit_pb.Operation(custom=circuit_pb.GateCustom(matrix=complex_args, nqubits=custom.num_qubits))
 
 
 def fromproto_complex(complex_args):
     complex_matrix = []
     for complex_arg in complex_args:
-        real_val = complex_arg.real.argvalue_value.double_value
-        imag_val = complex_arg.imag.argvalue_value.double_value
-        complex_matrix.append(complex(real_val, imag_val))
+        real_val = 0.0
+        imag_val = 0.0
+
+        if complex_arg.real.HasField('argvalue_value'):
+            # If real part is present, use the double value
+            real_val = complex_arg.real.argvalue_value.double_value
+        elif complex_arg.real.HasField('symbol_value'):
+            # If real part is symbolic, reconstruct the symbol
+            real_val = se.sympify(complex_arg.real.symbol_value.value)
+
+        if complex_arg.imag.HasField('argvalue_value'):
+            # If imag part is present, use the double value
+            imag_val = complex_arg.imag.argvalue_value.double_value
+        elif complex_arg.imag.HasField('symbol_value'):
+            # If imag part is symbolic, reconstruct the symbol
+            imag_val = se.sympify(complex_arg.imag.symbol_value.value)
+
+        complex_matrix.append(real_val + imag_val * I)
 
     return se.Matrix(complex_matrix)
 
@@ -436,6 +462,7 @@ def fromproto_custom(custom_proto):
     complex_matrix = fromproto_complex(custom_proto.matrix)
     num_qubits = custom_proto.nqubits
     complex_matrix = complex_matrix.reshape(2 ** num_qubits, 2 ** num_qubits)
+    complex_matrix = complex_matrix.T  # Add transpose operation
     return mc.GateCustom(complex_matrix)
 
 
@@ -454,7 +481,6 @@ def fromproto_generalized(generalized_proto):
     generalized_constructors = {
         "QFT": mc.QFT,
         "PhaseGradient": mc.PhaseGradient,
-        "GPhase": mc.GPhase,
         "Diffusion": mc.Diffusion,
         "PolynomialOracle": mc.PolynomialOracle,
     }

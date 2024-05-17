@@ -72,10 +72,11 @@ class GateCP(mctrl.Control):
 
     def _decompose(self, circ, qubits, bits):
         c, t = qubits
-        lmbda = self.op.lmbda
-        circ.push(GateP(lmbda/2), c)
+        lmbda2 = self.op.lmbda / 2
+
+        circ.push(GateP(lmbda2), c)
         circ.push(GateCX(), c, t)
-        circ.push(GateP(-lmbda/2), t)
+        circ.push(GateP(-lmbda2), t)
         circ.push(GateCX(), c, t)
-        circ.push(GateP(lmbda/2), t)
+        circ.push(GateP(lmbda2), t)
         return circ

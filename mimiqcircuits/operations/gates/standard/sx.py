@@ -33,7 +33,7 @@ class GateSX(mc.Power):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateSX()
-        X^(1/2)
+        SX
         >>> GateSX().matrix()
         [0.5 + 0.5*I, 0.5 - 0.5*I]
         [0.5 - 0.5*I, 0.5 + 0.5*I]
@@ -41,47 +41,62 @@ class GateSX(mc.Power):
         >>> c = Circuit().push(GateSX(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── X^(1/2) @ q[0]
+        └── SX @ q[0]
         <BLANKLINE>
         >>> GateSX().power(2), GateSX().inverse()
-        (X, (X^(1/2))†)
+        (X, SX†)
         >>> GateSX().decompose()
         1-qubit circuit with 4 instructions:
         ├── S† @ q[0]
         ├── H @ q[0]
         ├── S† @ q[0]
-        └── GPhase((1/4)*pi) @ q[0]
+        └── U(0, 0, 0, (1/4)*pi) @ q[0]
         <BLANKLINE>
     """
+    _name = "SX"
+
+    name = "SX"
 
     def __init__(self):
-        super().__init__(mc.GateX(), 1/2)
+        super().__init__(mc.GateX(), 1 / 2)
 
     def inverse(self):
         return GateSXDG()
+
+    def isopalias(self):
+        return True
 
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCSX())
 
     def _power(self, p):
-        pmod = p % 2
-
-        if pmod == 0:
+        # SX * SX = X
+        if p % 4 == 2:
             return mc.GateX()
-        else:
-            if p in {3, 7, 11}:
-                return mc.GateSXDG()
-            elif p in {5, 9, 13}:
-                return self
-            else:
-                return mc.Power(self, p)
+
+        # (SX * SX) * (SX * SX) = X * X = ID
+        if p % 4 == 0:
+            return mc.GateID()
+
+        # (SX * SX * SX) * SX = ID => SX * SX * SX = SX†
+        if p % 4 == 3:
+            return mc.GateSXDG()
+
+        # SX * SX * SX * SX = ID => SX^(n*4) * SX = ID * SX = SX
+        if p % 4 == 1:
+            return self
+
+        return mc.Power(self, p)
+
+    def __str__(self):
+        return f"{self.name}"
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
         circ.push(mc.GateSDG(), q)
         circ.push(mc.GateH(), q)
         circ.push(mc.GateSDG(), q)
-        circ.push(mc.GPhase(1, pi/4), q)
+        circ.push(mc.GateU(0,0,0,pi/4), q)
         return circ
 
 
@@ -99,7 +114,7 @@ class GateSXDG(mc.Inverse):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateSXDG()
-        (X^(1/2))†
+        SX†
         >>> GateSXDG().matrix()
         [0.5 - 0.5*I, 0.5 + 0.5*I]
         [0.5 + 0.5*I, 0.5 - 0.5*I]
@@ -107,16 +122,16 @@ class GateSXDG(mc.Inverse):
         >>> c = Circuit().push(GateSXDG(), 0)
         >>> c
         1-qubit circuit with 1 instructions:
-        └── (X^(1/2))† @ q[0]
+        └── SX† @ q[0]
         <BLANKLINE>
         >>> GateSXDG().power(2), GateSXDG().inverse()
-        (((X^(1/2))†)^(2), X^(1/2))
+        (SX†**2, SX)
         >>> GateSXDG().decompose()
         1-qubit circuit with 4 instructions:
-        ├── GPhase((-1/4)*pi) @ q[0]
         ├── S @ q[0]
         ├── H @ q[0]
-        └── S @ q[0]
+        ├── S @ q[0]
+        └── U(0, 0, 0, (-1/4)*pi) @ q[0]
         <BLANKLINE>
     """
 
@@ -126,13 +141,16 @@ class GateSXDG(mc.Inverse):
     def inverse(self):
         return GateSX()
 
+    def isopalias(self):
+        return True
+
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCSXDG())
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
-        circ.push(mc.GPhase(1, -pi/4), q)
         circ.push(mc.GateS(), q)
         circ.push(mc.GateH(), q)
         circ.push(mc.GateS(), q)
+        circ.push(mc.GateU(0,0,0,-pi/4), q)
         return circ

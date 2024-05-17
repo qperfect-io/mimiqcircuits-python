@@ -85,11 +85,11 @@ class Gate(Operation):
             raise ValueError("Invalid number of arguments.")
 
     def __str__(self):
-        pars = ''
+        pars = ""
         if len(self.parnames) != 0:
-            pars += '('
-            pars += ', '.join([f'{getattr(self, pn)}' for pn in self.parnames])
-            pars += ')'
+            pars += "("
+            pars += ", ".join([f"{getattr(self, pn)}" for pn in self.parnames])
+            pars += ")"
         return self.name + pars
 
     def __repr__(self):
@@ -110,4 +110,4 @@ class Gate(Operation):
         return type(self)(*params)
 
 
-__all__ = ['Gate']
+__all__ = ["Gate"]

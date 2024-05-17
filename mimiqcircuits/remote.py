@@ -25,6 +25,7 @@ from mimiqcircuits.qcsresults import QCSResults
 from mimiqcircuits.__version__ import __version__
 import numpy as np
 from time import sleep
+import shutil
 
 # maximum nbumber of samples allowed
 MAX_SAMPLES = 2**16
@@ -36,8 +37,15 @@ DEFAULT_SAMPLES = 1000
 MIN_BONDDIM = 1
 MAX_BONDDIM = 2**12
 
+# minimum and maximum entanglement dimension allowed
+MIN_ENTDIM = 4
+MAX_ENTDIM = 64
+
 # default bond dimension
 DEFAULT_BONDDIM = 256
+
+# default entanglement dimension
+DEFAULT_ENTDIM = 16
 
 # default time limit
 DEFAULT_TIME_LIMIT = 5
@@ -77,10 +85,18 @@ class MimiqConnection(mimiqlink.MimiqConnection):
     Inherits from: mimiqlink.MimiqConnection python.
     """
 
-    def execute(self, circuit, label="pyapi_v" + __version__,
-                algorithm=DEFAULT_ALGORITHM, nsamples=DEFAULT_SAMPLES,
-                bitstrings=None, timelimit=DEFAULT_TIME_LIMIT, bonddim=None,
-                seed=None):
+    def execute(
+        self,
+        circuit,
+        label="pyapi_v" + __version__,
+        algorithm=DEFAULT_ALGORITHM,
+        nsamples=DEFAULT_SAMPLES,
+        bitstrings=None,
+        timelimit=DEFAULT_TIME_LIMIT,
+        bonddim=None,
+        entdim=None,
+        seed=None,
+    ):
         """
         Execute a circuit simulation using the MIMIQ cloud services.
 
@@ -92,6 +108,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             bitstrings (list): List of bitstrings for conditional execution (default: None).
             timelimit (int): The time limit for execution in seconds (default: 5 * 60).
             bonddim (int): The bond dimension for the MPS algorithm (default: None).
+            entdim (int): The entangling dimension for the MPS algorithm (default: None).
             seed (int): The seed for generating random numbers (default: randomly generated). If provided,
                 uses the specified seed.
 
@@ -137,6 +154,12 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             ├── 0 amplitudes
             └── 1000 samples
         """
+
+        if circuit.is_symbolic():
+            raise ValueError(
+                "The circuit contains unevaluated symbolic parameters and cannot be processed until all parameters are fully evaluated."
+            )
+
         if bitstrings is None:
             bitstrings = []
         else:
@@ -144,7 +167,8 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             for b in bitstrings:
                 if len(b) != nq:
                     raise ValueError(
-                        "The number of qubits in the bitstring is not equal to the number of qubits in the circuit.")
+                        "The number of qubits in the bitstring is not equal to the number of qubits in the circuit."
+                    )
 
         # if seed is none default it to a random int64 seed
         if seed is None:
@@ -153,9 +177,14 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         if (algorithm == "auto" or algorithm == "mps") and bonddim is None:
             bonddim = DEFAULT_BONDDIM
 
-        if bonddim is not None and (bonddim < MIN_BONDDIM or bonddim > MAX_BONDDIM):
-            raise ValueError(
-                f"bonddim must be between {MIN_BONDDIM} and {MAX_BONDDIM}")
+        if (algorithm == "auto" or algorithm == "mps") and entdim is None:
+            entdim = DEFAULT_ENTDIM
+
+        if bonddim < MIN_BONDDIM or bonddim > MAX_BONDDIM:
+            raise ValueError(f"bonddim must be between {MIN_BONDDIM} and {MAX_BONDDIM}")
+
+        if entdim < MIN_ENTDIM or entdim > MAX_ENTDIM:
+            raise ValueError(f"entdim must be between {MIN_ENTDIM} and {MAX_ENTDIM}")
 
         if nsamples > MAX_SAMPLES:
             raise ValueError(f"nsamples must be less than {MAX_SAMPLES}")
@@ -167,23 +196,26 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                 circuit.saveproto(circuit_filename)
             elif isinstance(circuit, str):
                 if not os.path.isfile(circuit):
-                    raise FileNotFoundError(
-                        f"File {circuit} not found.")
+                    raise FileNotFoundError(f"File {circuit} not found.")
 
                 circuit_filename = os.path.join(tmpdir, CIRCUITQASM_FILE)
                 shutil.copyfile(circuit, circuit_filename)
             else:
-                raise TypeError(
-                    "circuit must be a Circuit object or a OPENQASM file")
+                raise TypeError("circuit must be a Circuit object or a OPENQASM file")
 
             circuit_hash = _hash_file(circuit_filename)
 
-            jsonbitstrings = ['bs' + o.to01() for o in bitstrings]
+            jsonbitstrings = ["bs" + o.to01() for o in bitstrings]
 
-            pars = {"algorithm": algorithm, "bitstrings": jsonbitstrings,
-                    "samples": nsamples, "seed": seed,
-                    "apilang: ": "python", "apiversion": __version__,
-                    "circuitsapiversion": __version__}
+            pars = {
+                "algorithm": algorithm,
+                "bitstrings": jsonbitstrings,
+                "samples": nsamples,
+                "seed": seed,
+                "apilang: ": "python",
+                "apiversion": __version__,
+                "circuitsapiversion": __version__,
+            }
 
             if bonddim is not None:
                 pars["bondDimension"] = bonddim
@@ -192,12 +224,9 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                 "executor": "Circuits",
                 "timelimit": timelimit,
                 "files": [
-                    {
-                        "name": os.path.basename(circuit_filename),
-                        "hash": circuit_hash
-                    }
+                    {"name": os.path.basename(circuit_filename), "hash": circuit_hash}
                 ],
-                "parameters": pars
+                "parameters": pars,
             }
 
             req_filename = os.path.join(tmpdir, "parameters.json")
@@ -207,11 +236,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
             emutype = "CIRC"
             return self.request(
-                emutype,
-                algorithm,
-                label,
-                timelimit,
-                [req_filename, circuit_filename]
+                emutype, algorithm, label, timelimit, [req_filename, circuit_filename]
             )
 
     def get_results(self, execution, interval=10):
@@ -234,9 +259,9 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
         infos = self.requestInfo(execution)
 
-        if infos['status'] == "ERROR":
-            if 'errorMessage' in infos:
-                msg = infos['errorMessage']
+        if infos["status"] == "ERROR":
+            if "errorMessage" in infos:
+                msg = infos["errorMessage"]
                 raise RuntimeError(f"Remote job errored: {msg}")
             else:
                 raise RuntimeError("Remote job errored.")
@@ -245,11 +270,9 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             names = self.downloadResults(execution, destdir=tmpdir)
 
             if RESULTSPB_FILE not in names:
-                raise RuntimeError(
-                    "File not found in results. Update Your library.")
+                raise RuntimeError("File not found in results. Update Your library.")
 
-            results = QCSResults.loadproto(
-                os.path.join(tmpdir, RESULTSPB_FILE))
+            results = QCSResults.loadproto(os.path.join(tmpdir, RESULTSPB_FILE))
 
         return results
 
@@ -269,23 +292,21 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             names = self.downloadJobFiles(execution, destdir=tmpdir)
 
             if CIRCUITPB_FILE not in names and CIRCUITQASM_FILE not in names:
-                raise RuntimeError(
-                    "File not found in inputs. Update Your library.")
+                raise RuntimeError("File not found in inputs. Update Your library.")
 
             if "parameters.json" not in names:
-                raise RuntimeError(
-                    "File not found in inputs. Update Your library.")
+                raise RuntimeError("File not found in inputs. Update Your library.")
 
             with open(os.path.join(tmpdir, "parameters.json"), "r") as f:
                 parameters = json.load(f)
 
             if CIRCUITPB_FILE in names:
-                circuit = Circuit.loadproto(
-                    os.path.join(tmpdir, CIRCUITPB_FILE))
+                circuit = Circuit.loadproto(os.path.join(tmpdir, CIRCUITPB_FILE))
             elif CIRCUITQASM_FILE in names:
                 circuit = os.path.join(tmpdir, CIRCUITQASM_FILE)
             else:
                 raise FileNotFoundError(
-                    "Circuit file not found within results. Update your library.")
+                    "Circuit file not found within results. Update your library."
+                )
 
         return circuit, parameters

@@ -67,7 +67,7 @@ class GateCS(mctrl.Control):
     def _decompose(self, circ, qubits, bits):
         a, b = qubits
 
-        circ.push(GateCP(pi/2), a, b)
+        circ.push(GateCP(pi / 2), a, b)
 
         return circ
 
@@ -104,7 +104,7 @@ class GateCSDG(mctrl.Control):
         └── CS† @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSDG().power(2), GateCSDG().inverse()
-        (C(S†^(2)), CS)
+        (C(S†**2), CS)
         >>> GateCSDG().decompose()
         2-qubit circuit with 1 instructions:
         └── CP((-1/2)*pi) @ q[0], q[1]
@@ -117,6 +117,6 @@ class GateCSDG(mctrl.Control):
     def _decompose(self, circ, qubits, bits):
         a, b = range(self.num_qubits)
 
-        circ.push(GateCP(-pi/2), a, b)
+        circ.push(GateCP(-pi / 2), a, b)
 
         return circ

@@ -39,7 +39,7 @@ Here is a simple comprehensive example of executing a QASM file on MIMIQ.
         file.write(qasm)
 
     # actual execution of the QASM file
-    job = conn.executeqasm("/tmp/deutsch_n2.qasm"; algorithm="statevector")
+    job = conn.execute("/tmp/deutsch_n2.qasm"; algorithm="statevector")
     res = conn.get_results(job)
 
     plt.plot(res)
@@ -87,7 +87,7 @@ The indices are assigned in the following way:
 
 A simple example will clarify this behaviour:
 
-.. code:: qasm
+.. code::
 
     OPENQASM 2.0;
     qreg q[2];

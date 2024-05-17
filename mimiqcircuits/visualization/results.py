@@ -10,7 +10,7 @@ QPERFECTION_COLORS = {
     "antique_fuchsia": "#A4598D",
     "bangladesh_green": "#006E51",
     "dark_brown_tangelo": "#96694A",
-    "rhythm": "#7E6A98"
+    "rhythm": "#7E6A98",
 }
 
 QPERFECT_COLORS = {
@@ -19,7 +19,7 @@ QPERFECT_COLORS = {
     "purple": QPERFECTION_COLORS["antique_fuchsia"],
     "green": QPERFECTION_COLORS["bangladesh_green"],
     "brown": QPERFECTION_COLORS["dark_brown_tangelo"],
-    "violet": QPERFECTION_COLORS["rhythm"]
+    "violet": QPERFECTION_COLORS["rhythm"],
 }
 
 # The colorscheme is taken by https://github.com/joshdick/onedark.vim
@@ -38,7 +38,6 @@ MIMIQ_COLORS = {
 
 
 def _plothist(outcomes, counts, title, nobitstrings=False):
-
     labels = [hex(bitvec_to_int(arr)) for arr in outcomes]
     nbars = len(counts)
     nsamples = sum(counts)
@@ -49,14 +48,22 @@ def _plothist(outcomes, counts, title, nobitstrings=False):
 
     # alternating colors for bars
     for i in range(len(bars)):
-        color = 'yellow' if i % 2 == 0 else "magenta"
+        color = "yellow" if i % 2 == 0 else "magenta"
         bars[i].set_color(color)
 
     if not nobitstrings:
         bottom = max(counts) * 0.02
         for i, outcome in enumerate(outcomes):
-            plt.text(i, bottom, outcome.to01(), ha='center',
-                     rotation=90, color="black", size=6, family="monospace")
+            plt.text(
+                i,
+                bottom,
+                outcome.to01(),
+                ha="center",
+                rotation=90,
+                color="black",
+                size=6,
+                family="monospace",
+            )
 
     plt.xticks(rotation=90, fontsize=8)
     plt.yticks(rotation=0, fontsize=8)
@@ -78,9 +85,7 @@ def plothistogram(results, num_outcomes=15, mimiqstyle=True, nobitstrings=False)
         TypeError: If a non QCSResults object is passed.
     """
     if not isinstance(results, QCSResults):
-        raise TypeError(
-            "First argument is not a valid QCSResults object"
-        )
+        raise TypeError("First argument is not a valid QCSResults object")
 
     hist = results.histogram()
 

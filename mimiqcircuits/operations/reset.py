@@ -42,19 +42,20 @@ class Reset(Operation):
         └── Reset @ q[2]
         <BLANKLINE>
     """
-    _name = 'Reset'
+
+    _name = "Reset"
     _num_qubits = 1
     _num_bits = 0
     _qregsizes = [1]
 
     def inverse(self):
-        raise TypeError('Reset is not inversible')
+        raise TypeError("Reset is not inversible")
 
     def power(self, pwr):
-        raise TypeError('Reset^p is not defined.')
+        raise TypeError("Reset^p is not defined.")
 
     def control(self, num_qubits):
-        raise TypeError('Controlled Reset is not defined.')
+        raise TypeError("Controlled Reset is not defined.")
 
     def iswrapper(self):
         return False
@@ -66,6 +67,9 @@ class Reset(Operation):
 
         return Reset()
 
+    def asciiwidth(self, qubits, _):
+        return 6
+
 
 # export operations
-__all__ = ['Reset']
+__all__ = ["Reset"]

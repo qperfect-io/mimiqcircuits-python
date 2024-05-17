@@ -50,13 +50,14 @@ class GateT(Power):
         (S, T†)
         >>> GateT().decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, (1/4)*pi) @ q[0]
+        └── U(0, 0, (1/4)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'T'
+
+    _name = "T"
 
     def __init__(self):
-        super().__init__(GateS(), 1/2)
+        super().__init__(GateS(), 1 / 2)
 
     def isopalias(self):
         return True
@@ -65,27 +66,34 @@ class GateT(Power):
         return GateTDG()
 
     def _power(self, p):
-        if p == 1:
-            return self
+        # T^2 * T^2 * T^2 * T^2 = S^2 * S^2 = Z * Z = ID
+        if p % 8 == 0:
+            return mc.GateID()
 
-        elif p == 2:
-            return mc.GateS()
+        # T^(8n + 1) = T
+        if p % 8 == 1:
+            return GateT()
 
-        elif p == 4:
-            return mc.GateZ()
+        # T^(8n - 1) = T†
+        if p % 8 == 7:
+            return GateTDG()
 
-        elif p == 6:
-            return mc.GateSDG()
+        # T^(4n) = Z^n
+        if p % 4 == 0:
+            return mc.GateZ().power(p / 4)
 
-        else:
-            return mc.Power(self, p)
+        # T^(2n) = S^n
+        if p % 2 == 0:
+            return mc.GateS().power(p / 2)
+
+        return mc.Power(self, p)
 
     def __str__(self):
         return f"{self.name}"
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
-        circ.push(GateU(0, 0, pi/4), q)
+        circ.push(GateU(0, 0, pi / 4), q)
         return circ
 
 
@@ -114,10 +122,10 @@ class GateTDG(Inverse):
         └── T† @ q[0]
         <BLANKLINE>
         >>> GateTDG().power(2), GateTDG().inverse()
-        (T†^(2), T)
+        (T†**2, T)
         >>> GateTDG().decompose()
         1-qubit circuit with 1 instructions:
-        └── U(0, 0, (-1/4)*pi) @ q[0]
+        └── U(0, 0, (-1/4)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
 
@@ -132,5 +140,5 @@ class GateTDG(Inverse):
 
     def _decompose(self, circ, qubits, bits):
         q = qubits[0]
-        circ.push(GateU(0, 0, -pi/4), q)
+        circ.push(GateU(0, 0, -pi / 4), q)
         return circ

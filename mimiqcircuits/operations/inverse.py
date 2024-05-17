@@ -44,7 +44,8 @@ class Inverse(mc.Operation):
         └── P(1)† @ q[1]
         <BLANKLINE>
     """
-    _name = 'Inverse'
+
+    _name = "Inverse"
     _num_qubits = None
 
     _num_bits = 0
@@ -61,8 +62,7 @@ class Inverse(mc.Operation):
             raise ValueError("Operation must be an Operation object or type.")
 
         if isinstance(op, (mc.Barrier, mc.Reset, mc.Measure)):
-            raise TypeError(
-                f"{op.__class__.__name__} cannot be Inversed operation.")
+            raise TypeError(f"{op.__class__.__name__} cannot be Inversed operation.")
 
         if op.num_bits != 0:
             raise ValueError("Cannot inverte operation with classical bits.")
@@ -75,13 +75,16 @@ class Inverse(mc.Operation):
         self._parnames = op.parnames
 
     def __str__(self):
-        return f'{print_wrapped_parens(self.op)}†'
+        return f"{print_wrapped_parens(self.op)}†"
 
     def iswrapper(self):
         return True
 
     def inverse(self):
         return self.op
+
+    def getparams(self):
+        return self.op.getparams()
 
     def _power(self, pwr):
         return mc.Power(self, pwr)
@@ -128,4 +131,4 @@ class Inverse(mc.Operation):
         return circ
 
 
-__all__ = ['Inverse']
+__all__ = ["Inverse"]

@@ -134,4 +134,4 @@ def power(*args):
         raise TypeError("Invalid number of arguments.")
 
 
-__all__ = ['LazyArg', 'LazyExpr', 'control', 'parallel', 'inverse', 'power']
+__all__ = ["LazyArg", "LazyExpr", "control", "parallel", "inverse", "power"]
