@@ -15,6 +15,7 @@
 #
 
 import mimiqcircuits as mc
+from mimiqcircuits.instruction import Instruction
 import copy
 from collections.abc import Iterable
 from itertools import repeat
@@ -190,7 +191,7 @@ class Circuit:
             raise TypeError("Circuit should be initialized with a list of Instruction")
 
         for instruction in instructions:
-            if not isinstance(instruction, mc.Instruction):
+            if not isinstance(instruction, Instruction):
                 raise TypeError("Non Gate object passed to constructor.")
 
         self.instructions = instructions
@@ -346,7 +347,7 @@ class Circuit:
         M = 0
         L = len(args)
 
-        if isinstance(operation, mc.Instruction):
+        if isinstance(operation, Instruction):
             if L != 0:
                 raise (
                     ValueError(
@@ -394,11 +395,9 @@ class Circuit:
 
         for tg in zip(*targets):
             if operation == mc.Barrier:
-                self.instructions.append(mc.Instruction(mc.Barrier(N), (*tg,), ()))
+                self.instructions.append(Instruction(mc.Barrier(N), (*tg,), ()))
             else:
-                self.instructions.append(
-                    mc.Instruction(operation, (*tg[:N],), (*tg[N:],))
-                )
+                self.instructions.append(Instruction(operation, (*tg[:N],), (*tg[N:],)))
 
         return self
 
@@ -530,7 +529,7 @@ class Circuit:
             M = 0
             L = len(args)
 
-            if isinstance(operation, mc.Instruction):
+            if isinstance(operation, Instruction):
                 if L != 0:
                     raise ValueError(
                         "No extra arguments allowed when inserting an instruction."
@@ -555,11 +554,11 @@ class Circuit:
 
             if operation == mc.Barrier:
                 self.instructions.insert(
-                    index, mc.Instruction(mc.Barrier(N), (*args,), ())
+                    index, Instruction(mc.Barrier(N), (*args,), ())
                 )
             else:
                 self.instructions.insert(
-                    index, mc.Instruction(operation, (*args[:N],), (*args[N:],))
+                    index, Instruction(operation, (*args[:N],), (*args[N:],))
                 )
 
         return self
@@ -763,7 +762,7 @@ class Circuit:
         conditional (if) operations using specific drawing methods from the `AsciiCircuit` class.
 
         Raises:
-            TypeError: If any item in the circuit's instructions is not an instance of `mc.Instruction`.
+            TypeError: If any item in the circuit's instructions is not an instance of `Instruction`.
             ValueError: If an operation cannot be drawn because it exceeds the available canvas width even after a reset.
 
         Prints:
@@ -781,7 +780,7 @@ class Circuit:
         canvas.draw_wires(range(num_qubits), range(num_bits))
 
         for instruction in self.instructions:
-            if not isinstance(instruction, mc.Instruction):
+            if not isinstance(instruction, Instruction):
                 raise TypeError("Must be an Instruction")
 
             operation = instruction.get_operation()
