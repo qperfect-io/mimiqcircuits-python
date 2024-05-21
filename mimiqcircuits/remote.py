@@ -155,7 +155,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             └── 1000 samples
         """
 
-        if circuit.is_symbolic():
+        if isinstance(circuit, Circuit) and circuit.is_symbolic():
             raise ValueError(
                 "The circuit contains unevaluated symbolic parameters and cannot be processed until all parameters are fully evaluated."
             )

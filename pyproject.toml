@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mimiqcircuits"
-version = "0.8.3"
+version = "0.8.4"
 description = ""
 authors = ["QPerfect <guido.masella@qperfect.io>"]
 readme = "README.md"
