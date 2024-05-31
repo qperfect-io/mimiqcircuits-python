@@ -25,8 +25,6 @@ from mimiqcircuits.qcsresults import QCSResults
 from mimiqcircuits.__version__ import __version__
 import numpy as np
 from time import sleep
-import shutil
-import sys
 
 # maximum nbumber of samples allowed
 MAX_SAMPLES = 2**16
@@ -178,7 +176,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         .. code-block:: python
 
             conn.close()
-            
+
             conn.isOpen()
         """
 
@@ -197,9 +195,9 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                         "The number of qubits in the bitstring is not equal to the number of qubits in the circuit."
                     )
 
-        # if seed is none default it to the system high bound
+        # if seed is none default it to a random int32 seed
         if seed is None:
-            seed = np.random.randint(0, np.iinfo(np.int_).max, dtype=np.int_)
+            seed = int(np.random.randint(0, np.iinfo(np.int_).max, dtype=np.int_))
 
         if (algorithm == "auto" or algorithm == "mps") and bonddim is None:
             bonddim = DEFAULT_BONDDIM
