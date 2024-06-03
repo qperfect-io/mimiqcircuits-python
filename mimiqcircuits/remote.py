@@ -87,6 +87,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
     def execute(
         self,
         circuit,
+        *args,
         label="pyapi_v" + __version__,
         algorithm=DEFAULT_ALGORITHM,
         nsamples=DEFAULT_SAMPLES,
@@ -95,6 +96,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         bonddim=None,
         entdim=None,
         seed=None,
+        qasmincludes=None,
     ):
         """
         Execute a circuit simulation using the MIMIQ cloud services.
@@ -110,6 +112,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             entdim (int): The entangling dimension for the MPS algorithm (default: None).
             seed (int): The seed for generating random numbers (default: randomly generated). If provided,
                 uses the specified seed.
+            qasmincludes (list): List of OPENQASM files to include in the execution (default: None).
 
         Returns:
             str: The execution identifier.
@@ -215,7 +218,8 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             raise ValueError(f"nsamples must be less than {MAX_SAMPLES}")
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            # save the circuit in json format
+            files = []
+            allfiles = []
             if isinstance(circuit, Circuit):
                 circuit_filename = os.path.join(tmpdir, CIRCUITPB_FILE)
                 circuit.saveproto(circuit_filename)
@@ -225,10 +229,23 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
                 circuit_filename = os.path.join(tmpdir, CIRCUITQASM_FILE)
                 shutil.copyfile(circuit, circuit_filename)
+
+                for file in qasmincludes:
+                    base = os.path.basename(file)
+                    if not os.path.isfile(file):
+                        raise FileNotFoundError(f"File {file} not found.")
+                    shutil.copyfile(file, os.path.join(tmpdir, base))
+                    files.append({"name": base, "hash": _hash_file(file)})
+                    allfiles.append(os.path.join(tmpdir, base))
             else:
                 raise TypeError("circuit must be a Circuit object or a OPENQASM file")
 
             circuit_hash = _hash_file(circuit_filename)
+
+            files.append(
+                {"name": os.path.basename(circuit_filename), "hash": circuit_hash}
+            )
+            allfiles.append(circuit_filename)
 
             jsonbitstrings = ["bs" + o.to01() for o in bitstrings]
 
@@ -237,9 +254,6 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                 "bitstrings": jsonbitstrings,
                 "samples": nsamples,
                 "seed": seed,
-                "apilang: ": "python",
-                "apiversion": __version__,
-                "circuitsapiversion": __version__,
             }
 
             if bonddim is not None:
@@ -248,20 +262,26 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             req = {
                 "executor": "Circuits",
                 "timelimit": timelimit,
-                "files": [
-                    {"name": os.path.basename(circuit_filename), "hash": circuit_hash}
-                ],
+                "files": files,
                 "parameters": pars,
+                "apilang: ": "python",
+                "apiversion": __version__,
+                "circuitsapiversion": __version__,
             }
 
             req_filename = os.path.join(tmpdir, "parameters.json")
+            allfiles.append(req_filename)
 
             with open(req_filename, "w") as f:
                 json.dump(req, f)
 
             emutype = "CIRC"
             return self.request(
-                emutype, algorithm, label, timelimit, [req_filename, circuit_filename]
+                emutype,
+                algorithm,
+                label,
+                timelimit,
+                allfiles,
             )
 
     def get_results(self, execution, interval=10):

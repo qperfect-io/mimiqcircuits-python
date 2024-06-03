@@ -42,15 +42,49 @@ class QCSResults:
 
     def __repr__(self):
         result_str = "QCSResults:\n"
+
         if self.simulator is not None:
             result_str += f"├── simulator: {self.simulator} {self.version}\n"
-        for key, value in self.timings.items():
-            result_str += f"├── {key} time: {value}s\n"
-        result_str += f"├── fidelity estimate (min,max): ({min(self.fidelities):.3f}, {max(self.fidelities):.3f})\n"
-        result_str += f"├── average multi-qubit gate error (min,max): ({min(self.avggateerrors):.3f}, {max(self.avggateerrors):.3f})\n"
+
+        # filter out the ones < 1e-7
+        timings = {k: v for k, v in self.timings.items() if v > 1e-7}
+
+        result_str += "├── timings:\n"
+        for key, value in list(timings.items())[:-1]:
+            result_str += f"│    ├── {key} time: {value}s\n"
+
+        key, value = list(timings.items())[-1]
+        result_str += f"│    └── {key} time: {value}s\n"
+
+        if len(self.fidelities) == 1:
+            result_str += f"├── fidelity estimate: {self.fidelities[0]:.3g}\n"
+            result_str += f"├── average multi-qubit gate error estimate: {self.avggateerrors[0]:.3g}\n"
+        elif len(self.fidelities) != 0:
+            result_str += "├── fidelity estimate:\n"
+            result_str += f"│    ├── min, max: {min(self.fidelities):.3g}, {max(self.fidelities):.3g}\n"
+            result_str += f"│    ├── mean: {mean(self.fidelities):.3g}\n"
+            result_str += f"│    ├── median: {median(self.fidelities):.3g}\n"
+            result_str += f"│    └── std: {stdev(self.fidelities):.3g}\n"
+            result_str += "├── average multi-qubit gate error estimate:\n"
+            result_str += f"│    ├── min, max: {min(self.avggateerrors):.3g}, {max(self.avggateerrors):.3g}\n"
+            result_str += f"│    ├── mean: {mean(self.avggateerrors):.3g}\n"
+            result_str += f"│    ├── median: {median(self.avggateerrors):.3g}\n"
+            result_str += f"│    └── std: {stdev(self.avggateerrors):.3g}\n"
+
+        if len(self.cstates) != 0:
+            hist = self.histogram()
+            outcomes = sorted(hist, key=hist.get, reverse=True)[0:5]
+            result_str += "├── most sampled:\n"
+            for bs in outcomes[:-1]:
+                result_str += f'│    ├── bs"{bs.to01()}" => {hist[bs]}\n'
+
+            bs = outcomes[-1]
+            result_str += f'│    └── bs"{bs.to01()}" => {hist[bs]}\n'
+
         result_str += f"├── {len(self.fidelities)} executions\n"
         result_str += f"├── {len(self.amplitudes)} amplitudes\n"
         result_str += f"└── {len(self.cstates)} samples"
+
         return result_str
 
     def _repr_html_(self):
