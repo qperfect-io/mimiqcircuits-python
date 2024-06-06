@@ -87,7 +87,6 @@ class MimiqConnection(mimiqlink.MimiqConnection):
     def execute(
         self,
         circuit,
-        *args,
         label="pyapi_v" + __version__,
         algorithm=DEFAULT_ALGORITHM,
         nsamples=DEFAULT_SAMPLES,
@@ -230,6 +229,9 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                 circuit_filename = os.path.join(tmpdir, CIRCUITQASM_FILE)
                 shutil.copyfile(circuit, circuit_filename)
 
+                if qasmincludes is None:
+                    qasmincludes = []
+
                 for file in qasmincludes:
                     base = os.path.basename(file)
                     if not os.path.isfile(file):
@@ -355,3 +357,6 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                 )
 
         return circuit, parameters
+
+
+_all__ = ['MimiqConnection']

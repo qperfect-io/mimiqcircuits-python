@@ -93,6 +93,7 @@ from mimiqcircuits.operations.gates.generalized.polynomialoracle import Polynomi
 from mimiqcircuits.visualization.results import plothistogram
 from mimiqcircuits.qcsresults import QCSResults, save_results, load_results
 from mimiqcircuits.canvas import AsciiCanvas, AsciiCircuit
+from mimiqlink.connection import QPERFECT_CLOUD, QPERFECT_CLOUD2
 
 # Export specific classes, and functions.
 
@@ -179,4 +180,6 @@ __all__ = [
     "load_results",
     "AsciiCanvas",
     "AsciiCircuit",
+    "QPERFECT_CLOUD",
+    "QPERFECT_CLOUD2"
 ]
