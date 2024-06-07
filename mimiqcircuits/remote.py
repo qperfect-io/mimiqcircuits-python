@@ -47,7 +47,7 @@ DEFAULT_BONDDIM = 256
 DEFAULT_ENTDIM = 16
 
 # default time limit
-DEFAULT_TIME_LIMIT = 5
+DEFAULT_TIME_LIMIT = 30
 
 # default algorithm
 DEFAULT_ALGORITHM = "auto"
@@ -359,4 +359,4 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         return circuit, parameters
 
 
-_all__ = ['MimiqConnection']
+_all__ = ["MimiqConnection"]
