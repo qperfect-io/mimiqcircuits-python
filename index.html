@@ -1,0 +1,988 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Introduction &#8212; MIMIQ Circuits 0.10.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=82662543"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/tabs.js?v=3ee01567"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">MIMIQ Circuits version <span style="font-weight: bold; color: #3498db;">0.10.0</span> is in early development. Check out our website at <a href="https://www.qperfect.io">www.qperfect.io</a> or contact us at <a href="mailto:contact@qperfect.io">constact@qperfect.io</a></div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.10.0 documentation - Home"/>
+    <script>document.write(`<img src="_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.10.0 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorial.html">
+    Tutorial
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="manual/index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorial.html">
+    Tutorial
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="manual/index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h1>
+<p>MIMIQ Circuits is a quantum computing framework and high performance simulator
+developed by QPerfect. It allows you to develop and run your quantum
+algorithms beyond the limits of today’s noisy intermediate scale quantum (NISQ)
+computers.</p>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt><code class="file docutils literal notranslate"><span class="pre">mimiqcircuits.py</span></code> is a <a class="reference external" href="https://docs.python.org/3/">Python Language</a> package containing all the utilities and programming interfaces (APIs)</dt><dd><p>to build quantum systems, connect, and execute simulations on <a class="reference external" href="https://qperfect.io/">QPerfect’s MIMIQ-CIRC</a>
+large-scale quantum circuit simulator.</p>
+</dd>
+</dl>
+<p>To install <code class="file docutils literal notranslate"><span class="pre">mimiqcircuits.py</span></code> you can use the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;mimiqcircuits @ git+https://github.com/qperfect-io/mimiqcircuits-python.git&quot;</span>
+</pre></div>
+</div>
+<p>For more details on installation, please refer to the <a class="reference internal" href="installation.html#id1"><span class="std std-ref">Installation</span></a> page.</p>
+</section>
+<section id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#id1">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#building-a-quantum-circuit">Building a Quantum circuit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#remote-execution-on-mimiq-circ">Remote execution on MIMIQ-CIRC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#connecting-to-mimiq">Connecting to MIMIQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#executing-a-circuit-on-mimiq">executing a Circuit on MIMIQ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#retrieving-execution-results">Retrieving execution results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#retrieving-execsubmitted-remote-jobs">Retrieving execsubmitted remote jobs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manual/index.html">Manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual/execution.html">Circuit Execution on MIMIQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/execution.html#understanding-sampling-and-executions">Understanding sampling and executions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="manual/execution.html#no-non-unitary-operations">No non-unitary operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="manual/execution.html#no-mid-circuit-measurements-and-no-non-unitary-operations">No mid-circuit measurements and no non-unitary operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="manual/execution.html#mid-circuit-measurements-or-non-unitary-operations">Mid-circuit measurements or non-unitary operations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="manual/execution.html#fidelity-and-error-estimates">Fidelity and Error estimates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/execution.html#timings">Timings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/openqasm.html">OpenQASM in MIMIQ-CIRC</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/openqasm.html#behaviour-of-include-files">Behaviour of include files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/openqasm.html#relations-between-openqasm-registers-and-mimiq-indices">Relations between OpenQASM registers and MIMIQ indices</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apidocs/mimiqcircuits.html">API References</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_box"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.draw_box()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_double_hline"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.draw_double_hline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_double_vline"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.draw_double_vline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_empty"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.draw_empty()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_fill"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.draw_fill()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_hline"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.draw_hline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_text"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.draw_text()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_vline"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.draw_vline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_vtext"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.draw_vtext()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.get_cols"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.get_cols()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.get_rows"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.get_rows()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.push_line"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.push_line()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.reset"><code class="docutils literal notranslate"><span class="pre">AsciiCanvas.reset()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_barrier"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.draw_barrier()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_control"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.draw_control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_ifstatement"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.draw_ifstatement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_instruction"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.draw_instruction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_measure"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.draw_measure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_measurereset"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.draw_measurereset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_operation"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.draw_operation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_parallel"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.draw_parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_reset"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.draw_reset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_wires"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.draw_wires()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.get_bit_row"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.get_bit_row()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.get_current_col"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.get_current_col()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.get_qubit_row"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.get_qubit_row()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.reset"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.reset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.set_current_col"><code class="docutils literal notranslate"><span class="pre">AsciiCircuit.set_current_col()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier"><code class="docutils literal notranslate"><span class="pre">Barrier</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.asciiwidth"><code class="docutils literal notranslate"><span class="pre">Barrier.asciiwidth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.control"><code class="docutils literal notranslate"><span class="pre">Barrier.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.inverse"><code class="docutils literal notranslate"><span class="pre">Barrier.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.iswrapper"><code class="docutils literal notranslate"><span class="pre">Barrier.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.power"><code class="docutils literal notranslate"><span class="pre">Barrier.power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString"><code class="docutils literal notranslate"><span class="pre">BitString</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.bits"><code class="docutils literal notranslate"><span class="pre">BitString.bits</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.fromfunction"><code class="docutils literal notranslate"><span class="pre">BitString.fromfunction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.fromint"><code class="docutils literal notranslate"><span class="pre">BitString.fromint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.fromnonzeros"><code class="docutils literal notranslate"><span class="pre">BitString.fromnonzeros()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.fromstring"><code class="docutils literal notranslate"><span class="pre">BitString.fromstring()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.nonzeros"><code class="docutils literal notranslate"><span class="pre">BitString.nonzeros()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.num_qubits"><code class="docutils literal notranslate"><span class="pre">BitString.num_qubits()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.to01"><code class="docutils literal notranslate"><span class="pre">BitString.to01()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.toindex"><code class="docutils literal notranslate"><span class="pre">BitString.toindex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.tointeger"><code class="docutils literal notranslate"><span class="pre">BitString.tointeger()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.zeros"><code class="docutils literal notranslate"><span class="pre">BitString.zeros()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit"><code class="docutils literal notranslate"><span class="pre">Circuit</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.append"><code class="docutils literal notranslate"><span class="pre">Circuit.append()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.copy"><code class="docutils literal notranslate"><span class="pre">Circuit.copy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.decompose"><code class="docutils literal notranslate"><span class="pre">Circuit.decompose()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.deepcopy"><code class="docutils literal notranslate"><span class="pre">Circuit.deepcopy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.depth"><code class="docutils literal notranslate"><span class="pre">Circuit.depth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.draw"><code class="docutils literal notranslate"><span class="pre">Circuit.draw()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.emplace"><code class="docutils literal notranslate"><span class="pre">Circuit.emplace()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.empty"><code class="docutils literal notranslate"><span class="pre">Circuit.empty()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.evaluate"><code class="docutils literal notranslate"><span class="pre">Circuit.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.insert"><code class="docutils literal notranslate"><span class="pre">Circuit.insert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.inverse"><code class="docutils literal notranslate"><span class="pre">Circuit.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.is_symbolic"><code class="docutils literal notranslate"><span class="pre">Circuit.is_symbolic()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.loadproto"><code class="docutils literal notranslate"><span class="pre">Circuit.loadproto()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.num_bits"><code class="docutils literal notranslate"><span class="pre">Circuit.num_bits()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.num_qubits"><code class="docutils literal notranslate"><span class="pre">Circuit.num_qubits()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push"><code class="docutils literal notranslate"><span class="pre">Circuit.push()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.remove"><code class="docutils literal notranslate"><span class="pre">Circuit.remove()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.saveproto"><code class="docutils literal notranslate"><span class="pre">Circuit.saveproto()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.specify_operations"><code class="docutils literal notranslate"><span class="pre">Circuit.specify_operations()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control"><code class="docutils literal notranslate"><span class="pre">Control</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.control"><code class="docutils literal notranslate"><span class="pre">Control.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.evaluate"><code class="docutils literal notranslate"><span class="pre">Control.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.get_operation"><code class="docutils literal notranslate"><span class="pre">Control.get_operation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.getparams"><code class="docutils literal notranslate"><span class="pre">Control.getparams()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.inverse"><code class="docutils literal notranslate"><span class="pre">Control.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.iswrapper"><code class="docutils literal notranslate"><span class="pre">Control.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.matrix"><code class="docutils literal notranslate"><span class="pre">Control.matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.num_controls"><code class="docutils literal notranslate"><span class="pre">Control.num_controls</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.num_targets"><code class="docutils literal notranslate"><span class="pre">Control.num_targets</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.op"><code class="docutils literal notranslate"><span class="pre">Control.op</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.parallel"><code class="docutils literal notranslate"><span class="pre">Control.parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.power"><code class="docutils literal notranslate"><span class="pre">Control.power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Diffusion"><code class="docutils literal notranslate"><span class="pre">Diffusion</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Diffusion.num_qubits"><code class="docutils literal notranslate"><span class="pre">Diffusion.num_qubits</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate"><code class="docutils literal notranslate"><span class="pre">Gate</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.control"><code class="docutils literal notranslate"><span class="pre">Gate.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.evaluate"><code class="docutils literal notranslate"><span class="pre">Gate.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.inverse"><code class="docutils literal notranslate"><span class="pre">Gate.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.iswrapper"><code class="docutils literal notranslate"><span class="pre">Gate.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.matrix"><code class="docutils literal notranslate"><span class="pre">Gate.matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.parallel"><code class="docutils literal notranslate"><span class="pre">Gate.parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.power"><code class="docutils literal notranslate"><span class="pre">Gate.power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateC3X"><code class="docutils literal notranslate"><span class="pre">GateC3X</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCCP"><code class="docutils literal notranslate"><span class="pre">GateCCP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCCX"><code class="docutils literal notranslate"><span class="pre">GateCCX</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCH"><code class="docutils literal notranslate"><span class="pre">GateCH</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCP"><code class="docutils literal notranslate"><span class="pre">GateCP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCRX"><code class="docutils literal notranslate"><span class="pre">GateCRX</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCRY"><code class="docutils literal notranslate"><span class="pre">GateCRY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCRZ"><code class="docutils literal notranslate"><span class="pre">GateCRZ</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCS"><code class="docutils literal notranslate"><span class="pre">GateCS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCSDG"><code class="docutils literal notranslate"><span class="pre">GateCSDG</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCSWAP"><code class="docutils literal notranslate"><span class="pre">GateCSWAP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCSX"><code class="docutils literal notranslate"><span class="pre">GateCSX</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCSXDG"><code class="docutils literal notranslate"><span class="pre">GateCSXDG</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCU"><code class="docutils literal notranslate"><span class="pre">GateCU</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCX"><code class="docutils literal notranslate"><span class="pre">GateCX</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCY"><code class="docutils literal notranslate"><span class="pre">GateCY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCZ"><code class="docutils literal notranslate"><span class="pre">GateCZ</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCall"><code class="docutils literal notranslate"><span class="pre">GateCall</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCall.evaluate"><code class="docutils literal notranslate"><span class="pre">GateCall.evaluate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom"><code class="docutils literal notranslate"><span class="pre">GateCustom</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom.evaluate"><code class="docutils literal notranslate"><span class="pre">GateCustom.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom.inverse"><code class="docutils literal notranslate"><span class="pre">GateCustom.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom.is_unitary"><code class="docutils literal notranslate"><span class="pre">GateCustom.is_unitary()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom.num_qubits"><code class="docutils literal notranslate"><span class="pre">GateCustom.num_qubits</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateDCX"><code class="docutils literal notranslate"><span class="pre">GateDCX</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateDecl"><code class="docutils literal notranslate"><span class="pre">GateDecl</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateECR"><code class="docutils literal notranslate"><span class="pre">GateECR</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateECR.inverse"><code class="docutils literal notranslate"><span class="pre">GateECR.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateH"><code class="docutils literal notranslate"><span class="pre">GateH</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateH.inverse"><code class="docutils literal notranslate"><span class="pre">GateH.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateID"><code class="docutils literal notranslate"><span class="pre">GateID</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateID.inverse"><code class="docutils literal notranslate"><span class="pre">GateID.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateISWAP"><code class="docutils literal notranslate"><span class="pre">GateISWAP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateP"><code class="docutils literal notranslate"><span class="pre">GateP</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateP.inverse"><code class="docutils literal notranslate"><span class="pre">GateP.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateR"><code class="docutils literal notranslate"><span class="pre">GateR</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateR.inverse"><code class="docutils literal notranslate"><span class="pre">GateR.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRX"><code class="docutils literal notranslate"><span class="pre">GateRX</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRX.inverse"><code class="docutils literal notranslate"><span class="pre">GateRX.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRXX"><code class="docutils literal notranslate"><span class="pre">GateRXX</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRXX.inverse"><code class="docutils literal notranslate"><span class="pre">GateRXX.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRY"><code class="docutils literal notranslate"><span class="pre">GateRY</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRY.inverse"><code class="docutils literal notranslate"><span class="pre">GateRY.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRYY"><code class="docutils literal notranslate"><span class="pre">GateRYY</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRYY.inverse"><code class="docutils literal notranslate"><span class="pre">GateRYY.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZ"><code class="docutils literal notranslate"><span class="pre">GateRZ</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZ.inverse"><code class="docutils literal notranslate"><span class="pre">GateRZ.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZX"><code class="docutils literal notranslate"><span class="pre">GateRZX</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZX.inverse"><code class="docutils literal notranslate"><span class="pre">GateRZX.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZZ"><code class="docutils literal notranslate"><span class="pre">GateRZZ</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZZ.inverse"><code class="docutils literal notranslate"><span class="pre">GateRZZ.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateS"><code class="docutils literal notranslate"><span class="pre">GateS</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateS.inverse"><code class="docutils literal notranslate"><span class="pre">GateS.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateS.isopalias"><code class="docutils literal notranslate"><span class="pre">GateS.isopalias()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSDG"><code class="docutils literal notranslate"><span class="pre">GateSDG</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSDG.inverse"><code class="docutils literal notranslate"><span class="pre">GateSDG.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSDG.isopalias"><code class="docutils literal notranslate"><span class="pre">GateSDG.isopalias()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSWAP"><code class="docutils literal notranslate"><span class="pre">GateSWAP</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSWAP.inverse"><code class="docutils literal notranslate"><span class="pre">GateSWAP.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSX"><code class="docutils literal notranslate"><span class="pre">GateSX</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSX.inverse"><code class="docutils literal notranslate"><span class="pre">GateSX.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSX.isopalias"><code class="docutils literal notranslate"><span class="pre">GateSX.isopalias()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSX.name"><code class="docutils literal notranslate"><span class="pre">GateSX.name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSXDG"><code class="docutils literal notranslate"><span class="pre">GateSXDG</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSXDG.inverse"><code class="docutils literal notranslate"><span class="pre">GateSXDG.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSXDG.isopalias"><code class="docutils literal notranslate"><span class="pre">GateSXDG.isopalias()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateT"><code class="docutils literal notranslate"><span class="pre">GateT</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateT.inverse"><code class="docutils literal notranslate"><span class="pre">GateT.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateT.isopalias"><code class="docutils literal notranslate"><span class="pre">GateT.isopalias()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateTDG"><code class="docutils literal notranslate"><span class="pre">GateTDG</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateTDG.inverse"><code class="docutils literal notranslate"><span class="pre">GateTDG.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateTDG.isopalias"><code class="docutils literal notranslate"><span class="pre">GateTDG.isopalias()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU"><code class="docutils literal notranslate"><span class="pre">GateU</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU.inverse"><code class="docutils literal notranslate"><span class="pre">GateU.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU1"><code class="docutils literal notranslate"><span class="pre">GateU1</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU1.inverse"><code class="docutils literal notranslate"><span class="pre">GateU1.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU2"><code class="docutils literal notranslate"><span class="pre">GateU2</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU2.inverse"><code class="docutils literal notranslate"><span class="pre">GateU2.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU3"><code class="docutils literal notranslate"><span class="pre">GateU3</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU3.inverse"><code class="docutils literal notranslate"><span class="pre">GateU3.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateX"><code class="docutils literal notranslate"><span class="pre">GateX</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateX.inverse"><code class="docutils literal notranslate"><span class="pre">GateX.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateXXminusYY"><code class="docutils literal notranslate"><span class="pre">GateXXminusYY</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateXXminusYY.inverse"><code class="docutils literal notranslate"><span class="pre">GateXXminusYY.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateXXplusYY"><code class="docutils literal notranslate"><span class="pre">GateXXplusYY</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateXXplusYY.inverse"><code class="docutils literal notranslate"><span class="pre">GateXXplusYY.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateY"><code class="docutils literal notranslate"><span class="pre">GateY</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateY.inverse"><code class="docutils literal notranslate"><span class="pre">GateY.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateZ"><code class="docutils literal notranslate"><span class="pre">GateZ</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.GateZ.inverse"><code class="docutils literal notranslate"><span class="pre">GateZ.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement"><code class="docutils literal notranslate"><span class="pre">IfStatement</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.asciiwidth"><code class="docutils literal notranslate"><span class="pre">IfStatement.asciiwidth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.control"><code class="docutils literal notranslate"><span class="pre">IfStatement.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.evaluate"><code class="docutils literal notranslate"><span class="pre">IfStatement.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.get_operation"><code class="docutils literal notranslate"><span class="pre">IfStatement.get_operation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.get_unwrapped_value"><code class="docutils literal notranslate"><span class="pre">IfStatement.get_unwrapped_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.getparams"><code class="docutils literal notranslate"><span class="pre">IfStatement.getparams()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.inverse"><code class="docutils literal notranslate"><span class="pre">IfStatement.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.iswrapper"><code class="docutils literal notranslate"><span class="pre">IfStatement.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.op"><code class="docutils literal notranslate"><span class="pre">IfStatement.op</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.power"><code class="docutils literal notranslate"><span class="pre">IfStatement.power()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.val"><code class="docutils literal notranslate"><span class="pre">IfStatement.val</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction"><code class="docutils literal notranslate"><span class="pre">Instruction</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.asciiwidth"><code class="docutils literal notranslate"><span class="pre">Instruction.asciiwidth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.bits"><code class="docutils literal notranslate"><span class="pre">Instruction.bits</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.copy"><code class="docutils literal notranslate"><span class="pre">Instruction.copy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.decompose"><code class="docutils literal notranslate"><span class="pre">Instruction.decompose()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.deepcopy"><code class="docutils literal notranslate"><span class="pre">Instruction.deepcopy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.evaluate"><code class="docutils literal notranslate"><span class="pre">Instruction.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.get_bits"><code class="docutils literal notranslate"><span class="pre">Instruction.get_bits()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.get_operation"><code class="docutils literal notranslate"><span class="pre">Instruction.get_operation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.get_qubits"><code class="docutils literal notranslate"><span class="pre">Instruction.get_qubits()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.inverse"><code class="docutils literal notranslate"><span class="pre">Instruction.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.operation"><code class="docutils literal notranslate"><span class="pre">Instruction.operation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.qubits"><code class="docutils literal notranslate"><span class="pre">Instruction.qubits</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse"><code class="docutils literal notranslate"><span class="pre">Inverse</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.control"><code class="docutils literal notranslate"><span class="pre">Inverse.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.evaluate"><code class="docutils literal notranslate"><span class="pre">Inverse.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.getparams"><code class="docutils literal notranslate"><span class="pre">Inverse.getparams()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.inverse"><code class="docutils literal notranslate"><span class="pre">Inverse.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.iswrapper"><code class="docutils literal notranslate"><span class="pre">Inverse.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.matrix"><code class="docutils literal notranslate"><span class="pre">Inverse.matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.parallel"><code class="docutils literal notranslate"><span class="pre">Inverse.parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.power"><code class="docutils literal notranslate"><span class="pre">Inverse.power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyArg"><code class="docutils literal notranslate"><span class="pre">LazyArg</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyExpr"><code class="docutils literal notranslate"><span class="pre">LazyExpr</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyExpr.control"><code class="docutils literal notranslate"><span class="pre">LazyExpr.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyExpr.inverse"><code class="docutils literal notranslate"><span class="pre">LazyExpr.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyExpr.parallel"><code class="docutils literal notranslate"><span class="pre">LazyExpr.parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyExpr.power"><code class="docutils literal notranslate"><span class="pre">LazyExpr.power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure"><code class="docutils literal notranslate"><span class="pre">Measure</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.asciiwidth"><code class="docutils literal notranslate"><span class="pre">Measure.asciiwidth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.control"><code class="docutils literal notranslate"><span class="pre">Measure.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.from_json"><code class="docutils literal notranslate"><span class="pre">Measure.from_json()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.get_operation"><code class="docutils literal notranslate"><span class="pre">Measure.get_operation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.inverse"><code class="docutils literal notranslate"><span class="pre">Measure.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.iswrapper"><code class="docutils literal notranslate"><span class="pre">Measure.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.power"><code class="docutils literal notranslate"><span class="pre">Measure.power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset"><code class="docutils literal notranslate"><span class="pre">MeasureReset</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.asciiwidth"><code class="docutils literal notranslate"><span class="pre">MeasureReset.asciiwidth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.control"><code class="docutils literal notranslate"><span class="pre">MeasureReset.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.get_operation"><code class="docutils literal notranslate"><span class="pre">MeasureReset.get_operation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.inverse"><code class="docutils literal notranslate"><span class="pre">MeasureReset.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.iswrapper"><code class="docutils literal notranslate"><span class="pre">MeasureReset.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.power"><code class="docutils literal notranslate"><span class="pre">MeasureReset.power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MimiqConnection"><code class="docutils literal notranslate"><span class="pre">MimiqConnection</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MimiqConnection.execute"><code class="docutils literal notranslate"><span class="pre">MimiqConnection.execute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MimiqConnection.get_inputs"><code class="docutils literal notranslate"><span class="pre">MimiqConnection.get_inputs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.MimiqConnection.get_results"><code class="docutils literal notranslate"><span class="pre">MimiqConnection.get_results()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation"><code class="docutils literal notranslate"><span class="pre">Operation</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.asciiwidth"><code class="docutils literal notranslate"><span class="pre">Operation.asciiwidth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.copy"><code class="docutils literal notranslate"><span class="pre">Operation.copy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.cregsizes"><code class="docutils literal notranslate"><span class="pre">Operation.cregsizes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.decompose"><code class="docutils literal notranslate"><span class="pre">Operation.decompose()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.deepcopy"><code class="docutils literal notranslate"><span class="pre">Operation.deepcopy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.evaluate"><code class="docutils literal notranslate"><span class="pre">Operation.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.get_operation"><code class="docutils literal notranslate"><span class="pre">Operation.get_operation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.getparam"><code class="docutils literal notranslate"><span class="pre">Operation.getparam()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.getparams"><code class="docutils literal notranslate"><span class="pre">Operation.getparams()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.is_symbolic"><code class="docutils literal notranslate"><span class="pre">Operation.is_symbolic()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.isopalias"><code class="docutils literal notranslate"><span class="pre">Operation.isopalias()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.iswrapper"><code class="docutils literal notranslate"><span class="pre">Operation.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.name"><code class="docutils literal notranslate"><span class="pre">Operation.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.num_bits"><code class="docutils literal notranslate"><span class="pre">Operation.num_bits</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.num_cregs"><code class="docutils literal notranslate"><span class="pre">Operation.num_cregs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.num_qregs"><code class="docutils literal notranslate"><span class="pre">Operation.num_qregs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.num_qubits"><code class="docutils literal notranslate"><span class="pre">Operation.num_qubits</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.parnames"><code class="docutils literal notranslate"><span class="pre">Operation.parnames</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.qregsizes"><code class="docutils literal notranslate"><span class="pre">Operation.qregsizes</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel"><code class="docutils literal notranslate"><span class="pre">Parallel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.control"><code class="docutils literal notranslate"><span class="pre">Parallel.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.evaluate"><code class="docutils literal notranslate"><span class="pre">Parallel.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.get_operation"><code class="docutils literal notranslate"><span class="pre">Parallel.get_operation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.inverse"><code class="docutils literal notranslate"><span class="pre">Parallel.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.iswrapper"><code class="docutils literal notranslate"><span class="pre">Parallel.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.matrix"><code class="docutils literal notranslate"><span class="pre">Parallel.matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.num_repeats"><code class="docutils literal notranslate"><span class="pre">Parallel.num_repeats</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.op"><code class="docutils literal notranslate"><span class="pre">Parallel.op</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.parallel"><code class="docutils literal notranslate"><span class="pre">Parallel.parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.power"><code class="docutils literal notranslate"><span class="pre">Parallel.power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseGradient"><code class="docutils literal notranslate"><span class="pre">PhaseGradient</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseGradient.name"><code class="docutils literal notranslate"><span class="pre">PhaseGradient.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseGradient.num_qubits"><code class="docutils literal notranslate"><span class="pre">PhaseGradient.num_qubits</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseGradient.qregsizes"><code class="docutils literal notranslate"><span class="pre">PhaseGradient.qregsizes</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.PolynomialOracle"><code class="docutils literal notranslate"><span class="pre">PolynomialOracle</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.PolynomialOracle.inverse"><code class="docutils literal notranslate"><span class="pre">PolynomialOracle.inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power"><code class="docutils literal notranslate"><span class="pre">Power</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.control"><code class="docutils literal notranslate"><span class="pre">Power.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.decompose"><code class="docutils literal notranslate"><span class="pre">Power.decompose()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.evaluate"><code class="docutils literal notranslate"><span class="pre">Power.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.exponent"><code class="docutils literal notranslate"><span class="pre">Power.exponent</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.getparams"><code class="docutils literal notranslate"><span class="pre">Power.getparams()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.inverse"><code class="docutils literal notranslate"><span class="pre">Power.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.iswrapper"><code class="docutils literal notranslate"><span class="pre">Power.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.matrix"><code class="docutils literal notranslate"><span class="pre">Power.matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.op"><code class="docutils literal notranslate"><span class="pre">Power.op</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.parallel"><code class="docutils literal notranslate"><span class="pre">Power.parallel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.power"><code class="docutils literal notranslate"><span class="pre">Power.power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults"><code class="docutils literal notranslate"><span class="pre">QCSResults</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.histogram"><code class="docutils literal notranslate"><span class="pre">QCSResults.histogram()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.loadproto"><code class="docutils literal notranslate"><span class="pre">QCSResults.loadproto()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.saveproto"><code class="docutils literal notranslate"><span class="pre">QCSResults.saveproto()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.QFT"><code class="docutils literal notranslate"><span class="pre">QFT</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.QFT.name"><code class="docutils literal notranslate"><span class="pre">QFT.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.QFT.num_qubits"><code class="docutils literal notranslate"><span class="pre">QFT.num_qubits</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.QFT.qregsizes"><code class="docutils literal notranslate"><span class="pre">QFT.qregsizes</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset"><code class="docutils literal notranslate"><span class="pre">Reset</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.asciiwidth"><code class="docutils literal notranslate"><span class="pre">Reset.asciiwidth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.control"><code class="docutils literal notranslate"><span class="pre">Reset.control()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.from_json"><code class="docutils literal notranslate"><span class="pre">Reset.from_json()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.inverse"><code class="docutils literal notranslate"><span class="pre">Reset.inverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.iswrapper"><code class="docutils literal notranslate"><span class="pre">Reset.iswrapper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.power"><code class="docutils literal notranslate"><span class="pre">Reset.power()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.control"><code class="docutils literal notranslate"><span class="pre">control()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.gatedecl"><code class="docutils literal notranslate"><span class="pre">gatedecl()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.inverse"><code class="docutils literal notranslate"><span class="pre">inverse()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.load_results"><code class="docutils literal notranslate"><span class="pre">load_results()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.parallel"><code class="docutils literal notranslate"><span class="pre">parallel()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.plothistogram"><code class="docutils literal notranslate"><span class="pre">plothistogram()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.power"><code class="docutils literal notranslate"><span class="pre">power()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/mimiqcircuits.html#mimiqcircuits.save_results"><code class="docutils literal notranslate"><span class="pre">save_results()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/qperfect-io/mimiqcircuits-python">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mimiq.qperfect.io/docs/julia/">Julia APIs</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://qperfect.io">QPerfect</a></li>
+</ul>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="right-next"
+       href="installation.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Installation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start">Quick Start</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/index.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2024, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
