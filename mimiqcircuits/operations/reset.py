@@ -68,7 +68,7 @@ class Reset(Operation):
         return Reset()
 
     def asciiwidth(self, qubits, _):
-        return 6
+        return 5
 
 
 # export operations

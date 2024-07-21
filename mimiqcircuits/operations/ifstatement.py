@@ -17,6 +17,7 @@
 from mimiqcircuits.operations.operation import Operation
 import symengine as se
 import sympy as sp
+import mimiqcircuits as mc
 from mimiqcircuits.canvas import _find_unit_range, _string_with_square
 
 
@@ -31,7 +32,7 @@ class IfStatement(Operation):
         >>> c.push(IfStatement(GateX(), 1,1), 0,0)
         init if -> operation= X
         1-qubit circuit with 1 instructions:
-        └── If(X, 1) @ q[0], c[0]
+        └── IF(c == 1) X @ q[0], c[0]
         <BLANKLINE>
     """
 
@@ -104,7 +105,7 @@ class IfStatement(Operation):
         raise NotImplementedError("Control not implemented for IfStatement")
 
     def __str__(self):
-        return f"If({self.op}, {self.val})"
+        return f"IF(c == {self.val}) {self.op}"
 
     def evaluate(self, d):
         return IfStatement(self.op.evaluate(d), self.num_bits, self.val)
@@ -121,24 +122,23 @@ class IfStatement(Operation):
     def get_operation(self):
         return self.op
 
-    # def asciiwidth(self, qubits, bits):
-    #     val = self.get_unwrapped_value()
-    #     gw = self.op.asciiwidth( qubits, [])
-    #     bstr = _string_with_square(_find_unit_range(bits), ",")
-    #     iw = len(f"c{bstr} == 0x{val:1}") +4 # Note: Python uses `len()` to get string length
-    #     return max(gw, iw)
-
-    def ascii_width(self, qubits, bits):
+    def asciiwidth(self, qubits, bits):
         val = self.get_unwrapped_value()
-        gw = self.get_operation().ascii_width(qubits, [])
-
-        # MimiqCircuitsBase._string_with_square and MimiqCircuitsBase._findunitrange are placeholders
-        # Assuming these need to be translated similarly
+        gw = self.op.asciiwidth(qubits, [])
         bstr = _string_with_square(_find_unit_range(bits), ",")
         iw = len(f"c{bstr} == 0x{val}") + 3  # :x formats val as hex
 
         return max(gw, iw)
 
+    def _decompose(self, circuit, qtargets, ctargets):
+        decomposed_insts = self.op.decompose()
+        for inst in decomposed_insts:
+            conditional_operation = IfStatement(inst.operation, self._num_bits, self._val)
+            
+            targeted_qubits = [qtargets[i] for i in inst.get_qubits()]
+            circuit.push(conditional_operation, *targeted_qubits, *ctargets)
+        
+        return circuit
 
-# export operations
+
 __all__ = ["IfStatement"]

@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-
-
 enum Irrational {
     PI = 0;
     EULER = 1;
@@ -24,6 +22,7 @@ message ArgValue {
     oneof arg_value {
         int64 integer_value = 1;
         double double_value = 2;
+        bool bool_value = 3;
     }
 }
 
@@ -59,6 +58,7 @@ message Operation {
         GateCustom custom = 10;
         GateCall gatecall = 11;
         Parallel parallel = 12;
+        MeasureReset measurereset = 13;
     }
 }
 
@@ -104,6 +104,8 @@ message Generalized {
 }
 
 message Measure {}
+
+message MeasureReset {}
 
 message Reset {}
 

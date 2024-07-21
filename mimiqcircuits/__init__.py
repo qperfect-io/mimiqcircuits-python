@@ -94,6 +94,7 @@ from mimiqcircuits.visualization.results import plothistogram
 from mimiqcircuits.qcsresults import QCSResults, save_results, load_results
 from mimiqcircuits.canvas import AsciiCanvas, AsciiCircuit
 from mimiqlink.connection import QPERFECT_CLOUD, QPERFECT_CLOUD2
+from mimiqcircuits.operations.measurereset import MeasureReset
 
 # Export specific classes, and functions.
 
@@ -109,6 +110,7 @@ __all__ = [
     "IfStatement",
     "Measure",
     "Reset",
+    "MeasureReset",
     "Gate",
     "GateCustom",
     "GateU",
@@ -181,5 +183,5 @@ __all__ = [
     "AsciiCanvas",
     "AsciiCircuit",
     "QPERFECT_CLOUD",
-    "QPERFECT_CLOUD2"
+    "QPERFECT_CLOUD2",
 ]

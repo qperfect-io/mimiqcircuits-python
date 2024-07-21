@@ -84,6 +84,15 @@ class MimiqConnection(mimiqlink.MimiqConnection):
     Inherits from: mimiqlink.MimiqConnection python.
     """
 
+    def __get_timelimit(self):
+        """Fetch the maximum time limit for execution from the server."""
+        limits = self.user_limits
+
+        if limits and limits.get("enabledMaxTimeout"):
+            return limits.get("maxTimeout", DEFAULT_TIME_LIMIT)
+
+        return DEFAULT_TIME_LIMIT
+
     def execute(
         self,
         circuit,
@@ -91,7 +100,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         algorithm=DEFAULT_ALGORITHM,
         nsamples=DEFAULT_SAMPLES,
         bitstrings=None,
-        timelimit=DEFAULT_TIME_LIMIT,
+        timelimit=None,
         bonddim=None,
         entdim=None,
         seed=None,
@@ -185,6 +194,14 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         if isinstance(circuit, Circuit) and circuit.is_symbolic():
             raise ValueError(
                 "The circuit contains unevaluated symbolic parameters and cannot be processed until all parameters are fully evaluated."
+            )
+
+        if timelimit is None:
+            timelimit = self.__get_timelimit()
+
+        if timelimit > self.__get_timelimit():
+            raise ValueError(
+                f"Timelimit cannot be set more than {self.get_time_limit} minutes."
             )
 
         if bitstrings is None:

@@ -180,7 +180,71 @@ class QCSResults:
         return hist
 
     def saveproto(self, filename):
-        """Save QCSResults object to a Protocol Buffers file."""
+        """Save QCSResults object to a Protocol Buffers file.
+        
+        Examples:
+
+            >>> from mimiqcircuits import *
+            >>> from symengine import *
+            >>> import tempfile
+            >>> x, y = symbols("x y")
+            >>> c = Circuit()
+            >>> c.push(GateH(), 0)
+            1-qubit circuit with 1 instructions:
+            └── H @ q[0]
+            <BLANKLINE>
+            >>> conn = MimiqConnection()
+            >>> conn.connect()
+            Starting authentication server on port 1444 (http://localhost:1444)
+            >>> job = conn.execute(c)
+            >>> res = conn.get_results(job)
+            >>> res
+            QCSResults:
+            ├── simulator: MIMIQ-StateVector 0.14.1
+            ├── timings:
+            │    ├── parse time: 7.1008e-05s
+            │    ├── apply time: 1.3554e-05s
+            │    ├── total time: 0.00023100600000000002s
+            │    ├── compression time: 3.207e-06s
+            │    └── sample time: 4.8047e-05s
+            ├── fidelity estimate: 1
+            ├── average multi-qubit gate error estimate: 0
+            ├── most sampled:
+            │    ├── bs"0" => 509
+            │    └── bs"1" => 491
+            ├── 1 executions
+            ├── 0 amplitudes
+            └── 1000 samples
+            >>> tmpfile = tempfile.NamedTemporaryFile(suffix=".pb", delete=True)
+            >>> res.saveproto(tmpfile.name)
+            9167
+            >>> res.loadproto(tmpfile.name)
+            QCSResults:
+            ├── simulator: MIMIQ-StateVector 0.14.1
+            ├── timings:
+            │    ├── parse time: 7.1008e-05s
+            │    ├── apply time: 1.3554e-05s
+            │    ├── total time: 0.00023100600000000002s
+            │    ├── compression time: 3.207e-06s
+            │    └── sample time: 4.8047e-05s
+            ├── fidelity estimate: 1
+            ├── average multi-qubit gate error estimate: 0
+            ├── most sampled:
+            │    ├── bs"0" => 509
+            │    └── bs"1" => 491
+            ├── 1 executions
+            ├── 0 amplitudes
+            └── 1000 samples
+
+            Note:
+                This example uses a temporary file to demonstrate the save and load functionality.
+                You can save your file with any name at any location using:
+
+                .. code-block:: python
+
+                    res.saveproto("example.pb")
+                    res.loadproto("example.pb")
+        """
         with open(filename, "wb") as f:
             return f.write(toproto_qcsr(self).SerializeToString())
 
@@ -190,6 +254,10 @@ class QCSResults:
 
         The :func:`loadproto` method is a static method and should be called on the class,
         not on an instance of the class.
+
+        Note:
+
+            Look for example in :func:`QCSResults.saveproto`
         """
         qcs_results_proto = qcsresults_pb.QCSResults()
         with open(filename, "rb") as f:

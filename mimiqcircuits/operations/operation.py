@@ -152,7 +152,7 @@ class Operation(ABC):
 
     def asciiwidth(self, qubits, bits):
         namepadding = _gate_name_padding(qubits, bits)
-        return namepadding + len(self.name)
+        return 1+namepadding + len(str(self))+1
 
     def get_operation(self):
         return self

@@ -65,17 +65,15 @@ def toproto_instruction(inst):
     op = toproto_operation(inst.operation)
     return circuit_pb.Instruction(
         operation=op,
-        qtargets=[x+1 for x in inst.qubits],
-        ctargets=[x+1 for x in inst.bits]
+        qtargets=[x + 1 for x in inst.qubits],
+        ctargets=[x + 1 for x in inst.bits],
     )
 
 
 def fromproto_instruction(inst):
     op = fromproto_operation(inst.operation)
     return mc.Instruction(
-        op,
-        tuple([x-1 for x in inst.qtargets]),
-        tuple([x-1 for x in inst.ctargets])
+        op, tuple([x - 1 for x in inst.qtargets]), tuple([x - 1 for x in inst.ctargets])
     )
 
 
@@ -98,17 +96,30 @@ IRRATIONALSYMENGINE = {
 def toproto_param(param):
     arg = circuit_pb.Arg()
 
+    def safe_convert(value):
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+        return value
+
     if isinstance(param, int):
         arg.argvalue_value.integer_value = param
 
     elif isinstance(param, float):
-        arg.argvalue_value.double_value = param
+        param = safe_convert(param)
+        if isinstance(param, int):
+            arg.argvalue_value.integer_value = param
+        else:
+            arg.argvalue_value.double_value = param
 
     elif isinstance(param, se.Integer):
         arg.argvalue_value.integer_value = param.p
 
     elif isinstance(param, (se.Rational, se.Float)):
-        arg.argvalue_value.double_value = param
+        param = safe_convert(float(param))
+        if isinstance(param, int):
+            arg.argvalue_value.integer_value = param
+        else:
+            arg.argvalue_value.double_value = param
 
     elif isinstance(param, se.RealDouble):
         arg.argvalue_value.double_value = param.real
@@ -136,12 +147,17 @@ IRRATIONALPROTO = {v: k for k, v in IRRATIONALSYMENGINE.items()}
 
 
 def fromproto_param(arg):
+    def safe_convert(value):
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+        return value
+
     if arg.HasField("argvalue_value"):
         av = arg.argvalue_value
         if av.HasField("integer_value"):
             return av.integer_value
         elif av.HasField("double_value"):
-            return av.double_value
+            return safe_convert(av.double_value)
 
     elif arg.HasField("irrational_value"):
         return IRRATIONALPROTO[arg.irrational_value]
@@ -157,10 +173,10 @@ def fromproto_param(arg):
             return EXPRSPROTO[ftype](*params)
 
         elif ftype == circuit_pb.FunctionType.DIV:
-            se.Mul(params[0], se.Pow(params[1], -1))
+            return se.Mul(params[0], se.Pow(params[1], -1))
 
         elif ftype == circuit_pb.FunctionType.EXP:
-            se.Pow(se.E, params[0])
+            return se.Pow(se.E, params[0])
 
         else:
             raise ValueError("Unsupported function type in protocol buffer")
@@ -174,13 +190,15 @@ def toproto_gate(gate):
     gate_type_enum = GATEENUMMAP.get(gate_class_name, None)
 
     if gate_type_enum is not None:
-        params = tuple(getattr(gate, attr) for attr in gate._parnames) if hasattr(
-            gate, '_parnames') else ()
+        params = (
+            tuple(getattr(gate, attr) for attr in gate._parnames)
+            if hasattr(gate, "_parnames")
+            else ()
+        )
 
         params = list(map(toproto_param, params))
 
-        gate_proto = circuit_pb.Gate(
-            gtype=gate_type_enum, parameters=params)
+        gate_proto = circuit_pb.Gate(gtype=gate_type_enum, parameters=params)
         return gate_proto
 
 
@@ -207,7 +225,9 @@ def toproto_operation(operation):
     if isinstance(operation, mc.GateCall):
         return toproto_gatecall(operation)
 
-    if isinstance(operation, (mc.QFT, mc.PhaseGradient, mc.Diffusion, mc.PolynomialOracle)):
+    if isinstance(
+        operation, (mc.QFT, mc.PhaseGradient, mc.Diffusion, mc.PolynomialOracle)
+    ):
         return toproto_generalized(operation)
 
     elif isinstance(operation, mc.Gate):
@@ -216,6 +236,9 @@ def toproto_operation(operation):
 
     elif isinstance(operation, mc.Measure):
         return toproto_measure(operation=operation)
+
+    elif isinstance(operation, mc.MeasureReset):
+        return toproto_measurereset(operation=operation)
 
     elif isinstance(operation, mc.Barrier):
         return toproto_barrier(operation=operation)
@@ -243,7 +266,6 @@ def toproto_operation(operation):
 
 
 def fromproto_operation(operation_proto):
-
     if operation_proto.HasField("custom"):
         return fromproto_custom(operation_proto.custom)
 
@@ -252,6 +274,9 @@ def fromproto_operation(operation_proto):
 
     elif operation_proto.HasField("measure"):
         return fromproto_measure(operation_proto.measure)
+
+    elif operation_proto.HasField("measurereset"):
+        return fromproto_measurereset(operation_proto.measurereset)
 
     elif operation_proto.HasField("reset"):
         return fromproto_reset(operation_proto.reset)
@@ -289,6 +314,14 @@ def fromproto_measure(operation_proto):
     return mc.Measure()
 
 
+def toproto_measurereset(operation):
+    return circuit_pb.Operation(measurereset=circuit_pb.MeasureReset())
+
+
+def fromproto_measurereset(operation_proto):
+    return mc.MeasureReset()
+
+
 def toproto_reset(operation):
     return circuit_pb.Operation(reset=circuit_pb.Reset())
 
@@ -299,9 +332,7 @@ def fromproto_reset(operation_proto):
 
 def toproto_barrier(operation):
     num_qubits = operation.num_qubits
-    return circuit_pb.Operation(
-        barrier=circuit_pb.Barrier(numqubits=num_qubits)
-    )
+    return circuit_pb.Operation(barrier=circuit_pb.Barrier(numqubits=num_qubits))
 
 
 def fromproto_barrier(operation_proto):
@@ -311,8 +342,11 @@ def fromproto_barrier(operation_proto):
 
 def toproto_control(control):
     operation_proto = toproto_operation(control.op)
-    control_proto = circuit_pb.Operation(control=circuit_pb.Control(
-        numcontrols=control._num_controls, operation=operation_proto))
+    control_proto = circuit_pb.Operation(
+        control=circuit_pb.Control(
+            numcontrols=control._num_controls, operation=operation_proto
+        )
+    )
     return control_proto
 
 
@@ -323,8 +357,11 @@ def fromproto_control(control_proto):
 
 def toproto_parallel(parallel):
     operation_proto = toproto_operation(parallel.op)
-    parallel_proto = circuit_pb.Operation(parallel=circuit_pb.Parallel(
-        numrepeats=parallel._num_repeats, operation=operation_proto))
+    parallel_proto = circuit_pb.Operation(
+        parallel=circuit_pb.Parallel(
+            numrepeats=parallel._num_repeats, operation=operation_proto
+        )
+    )
     return parallel_proto
 
 
@@ -338,8 +375,7 @@ def toproto_ifstatement(ifstatement):
     param = toproto_param(ifstatement.val)
     return circuit_pb.Operation(
         ifstatement=circuit_pb.IfStatement(
-            nbits=ifstatement.num_bits,
-            operation=operation_proto, value=param
+            nbits=ifstatement.num_bits, operation=operation_proto, value=param
         )
     )
 
@@ -358,9 +394,10 @@ def toproto_power(power):
         power_proto.double_val = power._exponent
     elif isinstance(power._exponent, int):
         power_proto.int_val = power._exponent
-    elif isinstance(power._pexponent, Fraction):
+    elif isinstance(power._exponent, Fraction):
         rational_proto = circuit_pb.Rational(
-            num=power._exponent.numerator, den=power._exponent.denominator)
+            num=power._exponent.numerator, den=power._exponent.denominator
+        )
         power_proto.rational_val.CopyFrom(rational_proto)
     else:
         raise ValueError("Unsupported power type in Power operation")
@@ -388,7 +425,8 @@ def fromproto_power(power_proto):
 def toproto_inverse(inverse):
     operation_proto = toproto_operation(inverse.op)
     inverse_proto = circuit_pb.Operation(
-        inverse=circuit_pb.Inverse(operation=operation_proto))
+        inverse=circuit_pb.Inverse(operation=operation_proto)
+    )
     return inverse_proto
 
 
@@ -407,18 +445,22 @@ def toproto_complex(complex_matrix):
             if isinstance(val, se.Symbol):
                 # If val is a symbolic variable, create only real argument
                 real_arg = circuit_pb.Arg(
-                    symbol_value=circuit_pb.Symbol(value=str(val)))
+                    symbol_value=circuit_pb.Symbol(value=str(val))
+                )
                 imag_arg = circuit_pb.Arg(
-                    symbol_value=circuit_pb.Symbol(value=str(0.0)))
+                    symbol_value=circuit_pb.Symbol(value=str(0.0))
+                )
                 complex_arg = circuit_pb.ComplexArg()
                 complex_arg.real.CopyFrom(real_arg)
                 complex_arg.imag.CopyFrom(imag_arg)
             else:
                 # If val is a number, create real and imaginary arguments
                 real_arg = circuit_pb.Arg(
-                    argvalue_value=circuit_pb.ArgValue(double_value=val.real))
+                    argvalue_value=circuit_pb.ArgValue(double_value=val.real)
+                )
                 imag_arg = circuit_pb.Arg(
-                    argvalue_value=circuit_pb.ArgValue(double_value=val.imag))
+                    argvalue_value=circuit_pb.ArgValue(double_value=val.imag)
+                )
                 complex_arg = circuit_pb.ComplexArg()
                 complex_arg.real.CopyFrom(real_arg)
                 complex_arg.imag.CopyFrom(imag_arg)
@@ -430,7 +472,9 @@ def toproto_complex(complex_matrix):
 
 def toproto_custom(custom):
     complex_args = toproto_complex(custom.matrix.T)
-    return circuit_pb.Operation(custom=circuit_pb.GateCustom(matrix=complex_args, nqubits=custom.num_qubits))
+    return circuit_pb.Operation(
+        custom=circuit_pb.GateCustom(matrix=complex_args, nqubits=custom.num_qubits)
+    )
 
 
 def fromproto_complex(complex_args):
@@ -439,17 +483,17 @@ def fromproto_complex(complex_args):
         real_val = 0.0
         imag_val = 0.0
 
-        if complex_arg.real.HasField('argvalue_value'):
+        if complex_arg.real.HasField("argvalue_value"):
             # If real part is present, use the double value
             real_val = complex_arg.real.argvalue_value.double_value
-        elif complex_arg.real.HasField('symbol_value'):
+        elif complex_arg.real.HasField("symbol_value"):
             # If real part is symbolic, reconstruct the symbol
             real_val = se.sympify(complex_arg.real.symbol_value.value)
 
-        if complex_arg.imag.HasField('argvalue_value'):
+        if complex_arg.imag.HasField("argvalue_value"):
             # If imag part is present, use the double value
             imag_val = complex_arg.imag.argvalue_value.double_value
-        elif complex_arg.imag.HasField('symbol_value'):
+        elif complex_arg.imag.HasField("symbol_value"):
             # If imag part is symbolic, reconstruct the symbol
             imag_val = se.sympify(complex_arg.imag.symbol_value.value)
 
@@ -461,7 +505,7 @@ def fromproto_complex(complex_args):
 def fromproto_custom(custom_proto):
     complex_matrix = fromproto_complex(custom_proto.matrix)
     num_qubits = custom_proto.nqubits
-    complex_matrix = complex_matrix.reshape(2 ** num_qubits, 2 ** num_qubits)
+    complex_matrix = complex_matrix.reshape(2**num_qubits, 2**num_qubits)
     complex_matrix = complex_matrix.T  # Add transpose operation
     return mc.GateCustom(complex_matrix)
 
@@ -473,7 +517,8 @@ def toproto_generalized(generalized_gate):
         args.append(arg_proto)
 
     generalized_proto = circuit_pb.Generalized(
-        name=generalized_gate._name, args=args, regsizes=generalized_gate._params)
+        name=generalized_gate._name, args=args, regsizes=generalized_gate._params
+    )
     return circuit_pb.Operation(generalized=generalized_proto)
 
 
@@ -497,21 +542,25 @@ def fromproto_generalized(generalized_proto):
 def toproto_gatedecl(decl):
     instructions_proto = list(map(toproto_instruction, decl.instructions))
     arguments = [circuit_pb.Symbol(value=arg) for arg in decl.arguments]
-    return circuit_pb.GateDecl(name=decl.name, args=arguments, instructions=instructions_proto)
+    return circuit_pb.GateDecl(
+        name=decl.name, args=arguments, instructions=instructions_proto
+    )
 
 
 def fromproto_gatedecl(gatedecl_proto):
-    instructions = [fromproto_instruction(inst)
-                    for inst in gatedecl_proto.instructions]
+    instructions = [fromproto_instruction(inst) for inst in gatedecl_proto.instructions]
     arguments = [str(symbol) for symbol in gatedecl_proto.args]
-    return mc.GateDecl(name=gatedecl_proto.name, arguments=arguments, instructions=instructions)
+    return mc.GateDecl(
+        name=gatedecl_proto.name, arguments=arguments, instructions=instructions
+    )
 
 
 def toproto_gatecall(gatecall):
     decl_proto = toproto_gatedecl(gatecall._decl)
     args_proto = [toproto_param(arg) for arg in gatecall._args]
     return circuit_pb.Operation(
-        gatecall=circuit_pb.GateCall(decl=decl_proto, args=args_proto))
+        gatecall=circuit_pb.GateCall(decl=decl_proto, args=args_proto)
+    )
 
 
 def fromproto_gatecall(gatecall_proto):
@@ -523,7 +572,8 @@ def fromproto_gatecall(gatecall_proto):
 exported_functions = {
     name: func
     for name, func in globals().items()
-    if inspect.isfunction(func) and (name.startswith('toproto') or name.startswith('fromproto'))
+    if inspect.isfunction(func)
+    and (name.startswith("toproto") or name.startswith("fromproto"))
 }
 
 # Export all the functions

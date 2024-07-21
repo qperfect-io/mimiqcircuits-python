@@ -78,7 +78,6 @@ class AsciiCanvas:
 
     def push_line(self):
         self.data.append([" "] * self.width)
-        self.data.append([" "] * self.width)
 
     def __getitem__(self, position):
         row, col = position
@@ -90,8 +89,8 @@ class AsciiCanvas:
         row, col = position
         while row >= self.get_rows():
             self.push_line()
-        # if col >= len(self.data[row]):  # Extend the row if needed
-        #     self.data[row].extend([' '] * (col + 1 - len(self.data[row])))
+        while col >= len(self.data[row]):
+            self.data[row].append(" ")
         self.data[row][col] = value
 
     def __str__(self):
@@ -347,17 +346,21 @@ class AsciiCanvas:
 
     def draw_empty(self, row, col, width, height):
         for i in range(row, row + height):
+            while i >= len(self.data):
+                self.push_line()
             for j in range(col, col + width):
-                if j == col and self[i, j] == "─":
-                    self[i, j] = "╴"
-                elif j == col + width - 1 and self[i, j] == "─":
-                    self[i, j] = "╶"
-                elif i == row and self[i, j] == "│":
-                    self[i, j] = "╵"
-                elif i == row + height - 1 and self[i, j] == "│":
-                    self[i, j] = "╷"
+                while j >= len(self.data[i]):
+                    self.data[i].append(" ")
+                if j == col and self.data[i][j] == "─":
+                    self.data[i][j] = "╴"
+                elif j == col + width - 1 and self.data[i][j] == "─":
+                    self.data[i][j] = "╶"
+                elif i == row and self.data[i][j] == "│":
+                    self.data[i][j] = "╵"
+                elif i == row + height - 1 and self.data[i][j] == "│":
+                    self.data[i][j] = "╷"
                 else:
-                    self[i, j] = " "
+                    self.data[i][j] = " "
 
     def draw_box(self, row, col, width, height, clean=False):
         if clean:
@@ -391,10 +394,10 @@ class AsciiCircuit:
         self.canvas = AsciiCanvas(width)
         self.qubitrow = {}
         self.bitrow = None
-        self.currentcol = 6
+        self.currentcol = 0
 
     def set_current_col(self, col):
-        self.currentcol = max(self.currentcol, col + 3)
+        self.currentcol = max(self.currentcol, col)
 
     def get_current_col(self):
         return self.currentcol
@@ -415,7 +418,7 @@ class AsciiCircuit:
     def draw_wires(self, qubits, bits):
         # Draw qubit wires and labels
         for i, q in enumerate(qubits):
-            row = (i - 1) * 2 + 3
+            row = i * 2 + 1
             qubitstr = f"q[{q}]: "
             self.canvas.draw_text(qubitstr, row, 1)
             self.qubitrow[q] = row
@@ -428,11 +431,11 @@ class AsciiCircuit:
             self.bitrow = row
             self.set_current_col(len(bitstr) + 1)
 
-        ccol = self.get_current_col() - 3
+        ccol = self.get_current_col()
 
         # Fill space and draw horizontal line for qubits
         for i in range(len(qubits)):
-            row = (i - 1) * 2 + 2
+            row = i * 2
             self.canvas.draw_fill(" ", row, ccol, self.canvas.get_cols() - ccol, 1)
             self.canvas.draw_hline(row + 1, ccol, self.canvas.get_cols() - ccol)
 
@@ -456,7 +459,7 @@ class AsciiCircuit:
         namepadding = _gate_name_padding(qubits, bits)
         ccol = self.get_current_col()
         qubitrow = [self.get_qubit_row(q) for q in qubits]
-        bitrow = self.get_bit_row()
+        bitrow = [self.get_bit_row()]
 
         startrow = min(qubitrow) if not bits else min(qubitrow, bitrow) - 1
         stoprow = max(qubitrow) if not bits else max(qubitrow, bitrow) + 1
@@ -465,14 +468,14 @@ class AsciiCircuit:
         midrow = startrow + gateheight // 2
 
         operation_str = str(operation)
-        gw = max(operation.asciiwidth(qubits, bits), len(operation_str) + namepadding)
+        gw = operation.asciiwidth(qubits, bits)
 
         # Draw the box dynamically based on content size
-        self.canvas.draw_box(startrow - 1, ccol - 1, gw + 2, gateheight + 2, clean=True)
+        self.canvas.draw_box(startrow - 1, ccol, gw, gateheight + 2, clean=True)
 
         # Center the text within the box
         text_start_col = ccol + (gw - len(operation_str)) // 2
-        self.canvas.draw_text(operation_str, midrow, text_start_col)
+        self.canvas.draw_text(operation_str, midrow, ccol + namepadding + 1)
 
         # Draw indices for qubits if there are more than one
         if len(qubits) > 1:
@@ -495,7 +498,7 @@ class AsciiCircuit:
             control_rows = [self.get_qubit_row(q) for q in qubits[:-1]]
             max_row = max(control_rows + [target_row])
             min_row = min(control_rows + [target_row])
-            current_col = self.get_current_col() - 3
+            current_col = self.get_current_col() - 1
             gate_width = operation.asciiwidth([qubits[-1]], [])
             middle_column = current_col + gate_width // 2
 
@@ -554,7 +557,7 @@ class AsciiCircuit:
         bstr = _string_with_square(_find_unit_range(bits), ",")
         btext = f"c{bstr} == 0x{val}"
 
-        ccol = self.get_current_col() - 1
+        ccol = self.get_current_col()
 
         self.canvas.draw_box(brow - 1, ccol, len(btext) + 2, 3, clean=True)
         self.canvas.draw_text(btext, brow, ccol + 1)
@@ -604,6 +607,31 @@ class AsciiCircuit:
         return self.draw_operation(
             instruction.get_operation(), instruction._qubits, instruction._bits
         )
+
+    def draw_measurereset(self, qubits, bits):
+        if not qubits or not bits:
+            raise ValueError("Qubits and bits must be provided for measurement.")
+
+        qubit = qubits[0]
+        bit = bits[0]
+        qubit_row = self.get_qubit_row(qubit)
+        bit_row = self.get_bit_row()
+        middle_column = self.get_current_col() + 1
+
+        self.canvas.draw_box(qubit_row - 1, middle_column - 1, 4, 3, clean=True)
+        self.canvas.draw_text("MR", qubit_row, middle_column)
+        self.set_current_col(middle_column + 3)
+
+        if bit_row > qubit_row:
+            self.canvas.draw_double_vline(
+                qubit_row + 1, middle_column, bit_row - qubit_row
+            )
+
+        bit_str = str(bit)
+        self.canvas.draw_text(bit_str, bit_row + 1, middle_column)
+        self.set_current_col(middle_column + len(bit_str))
+
+        return self
 
 
 __all__ = ["AsciiCircuit", "AsciiCanvas"]

@@ -729,6 +729,47 @@ class Circuit:
 
         Returns:
             int: The number of bytes written to the file.
+
+        Examples:
+
+            >>> from mimiqcircuits import *
+            >>> from symengine import *
+            >>> import tempfile
+            >>> x, y = symbols("x y")
+            >>> c = Circuit()
+            >>> c.push(GateH(), 0)
+            1-qubit circuit with 1 instructions:
+            └── H @ q[0]
+            <BLANKLINE>
+            >>> c.push(GateXXplusYY(x**2, y),0,1)
+            2-qubit circuit with 2 instructions:
+            ├── H @ q[0]
+            └── XXplusYY(x**2, y) @ q[0,1]
+            <BLANKLINE>
+            >>> c.push(Measure(),0,0)
+            2-qubit circuit with 3 instructions:
+            ├── H @ q[0]
+            ├── XXplusYY(x**2, y) @ q[0,1]
+            └── Measure @ q[0], c[0]
+            <BLANKLINE>
+            >>> tmpfile = tempfile.NamedTemporaryFile(suffix=".pb", delete=True)
+            >>> c.saveproto(tmpfile.name)
+            61
+            >>> c.loadproto(tmpfile.name)
+            2-qubit circuit with 3 instructions:
+            ├── H @ q[0]
+            ├── XXplusYY(x**2, y) @ q[0,1]
+            └── Measure @ q[0], c[0]
+            <BLANKLINE>
+
+            Note:
+                This example uses a temporary file to demonstrate the save and load functionality.
+                You can save your file with any name at any location using:
+
+                .. code-block:: python
+
+                    c.saveproto("example.pb")
+                    c.loadproto("example.pb")
         """
         with open(filename, "wb") as f:
             return f.write(toproto_circuit(self).SerializeToString())
@@ -743,6 +784,11 @@ class Circuit:
 
         Returns:
             Circuit: The circuit loaded from the file.
+
+        Note:
+
+            Look for example in :func:`Circuit.saveproto`
+
         """
         with open(filename, "rb") as f:
             circuit_proto = circuit_pb.Circuit()
@@ -808,6 +854,12 @@ class Circuit:
                     instruction.bits if hasattr(instruction, "bits") else [],
                 )
 
+            elif isinstance(operation, mc.MeasureReset):
+                canvas.draw_measurereset(
+                    instruction.qubits,
+                    instruction.bits if hasattr(instruction, "bits") else [],
+                )
+
             elif isinstance(operation, mc.Measure):
                 canvas.draw_measure(
                     instruction.qubits,
@@ -850,6 +902,32 @@ class Circuit:
 
         print(canvas.canvas)
         return None
+
+    def specify_operations(self):
+        counts = {}
+        for i in self.instructions:
+            nq = len(i._qubits)
+            nb = len(i._bits)
+            
+            if nb > 0:  
+                qubit_key = f'{nq}_qubits' 
+                bit_key = f'{nb}_bits' 
+                key = f'{qubit_key} & {bit_key}'
+            else: 
+                key = f'{nq}_qubits' 
+            
+            counts[key] = counts.get(key, 0) + 1
+
+        total_operations = sum(counts.values())
+        print(f"Total number of operations: {total_operations}")
+        
+        count_items = list(counts.items())
+        for idx, (key, count) in enumerate(count_items):
+            if idx == len(count_items) - 1:
+                print(f'└── {count} x {key}')
+            else:
+                print(f'├── {count} x {key}')
+
 
     def is_symbolic(self):
         """
