@@ -99,7 +99,7 @@ class GateU(mcg.Gate):
 
     def _control(self, n):
         return control_one_defined(
-            n, self, self.GateCU(self.theta, self.phi, self.lmbda, self.gamma)
+            n, self, GateCU(self.theta, self.phi, self.lmbda, self.gamma)
         )
 
     def _power(self, p):
