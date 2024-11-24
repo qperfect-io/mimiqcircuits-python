@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,9 +21,10 @@ from mimiqcircuits.printutils import print_wrapped_parens
 import symengine as se
 import sympy as sp
 import mimiqcircuits.lazy as lz
+from mimiqcircuits.operations.gates.gate import Gate
 
 
-class Control(mc.Operation):
+class Control(Gate):
     """Control operation.
 
     A Control is a special operation that applies multi-control gates to the Circuit at once.
@@ -58,17 +60,13 @@ class Control(mc.Operation):
     _op = None
 
     def __init__(self, num_controls, operation, *args, **kwargs):
-        if isinstance(operation, type) and issubclass(operation, mc.Operation):
+        if isinstance(operation, type) and issubclass(operation, mc.Gate):
             op = operation(*args, **kwargs)
-        elif isinstance(operation, mc.Operation):
+        elif isinstance(operation, mc.Gate):
             op = operation
         else:
-            raise TypeError("Operation must be an Operation object or type.")
+            raise TypeError("Operation must be an Gate object or type.")
 
-        if isinstance(operation, (mc.Barrier, mc.Reset, mc.Measure)):
-            raise TypeError(
-                f"{operation.__class__.__name__} cannot be controlled operation."
-            )
 
         if op.num_bits != 0:
             raise TypeError("Power operation cannot act on classical bits.")
@@ -94,7 +92,7 @@ class Control(mc.Operation):
             self._qregsizes = [num_controls]
             self._qregsizes.extend(op.qregsizes)
 
-    def matrix(self):
+    def _matrix(self):
         Mdim = 2**self.op.num_qubits
         Ldim = 2 ** (self.op.num_qubits + self.num_controls)
         mat = se.zeros(Ldim, Ldim)
@@ -184,7 +182,7 @@ class Control(mc.Operation):
         ncontrol = self.num_controls
         return self.op.evaluate(d).control(ncontrol)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         decompose_map = {
             (2, mc.GateX): mc.GateCCX._decompose,
             (1, mc.GateX): mc.GateCX._decompose,
@@ -207,10 +205,10 @@ class Control(mc.Operation):
 
         key = (self.num_controls, type(self.op))
         if key in decompose_map:
-            return decompose_map[key](self, circ, qubits, bits)
+            return decompose_map[key](self, circ, qubits, bits, zvars)
 
         elif self.num_controls == 1 and self.num_qubits != 1:
-            newcirc = self.op._decompose(mc.Circuit(), qubits[1:], bits)
+            newcirc = self.op._decompose(mc.Circuit(), qubits[1:], bits, zvars)
 
             for inst in newcirc:
                 return circ.push(Control(1, inst._operation), qubits[0], qubits[1:])

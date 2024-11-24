@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,14 +43,14 @@ class GateCSWAP(mctrl.Control):
         <BLANKLINE>
         >>> c = Circuit().push(GateCSWAP(), 0, 1, 2)
         >>> GateCSWAP().power(2), GateCSWAP().inverse()
-        (C(Parallel(2, ID)), CSWAP)
+        (C(⨷ ² ID), CSWAP)
         >>> c = Circuit().push(GateCSWAP(), 0, 1, 2)
         >>> c
         3-qubit circuit with 1 instructions:
         └── CSWAP @ q[0], q[1,2]
         <BLANKLINE>
         >>> GateCSWAP().power(2), GateCSWAP().inverse()
-        (C(Parallel(2, ID)), CSWAP)
+        (C(⨷ ² ID), CSWAP)
         >>> GateCSWAP().decompose()
         3-qubit circuit with 3 instructions:
         ├── CX @ q[2], q[1]
@@ -61,7 +62,7 @@ class GateCSWAP(mctrl.Control):
     def __init__(self):
         super().__init__(1, GateSWAP())
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         c, t1, t2 = qubits
         circ.push(GateCX(), t2, t1)
         circ.push(GateCCX(), c, t1, t2)

@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,6 +49,7 @@ class PhaseGradient(mcg.Gate):
         <BLANKLINE>
 
     """
+
     _name = "PhaseGradient"
     _num_qregs = 1
 
@@ -55,7 +57,9 @@ class PhaseGradient(mcg.Gate):
         super().__init__()
 
         self._num_qubits = num_qubits
-        self._qregsizes = [num_qubits,]
+        self._qregsizes = [
+            num_qubits,
+        ]
         self._params = [num_qubits]
 
         self._num_bits = 0
@@ -68,15 +72,16 @@ class PhaseGradient(mcg.Gate):
         else:
             raise ValueError("Invalid number of arguments.")
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, _):
         for i in range(len(qubits) - 1, -1, -1):
-            phase = 1 * pi / 2.0**(i)
+            phase = 1 * pi / 2.0 ** (i)
             circ.push(GateP(phase), qubits[i])
         return circ
 
     def _matrix(self):
         raise NotImplementedError(
-            "Matrix representation for PhaseGradient is not implemented.")
+            "Matrix representation for PhaseGradient is not implemented."
+        )
 
 
-__all__ = ['PhaseGradient']
+__all__ = ["PhaseGradient"]

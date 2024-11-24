@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -78,7 +79,7 @@ class GateU1(mcg.Gate):
     def _power(self, pwr):
         return GateU1(pwr * self.lmbda)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(GateU(0, 0, self.lmbda), q)
         return circ
@@ -140,7 +141,7 @@ class GateU2(mcg.Gate):
     def inverse(self):
         return GateU2(-self.lmbda - pi, -self.phi + pi)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(GateU(pi / 2, self.phi, self.lmbda), q)
         return circ
@@ -202,7 +203,7 @@ class GateU3(mcg.Gate):
     def inverse(self):
         return GateU3(-self.theta, -self.lmbda, -self.phi)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(GateU(self.theta, self.phi, self.lmbda), q)
         return circ

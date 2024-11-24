@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +27,7 @@ class GateCU(mctrl.Control):
     **Matrix representation:**
 
     .. math::
-        \operatorname{CU}(\theta, \phi, \lambda, \gamma) = \frac{1}{2} e^{i\gamma} \begin{pmatrix}
+        \operatorname{CU}(\theta, \phi, \lambda, \gamma) = \begin{pmatrix}
             1 & 0 & 0 & 0 \\
             0 & 1 & 0 & 0 \\
             0 & 0 & e^{i\gamma} \cos\left(\frac{\theta}{2}\right) & -e^{i\gamma} e^{i\lambda}\sin\left(\frac{\theta}{2}\right) \\
@@ -79,7 +80,7 @@ class GateCU(mctrl.Control):
         self.lmbda = args[2]
         self.gamma = args[3]
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits
         theta = self.op.theta
         phi = self.op.phi

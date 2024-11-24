@@ -1,9 +1,6 @@
 syntax = "proto3";
 
-message BitVector {
-    int64 len = 1;
-    bytes data = 2;
-}
+import "bitvector.proto";
 
 message ComplexDouble {
     double real = 1;

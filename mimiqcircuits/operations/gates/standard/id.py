@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,7 +50,8 @@ class GateID(mc.Gate):
         └── U(0, 0, 0, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'ID'
+
+    _name = "ID"
 
     _num_qubits = 1
     _qregsizes = [1]
@@ -60,10 +62,13 @@ class GateID(mc.Gate):
     def _power(self, n):
         return self
 
+    def isidentity(self):
+        return True
+
     def _matrix(self):
         return umatrixpi(0, 0, 0)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(mc.GateU(0, 0, 0), q)
         return circ

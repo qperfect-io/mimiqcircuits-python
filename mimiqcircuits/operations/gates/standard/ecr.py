@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,7 +51,7 @@ class GateECR(mcg.Gate):
         └── ECR @ q[0,1]
         <BLANKLINE>
         >>> GateECR().power(2), GateECR().inverse()
-        (Parallel(2, ID), ECR)
+        (⨷ ² ID, ECR)
         >>> GateECR().decompose()
         2-qubit circuit with 3 instructions:
         ├── RZX((1/4)*pi) @ q[0,1]
@@ -65,10 +66,9 @@ class GateECR(mcg.Gate):
     _qregsizes = [2]
 
     def _matrix(self):
-        return Matrix([[0, 0, 1, I],
-                       [0, 0, I, 1],
-                       [1, -I, 0, 0],
-                       [-I, 1, 0, 0]]) / sqrt(2)
+        return Matrix(
+            [[0, 0, 1, I], [0, 0, I, 1], [1, -I, 0, 0], [-I, 1, 0, 0]]
+        ) / sqrt(2)
 
     def inverse(self):
         return self
@@ -76,11 +76,10 @@ class GateECR(mcg.Gate):
     def _power(self, p):
         return power_idempotent(self, p)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         a, b = qubits
 
         circ.push(GateRZX(pi / 4), a, b)
         circ.push(GateX(), a)
         circ.push(GateRZX(-pi / 4), a, b)
         return circ
-

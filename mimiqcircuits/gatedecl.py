@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,39 +37,32 @@ class GateDecl:
 
         >>> @gatedecl("ansatz")
         ... def ansatz(x):
-        ...     insts = [
-        ...         Instruction(GateX(), (1,)),
-        ...         Instruction(GateRX(x), (2,))
-        ...     ]
-        ...     return insts
+        ...     c = Circuit()
+        ...     c.push(GateX(), 0)
+        ...     c.push(GateRX(x), 1)
+        ...     return c
 
         Create a GateDecl object using the decorator
 
         >>> ansatz(x)
-        gate ansatz(x) =
-        ├── X @ q[1]
-        └── RX(x) @ q[2]
-        <BLANKLINE>
+        ansatz(x)
 
         >>> ansatz(y)
-        gate ansatz(y) =
-        ├── X @ q[1]
-        └── RX(y) @ q[2]
+        ansatz(y)
+
+        Decompose
+
+        >>> ansatz(x).decompose()
+        2-qubit circuit with 2 instructions:
+        ├── X @ q[0]
+        └── RX(x) @ q[1]
         <BLANKLINE>
 
-        Decompose the GateCall into a quantum circuit
-
-        >>> GateCall(ansatz(x), (1.57,)).decompose()
-        3-qubit circuit with 2 instructions:
-        ├── X @ q[1]
-        └── RX(1.57) @ q[2]
-        <BLANKLINE>
-
-        >>> GateCall(ansatz(y), (1.57,)).decompose()
-        3-qubit circuit with 2 instructions:
-        ├── X @ q[1]
-        └── RX(1.57) @ q[2]
-        <BLANKLINE>
+         >>> ansatz(2).decompose()
+         2-qubit circuit with 2 instructions:
+         ├── X @ q[0]
+         └── RX(2) @ q[1]
+         <BLANKLINE>
 
         **Second Way**
 
@@ -79,18 +73,33 @@ class GateDecl:
 
         >>> x, y = symbols('x y')
 
-        Create a GateDecl object using the GateDecl class
+        From a circuit, create a GateDecl object directly
 
-        >>> gate_decl = GateDecl("ansatz", ('x','y'), [Instruction(GateXXplusYY(x,y), (1,2)), Instruction(GateRX(x),(2,))])
+        >>> c = Circuit()
+        >>> c.push(GateXXplusYY(x,y), 0,1)
+        2-qubit circuit with 1 instructions:
+        └── XXplusYY(x, y) @ q[0,1]
+        <BLANKLINE>
+        >>> c.push(GateRX(x), 1)
+        2-qubit circuit with 2 instructions:
+        ├── XXplusYY(x, y) @ q[0,1]
+        └── RX(x) @ q[1]
+        <BLANKLINE>
+        >>> gate_decl = GateDecl("ansatz", ('x','y'), c)
+        >>> gate_decl
+        gate ansatz(x, y) =
+        ├── XXplusYY(x, y) @ q[0,1]
+        └── RX(x) @ q[1]
+        <BLANKLINE>
         >>> GateCall(gate_decl, (2,4))
         ansatz(2, 4)
 
         Decompose the GateCall into a quantum circuit
 
         >>> GateCall(gate_decl, (2,4)).decompose()
-        3-qubit circuit with 2 instructions:
-        ├── XXplusYY(2, 4) @ q[1,2]
-        └── RX(2) @ q[2]
+        2-qubit circuit with 2 instructions:
+        ├── XXplusYY(2, 4) @ q[0,1]
+        └── RX(2) @ q[1]
         <BLANKLINE>
 
         Add to Circuit
@@ -103,38 +112,64 @@ class GateDecl:
         <BLANKLINE>
     """
 
-    _num_qubits = None
-    _num_bits = None
     _name = "GateDecl"
 
     def __init__(
-        self, name: str, arguments: Tuple[str, ...], instructions: List[mc.Instruction]
+        self, name: str, arguments: Tuple[str, ...], circuit: mc.Circuit
     ):
         if not all(isinstance(arg, str) for arg in arguments):
             raise TypeError("All GateDecl arguments must be strings.")
 
-        if not instructions:
-            raise ValueError("GateDecl instructions cannot be empty.")
+        if len(circuit) == 0:
+            raise ValueError("GateDecl cannot be defined from empty circuits.")
 
-        unique_qubits = set()
-        for inst in instructions:
-            unique_qubits.update(inst.get_qubits())
+        for inst in circuit:
+            # check if the instruction operation is from the Gate operation
+            if not isinstance(inst.get_operation(), mc.Gate):
+                raise ValueError("GateDecl instructions must be gates.")
+            if inst.num_bits() != 0 or inst.num_zvars() != 0:
+                raise ValueError("GateDecl instructions cannot have bits or zvars.")
+            if inst.num_qubits() == 0:
+                raise ValueError("GateDecl instructions must have qubits.")
 
-        nq = len(unique_qubits)
+        nq = circuit.num_qubits()
         np = len(arguments)
         super().__init__()
 
         self.name = name
         self.arguments = arguments
-        self.instructions = instructions
-        self.num_qubits = nq
-        self.num_params = np
+        self.circuit = circuit
+
+    @property
+    def num_qubits(self):
+        return self.circuit.num_qubits()
+
+    @num_qubits.setter
+    def num_qubits(self, value):
+        raise ValueError("Cannot set num_qubits. Read only parameter.")
+
+    @property
+    def num_bits(self):
+        return self.circuit.num_bits()
+
+    @num_bits.setter
+    def num_bits(self, value):
+        raise ValueError("Cannot set num_bits. Read only parameter.")
+
+    @property
+    def num_zvars(self):
+        return self.circuit.num_zvars()
+
+    @num_zvars.setter
+    def num_zvars(self, value):
+        raise ValueError("Cannot set num_zvars. Read only parameter.")
 
     def __str__(self):
         result = f"gate {self.name}({', '.join(map(str, self.arguments))}) =\n"
+        N = len(self.circuit)
 
-        for i, inst in enumerate(self.instructions):
-            if i == len(self.instructions) - 1:
+        for i, inst in enumerate(self.circuit):
+            if i == N - 1:
                 result += f"└── {inst}\n"
             else:
                 result += f"├── {inst}\n"
@@ -163,20 +198,42 @@ class GateCall(mc.Gate):
     def _matrix(self):
         pass
 
-    def _decompose(self, circ, qubits, bits):
+    def decompose(self):
+        circ = mc.Circuit()
         d = dict(zip(self._decl.arguments, self._args))
-        for inst in self._decl.instructions:
+        for inst in self._decl.circuit:
             op = inst.operation.evaluate(d)
             qubits = [i for i in inst.get_qubits()]
             bits = [i for i in inst.get_bits()]
-            circ.push(op, *qubits, *bits)
+            zvars = [i for i in inst.get_zvars()]
+            circ.push(op, *qubits, *bits, *zvars)
+        return circ
+
+    def _decompose(self, circ, qubits, bits, zvars):
+        d = dict(zip(self._decl.arguments, self._args))
+
+        if len(qubits) != self._decl.num_qubits:
+            raise ValueError("Wrong number of qubits for GateCall.")
+
+        if len(bits) != self._decl.num_bits:
+            raise ValueError("Wrong number of bits for GateCall.")
+
+        if len(zvars) != self._decl.num_zvars:
+            raise ValueError("Wrong number of zvars for GateCall.")
+
+        for inst in self._decl.circuit:
+            op = inst.operation.evaluate(d)
+
+            # Map the instruction qubits to the actual qubits in the circuit
+            inst_qubits = [qubits[q] for q in inst.get_qubits()]
+
+            # Push the operation with the mapped qubits into the circuit
+            circ.push(op, *inst_qubits, *bits, *zvars)
+
         return circ
 
     def __str__(self):
         return f"{self._decl.name}({', '.join(map(str, self._args))})"
-
-    def __repr__(self):
-        return str(self)
 
     def evaluate(self, d):
         new_args = [
@@ -189,11 +246,17 @@ class GateCall(mc.Gate):
 def gatedecl(name):
     def decorator(func):
         def wrapper(*args, **kwargs):
-            instructions = func(*args, **kwargs)
+            circ = func(*args, **kwargs)
+
+            if not isinstance(circ, mc.Circuit):
+                raise ValueError("GateDecl must return a Circuit object.")
+
             arguments = [str(arg) for arg in args] + [
                 f"{key}={value}" for key, value in kwargs.items()
             ]
-            return GateDecl(name, arguments, instructions)
+
+            decl = GateDecl(name, arguments, circ)
+            return GateCall(decl, args)
 
         return wrapper
 

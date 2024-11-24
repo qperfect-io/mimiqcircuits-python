@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,7 +49,7 @@ class GateSWAP(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateSWAP(), 0, 1)
         >>> GateSWAP().power(2), GateSWAP().inverse()
-        (Parallel(2, ID), SWAP)
+        (⨷ ² ID, SWAP)
         >>> GateSWAP().decompose()
         2-qubit circuit with 3 instructions:
         ├── CX @ q[0], q[1]
@@ -76,7 +77,7 @@ class GateSWAP(mcg.Gate):
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCSWAP())
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits
         circ.push(GateCX(), c, t)
         circ.push(GateCX(), t, c)

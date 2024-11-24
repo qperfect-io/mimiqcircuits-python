@@ -72,6 +72,7 @@ def test_control_init():
     with pytest.raises(TypeError):
         mc.Control(1, mc.Reset())
 
+
 # Function for testing the equality of matrices for symengine
 
 
@@ -83,9 +84,15 @@ def is_close(matrix1, matrix2, tol=1e-13):
 
 def test_control_inverse():
     for nc in [1, 2, 3]:
-        for gate in [mc.GateX(), mc.GateS(), mc.GateDCX(), mc.GateRX(0.1), mc.GateXXplusYY(1.12, 2.3)]:
+        for gate in [
+            mc.GateX(),
+            mc.GateS(),
+            mc.GateDCX(),
+            mc.GateRX(0.1),
+            mc.GateXXplusYY(1.12, 2.3),
+        ]:
             cgate = mc.Control(nc, gate)
-            nq = 2**(cgate.num_qubits)
+            nq = 2 ** (cgate.num_qubits)
             product_matrix = cgate.inverse().matrix() * cgate.matrix()
             identity_matrix = se.eye(nq)
             assert is_close(product_matrix, identity_matrix)
@@ -108,8 +115,10 @@ def test_decompose():
 
 
 def test_control_matrix():
-    gates = [mc.Control(5, mc.GateCP(np.pi)).matrix(),
-             mc.Control(6, mc.GateP(np.pi)).matrix()]
+    gates = [
+        mc.Control(5, mc.GateCP(np.pi)).matrix(),
+        mc.Control(6, mc.GateP(np.pi)).matrix(),
+    ]
 
     assert gates[0] == gates[1]
 

@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +15,13 @@
 # limitations under the License.
 #
 
-from abc import abstractmethod
-from mimiqcircuits.operations.operation import Operation
+from mimiqcircuits.operations.operator import AbstractOperator
 import mimiqcircuits.lazy as lz
 
 import mimiqcircuits as mc
-from symengine import Matrix
-import sympy as sp
 
 
-class Gate(Operation):
+class Gate(AbstractOperator):
     _name = None
 
     _num_qubits = None
@@ -32,12 +30,10 @@ class Gate(Operation):
     _num_cregs = 0
     _cregsizes = ()
 
-    @abstractmethod
     def _matrix(self):
-        pass
-
-    def matrix(self):
-        return Matrix(sp.simplify(sp.Matrix((self._matrix().tolist())).evalf()))
+        raise ValueError(
+            "This is a parrent class of simple gates and does not have matrix"
+        )
 
     def iswrapper(self):
         return False

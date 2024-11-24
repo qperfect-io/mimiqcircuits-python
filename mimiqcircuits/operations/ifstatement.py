@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +16,6 @@
 #
 
 from mimiqcircuits.operations.operation import Operation
-import symengine as se
-import sympy as sp
 import mimiqcircuits as mc
 from mimiqcircuits.canvas import _find_unit_range, _string_with_square
 
@@ -29,10 +28,9 @@ class IfStatement(Operation):
     Examples:
         >>> from mimiqcircuits import *
         >>> c = Circuit()
-        >>> c.push(IfStatement(GateX(), 1,1), 0,0)
-        init if -> operation= X
+        >>> c.push(IfStatement(GateX(), BitString('1')), 0, 0)
         1-qubit circuit with 1 instructions:
-        └── IF(c == 1) X @ q[0], c[0]
+        └── IF (c==1) X @ q[0], c[0]
         <BLANKLINE>
     """
 
@@ -43,20 +41,21 @@ class IfStatement(Operation):
     _num_bits = None
     _num_cregs = 1
 
-    _op = None
-    _val = None
+    _num_zvars = 0
 
-    def __init__(self, operation, num_bits, val, *args, **kwargs):
-        print("init if -> operation=", operation)
+    _op = None
+    _bitstring = None
+
+    def __init__(self, operation, bitstring: mc.BitString):
         if isinstance(operation, type) and issubclass(operation, Operation):
-            op = operation(*args, **kwargs)
+            op = operation()
         elif isinstance(operation, Operation):
             op = operation
         else:
             raise ValueError("Operation must be an Operation object or type.")
 
-        if not isinstance(val, int) or val < 0:
-            raise ValueError("val must be a positive integer")
+        if not isinstance(bitstring, mc.BitString):
+            raise ValueError("bitstring must be a BitString object.")
 
         super().__init__()
 
@@ -64,14 +63,11 @@ class IfStatement(Operation):
         self._num_qregs = op.num_qregs
         self._qregsizes = op.qregsizes
 
-        self._num_bits = num_bits
-        self._num_cregs = 1
-        self._cregsizes = [
-            num_bits,
-        ]
+        self._num_bits = len(bitstring)
+        self._cregsizes = [self._num_bits]
 
         self._op = op
-        self._val = val
+        self._bitstring = bitstring
 
     @property
     def op(self):
@@ -82,12 +78,8 @@ class IfStatement(Operation):
         raise ValueError("Cannot set op. Read only parameter.")
 
     @property
-    def val(self):
-        return self._val
-
-    @val.setter
-    def val(self, val):
-        raise ValueError("Cannot set val. Read only parameter.")
+    def bitstring(self):
+        return self._bitstring
 
     def iswrapper(self):
         return True
@@ -105,39 +97,33 @@ class IfStatement(Operation):
         raise NotImplementedError("Control not implemented for IfStatement")
 
     def __str__(self):
-        return f"IF(c == {self.val}) {self.op}"
+        return f"IF (c=={self.bitstring.to01()}) {self.op}"
 
     def evaluate(self, d):
-        return IfStatement(self.op.evaluate(d), self.num_bits, self.val)
-
-    def get_unwrapped_value(self):
-        v = sp.simplify(self.val)
-        if isinstance(v, sp.Number):
-            return float(v)
-        elif isinstance(v, sp.pi):
-            return sp.pi.evalf()
-        elif isinstance(v, sp.E):
-            return sp.E.evalf()
+        return IfStatement(self.op.evaluate(d), self.bitstring)
 
     def get_operation(self):
         return self.op
 
-    def asciiwidth(self, qubits, bits):
-        val = self.get_unwrapped_value()
-        gw = self.op.asciiwidth(qubits, [])
+    def get_bitstring(self):
+        return self.bitstring
+
+    def asciiwidth(self, qubits, bits, zvars):
+        val = self.get_bitstring()
+        gw = self.op.asciiwidth(qubits, [], [])
         bstr = _string_with_square(_find_unit_range(bits), ",")
-        iw = len(f"c{bstr} == 0x{val}") + 3  # :x formats val as hex
+        iw = len(f"c{bstr}==" + val.to01()) + 2
 
         return max(gw, iw)
 
-    def _decompose(self, circuit, qtargets, ctargets):
+    def _decompose(self, circuit, qtargets, ctargets, ztargets):
         decomposed_insts = self.op.decompose()
+        bs = self.get_bitstring()
         for inst in decomposed_insts:
-            conditional_operation = IfStatement(inst.operation, self._num_bits, self._val)
-            
+            conditional_operation = IfStatement(inst.operation, bs)
             targeted_qubits = [qtargets[i] for i in inst.get_qubits()]
-            circuit.push(conditional_operation, *targeted_qubits, *ctargets)
-        
+            circuit.push(conditional_operation, *targeted_qubits, *ctargets, *ztargets)
+
         return circuit
 
 

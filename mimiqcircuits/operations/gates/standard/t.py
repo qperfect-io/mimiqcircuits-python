@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -91,7 +92,7 @@ class GateT(Power):
     def __str__(self):
         return f"{self.name}"
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(GateU(0, 0, pi / 4), q)
         return circ
@@ -138,7 +139,7 @@ class GateTDG(Inverse):
     def inverse(self):
         return GateT()
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(GateU(0, 0, -pi / 4), q)
         return circ

@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,7 +69,7 @@ class GateCCX(mc.Control):
     def __init__(self):
         super().__init__(2, mc.GateX())
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         c1, c2, t = qubits
         circ.push(mc.GateH(), t)
         circ.push(mc.GateCX(), c2, t)
@@ -152,7 +153,7 @@ class GateC3X(mc.Control):
     def __init__(self):
         super().__init__(3, mc.GateX())
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         a, b, c, d = qubits
         circ.push(mc.GateH(), d)
         circ.push(mc.GateP(pi / 8), qubits)

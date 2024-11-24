@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,6 +45,7 @@ class Diffusion(mc.Gate):
         <BLANKLINE>
 
     """
+
     _name = "Diffusion"
     _num_qregs = 1
     _num_qubits = None
@@ -75,13 +77,14 @@ class Diffusion(mc.Gate):
 
     def _matrix(self):
         raise NotImplementedError(
-            "Matrix representation for Diffusion operator is not implemented.")
+            "Matrix representation for Diffusion operator is not implemented."
+        )
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         circ.push(mc.GateRY(pi / 2), qubits)
         circ.push(mc.control(self.num_qubits - 1, mc.GateZ()), *qubits)
         circ.push(mc.GateRY(pi / 2), qubits)
         return circ
 
 
-__all__ = ['Diffusion']
+__all__ = ["Diffusion"]

@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +32,7 @@ def _find_unit_range(arr):
     rangestart = arr[0]
     rangestop = arr[0]
 
-    for v in arr[0:]:
+    for v in arr[1:]:
         if v == rangestop + 1:
             rangestop = v
         elif rangestart == rangestop:
@@ -51,16 +52,14 @@ def _find_unit_range(arr):
     return narr
 
 
-def _gate_name_padding(qubits, bits):
+def _gate_name_padding(qubits, bits, zvars):
     nq = len(qubits)
-    qubits_padding = 0 if nq == 1 else math.floor(math.log10(nq)) + 2
+    qubits_padding = 0 if nq in [1, 0] else math.floor(math.log10(nq)) + 2
 
-    if not bits:
-        return qubits_padding
+    bitspadding = 0 if not bits else len(str(bits)) + 1
+    zvarspadding = 0 if not zvars else len(str(zvars)) + 1
 
-    bits_padding = len(str(bits)) + 1
-
-    return max(qubits_padding, bits_padding)
+    return max(qubits_padding, bitspadding, zvarspadding)
 
 
 class AsciiCanvas:
@@ -394,6 +393,8 @@ class AsciiCircuit:
         self.canvas = AsciiCanvas(width)
         self.qubitrow = {}
         self.bitrow = None
+        self.zvarrow = None
+        self.nonerow = None
         self.currentcol = 0
 
     def set_current_col(self, col):
@@ -408,14 +409,19 @@ class AsciiCircuit:
     def get_bit_row(self):
         return self.bitrow
 
+    def get_zvars_row(self):
+        return self.zvarrow
+
     def reset(self):
         self.canvas.reset()
         self.qubitrow = {}
         self.bitrow = None
+        self.zvars = None
+        self.nonerow = None
         self.currentcol = 1
         return self
 
-    def draw_wires(self, qubits, bits):
+    def draw_wires(self, qubits, bits, zvars):
         # Draw qubit wires and labels
         for i, q in enumerate(qubits):
             row = i * 2 + 1
@@ -430,6 +436,19 @@ class AsciiCircuit:
             self.canvas.draw_text(bitstr, row, 1)
             self.bitrow = row
             self.set_current_col(len(bitstr) + 1)
+
+        if len(zvars) > 0:
+            if len(bits) < 1:
+                row = (len(qubits)) * 2 + 3
+            else:
+                row = (len(qubits) + 1) * 2 + 3
+
+            zstr = "z: "
+            self.canvas.draw_text(zstr, row, 1)
+            self.zvarrow = row
+            self.set_current_col(len(zstr) + 1)
+
+        ccol = self.get_current_col() - 3
 
         ccol = self.get_current_col()
 
@@ -449,45 +468,186 @@ class AsciiCircuit:
             self.canvas.draw_fill(" ", row, ccol, self.canvas.get_cols() - ccol, 1)
             self.canvas.draw_double_hline(row + 1, ccol, self.canvas.get_cols() - ccol)
 
+        if len(zvars) > 0:
+            if len(bits) < 1:
+                row = (len(qubits)) * 2 + 2
+            else:
+                row = (len(qubits) + 1) * 2 + 2
+
+            self.canvas.draw_fill(" ", row, ccol, self.canvas.get_cols() - ccol, 1)
+            self.canvas.draw_double_hline(row + 1, ccol, self.canvas.get_cols() - ccol)
+
         self.set_current_col(ccol + 1)
         return self
 
-    def draw_operation(self, operation, qubits, bits):
-        if not isinstance(operation, mc.Operation):
-            raise TypeError("operation must be an instance of Operation")
+    def draw_operation(self, operation, qubits, bits=None, zvars=None):
+        # Initialize default values for bits and zvars if they are None
+        bits = bits or []
+        zvars = zvars or []
 
-        namepadding = _gate_name_padding(qubits, bits)
+        # Calculate padding for qubits, bits, and zvars
+        namepadding = _gate_name_padding(qubits, bits, zvars)
         ccol = self.get_current_col()
+
         qubitrow = [self.get_qubit_row(q) for q in qubits]
-        bitrow = [self.get_bit_row()]
+        bitrow = self.get_bit_row()
+        zvarrow = self.get_zvars_row()
 
-        startrow = min(qubitrow) if not bits else min(qubitrow, bitrow) - 1
-        stoprow = max(qubitrow) if not bits else max(qubitrow, bitrow) + 1
+        if not qubits and not bits and not zvars:
+            # Draw the None row only if it's not already drawn
+            if self.nonerow is None:
+                none_row_start = (
+                    len(self.qubitrow)
+                    + (1 if self.bitrow else 0)
+                    + (1 if self.zvarrow else 0)
+                ) * 2 + 3
+                self.nonerow = none_row_start
+                ccol = 0
+                self.canvas.draw_fill(
+                    " ", none_row_start, ccol, self.canvas.get_cols(), 1
+                )
+                self.canvas.draw_double_hline(
+                    none_row_start, ccol, self.canvas.get_cols()
+                )
 
-        gateheight = stoprow - startrow + 1
-        midrow = startrow + gateheight // 2
+            # Now draw the operation on the None line
+            none_row = self.nonerow
+            ccol = self.get_current_col()
+            gw = operation.asciiwidth([], [], [])
+            self.canvas.draw_box(none_row - 1, ccol, gw, 3, clean=True)  # 3 rows height
+            self.canvas.draw_text(str(operation), none_row, ccol + 1)
+            self.set_current_col(ccol + gw)
+            return self
 
-        operation_str = str(operation)
-        gw = operation.asciiwidth(qubits, bits)
+        # Determine start and stop rows for qubits, bits, and zvars
+        if bits or zvars:
+            qubit_startrow = min(qubitrow, default=float("inf"))
+            qubit_stoprow = max(qubitrow, default=0)
 
-        # Draw the box dynamically based on content size
-        self.canvas.draw_box(startrow - 1, ccol, gw, gateheight + 2, clean=True)
+            bits_startrow = bitrow if bits else float("inf")
+            bits_stoprow = bitrow if bits else 0
 
-        # Center the text within the box
-        text_start_col = ccol + (gw - len(operation_str)) // 2
-        self.canvas.draw_text(operation_str, midrow, ccol + namepadding + 1)
+            zvar_startrow = zvarrow if zvars else float("inf")
+            zvar_stoprow = zvarrow if zvars else 0
 
-        # Draw indices for qubits if there are more than one
+            # Handle case where both qubits and zvars are present
+            if qubitrow and zvars:
+                # Draw box for qubits
+                qubit_gateheight = qubit_stoprow - qubit_startrow + 1
+                qubit_midrow = qubit_startrow + qubit_gateheight // 2
+                gw = operation.asciiwidth(qubits, bits, [])
+                # Calculate zvar width first
+                gw_zvar = operation.asciiwidth([], [], zvars)
+
+                # Ensure both boxes have the same width
+                gw = max(gw, gw_zvar)
+                midcol = ccol + gw // 2
+
+                self.canvas.draw_box(
+                    qubit_startrow - 1, ccol, gw, qubit_gateheight + 2, clean=True
+                )
+                self.canvas.draw_text(
+                    str(operation), qubit_midrow, ccol + namepadding - 1
+                )
+
+                # Draw zvars without a box, with adjusted spacing
+                self.canvas.draw_text(",".join(map(str, zvars)), zvarrow + 1, midcol)
+
+                # Draw vertical double line connecting qubits and zvars
+
+                self.canvas.draw_double_vline(
+                    qubit_stoprow + 1, midcol, zvar_startrow - qubit_stoprow
+                )
+
+                endcol = ccol + gw
+
+            elif qubitrow and bits:
+                # Draw box for qubits
+                qubit_gateheight = qubit_stoprow - qubit_startrow + 1
+                qubit_midrow = qubit_startrow + qubit_gateheight // 2
+                gw_qubits = operation.asciiwidth(qubits, [], [])
+                gw_bits = operation.asciiwidth([], bits, [])
+
+                # Ensure the box for qubits is as wide as needed for both qubits and bits
+                gw = max(gw_qubits, gw_bits)
+                midcol = ccol + gw // 2
+
+                self.canvas.draw_box(
+                    qubit_startrow - 1, ccol, gw, qubit_gateheight + 2, clean=True
+                )
+                self.canvas.draw_text(
+                    str(operation), qubit_midrow, ccol + namepadding - 1
+                )
+
+                # Draw the bits below the qubits, centered horizontally
+                bitstr = ",".join(map(str, bits))
+                bit_start_col = midcol - len(bitstr) // 2
+                self.canvas.draw_text(bitstr, bits_startrow + 1, bit_start_col)
+
+                # Draw vertical double line connecting qubits and bits
+                self.canvas.draw_double_vline(
+                    qubit_stoprow + 1, midcol, bits_stoprow - qubit_stoprow
+                )
+
+                endcol = ccol + gw
+
+            elif zvars and not qubitrow:
+                startrow = min(qubit_startrow, zvar_startrow) - 1
+                stoprow = max(qubit_stoprow, zvar_stoprow) + 1
+                gateheight = stoprow - startrow + 1
+                midrow = startrow + gateheight // 2
+
+                # Draw a single box
+                gw = operation.asciiwidth(qubits, bits, zvars)
+                self.canvas.draw_box(startrow, ccol, gw, gateheight, clean=True)
+                zstr = f"{','.join(map(str, zvars))} ═> "
+                self.canvas.draw_text(zstr, midrow, ccol + 1)
+                text_start_col = ccol + len(zstr) + 1
+                # Draw the operation name
+                self.canvas.draw_text(str(operation), midrow, text_start_col)
+
+                midcol = ccol + gw // 2
+                endcol = ccol + gw
+
+            elif bits and not qubitrow:
+                startrow = min(qubit_startrow, bits_startrow) - 1
+                stoprow = max(qubit_stoprow, bits_stoprow) + 1
+                gateheight = stoprow - startrow + 1
+                midrow = startrow + gateheight // 2
+
+                # Draw a single box
+                gw = operation.asciiwidth(qubits, bits, zvars)
+                self.canvas.draw_box(startrow, ccol, gw, gateheight, clean=True)
+                zstr = f"{','.join(map(str, bits))} ═> "
+                self.canvas.draw_text(zstr, midrow, ccol + 1)
+                text_start_col = ccol + len(zstr) + 1
+                # Draw the operation name
+                self.canvas.draw_text(str(operation), midrow, text_start_col)
+
+                midcol = ccol + gw // 2
+                endcol = ccol + gw
+
+        else:
+            startrow = min(qubitrow) - 1
+            stoprow = max(qubitrow) + 1
+            gateheight = stoprow - startrow + 1
+            midrow = startrow + gateheight // 2
+
+            # Draw the box around the operation
+            gw = operation.asciiwidth(qubits, bits, zvars)
+            self.canvas.draw_box(startrow, ccol, gw, gateheight, clean=True)
+            # Properly centered
+            self.canvas.draw_text(str(operation), midrow, ccol + namepadding + 1)
+            midcol = ccol + gw // 2
+            endcol = ccol + gw + namepadding
+
+        # If more than one qubit, label each qubit within the box
         if len(qubits) > 1:
             for i, qr in enumerate(qubitrow):
                 self.canvas.draw_text(str(i), qr, ccol + 1)
+        self.set_current_col(endcol)
 
-        # Draw indices for bits if there are more than one
-        if len(bits) > 1:
-            bitsstr = len(bits)
-            self.canvas.draw_text(bitsstr, bitrow, ccol + 2)
-
-        self.set_current_col(ccol + gw)
+        return self
 
     def draw_control(self, operation, qubits, _):
         if not isinstance(operation, mc.Control):
@@ -498,8 +658,8 @@ class AsciiCircuit:
             control_rows = [self.get_qubit_row(q) for q in qubits[:-1]]
             max_row = max(control_rows + [target_row])
             min_row = min(control_rows + [target_row])
-            current_col = self.get_current_col() - 1
-            gate_width = operation.asciiwidth([qubits[-1]], [])
+            current_col = self.get_current_col()
+            gate_width = operation.get_operation().asciiwidth([qubits[-1]], [], [])
             middle_column = current_col + gate_width // 2
 
             self.canvas.draw_vline(min_row, middle_column, max_row - min_row + 1)
@@ -507,36 +667,11 @@ class AsciiCircuit:
             for row in control_rows:
                 self.canvas[row, middle_column] = "●"
 
-            self.draw_operation(operation.get_operation(), [qubits[-1]], [])
+            self.draw_operation(operation.get_operation(), [qubits[-1]], [], [])
         else:
             self.draw_operation(operation, qubits, [])
 
-    def draw_measure(self, qubits, bits):
-        if not qubits or not bits:
-            raise ValueError("Qubits and bits must be provided for measurement.")
-
-        qubit = qubits[0]
-        bit = bits[0]
-        qubit_row = self.get_qubit_row(qubit)
-        bit_row = self.get_bit_row()
-        middle_column = self.get_current_col() + 1
-
-        self.canvas.draw_box(qubit_row - 1, middle_column - 1, 3, 3, clean=True)
-        self.canvas.draw_text("M", qubit_row, middle_column)
-        self.set_current_col(middle_column + 2)
-
-        if bit_row > qubit_row:
-            self.canvas.draw_double_vline(
-                qubit_row + 1, middle_column, bit_row - qubit_row
-            )
-
-        bit_str = str(bit)
-        self.canvas.draw_text(bit_str, bit_row + 1, middle_column)
-        self.set_current_col(middle_column + len(bit_str))
-
-        return self
-
-    def draw_barrier(self, barrier, qubits):
+    def draw_barrier(self, barrier, qubits, bits, zvars):
         for qubit in qubits:
             qubit_row = self.get_qubit_row(qubit)
             current_col = self.get_current_col()
@@ -548,29 +683,48 @@ class AsciiCircuit:
         self.set_current_col(current_col + 1)
         return self
 
-    def draw_ifstatement(self, if_statement, qubits, bits):
-        if not isinstance(if_statement, mc.IfStatement):
-            raise TypeError("must be an Ifstatement")
+    def draw_ifstatement(self, g, qubits, bits, zvars):
+        qubitrow = [self.get_qubit_row(q) for q in qubits]
+        bitrow = self.get_bit_row()
 
-        brow = self.get_bit_row()
-        val = if_statement.get_unwrapped_value()
-        bstr = _string_with_square(_find_unit_range(bits), ",")
-        btext = f"c{bstr} == 0x{val}"
+        nb = len(bits)
+        val = g.get_bitstring()
 
         ccol = self.get_current_col()
 
-        self.canvas.draw_box(brow - 1, ccol, len(btext) + 2, 3, clean=True)
-        self.canvas.draw_text(btext, brow, ccol + 1)
+        bstr = _string_with_square(_find_unit_range(bits), ",")
+        btext = f"c{bstr}==" + val.to01()
 
-        self.draw_operation(if_statement.get_operation(), qubits, [])
-
-        qrow = max(self.get_qubit_row(q) for q in qubits)
-
-        self.canvas.draw_double_vline(qrow + 1, ccol + 1, brow - qrow - 1)
+        self.canvas.draw_box(bitrow - 1, ccol, len(btext) + 2, 3, clean=True)
+        self.canvas.draw_text(btext, bitrow, ccol + 1)
 
         self.set_current_col(ccol + len(btext) + 2)
+        ifcol = self.get_current_col()
 
-    def draw_reset(self, reset, qubits, _):
+        qstartrow = min(qubitrow) - 1
+        qstoprow = max(qubitrow) + 1
+        qw = g.op.asciiwidth(qubits, [], [])
+        qh = qstoprow - qstartrow + 1
+        qmh = qstartrow + qh // 2
+        namepadding = _gate_name_padding(qubits, [], [])
+
+        self.canvas.draw_box(qstartrow, ifcol, qw, qh, clean=True)
+
+        for i, qr in enumerate(qubitrow):
+            self.canvas.draw_text(str(i), qr, ifcol + 1)
+
+        self.canvas.draw_text(repr(g.op), qmh, ifcol + namepadding + 1)
+
+        midcol = ifcol + qw // 2
+
+        self.canvas.draw_double_vline(qstoprow, midcol, bitrow - qstoprow)
+        self.canvas.draw_double_hline(bitrow - 1, ifcol, midcol - ifcol)
+        self.canvas.draw_text("╝", bitrow - 1, midcol)
+        self.canvas.draw_text("○", bitrow - 1, ifcol)
+
+        self.set_current_col(ifcol + qw)
+
+    def draw_reset(self, reset, qubits, _, zvars):
         if not isinstance(reset, mc.Reset):
             raise TypeError("Must be a Reset Operation")
 
@@ -585,7 +739,7 @@ class AsciiCircuit:
         self.set_current_col(current_col + 5)
         return self
 
-    def draw_parallel(self, parallel, qubits, _):
+    def draw_parallel(self, parallel, qubits, _, zvars):
         if not isinstance(parallel, mc.Parallel):
             raise TypeError("Must be a Parallel")
 
@@ -596,7 +750,28 @@ class AsciiCircuit:
 
         for i in range(parallel.num_repeats):
             self.currentcol = ccol
-            self.draw_operation(op, qubits[nq * i : nq * (i + 1)], [])
+            self.draw_operation(op, qubits[nq * i : nq * (i + 1)], [], [])
+
+        return self
+
+    def draw_paulistring(self, g, qubits, bits, zvars):
+        ccol = self.get_current_col()
+        qubitrow = [self.get_qubit_row(q) for q in qubits]
+
+        startrow = min(qubitrow) - 1
+        stoprow = max(qubitrow) + 1
+        gateheight = stoprow - startrow + 1
+
+        gw = g.asciiwidth(qubits, bits, zvars)
+
+        self.canvas.draw_box(startrow, ccol, gw, gateheight, clean=True)
+
+        for i, qr in enumerate(qubitrow):
+            pauli_char = g.pauli[i]
+            label = f"{i}: {pauli_char}" if len(qubits) > 1 else f"{pauli_char}"
+            self.canvas.draw_text(label, qr, ccol + 1)
+
+        self.set_current_col(ccol + gw)
 
         return self
 
@@ -605,33 +780,11 @@ class AsciiCircuit:
             raise TypeError("Must be an Instruction")
 
         return self.draw_operation(
-            instruction.get_operation(), instruction._qubits, instruction._bits
+            instruction.get_operation(),
+            instruction._qubits,
+            instruction._bits,
+            instruction._zvars,
         )
-
-    def draw_measurereset(self, qubits, bits):
-        if not qubits or not bits:
-            raise ValueError("Qubits and bits must be provided for measurement.")
-
-        qubit = qubits[0]
-        bit = bits[0]
-        qubit_row = self.get_qubit_row(qubit)
-        bit_row = self.get_bit_row()
-        middle_column = self.get_current_col() + 1
-
-        self.canvas.draw_box(qubit_row - 1, middle_column - 1, 4, 3, clean=True)
-        self.canvas.draw_text("MR", qubit_row, middle_column)
-        self.set_current_col(middle_column + 3)
-
-        if bit_row > qubit_row:
-            self.canvas.draw_double_vline(
-                qubit_row + 1, middle_column, bit_row - qubit_row
-            )
-
-        bit_str = str(bit)
-        self.canvas.draw_text(bit_str, bit_row + 1, middle_column)
-        self.set_current_col(middle_column + len(bit_str))
-
-        return self
 
 
 __all__ = ["AsciiCircuit", "AsciiCanvas"]

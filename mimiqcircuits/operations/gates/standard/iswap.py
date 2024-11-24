@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -59,17 +60,16 @@ class GateISWAP(mcg.Gate):
         └── H @ q[1]
         <BLANKLINE>
     """
-    _name = 'ISWAP'
+
+    _name = "ISWAP"
 
     _num_qubits = 2
     _qregsizes = [2]
 
     def _matrix(self):
-        return Matrix([
-            [1, 0, 0, 0], [0, 0, I, 0], [0, I, 0, 0], [0, 0, 0, 1]
-        ])
+        return Matrix([[1, 0, 0, 0], [0, 0, I, 0], [0, I, 0, 0], [0, 0, 0, 1]])
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits
         circ.push(GateS(), c)
         circ.push(GateS(), t)

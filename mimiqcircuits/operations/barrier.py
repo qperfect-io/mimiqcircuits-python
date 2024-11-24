@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -60,6 +61,7 @@ class Barrier(Operation):
     _name = "Barrier"
     _num_qubits = None
     _num_bits = 0
+    _num_zvars = 0
 
     def __init__(self, num_qubits):
         """
@@ -99,7 +101,7 @@ class Barrier(Operation):
     def iswrapper(self):
         return False
 
-    def asciiwidth(self, qubits, bits):
+    def asciiwidth(self, qubits, bits, zvars):
         return 1
 
 

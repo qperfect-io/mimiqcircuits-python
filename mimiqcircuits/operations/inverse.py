@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +16,12 @@
 #
 
 import mimiqcircuits as mc
-import sympy as sp
-import symengine as se
 import mimiqcircuits.lazy as lz
 from mimiqcircuits.printutils import print_wrapped_parens
+from mimiqcircuits.operations.gates.gate import Gate
 
 
-class Inverse(mc.Operation):
+class Inverse(Gate):
     """Inverse of the wrapped quantum operation.
 
     The inversion is not performed right away, but only when the circuit is
@@ -54,15 +54,13 @@ class Inverse(mc.Operation):
     _op = None
 
     def __init__(self, operation, *args, **kwargs):
-        if isinstance(operation, type) and issubclass(operation, mc.Operation):
+        if isinstance(operation, type) and issubclass(operation, mc.Gate):
             op = operation(*args, **kwargs)
-        elif isinstance(operation, mc.Operation):
+        elif isinstance(operation, mc.Gate):
             op = operation
         else:
-            raise ValueError("Operation must be an Operation object or type.")
+            raise ValueError("Operation must be an Gate object or type.")
 
-        if isinstance(op, (mc.Barrier, mc.Reset, mc.Measure)):
-            raise TypeError(f"{op.__class__.__name__} cannot be Inversed operation.")
 
         if op.num_bits != 0:
             raise ValueError("Cannot inverte operation with classical bits.")
@@ -118,15 +116,15 @@ class Inverse(mc.Operation):
             return mc.Parallel(num_repeats, self)
         else:
             raise ValueError("Invalid number of arguments.")
-
-    def matrix(self):
-        return se.Matrix(sp.simplify(sp.Matrix(self.op.matrix().inv()).evalf()))
+    
+    def _matrix(self):
+        return self.op.matrix().inv()
 
     def evaluate(self, d):
         return self.op.evaluate(d).inverse()
 
-    def _decompose(self, circ, qubits, bits):
-        newc = self.op._decompose(mc.Circuit(), qubits, bits).inverse()
+    def _decompose(self, circ, qubits, bits, zvars):
+        newc = self.op._decompose(mc.Circuit(), qubits, bits, zvars).inverse()
         circ.append(newc)
         return circ
 

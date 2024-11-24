@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use thas file except in compliance with the License.
@@ -36,6 +37,9 @@ class Operation(ABC):
     _num_bits = None
     _num_cregs = 0
     _cregsizes = None
+    _num_zvars = None
+    _num_zregs = 0
+    _zregsizes = None
 
     _parnames = ()
 
@@ -64,6 +68,14 @@ class Operation(ABC):
         raise ValueError("Cannot set num_bits. Read only parameter.")
 
     @property
+    def num_zvars(self):
+        return self._num_zvars
+
+    @num_zvars.setter
+    def num_zvars(self, value):
+        raise ValueError("Cannot set num_zvars. Read only parameter.")
+
+    @property
     def num_cregs(self):
         return self._num_cregs
 
@@ -86,6 +98,14 @@ class Operation(ABC):
     @cregsizes.setter
     def cregsizes(self, value):
         raise ValueError("Cannot set cregsizes. Read only parameter.")
+
+    @property
+    def zregsizes(self):
+        return self._zregsizes
+
+    @zregsizes.setter
+    def zregsizes(self, value):
+        raise ValueError("Cannot set zregsizes. Read only parameter.")
 
     @property
     def name(self):
@@ -139,20 +159,43 @@ class Operation(ABC):
     def isopalias(self):
         return False
 
-    def _decompose(self, circ, qubits, bits):
-        return circ.push(self, *qubits, *bits)
+    def numparams(self):
+        return len(self.getparams())
+
+    def _decompose(self, circ, qubits, bits, zvars):
+        return circ.push(self, *qubits, *bits, *zvars)
 
     def decompose(self):
         return self._decompose(
-            mc.Circuit(), range(self.num_qubits), range(self.num_bits)
+            mc.Circuit(),
+            range(self.num_qubits),
+            range(self.num_bits),
+            range(self.num_zvars),
         )
 
     def evaluate(self, d):
         return self
 
-    def asciiwidth(self, qubits, bits):
-        namepadding = _gate_name_padding(qubits, bits)
-        return 1+namepadding + len(str(self))+1
+    def isidentity(self):
+        return False
+
+    def asciiwidth(self, qubits, bits, zvars):
+        # Calculate padding for qubits, bits, and zvars
+        namepadding = _gate_name_padding(qubits, bits, zvars)
+
+        # Calculate the width contribution of zvars
+        zvar_width = len(",".join(map(str, zvars))) if zvars else 0
+
+        # Assume operation has a string representation (e.g., __str__)
+        operation_repr = str(self)
+
+        # Calculate the width: | + (num + space) + name + zvars (if any) + |
+        if zvars and not qubits:
+            # If there are zvars but no qubits, ensure width includes zvars fully
+            return 1 + max(namepadding + len(operation_repr), zvar_width) + 1
+        else:
+            # Regular case where zvars and qubits are both present or only qubits
+            return 1 + namepadding + len(operation_repr) + 1
 
     def get_operation(self):
         return self

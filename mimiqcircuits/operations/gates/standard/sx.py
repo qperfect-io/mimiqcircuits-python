@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,6 +54,7 @@ class GateSX(mc.Power):
         └── U(0, 0, 0, (1/4)*pi) @ q[0]
         <BLANKLINE>
     """
+
     _name = "SX"
 
     name = "SX"
@@ -91,12 +93,12 @@ class GateSX(mc.Power):
     def __str__(self):
         return f"{self.name}"
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(mc.GateSDG(), q)
         circ.push(mc.GateH(), q)
         circ.push(mc.GateSDG(), q)
-        circ.push(mc.GateU(0,0,0,pi/4), q)
+        circ.push(mc.GateU(0, 0, 0, pi / 4), q)
         return circ
 
 
@@ -147,10 +149,10 @@ class GateSXDG(mc.Inverse):
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCSXDG())
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(mc.GateS(), q)
         circ.push(mc.GateH(), q)
         circ.push(mc.GateS(), q)
-        circ.push(mc.GateU(0,0,0,-pi/4), q)
+        circ.push(mc.GateU(0, 0, 0, -pi / 4), q)
         return circ

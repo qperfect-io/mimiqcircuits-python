@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +15,16 @@
 # limitations under the License.
 #
 
-
 from fractions import Fraction
-from symengine import Matrix, pi
+from symengine import pi
 from mimiqcircuits.printutils import print_wrapped_parens
 import sympy as sp
 import numpy as np
 import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.gate import Gate
 
 
-class Power(mc.Operation):
+class Power(Gate):
     """Power operation.
 
     Represents a Power operation raised to a specified exponent.
@@ -42,7 +43,7 @@ class Power(mc.Operation):
         <BLANKLINE>
         >>> c.decompose()
         2-qubit circuit with 6 instructions:
-        ├── U(1.57079632679490, -1.57079632679490, 1.57079632679490, 0.785398163397448) @ q[1]
+        ├── U(1.5707963267948966, -1.5707963267948966, 1.5707963267948961, 0.7853981633974482) @ q[1]
         ├── X @ q[1]
         ├── X @ q[1]
         ├── X @ q[1]
@@ -62,18 +63,15 @@ class Power(mc.Operation):
     _parnames = ("exponent",)
 
     def __init__(self, operation, exponent, *args, **kwargs):
-        if isinstance(operation, type) and issubclass(operation, mc.Operation):
+        if isinstance(operation, type) and issubclass(operation, mc.Gate):
             op = operation(*args, **kwargs)
-        elif isinstance(operation, mc.Operation):
+        elif isinstance(operation, mc.Gate):
             op = operation
         else:
-            raise ValueError("Operation must be an Operation object or type.")
+            raise ValueError("Operation must be an Gate object or type.")
 
         if self.num_bits != 0:
             raise ValueError("Power operation cannot act on classical bits.")
-
-        if isinstance(op, (mc.Barrier, mc.Reset, mc.Measure)):
-            raise TypeError(f"{op.__class__.__name__} cannot be powered operation.")
 
         super().__init__()
 
@@ -142,10 +140,10 @@ class Power(mc.Operation):
         else:
             raise ValueError("Invalid number of arguments.")
 
-    def matrix(self):
+    def _matrix(self):
         matrix = sp.Matrix(self.op.matrix().tolist())
         pow_matrix = matrix ** (self.exponent)
-        return Matrix(sp.simplify(sp.Matrix(pow_matrix.tolist()).evalf()))
+        return pow_matrix
 
     def getparams(self):
         return self.op.getparams()
@@ -190,7 +188,7 @@ class Power(mc.Operation):
         exponent = self.exponent
         return self.op.evaluate(d).power(exponent)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         if isinstance(self.exponent, int) and self.exponent >= 1:
             for _ in range(self.exponent):
                 circ.push(self.op, *qubits)
@@ -200,7 +198,7 @@ class Power(mc.Operation):
         # if there is only a gate, maybe it is ok
         # if the gates are all diagonal then we can continue
         # otherwise just do nothing and push the same thing
-        cop = self.op.decompose()
+        cop = self.op._decompose(mc.Circuit(), qubits, bits, zvars)
 
         if len(cop) == 1:
             circ.push(cop.instructions[0].operation._power(self.exponent), *qubits)
@@ -212,7 +210,10 @@ class Power(mc.Operation):
 
     def decompose(self):
         return self._decompose(
-            mc.Circuit(), range(self.num_qubits), range(self.num_bits)
+            mc.Circuit(),
+            range(self.num_qubits),
+            range(self.num_bits),
+            range(self.num_zvars),
         )
 
 

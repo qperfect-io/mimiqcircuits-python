@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +65,7 @@ class GateCS(mctrl.Control):
     def __init__(self):
         super().__init__(1, GateS())
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         a, b = qubits
 
         circ.push(GateCP(pi / 2), a, b)
@@ -114,7 +115,7 @@ class GateCSDG(mctrl.Control):
     def __init__(self):
         super().__init__(1, GateSDG())
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         a, b = range(self.num_qubits)
 
         circ.push(GateCP(-pi / 2), a, b)

@@ -25,7 +25,7 @@ To install :file:`mimiqcircuits.py` you can use the following command:
   pip install "mimiqcircuits @ git+https://github.com/qperfect-io/mimiqcircuits-python.git"
 
 
-For more details on installation, please refer to the :ref:`installation` page. 
+For more details on installation, please refer to the :doc:`installation </manual/installation>` page. 
 
 
 Indices and tables
@@ -39,8 +39,8 @@ Contents
 --------
 
 .. toctree::
-   installation
-   tutorial
+   mimiq_documentation
+   quick_start
    manual/index
    API References <apidocs/mimiqcircuits>
    GitHub <https://github.com/qperfect-io/mimiqcircuits-python>

@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,21 +59,24 @@ class GateRX(mcg.Gate):
         └── U(theta, (-1/2)*pi, (1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'RX'
+
+    _name = "RX"
 
     _num_qubits = 1
     _qregsizes = [1]
 
-    _parnames = ('theta',)
+    _parnames = ("theta",)
 
     def __init__(self, theta):
         self.theta = theta
 
     def _matrix(self):
-        return Matrix([
-            [cos(self.theta / 2), -I * sin(self.theta / 2)],
-            [-I * sin(self.theta / 2), cos(self.theta / 2)]
-        ])
+        return Matrix(
+            [
+                [cos(self.theta / 2), -I * sin(self.theta / 2)],
+                [-I * sin(self.theta / 2), cos(self.theta / 2)],
+            ]
+        )
 
     def inverse(self):
         return GateRX(-self.theta)
@@ -80,12 +84,17 @@ class GateRX(mcg.Gate):
     def _power(self, p):
         return GateRX(self.theta * p)
 
+    def isidentity(self):
+        if self.theta == 0:
+            return True
+        return False
+
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCRX(self.theta))
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(GateU(self.theta, -pi/2, pi/2), q)
+        circ.push(GateU(self.theta, -pi / 2, pi / 2), q)
         return circ
 
 
@@ -125,21 +134,24 @@ class GateRY(mcg.Gate):
         └── U(theta, 0, 0, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'RY'
+
+    _name = "RY"
 
     _num_qubits = 1
     _qregsizes = [1]
 
-    _parnames = ('theta',)
+    _parnames = ("theta",)
 
     def __init__(self, theta):
         self.theta = theta
 
     def _matrix(self):
-        return Matrix([
-            [cos(self.theta / 2), -sin(self.theta / 2)],
-            [sin(self.theta / 2), cos(self.theta / 2)]
-        ])
+        return Matrix(
+            [
+                [cos(self.theta / 2), -sin(self.theta / 2)],
+                [sin(self.theta / 2), cos(self.theta / 2)],
+            ]
+        )
 
     def inverse(self):
         return GateRY(-self.theta)
@@ -147,10 +159,15 @@ class GateRY(mcg.Gate):
     def _power(self, p):
         return GateRY(self.theta * p)
 
+    def isidentity(self):
+        if self.theta == 0:
+            return True
+        return False
+
     def _control(self, n):
         control_one_defined(n, self, mc.GateCRY(self.theta))
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(GateU(self.theta, 0, 0), q)
         return circ
@@ -192,21 +209,19 @@ class GateRZ(mcg.Gate):
         └── U(0, 0, lambda, (-1/2)*lambda) @ q[0]
         <BLANKLINE>
     """
-    _name = 'RZ'
+
+    _name = "RZ"
 
     _num_qubits = 1
     _qregsizes = [1]
 
-    _parnames = ('lmbda',)
+    _parnames = ("lmbda",)
 
     def __init__(self, lmbda):
         self.lmbda = lmbda
 
     def _matrix(self):
-        return Matrix([
-            [exp(-I * self.lmbda / 2), 0],
-            [0, exp(I * self.lmbda / 2)]
-        ])
+        return Matrix([[exp(-I * self.lmbda / 2), 0], [0, exp(I * self.lmbda / 2)]])
 
     def inverse(self):
         return GateRZ(-self.lmbda)
@@ -214,10 +229,15 @@ class GateRZ(mcg.Gate):
     def _power(self, p):
         return GateRZ(self.lmbda * p)
 
+    def isidentity(self):
+        if self.lmbda == 0:
+            return True
+        return False
+
     def _control(self, n):
         return control_one_defined(n, self, mc.GateCRZ(self.lmbda))
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(GateU(0, 0, self.lmbda, -self.lmbda / 2), q)
         return circ
@@ -256,22 +276,25 @@ class GateR(mcg.Gate):
         └── U3(theta, phi + (-1/2)*pi, -phi + (1/2)*pi) @ q[0]
         <BLANKLINE>
     """
-    _name = 'R'
+
+    _name = "R"
 
     _num_qubits = 1
     _qregsizes = [1]
 
-    _parnames = ('theta', 'phi')
+    _parnames = ("theta", "phi")
 
     def __init__(self, theta, phi):
         self.theta = theta
         self.phi = phi
 
     def _matrix(self):
-        return Matrix([
-            [cos(self.theta / 2), -I * exp(-I * self.phi) * sin(self.theta / 2)],
-            [-I * exp(I * self.phi) * sin(self.theta / 2), cos(self.theta / 2)]
-        ])
+        return Matrix(
+            [
+                [cos(self.theta / 2), -I * exp(-I * self.phi) * sin(self.theta / 2)],
+                [-I * exp(I * self.phi) * sin(self.theta / 2), cos(self.theta / 2)],
+            ]
+        )
 
     def inverse(self):
         return GateR(-self.theta, self.phi)
@@ -279,7 +302,7 @@ class GateR(mcg.Gate):
     def _power(self, p):
         return GateR(self.theta * p, self.phi)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(GateU3(self.theta, self.phi - pi/2, -self.phi + pi/2), q)
+        circ.push(GateU3(self.theta, self.phi - pi / 2, -self.phi + pi / 2), q)
         return circ

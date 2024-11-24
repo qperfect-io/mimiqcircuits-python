@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +22,7 @@ import mimiqcircuits as mc
 from sympy import I, pi, sin, cos, acos, Abs, simplify, exp, Expr, log, Matrix
 import numpy as np
 import sympy as sp
+import symengine as se
 from scipy.linalg import expm, logm
 
 
@@ -32,7 +34,7 @@ class GateU(mcg.Gate):
 
     .. math::
         \operatorname{U}(\theta, \phi, \lambda, \gamma) =
-        \frac{1}{2} \mathrm{e}^{i\gamma}
+        \mathrm{e}^{i\gamma}
         \begin{pmatrix}
             \cos\left(\frac{\theta}{2}\right) & -\mathrm{e}^{i\lambda}\sin\left(\frac{\theta}{2}\right)\\
             \mathrm{e}^{i\phi}\sin\left(\frac{\theta}{2}\right) & \mathrm{e}^{i(\phi+\lambda)}\cos\left (\frac{\theta}{2}\right)
@@ -103,24 +105,44 @@ class GateU(mcg.Gate):
         )
 
     def _power(self, p):
-        matrix = sp.Matrix(self.matrix().tolist())
-
-        # if the elements are symbolic, return a wrapped Power(GateU)
-        if any(isinstance(item, sp.Expr) and item.has(sp.Symbol) for item in matrix):
+        
+        if self.is_symbolic():
             return mc.Power(self, p)
 
-        # Otherwise, try determine the gate U parameters numericallynumerically if all elements are numeric
-        pow_matrix = matrix**p
-        matrix_p = Matrix(sp.simplify(sp.Matrix(pow_matrix.tolist()).evalf()))
+        def to_numeric(value):
+            if isinstance(value, (se.Basic,sp.Basic)) and value == se.pi or value == se.pi:
+                return float(value)
+            return value
 
-        theta_p = 2 * sp.acos(sp.Abs(matrix_p[0, 0])).evalf()
-        gamma_p = sp.arg(matrix_p[0, 0]).evalf()
-        phi_p = sp.arg(matrix_p[1, 0] / sp.sin(theta_p / 2)).evalf() - gamma_p
-        lambda_p = sp.arg(-matrix_p[0, 1] / sp.sin(theta_p / 2)).evalf() - gamma_p
+        theta_value = to_numeric(self.theta)
+        phi_value = to_numeric(self.phi)
+        lambda_value = to_numeric(self.lmbda)
+        gamma_value = to_numeric(self.gamma)
+
+        numeric_gate = GateU(theta_value, phi_value, lambda_value, gamma_value)
+
+        matrix = numeric_gate.matrix().tolist()
+
+        matrix_np = np.array(self.convert_to_numeric(matrix))
+
+        pow_matrix = expm(p * logm(matrix_np))
+
+        # Compute the angles based on the resulting matrix and prevent error raising becouse of division by zero.
+        with np.errstate(divide='ignore'):
+            theta_p = 2 * np.arccos(np.abs(pow_matrix[0, 0]))
+            gamma_p = np.angle(pow_matrix[0, 0])
+            phi_p = np.angle(pow_matrix[1, 0] / np.sin(theta_p / 2)) - gamma_p
+            lambda_p = np.angle(-pow_matrix[0, 1] / np.sin(theta_p / 2)) - gamma_p
 
         return GateU(theta_p, phi_p, lambda_p, gamma_p)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(self, q)
         return circ
+
+    def convert_to_numeric(self, matrix):
+        """
+        Convert a symbolic matrix to a numeric numpy array.
+        """
+        return np.array([[complex(elem.evalf()) for elem in row] for row in matrix], dtype=np.complex128)

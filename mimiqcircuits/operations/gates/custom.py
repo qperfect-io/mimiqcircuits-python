@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +19,7 @@ import mimiqcircuits.operations.gates.gate as mcg
 from numpy import ndarray
 import symengine as se
 import sympy as sp
+import numpy as np
 
 
 class GateCustom(mcg.Gate):
@@ -26,14 +28,11 @@ class GateCustom(mcg.Gate):
     Examples:
         >>> from mimiqcircuits import Circuit, GateCustom
         >>> import numpy as np
-        >>> matrix = np.array([[1, 0, 0, 0],
-        ...                    [0, 1, 0, 0],
-        ...                    [0, 0, 0, -1j],
-        ...                    [0, 0, 1j, 0]])
+        >>> matrix = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 0, -1j],[0, 0, 1j, 0]])
         >>> c = Circuit()
         >>> c.push(GateCustom(matrix), 0, 1)
         2-qubit circuit with 1 instructions:
-        └── Custom([[1.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I], [0.0 + 0.0*I, 1.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I], [0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, -0.0 - 1.0*I], [0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 1.0*I, 0.0 + 0.0*I]]) @ q[0,1]
+        └── Custom([1.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I]...[0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 1.0*I, 0.0 + 0.0*I]) @ q[0,1]
         <BLANKLINE>
     """
 
@@ -100,8 +99,29 @@ class GateCustom(mcg.Gate):
             for j in range(matrix.cols)
         )
 
+    def __repr__(self):
+        return self.pretty_print()
+
     def __str__(self):
-        return f"{self.name}({self.matrix.tolist()})"
+        return f"{self._name}({se.Matrix(self.matrix).tolist()[0]}...{se.Matrix(self.matrix).tolist()[-1]})"
+
+    def pretty_print(self):
+        if isinstance(self.matrix, se.Matrix):
+            U = np.array(self.matrix.tolist(), dtype=object)
+        else:
+            U = np.array(self.matrix, dtype=object)
+
+        result = f"{self._num_qubits}-qubit GateCustom:\n"
+        rows, cols = U.shape
+        for i in range(rows):
+            if i < rows - 1:
+                result += "├── "
+            else:
+                result += "└── "
+            result += " ".join(map(str, U[i, :]))
+            if i < rows - 1:
+                result += "\n"
+        return result
 
     def evaluate(self, d):
         sympy_matrix = sp.Matrix(self.matrix)

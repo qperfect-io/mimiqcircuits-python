@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +15,17 @@
 # limitations under the License.
 #
 
+from __future__ import (
+    annotations,
+)  # Required for postponed evaluation of type hints in Python 3.7+
 import mimiqcircuits as mc
 from mimiqcircuits.instruction import Instruction
 import copy
 from collections.abc import Iterable
 from itertools import repeat
-from mimiqcircuits.proto.circuitproto import *
-from mimiqcircuits.proto import circuit_pb
 import shutil
+from typing import List, Union
+import random
 
 
 class Circuit:
@@ -99,7 +103,7 @@ class Circuit:
         ├── RX((1/4)*pi) @ q[0]
         ├── Reset @ q[0]
         ├── Barrier @ q[0,1]
-        └── Measure @ q[0], c[0]
+        └── M @ q[0], c[0]
         <BLANKLINE>
 
         Add a Control gate with GateX as the target gate. The first 3
@@ -112,7 +116,7 @@ class Circuit:
         ├── RX((1/4)*pi) @ q[0]
         ├── Reset @ q[0]
         ├── Barrier @ q[0,1]
-        ├── Measure @ q[0], c[0]
+        ├── M @ q[0], c[0]
         └── C₃X @ q[0,1,2], q[3]
         <BLANKLINE>
 
@@ -125,9 +129,9 @@ class Circuit:
         ├── RX((1/4)*pi) @ q[0]
         ├── Reset @ q[0]
         ├── Barrier @ q[0,1]
-        ├── Measure @ q[0], c[0]
+        ├── M @ q[0], c[0]
         ├── C₃X @ q[0,1,2], q[3]
-        └── Parallel(3, X) @ q[0], q[1], q[2]
+        └── ⨷ ³ X @ q[0], q[1], q[2]
         <BLANKLINE>
 
         To add operations without constructing them first, use the
@@ -221,6 +225,21 @@ class Circuit:
             if len(bits) == 0:
                 continue
             m = max(bits)
+            if m > n:
+                n = m
+
+        return n + 1
+
+    def num_zvars(self):
+        """
+        Returns the number of z-variables in the circuit.
+        """
+        n = -1
+        for instruction in self.instructions:
+            zbits = instruction.zvars
+            if len(zbits) == 0:
+                continue
+            m = max(zbits)
             if m > n:
                 n = m
 
@@ -323,9 +342,9 @@ class Circuit:
             ├── CX @ q[0], q[1]
             ├── H @ q[0]
             ├── Barrier @ q[0,1,2]
-            ├── Measure @ q[0], c[0]
-            ├── Measure @ q[1], c[1]
-            └── Measure @ q[2], c[2]
+            ├── M @ q[0], c[0]
+            ├── M @ q[1], c[1]
+            └── M @ q[2], c[2]
             <BLANKLINE>
             >>> c
             3-qubit circuit with 12 instructions:
@@ -338,13 +357,14 @@ class Circuit:
             ├── CX @ q[0], q[1]
             ├── H @ q[0]
             ├── Barrier @ q[0,1,2]
-            ├── Measure @ q[0], c[0]
-            ├── Measure @ q[1], c[1]
-            └── Measure @ q[2], c[2]
+            ├── M @ q[0], c[0]
+            ├── M @ q[1], c[1]
+            └── M @ q[2], c[2]
             <BLANKLINE>
         """
         N = 0
         M = 0
+        Z = 0
         L = len(args)
 
         if isinstance(operation, Instruction):
@@ -361,13 +381,20 @@ class Circuit:
         if not isinstance(operation, mc.Operation):
             raise (TypeError("Non Operation object passed to push."))
 
+        # Check if the operation is an abstract operator but not a gate
+        if isinstance(operation, mc.AbstractOperator) and not isinstance(operation, mc.Gate):
+            raise ValueError(
+                f"Cannot add an abstract operator: {type(operation).__name__} that is not a Gate to the circuit."
+            )
+        
         N = operation.num_qubits
         M = operation.num_bits
+        Z = operation.num_zvars
 
-        if L != N + M:
+        if L != N + M + Z:
             raise (
                 ValueError(
-                    f"Wrong number of target qubits and bits, given {L} for a {N} qubits + {M} bits operation."
+                    f"Wrong number of target qubits and bits and zvars, given {L} for a {N} qubits + {M} bits operation + {Z} z variables."
                 )
             )
 
@@ -381,30 +408,41 @@ class Circuit:
                 hasiterable = True
             else:
                 raise TypeError(f"Invalid target type for {arg} of type {type(arg)}")
-
-        larg = args[-1]
-        if isinstance(larg, int):
-            if hasiterable:
-                targets.append(repeat(larg))
+        if args:
+            larg = args[-1]
+            if isinstance(larg, int):
+                if hasiterable:
+                    targets.append(repeat(larg))
+                else:
+                    targets.append([larg])
+            elif isinstance(larg, Iterable):
+                targets.append(larg)
             else:
-                targets.append([larg])
-        elif isinstance(larg, Iterable):
-            targets.append(larg)
+                raise TypeError(f"Invalid target type for {arg} of type {type(larg)}")
+
+            for tg in zip(*targets):
+                if operation == mc.Barrier:
+                    self.instructions.append(Instruction(mc.Barrier(N), (*tg,), (), ()))
+                else:
+                    self.instructions.append(
+                        Instruction(
+                            operation, (*tg[:N],), (*tg[N : N + M],), (*tg[N + M :],)
+                        )
+                    )
         else:
-            raise TypeError(f"Invalid target type for {arg} of type {type(larg)}")
-
-        for tg in zip(*targets):
-            if operation == mc.Barrier:
-                self.instructions.append(Instruction(mc.Barrier(N), (*tg,), ()))
-            else:
-                self.instructions.append(Instruction(operation, (*tg[:N],), (*tg[N:],)))
-
+            self.instructions.append(Instruction(operation))
         return self
 
     def _emplace_operation(self, op, regs):
         lr = len(regs)
         lq = op.num_qregs
         lc = op.num_cregs
+        lz = op._num_zregs
+
+        if lr != lq + lc + lz:
+            raise ValueError(
+                f"Wrong number of registers. Expected {lq} quantum + {lc} classical + {lz} z, got {lr}"
+            )
 
         qr = op.qregsizes
         for i in range(lq):
@@ -414,11 +452,17 @@ class Circuit:
                 )
 
         cr = op.cregsizes
-
         for i in range(lc):
             if len(regs[lq + i]) != cr[i]:
                 raise ValueError(
                     f"Wrong size for {i}th classical register. Expected {cr[i]} but got {len(regs[lq + i])}."
+                )
+
+        zr = op.zregsizes
+        for i in range(lz):
+            if len(regs[lq + lc + i]) != zr[i]:
+                raise ValueError(
+                    f"Wrong size for {i}th z-register. Expected {zr[i]} but got {len(regs[lq + lc + i])}."
                 )
 
         targets = []
@@ -473,6 +517,8 @@ class Circuit:
                 raise ValueError("Each iterable should contain exactly one qubit.")
             self.push(op, *regs)
         elif isinstance(op, mc.Operation):
+            if isinstance(op, mc.AbstractOperator) and not isinstance(op, mc.Gate):
+                raise ValueError("Cannot emplace an abstract operator that is not a Gate into the circuit.")
             self._emplace_operation(op, regs)
         elif isinstance(op, type) and issubclass(op, mc.Operation):
             self._emplace_operation(op, regs)
@@ -527,6 +573,7 @@ class Circuit:
         else:
             N = 0
             M = 0
+            Z = 0
             L = len(args)
 
             if isinstance(operation, Instruction):
@@ -543,13 +590,19 @@ class Circuit:
             else:
                 if not isinstance(operation, mc.Operation):
                     raise TypeError("Non Operation object passed to push.")
+                
+                # Check if the operation is an abstract operator but not a gate
+                if isinstance(operation, mc.AbstractOperator) and not isinstance(operation, mc.Gate):
+                    raise ValueError("Cannot add an abstract operator that is not a Gate to the circuit.")
+
 
                 N = operation.num_qubits
                 M = operation.num_bits
+                Z = operation.num_zvars
 
-            if L != N + M:
+            if L != N + M + Z:
                 raise ValueError(
-                    f"Wrong number of target qubits and bits, given {L} for a {N} qubits + {M} bits operation."
+                    f"Wrong number of target qubits and bits, given {L} for a {N} qubits + {M} bits operation + {Z} Z-variables."
                 )
 
             if operation == mc.Barrier:
@@ -558,7 +611,10 @@ class Circuit:
                 )
             else:
                 self.instructions.insert(
-                    index, Instruction(operation, (*args[:N],), (*args[N:],))
+                    index,
+                    Instruction(
+                        operation, (*args[:N],), (*args[N : N + M],), (*args[N + M :],)
+                    ),
                 )
 
         return self
@@ -720,6 +776,28 @@ class Circuit:
     def deepcopy(self):
         return copy.deepcopy(self)
 
+    def get_on_qubits(self, target_qubits):
+        """
+        Get instructions that involve the specified target qubits.
+
+        Arguments:
+            target_qubits (list or int): Qubits for which to retrieve instructions.
+
+        Returns:
+            Circuit: A new Circuit containing only the instructions that involve the specified qubits.
+        """
+        if isinstance(target_qubits, int):
+            target_qubits = [target_qubits]
+
+        selected_instructions = []
+
+        for instruction in self.instructions:
+            instruction_qubits = set(instruction.qubits + instruction.bits)
+            if any(qubit in instruction_qubits for qubit in target_qubits):
+                selected_instructions.append(instruction)
+
+        return Circuit(instructions=selected_instructions)
+
     def saveproto(self, filename):
         """
         Saves the circuit as a protobuf (binary) file.
@@ -750,16 +828,16 @@ class Circuit:
             2-qubit circuit with 3 instructions:
             ├── H @ q[0]
             ├── XXplusYY(x**2, y) @ q[0,1]
-            └── Measure @ q[0], c[0]
+            └── M @ q[0], c[0]
             <BLANKLINE>
             >>> tmpfile = tempfile.NamedTemporaryFile(suffix=".pb", delete=True)
             >>> c.saveproto(tmpfile.name)
-            61
+            64
             >>> c.loadproto(tmpfile.name)
             2-qubit circuit with 3 instructions:
             ├── H @ q[0]
             ├── XXplusYY(x**2, y) @ q[0,1]
-            └── Measure @ q[0], c[0]
+            └── M @ q[0], c[0]
             <BLANKLINE>
 
             Note:
@@ -771,6 +849,9 @@ class Circuit:
                     c.saveproto("example.pb")
                     c.loadproto("example.pb")
         """
+        from mimiqcircuits.proto import circuit_pb2
+        from mimiqcircuits.proto.circuitproto import toproto_circuit
+
         with open(filename, "wb") as f:
             return f.write(toproto_circuit(self).SerializeToString())
 
@@ -790,8 +871,12 @@ class Circuit:
             Look for example in :func:`Circuit.saveproto`
 
         """
+
+        from mimiqcircuits.proto import circuit_pb2
+        from mimiqcircuits.proto.circuitproto import fromproto_circuit
+
         with open(filename, "rb") as f:
-            circuit_proto = circuit_pb.Circuit()
+            circuit_proto = circuit_pb2.Circuit()
             circuit_proto.ParseFromString(f.read())
             return fromproto_circuit(circuit_proto)
 
@@ -820,10 +905,10 @@ class Circuit:
         """
         num_qubits = self.num_qubits()
         num_bits = self.num_bits()
+        num_zvars = self.num_zvars()
 
         canvas = mc.AsciiCircuit()
-        print(canvas.canvas)
-        canvas.draw_wires(range(num_qubits), range(num_bits))
+        canvas.draw_wires(range(num_qubits), range(num_bits), range(num_zvars))
 
         for instruction in self.instructions:
             if not isinstance(instruction, Instruction):
@@ -833,13 +918,14 @@ class Circuit:
             required_width = operation.asciiwidth(
                 instruction.qubits,
                 instruction.bits if hasattr(instruction, "bits") else [],
+                instruction.zvars if hasattr(instruction, "zvars") else [],
             )
 
             if required_width > canvas.canvas.get_cols() - canvas.get_current_col():
                 print(canvas.canvas)
                 print("...")
                 canvas.reset()
-                canvas.draw_wires(range(num_qubits), range(num_bits))
+                canvas.draw_wires(range(num_qubits), range(num_bits), range(num_zvars))
 
             if required_width > canvas.canvas.get_cols() - canvas.get_current_col():
                 raise ValueError(
@@ -854,16 +940,12 @@ class Circuit:
                     instruction.bits if hasattr(instruction, "bits") else [],
                 )
 
-            elif isinstance(operation, mc.MeasureReset):
-                canvas.draw_measurereset(
+            elif isinstance(operation, mc.PauliString):
+                canvas.draw_paulistring(
+                    operation,
                     instruction.qubits,
                     instruction.bits if hasattr(instruction, "bits") else [],
-                )
-
-            elif isinstance(operation, mc.Measure):
-                canvas.draw_measure(
-                    instruction.qubits,
-                    instruction.bits if hasattr(instruction, "bits") else [],
+                    instruction.zvars if hasattr(instruction, "zvars") else [],
                 )
 
             elif isinstance(operation, mc.Reset):
@@ -871,16 +953,23 @@ class Circuit:
                     operation,
                     instruction.qubits,
                     instruction.bits if hasattr(instruction, "bits") else [],
+                    instruction.zvars if hasattr(instruction, "zvars") else [],
                 )
 
             elif isinstance(operation, mc.Barrier):
-                canvas.draw_barrier(operation, instruction.qubits)
+                canvas.draw_barrier(
+                    operation,
+                    instruction.qubits,
+                    instruction.bits if hasattr(instruction, "bits") else [],
+                    instruction.zvars if hasattr(instruction, "zvars") else [],
+                )
 
             elif isinstance(operation, mc.Parallel):
                 canvas.draw_parallel(
                     operation,
                     instruction.qubits,
                     instruction.bits if hasattr(instruction, "bits") else [],
+                    instruction.zvars if hasattr(instruction, "zvars") else [],
                 )
 
             elif isinstance(operation, mc.IfStatement):
@@ -888,6 +977,7 @@ class Circuit:
                     operation,
                     instruction.qubits,
                     instruction.bits if hasattr(instruction, "bits") else [],
+                    instruction.zvars if hasattr(instruction, "zvars") else [],
                 )
 
             elif isinstance(operation, mc.Operation):
@@ -895,6 +985,7 @@ class Circuit:
                     operation,
                     instruction.qubits,
                     instruction.bits if hasattr(instruction, "bits") else [],
+                    instruction.zvars if hasattr(instruction, "zvars") else [],
                 )
             else:
                 # Default drawing method for general operations
@@ -904,30 +995,93 @@ class Circuit:
         return None
 
     def specify_operations(self):
+        """
+        Summarizes the types and numbers of operations in the circuit.
+
+        This function inspects each instruction in the circuit and categorizes it by
+        the number of qubits, bits, and z-variables involved in the operation. It
+        then prints a summary of the total number of operations in the circuit and
+        a breakdown of the number of operations grouped by their type.
+
+        Examples:
+
+            >>> from mimiqcircuits import *
+            >>> c = Circuit()
+
+            Add a Pauli-X (GateX) gate on qubit 0
+
+            >>> c.push(GateX(), 0)
+            1-qubit circuit with 1 instructions:
+            └── X @ q[0]
+            <BLANKLINE>
+
+            Add a Controlled-NOT (CX) gate with control qubit 0 and target qubit 1
+
+            >>> c.push(GateCX(), 0, 1)
+            2-qubit circuit with 2 instructions:
+            ├── X @ q[0]
+            └── CX @ q[0], q[1]
+            <BLANKLINE>
+
+            Add a Measurement operation on qubit 0, storing the result in bit 0
+
+            >>> c.push(Measure(), 0, 0)
+            2-qubit circuit with 3 instructions:
+            ├── X @ q[0]
+            ├── CX @ q[0], q[1]
+            └── M @ q[0], c[0]
+            <BLANKLINE>
+
+            Add an ExpectationValue operation with GateX on qubit 1, storing the result in z-variable 2.
+
+            >>> c.push(ExpectationValue(GateX()), 1, 2)
+            2-qubit circuit with 4 instructions:
+            ├── X @ q[0]
+            ├── CX @ q[0], q[1]
+            ├── M @ q[0], c[0]
+            └── ⟨X⟩ @ q[1], z[2]
+            <BLANKLINE>
+
+            Print a summary of the types and numbers of operations
+
+            >>> c.specify_operations()
+            Total number of operations: 4
+            ├── 1 x 1_qubits
+            ├── 1 x 2_qubits
+            ├── 1 x 1_qubits & 1_bits
+            └── 1 x 1_qubits & 1_zvars
+        """
         counts = {}
         for i in self.instructions:
             nq = len(i._qubits)
             nb = len(i._bits)
-            
-            if nb > 0:  
-                qubit_key = f'{nq}_qubits' 
-                bit_key = f'{nb}_bits' 
-                key = f'{qubit_key} & {bit_key}'
-            else: 
-                key = f'{nq}_qubits' 
-            
+            nz = len(i._zvars)
+
+            key = ""
+
+            if nq > 0:
+                key += f"{nq}_qubits"
+
+            if nb > 0:
+                if key:
+                    key += " & "
+                key += f"{nb}_bits"
+            if nz > 0:
+                if key:
+                    key += " & "
+                key += f"{nz}_zvars"
+
             counts[key] = counts.get(key, 0) + 1
 
         total_operations = sum(counts.values())
         print(f"Total number of operations: {total_operations}")
-        
+
         count_items = list(counts.items())
         for idx, (key, count) in enumerate(count_items):
             if idx == len(count_items) - 1:
-                print(f'└── {count} x {key}')
+                print(f"└── {count} x {key}")
             else:
-                print(f'├── {count} x {key}')
-
+                print(f"├── {count} x {key}")
 
     def is_symbolic(self):
         """
@@ -972,6 +1126,445 @@ class Circuit:
             instruction.operation.is_symbolic() for instruction in self.instructions
         )
 
+    def add_noise_to_gate_single(
+        self, g, kraus: Union[mc.krauschannel, mc.Gate], before=False
+    ):
+        """
+        Adds a noise operation `kraus` before or after every instance of a given operation `g`.
+
+        The noise operation `kraus` can be a Kraus channel or a gate and will act on the same qubits
+        as the operation `g` to which it is being added.
+
+        Args:
+            g (Operation): The operation to which the noise will be added.
+            kraus (Operation): The noise operation to be added, which can be a Kraus channel or any valid gate.
+            before (bool, optional): If True, the noise is added before the operation `g`. Default is False.
+
+        Raises:
+            ValueError: If the noise operation is the same as the operation `g`, to avoid recursion.
+
+        See also:
+            :func:`add_noise`: Adds noise to multiple operations at once or in a parallel block.
+        """
+        if not isinstance(g, mc.Operation):
+            raise ValueError(f"{g} must be an Operation")
+
+        if not isinstance(kraus, (mc.krauschannel, mc.Gate)):
+            raise ValueError(f"{kraus} is not of type {mc.krauschannel} or {mc.Gate}")
+
+        if g == kraus:
+            raise ValueError(
+                "Noise can't be the same as gate, otherwise recursion problem."
+            )
+
+        rel = 0 if before else 1
+
+        i = 0
+        while i < len(self.instructions):
+            if self.instructions[i].operation == g:
+                qubits = self.instructions[i].qubits
+                self.insert(i + rel, kraus, *qubits)
+                i += 1
+            i += 1
+
+        return self
+
+    def add_noise_to_gate_parallel(
+        self, g, kraus: Union[mc.krauschannel, mc.Gate], before=False
+    ):
+        """
+        Adds a block of noise operations `kraus` after/before every block of a given operation `g`.
+
+        The function identifies blocks of consecutive transversal operations of type `g` and
+        adds a block of transversal noise operations `kraus` after each such block. The noise operation
+        `kraus` can be a Kraus channel or a gate and will act on the same qubits as the operation `g` to which it is being added.
+
+        Args:
+            g (Operation): The operation to which the noise will be added.
+            kraus (Operation): The noise operation to be added, which can be a Kraus channel or any valid gate.
+            before (bool, optional): If True, the noise is added before the operation `g`. Default is False.
+
+        Raises:
+            ValueError: If the noise operation is the same as the operation `g`, to avoid recursion.
+
+        See also:
+            :func:`add_noise`: Adds noise to multiple operations at once or in a parallel block.
+        """
+
+        if not isinstance(g, mc.Operation):
+            raise ValueError(f"{g} must be an Operation")
+
+        if not isinstance(kraus, (mc.krauschannel, mc.Gate)):
+            raise ValueError(f"{kraus} is not of type {mc.krauschannel} or {mc.Gate}")
+
+        if g == kraus:
+            raise ValueError(
+                "Noise can't be the same as gate, otherwise recursion problem."
+            )
+
+        i = 0
+        while i < len(self.instructions):
+            inds = [i]
+            qubits = set(self.instructions[i].qubits)
+
+            if self.instructions[i].operation == g:
+                j = i + 1
+                while (
+                    j < len(self.instructions)
+                    and self.instructions[j].operation == g
+                    and not qubits.intersection(set(self.instructions[j].qubits))
+                ):
+                    inds.append(j)
+                    qubits.update(self.instructions[j].qubits)
+                    j += 1
+
+                for rel, j in enumerate(inds):
+                    if before:
+                        self.insert(i + rel, kraus, *self.instructions[j].qubits)
+                    else:
+                        self.insert(
+                            inds[-1] + 1 + rel, kraus, *self.instructions[j].qubits
+                        )
+
+                i += len(inds)  # Noise block shifting
+            i += len(inds)  # Gate shifting
+
+        return self
+
+    def add_noise(
+        self,
+        g: Union[mc.Operation, List[mc.Operation]],
+        kraus: Union[mc.krauschannel, mc.Gate, List[mc.Gate], List[mc.krauschannel]],
+        before: Union[bool, List[bool]] = False,
+        parallel: Union[bool, List[bool]] = False,
+    ):
+        """
+        Adds a noise operation `kraus` to every instance of the operation `g` in the circuit.
+
+        The noise operation `kraus` can be a Kraus channel or a gate and will act on the same qubits
+        as the operation `g` to which it is being added.
+
+        The operations `g` and `kraus` must act on the same number of qubits.
+
+        Args:
+            g (Operation or list of Operation): The operation(s) to which the noise will be added.
+            kraus (krauschannel or list of krauschannel): The noise operation(s) to be added.
+            before (bool or list of bool, optional): If True, the noise is added before the operation. Default is False.
+            parallel (bool or list of bool, optional): If True, noise is added as a block. Default is False.
+
+        Raises:
+            ValueError: If `g` and `kraus` are not of the same length, or if their number of qubits differ.
+            TypeError: If `before` or `parallel` are not a bool or a list of bool.
+
+        Returns:
+            Circuit: The modified circuit with the noise added.
+
+        Examples:
+
+        Adding noise sequentially (not parallel):
+
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> c.push(GateH(), [1,2,3])
+        4-qubit circuit with 3 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        └── H @ q[3]
+        <BLANKLINE>
+        >>> c.add_noise(GateH(), AmplitudeDamping(0.2))
+        4-qubit circuit with 6 instructions:
+        ├── H @ q[1]
+        ├── AmplitudeDamping(0.2) @ q[1]
+        ├── H @ q[2]
+        ├── AmplitudeDamping(0.2) @ q[2]
+        ├── H @ q[3]
+        └── AmplitudeDamping(0.2) @ q[3]
+        <BLANKLINE>
+
+        Adding noise in parallel:
+
+        >>> c = Circuit()
+        >>> c.push(GateH(), [1, 2, 3])
+        4-qubit circuit with 3 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        └── H @ q[3]
+        <BLANKLINE>
+        >>> c.add_noise(GateH(), AmplitudeDamping(0.2), parallel=True)
+        4-qubit circuit with 6 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        ├── H @ q[3]
+        ├── AmplitudeDamping(0.2) @ q[1]
+        ├── AmplitudeDamping(0.2) @ q[2]
+        └── AmplitudeDamping(0.2) @ q[3]
+        <BLANKLINE>
+
+        Parallel will not work if gates aren't transversal.
+
+        >>> c = Circuit()
+        >>> c.push(GateCZ(), 1, range(2,5))
+        5-qubit circuit with 3 instructions:
+        ├── CZ @ q[1], q[2]
+        ├── CZ @ q[1], q[3]
+        └── CZ @ q[1], q[4]
+        <BLANKLINE>
+        >>> c.add_noise(GateCZ(), Depolarizing2(0.1), parallel=True)
+        5-qubit circuit with 6 instructions:
+        ├── CZ @ q[1], q[2]
+        ├── Depolarizing(0.1) @ q[1,2]
+        ├── CZ @ q[1], q[3]
+        ├── Depolarizing(0.1) @ q[1,3]
+        ├── CZ @ q[1], q[4]
+        └── Depolarizing(0.1) @ q[1,4]
+        <BLANKLINE>
+
+        Adding noise before measurement (The `before=True` option is mostly used for `Measure`):
+
+        >>> c = Circuit()
+        >>> c.push(Measure(), [1, 2, 3], [1, 2, 3])
+        4-qubit circuit with 3 instructions:
+        ├── M @ q[1], c[1]
+        ├── M @ q[2], c[2]
+        └── M @ q[3], c[3]
+        <BLANKLINE>
+        >>> c.add_noise(Measure(), PauliX(0.1), before=True)
+        4-qubit circuit with 6 instructions:
+        ├── PauliX(0.1) @ q[1]
+        ├── M @ q[1], c[1]
+        ├── PauliX(0.1) @ q[2]
+        ├── M @ q[2], c[2]
+        ├── PauliX(0.1) @ q[3]
+        └── M @ q[3], c[3]
+        <BLANKLINE>
+
+        Adding unitary gates as noise in the same way:
+
+        >>> c = Circuit()
+        >>> c.push(GateH(), [1, 2, 3])
+        4-qubit circuit with 3 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        └── H @ q[3]
+        <BLANKLINE>
+        >>> c.add_noise(GateH(), GateRX(0.01))
+        4-qubit circuit with 6 instructions:
+        ├── H @ q[1]
+        ├── RX(0.01) @ q[1]
+        ├── H @ q[2]
+        ├── RX(0.01) @ q[2]
+        ├── H @ q[3]
+        └── RX(0.01) @ q[3]
+        <BLANKLINE>
+
+        """
+
+        # Ensure g and kraus are treated as lists
+        g = g if isinstance(g, list) else [g]
+        kraus = kraus if isinstance(kraus, list) else [kraus]
+
+        # Check for length mismatch between g and kraus
+        if len(g) != len(kraus):
+            raise ValueError(
+                "Vectors of operations and noise channels must have the same length."
+            )
+
+        nops = len(g)
+
+        # Check types of 'before' and 'parallel' and ensure they are the correct length
+        if not isinstance(before, (bool, list)):
+            raise TypeError("Parameter 'before' has to be a bool or a list of bool.")
+        if isinstance(before, list) and len(before) != nops:
+            raise ValueError(
+                "Vector 'before' must have the same length as the vector of operations."
+            )
+
+        if not isinstance(parallel, (bool, list)):
+            raise TypeError("Parameter 'parallel' has to be a bool or a list of bool.")
+        if isinstance(parallel, list) and len(parallel) != nops:
+            raise ValueError(
+                "Vector 'parallel' must have the same length as the vector of operations."
+            )
+
+        # Vectorize optional parameters if they are not already lists
+        if isinstance(before, bool):
+            before = [before] * nops
+        if isinstance(parallel, bool):
+            parallel = [parallel] * nops
+
+        # Validate each operation and noise channel pair
+        for operation, noise in zip(g, kraus):
+            if not isinstance(operation, mc.Operation):
+                raise ValueError(f"{operation} must be an instance of mc.Operation")
+            # Check for individual noise type in the list case
+            if isinstance(noise, list):
+                for n in noise:
+                    if not isinstance(n, (mc.krauschannel, mc.Gate)):
+                        raise ValueError(
+                            f"{n} is not of type {mc.krauschannel} or {mc.Gate}"
+                        )
+            elif not isinstance(noise, (mc.krauschannel, mc.Gate)):
+                raise ValueError(
+                    f"{noise} is not of type {mc.krauschannel} or {mc.Gate}"
+                )
+
+            if operation.num_qubits != noise.num_qubits:
+                raise ValueError(
+                    "Noise channel and operation must have the same number of target qubits"
+                )
+
+        # Apply noise for each pair
+        for operation, noise, add_before, add_parallel in zip(
+            g, kraus, before, parallel
+        ):
+            if add_parallel:
+                self.add_noise_to_gate_parallel(operation, noise, before=add_before)
+            else:
+                self.add_noise_to_gate_single(operation, noise, before=add_before)
+
+        return self
+
+    def sample_mixedunitaries(self, rng=None, ids=False):
+        """
+        sample_mixedunitaries(rng=None, ids=False)
+
+    Samples one unitary gate for each mixed unitary Kraus channel in the circuit.
+
+    This is possible because for mixed unitary noise channels, the probabilities of each
+    Kraus operator are fixed (state-independent).
+
+    Note: This function is internally called (before applying any gate) when executing
+    a circuit with noise using trajectories. It can also be used to generate samples
+    of circuits without running them.
+
+    See also:
+        - :func:`krauschannel.ismixedunitary`
+        - :class:`MixedUnitary`
+
+    Args:
+        rng (optional): Random number generator. If not provided, Python's default
+            random number generator is used.
+        ids (optional): Boolean, default=False. Determines whether to include identity
+            Kraus operators in the sampled circuit. If True, identity gates are added
+            to the circuit; otherwise, they are omitted. Usually, most selected Kraus
+            operators will be identity gates.
+
+    Returns:
+        Circuit: A copy of the circuit with every mixed unitary Kraus channel replaced
+        by one of the unitary gates of the channel. Identity gates are omitted unless
+        `ids=True`.
+
+    Examples:
+        Gates and non-mixed-unitary Kraus channels remain unchanged:
+
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> c.push(GateH(), [1, 2, 3])
+        4-qubit circuit with 3 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        └── H @ q[3]
+        <BLANKLINE>
+        >>> c.push(Depolarizing1(0.5), [1, 2, 3])
+        4-qubit circuit with 6 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        ├── H @ q[3]
+        ├── Depolarizing(0.5) @ q[1]
+        ├── Depolarizing(0.5) @ q[2]
+        └── Depolarizing(0.5) @ q[3]
+        <BLANKLINE>
+        >>> c.push(AmplitudeDamping(0.5), [1, 2, 3])
+        4-qubit circuit with 9 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        ├── H @ q[3]
+        ├── Depolarizing(0.5) @ q[1]
+        ├── Depolarizing(0.5) @ q[2]
+        ├── Depolarizing(0.5) @ q[3]
+        ├── AmplitudeDamping(0.5) @ q[1]
+        ├── AmplitudeDamping(0.5) @ q[2]
+        └── AmplitudeDamping(0.5) @ q[3]
+        <BLANKLINE>
+        
+        >>> rng = random.Random(42)
+        
+        >>> new_circuit = c.sample_mixedunitaries(rng=rng, ids=True)
+        >>> print(new_circuit)
+        4-qubit circuit with 9 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        ├── H @ q[3]
+        ├── X @ q[1]
+        ├── I @ q[2]
+        ├── I @ q[3]
+        ├── AmplitudeDamping(0.5) @ q[1]
+        ├── AmplitudeDamping(0.5) @ q[2]
+        └── AmplitudeDamping(0.5) @ q[3]
+
+        By default, identities are not included:
+
+        >>> new_circuit = c.sample_mixedunitaries(rng=rng)
+        >>> print(new_circuit)
+        4-qubit circuit with 8 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        ├── H @ q[3]
+        ├── Y @ q[2]
+        ├── Y @ q[3]
+        ├── AmplitudeDamping(0.5) @ q[1]
+        ├── AmplitudeDamping(0.5) @ q[2]
+        └── AmplitudeDamping(0.5) @ q[3]
+
+        Different calls to the function generate different results:
+
+        >>> new_circuit = c.sample_mixedunitaries(rng=rng)
+        >>> print(new_circuit)
+        4-qubit circuit with 7 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        ├── H @ q[3]
+        ├── Z @ q[1]
+        ├── AmplitudeDamping(0.5) @ q[1]
+        ├── AmplitudeDamping(0.5) @ q[2]
+        └── AmplitudeDamping(0.5) @ q[3]
+
+        >>> new_circuit = c.sample_mixedunitaries(rng=rng)
+        >>> print(new_circuit)
+        4-qubit circuit with 7 instructions:
+        ├── H @ q[1]
+        ├── H @ q[2]
+        ├── H @ q[3]
+        ├── X @ q[3]
+        ├── AmplitudeDamping(0.5) @ q[1]
+        ├── AmplitudeDamping(0.5) @ q[2]
+        └── AmplitudeDamping(0.5) @ q[3]
+    """
+
+        if rng is None:
+            rng = random()
+
+        scirc = Circuit()
+
+        for inst in self.instructions:
+            op = inst.get_operation()
+
+            if isinstance(op, mc.krauschannel) and op.ismixedunitary():
+                cumulative_probs = op.unwrappedcumprobabilities()
+
+                r = rng.random()
+
+                # Use `next` to find the index of the first cumulative probability greater than `r`
+                index = next(i for i, p in enumerate(cumulative_probs) if p > r)
+
+                gate = op.unitarygates()[index]
+
+                if ids or not gate.isidentity():
+                    scirc.push(gate, *inst.qubits)
+            else:
+                scirc.push(inst)
+
+        return scirc
 
 # export the cirucit classes
 __all__ = ["Instruction", "Circuit"]

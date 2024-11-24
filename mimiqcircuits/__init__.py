@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,8 +29,8 @@ from mimiqcircuits.operations.inverse import Inverse
 from mimiqcircuits.operations.power import Power
 from mimiqcircuits.operations.barrier import Barrier
 from mimiqcircuits.operations.ifstatement import IfStatement
-from mimiqcircuits.operations.measure import Measure
-from mimiqcircuits.operations.reset import Reset
+from mimiqcircuits.operations.measure import AbstractMeasurement, Measure, MeasureX, MeasureY, MeasureZ
+from mimiqcircuits.operations.reset import Reset, ResetX, ResetY, ResetZ
 from mimiqcircuits.operations.gates.gate import Gate
 
 from mimiqcircuits.operations.gates.custom import GateCustom
@@ -37,10 +38,16 @@ from mimiqcircuits.operations.gates.custom import GateCustom
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.standard.id import GateID
 from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
-from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.gates.standard.hadamard import (
+    GateH,
+    GateHXY,
+    GateHXZ,
+    GateHYZ,
+)
 from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
 from mimiqcircuits.operations.gates.standard.sx import GateSX, GateSXDG
+from mimiqcircuits.operations.gates.standard.sy import GateSY, GateSYDG
 from mimiqcircuits.operations.gates.standard.rotations import (
     GateRX,
     GateRY,
@@ -90,14 +97,79 @@ from mimiqcircuits.operations.gates.generalized.diffusion import Diffusion
 
 from mimiqcircuits.operations.gates.generalized.polynomialoracle import PolynomialOracle
 
-from mimiqcircuits.visualization.results import plothistogram
 from mimiqcircuits.qcsresults import QCSResults, save_results, load_results
 from mimiqcircuits.canvas import AsciiCanvas, AsciiCircuit
+from mimiqcircuits.operations.operator import AbstractOperator
+from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
+from mimiqcircuits.operations.noisechannel.standards.ampdamping import (
+    AmplitudeDamping,
+    GeneralizedAmplitudeDamping,
+)
+
+from mimiqcircuits.operations.operators.sigmas import (
+    SigmaMinus,
+    SigmaPlus,
+)
+from mimiqcircuits.operations.operators.diagonals import DiagonalOp
+from mimiqcircuits.operations.operators.projectors import (
+    Projector0,
+    Projector00,
+    Projector01,
+    Projector1,
+    Projector10,
+    Projector11,
+    ProjectorX0,
+    ProjectorX1,
+    ProjectorY0,
+    ProjectorY1,
+    ProjectorZ0,
+    ProjectorZ1,
+)
+
+from mimiqcircuits.operations.noisechannel.standards.depolarizing import (
+    Depolarizing,
+    Depolarizing1,
+    Depolarizing2,
+)
+from mimiqcircuits.operations.operators.custom import Operator
+from mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping import (
+    PhaseAmplitudeDamping,
+    ThermalNoise,
+)
+from mimiqcircuits.operations.noisechannel.kraus import Kraus
+from mimiqcircuits.operations.noisechannel.mixedunitary import MixedUnitary
+from mimiqcircuits.operations.krauschannel import krauschannel
+from mimiqcircuits.operations.noisechannel.standards.pauli import (
+    PauliNoise,
+    PauliX,
+    PauliY,
+    PauliZ,
+)
 from mimiqlink.connection import QPERFECT_CLOUD, QPERFECT_CLOUD2
-from mimiqcircuits.operations.measurereset import MeasureReset
+from mimiqcircuits.operations.amplitude import Amplitude
+from mimiqcircuits.operations.expectationvalue import ExpectationValue
+from mimiqcircuits.operations.entanglement import (
+    SchmidtRank,
+    VonNeumannEntropy,
+    BondDim,
+)
+from mimiqcircuits.operations.measurereset import (
+    MeasureReset,
+    MeasureResetX,
+    MeasureResetY,
+    MeasureResetZ,
+)
+from mimiqcircuits.operations.gates.delay import Delay
+from mimiqcircuits.operations.noisechannel.standards.projectivenoise import (
+    ProjectiveNoise, ProjectiveNoiseX, ProjectiveNoiseY, ProjectiveNoiseZ
+)
+from mimiqcircuits.operations.pairmeasure import MeasureXX, MeasureYY, MeasureZZ
+from mimiqcircuits.operations.rescaledgates import RescaledGate
+from mimiqcircuits.operations.annotations import AbstractAnnotation, Detector, QubitCoordinates, ShiftCoordinates, ObservableInclude, Tick
+from mimiqcircuits.classical.classical_not import Not 
+
 
 # Export specific classes, and functions.
-
 __all__ = [
     "Circuit",
     "BitString",
@@ -108,9 +180,19 @@ __all__ = [
     "Power",
     "Barrier",
     "IfStatement",
+    "AbstractMeasurement",
     "Measure",
+    "MeasureX",
+    "MeasureY",
+    "MeasureZ",
     "Reset",
+    "ResetX",
+    "ResetY",
+    "ResetZ",
     "MeasureReset",
+    "MeasureResetX",
+    "MeasureResetY",
+    "MeasureResetZ",
     "Gate",
     "GateCustom",
     "GateU",
@@ -119,12 +201,17 @@ __all__ = [
     "GateY",
     "GateZ",
     "GateH",
+    "GateHXY",
+    "GateHXZ",
+    "GateHYZ",
     "GateS",
     "GateSDG",
     "GateT",
     "GateTDG",
     "GateSX",
     "GateSXDG",
+    "GateSY",
+    "GateSYDG",
     "GateRX",
     "GateRY",
     "GateRZ",
@@ -176,12 +263,64 @@ __all__ = [
     "LazyExpr",
     "Diffusion",
     "PolynomialOracle",
-    "plothistogram",
     "QCSResults",
     "save_results",
     "load_results",
     "AsciiCanvas",
     "AsciiCircuit",
+    "AbstractOperator",
+    "PauliString",
+    "AmplitudeDamping",
+    "GeneralizedAmplitudeDamping",
+    "SigmaMinus",
+    "SigmaPlus",
+    "DiagonalOp",
+    "Projector0",
+    "Projector00",
+    "Projector01",
+    "Projector1",
+    "Projector10",
+    "Projector11",
+    "Depolarizing",
+    "Depolarizing1",
+    "Depolarizing2",
+    "ProjectorX0",
+    "ProjectorX1",
+    "ProjectorY0",
+    "ProjectorY1",
+    "ProjectorZ0",
+    "ProjectorZ1",
+    "Operator",
+    "PauliNoise",
+    "krauschannel",
+    "PauliX",
+    "PauliY",
+    "PauliZ",
+    "ThermalNoise",
+    "PhaseAmplitudeDamping",
+    "Kraus",
+    "MixedUnitary",
     "QPERFECT_CLOUD",
     "QPERFECT_CLOUD2",
+    "Amplitude",
+    "ExpectationValue",
+    "BondDim",
+    "VonNeumannEntropy",
+    "SchmidtRank",
+    "Delay",
+    "ProjectiveNoise",
+    "ProjectiveNoiseX",
+    "ProjectiveNoiseY",
+    "ProjectiveNoiseZ",
+    "MeasureZZ",
+    "MeasureXX",
+    "MeasureYY",
+    "RescaledGate",
+    "AbstractAnnotation",
+    "Detector",
+    "QubitCoordinates",
+    "ShiftCoordinates",
+    "ObservableInclude",
+    "Tick",
+    "Not"
 ]

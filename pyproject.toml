@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "mimiqcircuits"
-version = "0.10.0"
+version = "0.13.1"
 description = ""
-authors = ["QPerfect <guido.masella@qperfect.io>"]
+authors = ["Guido Masella <guido.masella@qperfect.io>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -12,8 +12,10 @@ mimiqlink = { git = "https://github.com/qperfect-io/mimiqlink-python.git" }
 bitarray = "^2.9"
 symengine = "^0.11"
 sympy = "^1.12"
-protobuf = "^5.26"
-matplotlib = "^3.8"
+protobuf = ">=5.26"
+matplotlib = ">=3.8"
+scipy = "^1.13"
+recommonmark = "^0.7.1"
 
 [tool.poetry.extras]
 visualization = ["matplotlib"]

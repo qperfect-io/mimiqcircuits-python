@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,6 +52,7 @@ class QFT(mcg.Gate):
         <BLANKLINE>
 
     """
+
     _name = "QFT"
     _num_qregs = 1
     _num_qubits = None
@@ -75,22 +77,22 @@ class QFT(mcg.Gate):
 
     def _matrix(self):
         raise NotImplementedError(
-            "Matrix representation for Quantum Fourier Transform is not implemented.")
+            "Matrix representation for Quantum Fourier Transform is not implemented."
+        )
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, _):
         q = qubits[::-1]
 
         circ.push(GateH(), q[0])
 
         for i in range(1, self.num_qubits):
-
             for j in range(i):
-                angle = pi / (2.0**(i-j))
+                angle = pi / (2.0 ** (i - j))
                 circ.push(GateCP(angle), q[i], q[j])
 
             circ.push(GateH(), q[i])
-            
+
         return circ
 
 
-__all__ = ['QFT']
+__all__ = ["QFT"]

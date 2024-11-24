@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,13 +47,13 @@ def cx_decompose(circ, controls, target, ancillas):
         # Decomposition according to Lemma 7.2 of [1]
         circ1 = mc.Circuit()
 
-        for i in range(nctrl-3):
-            circ1.push(mc.GateCCX(), controls[-(i+2)],
-                       ancillas[-(i+2)], ancillas[-(i+1)])
+        for i in range(nctrl - 3):
+            circ1.push(
+                mc.GateCCX(), controls[-(i + 2)], ancillas[-(i + 2)], ancillas[-(i + 1)]
+            )
 
         circ2 = mc.Circuit()
-        circ2.push(mc.GateCCX(), controls[0],
-                   controls[1], ancillas[-(nctrl - 3)])
+        circ2.push(mc.GateCCX(), controls[0], controls[1], ancillas[-(nctrl - 3)])
 
         circ3 = mc.Circuit()
         circ3 = circ3.push(mc.GateCCX(), controls[-1], ancillas[-1], target)
@@ -95,7 +96,7 @@ def cx_decompose(circ, controls, target, ancillas):
 def control_recursive_decompose(circ, operation, controls, target):
     N = len(controls)
 
-    V = operation.power(1/2)
+    V = operation.power(1 / 2)
     Vdag = V.inverse()
 
     circ.push(mc.Control(1, V), controls[-1], target)
@@ -111,7 +112,7 @@ def control_recursive_decompose(circ, operation, controls, target):
     # circ.push(mc.Control(N - 1, GateX()), *controls)
 
     if N == 2:
-        circ.push(mc.Control(N-1, V), controls[:-1], target)
+        circ.push(mc.Control(N - 1, V), controls[:-1], target)
     else:
         control_recursive_decompose(circ, V, controls[:-1], target)
 

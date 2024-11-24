@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,13 +55,17 @@ class Instruction:
     _operation = None
     _qubits = None
     _bits = None
+    _zvars = None
 
-    def __init__(self, operation, qubits=None, bits=None):
+    def __init__(self, operation, qubits=None, bits=None, zvars=None):
         if qubits is None:
             qubits = tuple()
 
         if bits is None:
             bits = tuple()
+
+        if zvars is None:
+            zvars = tuple()
 
         if not isinstance(qubits, tuple):
             raise TypeError(
@@ -70,6 +75,11 @@ class Instruction:
         if not isinstance(bits, tuple):
             raise TypeError(
                 f"Target bits should be given in a tuple of integers. Given {bits} of type {type(bits)}."
+            )
+
+        if not isinstance(zvars, tuple):
+            raise TypeError(
+                f"Target z-variables should be given in a tuple of integers. Given {zvars} of type {type(zvars)}."
             )
 
         if not isinstance(operation, Operation):
@@ -83,6 +93,9 @@ class Instruction:
         if not _allunique(bits):
             raise ValueError("Duplicated classical bit target in instruction")
 
+        if not _allunique(zvars):
+            raise ValueError("Duplicated z-variables target in instruction")
+
         for qi in qubits:
             if qi < 0:
                 raise ValueError("Qubit target index cannot be negative")
@@ -90,6 +103,10 @@ class Instruction:
         for bi in bits:
             if bi < 0:
                 raise ValueError("Bit target index cannot be negative")
+
+        for z in zvars:
+            if z < 0:
+                raise ValueError("Z-variable target index cannot be negative")
 
         if len(qubits) != operation.num_qubits:
             raise ValueError(
@@ -101,9 +118,15 @@ class Instruction:
                 f"Wrong number of target bits for operation {operation} wanted  {operation.num_bits}, given {len(bits)}"
             )
 
+        if len(zvars) != operation.num_zvars:
+            raise ValueError(
+                f"Wrong number of z-targets for operation {operation} wanted  {operation.num_zvars}, given {len(zvars)}"
+            )
+
         self._operation = operation
         self._qubits = qubits
         self._bits = bits
+        self._zvars = zvars
 
     @property
     def operation(self):
@@ -129,6 +152,14 @@ class Instruction:
     def bits(self, _):
         raise AttributeError("bits is a read-only attribute")
 
+    @property
+    def zvars(self):
+        return self._zvars
+
+    @zvars.setter
+    def zvars(self, _):
+        raise AttributeError("zvars is a read-only attribute")
+
     def __repr__(self):
         return str(self)
 
@@ -140,6 +171,18 @@ class Instruction:
 
     def get_bits(self):
         return self._bits
+
+    def get_zvars(self):
+        return self._zvars
+
+    def num_qubits(self):
+        return len(self._qubits)
+
+    def num_bits(self):
+        return len(self._bits)
+
+    def num_zvars(self):
+        return len(self._zvars)
 
     def get_operation(self):
         return self.operation
@@ -154,6 +197,7 @@ class Instruction:
             (self.operation == other.operation)
             and (self.qubits == other.qubits)
             and (self.bits == other.bits)
+            and (self.zvars == other.zvars)
         )
 
     def inverse(self):
@@ -166,22 +210,25 @@ class Instruction:
         return copy.deepcopy(self)
 
     def _decompose(self, circ):
-        return self.operation._decompose(circ, self.qubits, self.bits)
+        return self.operation._decompose(circ, self.qubits, self.bits, self.zvars)
 
     def decompose(self):
         return self._decompose(mc.Circuit())
 
     def evaluate(self, d):
-        return Instruction(self.operation.evaluate(d), self.qubits, self.bits)
+        return Instruction(
+            self.operation.evaluate(d), self.qubits, self.bits, self.zvars
+        )
 
     def __str__(self):
         compact = False
         op = str(self.operation)
         nq = len(self.qubits)
         nb = len(self.bits)
+        nz = len(self.zvars)
         space = "" if compact else " "
         targets = ""
-        if nq != 0 or nb != 0:
+        if nq != 0 or nb != 0 or nz != 0:
             targets = f"{space}@{space}"
 
             if nq != 0:
@@ -189,21 +236,34 @@ class Instruction:
                     self.get_qubits(), np.cumsum(self.operation.qregsizes)
                 )
                 q_targets = f",{space}".join(
-                    f"q{_string_with_square(_find_unit_range(x),',')}"
+                    f"q{_string_with_square(_find_unit_range(x), ',')}"
                     for x in q_partition
                 )
                 targets += f",".join(q_targets.split(","))
 
             if nb != 0:
+                if nq != 0:  # If qubits exist, add a separator before classical bits
+                    targets += f", "
                 c_partition = _partition(
                     self.get_bits(), np.cumsum(self.operation.cregsizes)
                 )
-                c_targets = f", {space}".join(
-                    f", c{_string_with_square(x, ',')}" for x in c_partition
+                c_targets = "".join(  # Concatenate classical bits without extra commas
+                    f"c{_string_with_square(x, ',')}" for x in c_partition
                 )
                 targets += c_targets
 
-            return f"{op}{targets}"
+            if nz != 0:
+                if nq != 0 or nb != 0:  # Add a separator before z-vars only if qubits or bits exist
+                    targets += f", "
+                z_partition = _partition(
+                    self.get_zvars(), np.cumsum(self.operation.zregsizes)
+                )
+                z_targets = "".join(  # Concatenate z-vars without extra commas
+                    f"z{_string_with_square(x, ',')}" for x in z_partition
+                )
+                targets += z_targets
+
+        return f"{op}{targets}"
 
 
 def _partition(arr, indices):

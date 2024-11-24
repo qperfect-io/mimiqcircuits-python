@@ -21,7 +21,7 @@ def test_inverse_str():
     # Test the string representation of the Inverse operation
     op = mc.GateX()
     inverse_op = mc.Inverse(op)
-    assert str(inverse_op) == f'{str(op)}†'
+    assert str(inverse_op) == f"{str(op)}†"
 
 
 def test_inverse_inverse():

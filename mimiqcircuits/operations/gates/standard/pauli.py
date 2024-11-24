@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,7 +84,7 @@ class GateX(mcg.Gate):
     def _matrix(self):
         return Matrix([[0, 1], [1, 0]])
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(GateU(pi, 0, pi), q)
         return circ
@@ -136,9 +137,9 @@ class GateY(mcg.Gate):
     def _matrix(self):
         return Matrix([[0, -I], [I, 0]])
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(GateU(pi, pi/2, pi/2), q)
+        circ.push(GateU(pi, pi / 2, pi / 2), q)
         return circ
 
 
@@ -207,7 +208,7 @@ class GateZ(mcg.Gate):
     def _matrix(self):
         return Matrix([[1, 0], [0, -1]])
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         circ.push(GateP(pi), q)
         return circ

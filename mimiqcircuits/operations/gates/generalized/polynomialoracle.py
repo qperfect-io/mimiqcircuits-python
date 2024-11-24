@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,6 +45,7 @@ class PolynomialOracle(mc.Gate):
         └── PolynomialOracle(1, 2, 3, 4) @ q[1,2,3,4,5], q[6,7,8,9,10]
         <BLANKLINE>
     """
+
     _name = "PolynomialOracle"
     _num_qregs = 2
     _num_qubits = None
@@ -75,13 +77,14 @@ class PolynomialOracle(mc.Gate):
 
     def _matrix(self):
         raise NotImplementedError(
-            "Matrix representation for PolynomialOracle is not implemented.")
+            "Matrix representation for PolynomialOracle is not implemented."
+        )
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, _):
         return circ.push(self, *qubits)
 
     def __str__(self):
-        return f'PolynomialOracle{self.a, self.b, self.c, self.d}'
+        return f"PolynomialOracle{self.a, self.b, self.c, self.d}"
 
 
-__all__ = ['PolynomialOracle']
+__all__ = ["PolynomialOracle"]

@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,18 +58,19 @@ class GateP(mc.Gate):
         └── U(0, 0, lambda, 0.0) @ q[0]
         <BLANKLINE>
     """
-    _name = 'P'
+
+    _name = "P"
 
     _num_qubits = 1
     _qregsizes = [1]
 
-    _parnames = ('lmbda',)
+    _parnames = ("lmbda",)
 
     def __init__(self, lmbda):
         self.lmbda = lmbda
 
     def _matrix(self):
-        return (pmatrix(self.lmbda))
+        return pmatrix(self.lmbda)
 
     def inverse(self):
         return GateP(-self.lmbda)
@@ -77,9 +79,18 @@ class GateP(mc.Gate):
         return GateP(self.lmbda * p)
 
     def _control(self, n):
-        return control_one_defined(n, self, mc.GateCP(self.lmbda), mc.GateCCP(self.lmbda))
+        return control_one_defined(
+            n, self, mc.GateCP(self.lmbda), mc.GateCCP(self.lmbda)
+        )
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         q = qubits
-        circ.push(mc.GateU(0, 0, self.lmbda), q)
+        circ.push(
+            mc.GateU(
+                0,
+                0,
+                self.lmbda,
+            ),
+            q,
+        )
         return circ

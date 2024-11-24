@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,13 +17,19 @@
 
 import numpy as np
 from functools import reduce
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.gate import Gate
 import symengine as se
 import sympy as sp
 import mimiqcircuits.lazy as lz
+import mimiqcircuits as mc
 
 
-class Parallel(mc.Operation):
+def to_superscript(number):
+    superscript_map = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+    return str(number).translate(superscript_map)
+
+
+class Parallel(Gate):
     """Parallel operation
 
     This is a composite operation that applies multiple gates in parallel to the circuit at once.
@@ -32,7 +39,7 @@ class Parallel(mc.Operation):
         >>> c= Circuit()
         >>> c.push(Parallel(3,GateX()),1,2,3)
         4-qubit circuit with 1 instructions:
-        └── Parallel(3, X) @ q[1], q[2], q[3]
+        └── ⨷ ³ X @ q[1], q[2], q[3]
         <BLANKLINE>
     """
 
@@ -42,12 +49,9 @@ class Parallel(mc.Operation):
     _num_repeats = None
     _op = None
 
-    def __init__(self, num_repeats, op: mc.Operation):
-        if not isinstance(op, mc.Operation):
-            raise ValueError("op must be an Operation")
-
-        if isinstance(op, (mc.Barrier, mc.Reset, mc.Measure)):
-            raise TypeError(f"{op.__class__.__name__} cannot be Paralleled operation.")
+    def __init__(self, num_repeats, op: Gate):
+        if not isinstance(op, (Gate)):
+            raise TypeError(f"{op.__class__.__name__} cannot be Paralleled.")
 
         if self.num_bits != 0:
             raise ValueError("Parallel operations cannot act on classical bits.")
@@ -64,9 +68,9 @@ class Parallel(mc.Operation):
         self._qregsizes = [1] * self._num_qubits
         self._num_qregs = self._num_qubits
 
-    def matrix(self):
-        op_matrix = se.Matrix(sp.simplify(sp.Matrix(self.op.matrix()).evalf()))
-        return se.Matrix(reduce(np.kron, [op_matrix] * (self._num_repeats)).tolist())
+    def _matrix(self):
+        op_matrix = self.op.matrix()
+        return reduce(np.kron, [op_matrix] * (self._num_repeats))
 
     @property
     def num_repeats(self):
@@ -120,7 +124,7 @@ class Parallel(mc.Operation):
         else:
             raise ValueError("Invalid number of arguments.")
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         nq = self.op.num_qubits
         for i in range(self.num_repeats):
             q = [qubits[j] for j in range(i * nq, (i + 1) * nq)]
@@ -128,7 +132,8 @@ class Parallel(mc.Operation):
         return circ
 
     def __str__(self):
-        return f"Parallel({self.num_repeats}, {self.op})"
+        tail = f"⨷ {to_superscript(self.num_repeats)}"
+        return f"{tail} {self.op}"
 
     def evaluate(self, d):
         repeat = self.num_repeats

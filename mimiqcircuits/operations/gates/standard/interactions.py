@@ -1,5 +1,6 @@
 #
-# Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
+# Copyright © 2032-2024 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -67,15 +68,15 @@ class GateRXX(mc.Gate):
         └── H @ q[0]
         <BLANKLINE>
     """
-    _name = 'RXX'
+
+    _name = "RXX"
 
     _num_qubits = 2
     _qregsizes = [2]
 
-    _parnames = ('theta',)
+    _parnames = ("theta",)
 
     def __init__(self, theta):
-
         self.theta = theta
 
     def _matrix(self):
@@ -83,15 +84,19 @@ class GateRXX(mc.Gate):
         cos2 = cos(theta / 2)
         sin2 = sin(theta / 2)
 
-        return (Matrix([[cos2, 0, 0, -I * sin2],
-                        [0, cos2, -I * sin2, 0],
-                        [0, -I * sin2, cos2, 0],
-                        [-I * sin2, 0, 0, cos2]]))
+        return Matrix(
+            [
+                [cos2, 0, 0, -I * sin2],
+                [0, cos2, -I * sin2, 0],
+                [0, -I * sin2, cos2, 0],
+                [-I * sin2, 0, 0, cos2],
+            ]
+        )
 
     def inverse(self):
         return GateRXX(-self.theta)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         a, b = range(self.num_qubits)
 
         circ.push(mc.GateH(), a)
@@ -152,12 +157,13 @@ class GateRYY(mc.Gate):
         └── RX((-1/2)*pi) @ q[1]
         <BLANKLINE>
     """
-    _name = 'RYY'
+
+    _name = "RYY"
 
     _num_qubits = 2
     _qregsizes = [2]
 
-    _parnames = ('theta',)
+    _parnames = ("theta",)
 
     def __init__(self, theta):
         self.theta = theta
@@ -167,24 +173,28 @@ class GateRYY(mc.Gate):
         cos2 = cos(theta / 2)
         sin2 = sin(theta / 2)
 
-        return Matrix([[cos2, 0, 0, I * sin2],
-                       [0, cos2, -I * sin2, 0],
-                       [0, -I * sin2, cos2, 0],
-                       [I * sin2, 0, 0, cos2]])
+        return Matrix(
+            [
+                [cos2, 0, 0, I * sin2],
+                [0, cos2, -I * sin2, 0],
+                [0, -I * sin2, cos2, 0],
+                [I * sin2, 0, 0, cos2],
+            ]
+        )
 
     def inverse(self):
         return GateRYY(-self.theta)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         a, b = range(self.num_qubits)
 
-        circ.push(mc.GateRX(pi/2), a)
-        circ.push(mc.GateRX(pi/2), b)
+        circ.push(mc.GateRX(pi / 2), a)
+        circ.push(mc.GateRX(pi / 2), b)
         circ.push(mc.GateCX(), a, b)
         circ.push(mc.GateRZ(self.theta), b)
         circ.push(mc.GateCX(), a, b)
-        circ.push(mc.GateRX(-pi/2), a)
-        circ.push(mc.GateRX(-pi/2), b)
+        circ.push(mc.GateRX(-pi / 2), a)
+        circ.push(mc.GateRX(-pi / 2), b)
 
         return circ
 
@@ -233,24 +243,29 @@ class GateRZZ(mc.Gate):
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
+
     _num_qubits = 2
-    _name = 'RZZ'
-    _parnames = ('theta',)
+    _name = "RZZ"
+    _parnames = ("theta",)
     _qregsizes = [2]
 
     def __init__(self, theta):
         self.theta = theta
 
     def _matrix(self):
-        return Matrix([[cis(-self.theta / 2), 0, 0, 0],
-                       [0, cis(self.theta / 2), 0, 0],
-                       [0, 0, cis(self.theta / 2), 0],
-                       [0, 0, 0, cis(-self.theta / 2)]])
+        return Matrix(
+            [
+                [cis(-self.theta / 2), 0, 0, 0],
+                [0, cis(self.theta / 2), 0, 0],
+                [0, 0, cis(self.theta / 2), 0],
+                [0, 0, 0, cis(-self.theta / 2)],
+            ]
+        )
 
     def inverse(self):
         return GateRZZ(-self.theta)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         a, b = qubits
 
         circ.push(mc.GateCX(), a, b)
@@ -305,9 +320,10 @@ class GateRZX(mc.Gate):
         └── H @ q[1]
         <BLANKLINE>
     """
+
     _num_qubits = 2
-    _name = 'RZX'
-    _parnames = ('theta',)
+    _name = "RZX"
+    _parnames = ("theta",)
     _qregsizes = [2]
 
     def __init__(self, theta):
@@ -318,17 +334,19 @@ class GateRZX(mc.Gate):
         cos2 = cos(theta / 2)
         sin2 = sin(theta / 2)
 
-        return Matrix([
-            [cos2, -I * sin2, 0, 0],
-            [-I * sin2, cos2, 0, 0],
-            [0, 0, cos2, I * sin2],
-            [0, 0, I * sin2, cos2]
-        ])
+        return Matrix(
+            [
+                [cos2, -I * sin2, 0, 0],
+                [-I * sin2, cos2, 0, 0],
+                [0, 0, cos2, I * sin2],
+                [0, 0, I * sin2, cos2],
+            ]
+        )
 
     def inverse(self):
         return GateRZX(-self.theta)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         a, b = range(self.num_qubits)
 
         circ.push(mc.GateH(), b)
@@ -396,9 +414,10 @@ class GateXXplusYY(mc.Gate):
         └── RZ(-beta) @ q[0]
         <BLANKLINE>
     """
+
     _num_qubits = 2
-    _name = 'XXplusYY'
-    _parnames = ('theta', 'beta')
+    _name = "XXplusYY"
+    _parnames = ("theta", "beta")
     _qregsizes = [2]
 
     def __init__(self, theta, beta):
@@ -411,32 +430,34 @@ class GateXXplusYY(mc.Gate):
         cos2 = cos(theta / 2)
         sin2 = sin(theta / 2)
 
-        return Matrix([
-            [1, 0, 0, 0],
-            [0, cos2, -I * sin2 * cis(beta), 0],
-            [0, -I * sin2 * cis(-beta), cos2, 0],
-            [0, 0, 0, 1]
-        ])
+        return Matrix(
+            [
+                [1, 0, 0, 0],
+                [0, cos2, -I * sin2 * cis(beta), 0],
+                [0, -I * sin2 * cis(-beta), cos2, 0],
+                [0, 0, 0, 1],
+            ]
+        )
 
     def inverse(self):
         return GateXXplusYY(-self.theta, self.beta)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         a, b = range(self.num_qubits)
 
         circ.push(mc.GateRZ(self.beta), a)
-        circ.push(mc.GateRZ(-pi/2), b)
+        circ.push(mc.GateRZ(-pi / 2), b)
         circ.push(mc.GateSX(), b)
-        circ.push(mc.GateRZ(pi/2), b)
+        circ.push(mc.GateRZ(pi / 2), b)
         circ.push(mc.GateS(), a)
         circ.push(mc.GateCX(), b, a)
-        circ.push(mc.GateRY(-self.theta/2), b)
-        circ.push(mc.GateRY(-self.theta/2), a)
+        circ.push(mc.GateRY(-self.theta / 2), b)
+        circ.push(mc.GateRY(-self.theta / 2), a)
         circ.push(mc.GateCX(), b, a)
         circ.push(mc.GateSDG(), a)
-        circ.push(mc.GateRZ(-pi/2), b)
+        circ.push(mc.GateRZ(-pi / 2), b)
         circ.push(mc.GateSXDG(), b)
-        circ.push(mc.GateRZ(pi/2), b)
+        circ.push(mc.GateRZ(pi / 2), b)
         circ.push(mc.GateRZ(-self.beta), a)
 
         return circ
@@ -498,9 +519,10 @@ class GateXXminusYY(mc.Gate):
         └── RZ(beta) @ q[1]
         <BLANKLINE>
     """
+
     _num_qubits = 2
-    _name = 'XXminusYY'
-    _parnames = ('theta', 'beta')
+    _name = "XXminusYY"
+    _parnames = ("theta", "beta")
     _qregsizes = [2]
 
     def __init__(self, theta, beta):
@@ -513,32 +535,34 @@ class GateXXminusYY(mc.Gate):
         cos2 = cos(theta / 2)
         sin2 = sin(theta / 2)
 
-        return Matrix([
-            [cos2, 0, 0, -I * sin2 * cis(-beta)],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [-I * sin2 * cis(beta), 0, 0, cos2]
-        ])
+        return Matrix(
+            [
+                [cos2, 0, 0, -I * sin2 * cis(-beta)],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [-I * sin2 * cis(beta), 0, 0, cos2],
+            ]
+        )
 
     def inverse(self):
         return GateXXminusYY(-self.theta, self.beta)
 
-    def _decompose(self, circ, qubits, bits):
+    def _decompose(self, circ, qubits, bits, zvars):
         a, b = range(self.num_qubits)
 
         circ.push(mc.GateRZ(-self.beta), b)
-        circ.push(mc.GateRZ(-pi/2), a)
+        circ.push(mc.GateRZ(-pi / 2), a)
         circ.push(mc.GateSX(), a)
-        circ.push(mc.GateRZ(pi/2), a)
+        circ.push(mc.GateRZ(pi / 2), a)
         circ.push(mc.GateS(), b)
         circ.push(mc.GateCX(), a, b)
-        circ.push(mc.GateRY(self.theta/2), a)
-        circ.push(mc.GateRY(-self.theta/2), b)
+        circ.push(mc.GateRY(self.theta / 2), a)
+        circ.push(mc.GateRY(-self.theta / 2), b)
         circ.push(mc.GateCX(), a, b)
         circ.push(mc.GateSDG(), b)
-        circ.push(mc.GateRZ(-pi/2), a)
+        circ.push(mc.GateRZ(-pi / 2), a)
         circ.push(mc.GateSXDG(), a)
-        circ.push(mc.GateRZ(pi/2), a)
+        circ.push(mc.GateRZ(pi / 2), a)
         circ.push(mc.GateRZ(self.beta), b)
 
         return circ

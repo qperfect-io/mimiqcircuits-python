@@ -13,7 +13,7 @@ def test_parallel_inverse():
     parallel_gate = mc.Parallel(3, mc.GateX())
     inverse = parallel_gate.inverse()
     assert inverse.num_repeats == parallel_gate.num_repeats
-    assert str(inverse.op) == 'X'  # Inverse of GateX() is itself
+    assert str(inverse.op) == "X"  # Inverse of GateX() is itself
 
 
 def test_parallel_circuit_instruction():
