@@ -22,11 +22,11 @@ Protobuf
 Export Protobuf files from MIMIQ
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After building a circuit in MIMIQ you can export it into a Protobuf format using the :func:`~mimiqcircuits.saveproto` function. You need to give it two arguments, the name of the file to create (`.pb` format) and the circuit to save.
+After building a circuit in MIMIQ you can export it into a Protobuf format using the :func:`~mimiqcircuits.Circuit.saveproto` function. You need to give it two arguments, the name of the file to create (`.pb` format) and the circuit to save.
 
 .. doctest:: import_export
 
-    save_proto("my_circuit.pb")
+    results.saveproto("my_circuit.pb")
 
 
 The same method allows you to save your simulation results in a Protobuf file.
@@ -36,7 +36,7 @@ The same method allows you to save your simulation results in a Protobuf file.
     # get the results
     results = conn.get_results(job)
     # save the results
-    save_proto("my_results.pb")
+    results.saveproto("my_results.pb")
 
 .. note::
 
@@ -50,7 +50,7 @@ The same method allows you to save your simulation results in a Protobuf file.
 Import Protobuf file to MIMIQ
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-MIMIQ allows you to import Protobuf circuit files using the :func:`~mimiqcircuits.load_proto` function and import Protobuf results file using :func:`~mimiqcircuits.load_results`.
+MIMIQ allows you to import Protobuf circuit files using the :func:`~mimiqcircuits.Circuit.loadproto` function and import Protobuf results file using :func:`~mimiqcircuits.QCSResults.loadproto`.
 With this function you can get previously saved circuit or get previous simulation results.
 You need to give this function the name of the file to parse and the type of object to parse.
 
@@ -58,13 +58,12 @@ You need to give this function the name of the file to parse and the type of obj
 
 
     # Import circuit from Protobuf to MIMIQ
-    circuit = Circuit()
-    circuit = circuit.load_proto("my_circuit.pb") # Do not instatiate the Circuit
+    circuit = Circuit.loadproto("my_circuit.pb")
 
     # Import results from Protobuf to MIMIQ
-    results = load_results("my_results.pb")
+    results = QCSResults.loadproto("my_results.pb")
 
-The circuit imported with :meth:`~mimiqcircuits.Circuit.load_proto` can be manipulated like any other circuit on MIMIQ to add or insert gates, see :doc:`circuit <circuits>` page.
+The circuit imported with :meth:`~mimiqcircuits.Circuit.loadproto` can be manipulated like any other circuit on MIMIQ to add or insert gates, see :doc:`circuit <circuits>` page.
 
 OpenQASM
 -----------------

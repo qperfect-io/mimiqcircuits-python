@@ -382,11 +382,13 @@ class Circuit:
             raise (TypeError("Non Operation object passed to push."))
 
         # Check if the operation is an abstract operator but not a gate
-        if isinstance(operation, mc.AbstractOperator) and not isinstance(operation, mc.Gate):
+        if isinstance(operation, mc.AbstractOperator) and not isinstance(
+            operation, mc.Gate
+        ):
             raise ValueError(
                 f"Cannot add an abstract operator: {type(operation).__name__} that is not a Gate to the circuit."
             )
-        
+
         N = operation.num_qubits
         M = operation.num_bits
         Z = operation.num_zvars
@@ -518,7 +520,9 @@ class Circuit:
             self.push(op, *regs)
         elif isinstance(op, mc.Operation):
             if isinstance(op, mc.AbstractOperator) and not isinstance(op, mc.Gate):
-                raise ValueError("Cannot emplace an abstract operator that is not a Gate into the circuit.")
+                raise ValueError(
+                    "Cannot emplace an abstract operator that is not a Gate into the circuit."
+                )
             self._emplace_operation(op, regs)
         elif isinstance(op, type) and issubclass(op, mc.Operation):
             self._emplace_operation(op, regs)
@@ -590,11 +594,14 @@ class Circuit:
             else:
                 if not isinstance(operation, mc.Operation):
                     raise TypeError("Non Operation object passed to push.")
-                
-                # Check if the operation is an abstract operator but not a gate
-                if isinstance(operation, mc.AbstractOperator) and not isinstance(operation, mc.Gate):
-                    raise ValueError("Cannot add an abstract operator that is not a Gate to the circuit.")
 
+                # Check if the operation is an abstract operator but not a gate
+                if isinstance(operation, mc.AbstractOperator) and not isinstance(
+                    operation, mc.Gate
+                ):
+                    raise ValueError(
+                        "Cannot add an abstract operator that is not a Gate to the circuit."
+                    )
 
                 N = operation.num_qubits
                 M = operation.num_bits
@@ -798,7 +805,7 @@ class Circuit:
 
         return Circuit(instructions=selected_instructions)
 
-    def saveproto(self, filename):
+    def saveproto(self, file):
         """
         Saves the circuit as a protobuf (binary) file.
 
@@ -849,14 +856,20 @@ class Circuit:
                     c.saveproto("example.pb")
                     c.loadproto("example.pb")
         """
-        from mimiqcircuits.proto import circuit_pb2
         from mimiqcircuits.proto.circuitproto import toproto_circuit
 
-        with open(filename, "wb") as f:
-            return f.write(toproto_circuit(self).SerializeToString())
+        if isinstance(file, str):
+            with open(file, "wb") as f:
+                return f.write(toproto_circuit(self).SerializeToString())
+        elif hasattr(file, "write"):
+            return file.write(toproto_circuit(self).SerializeToString())
+        else:
+            raise ValueError(
+                "Invalid file object. Sould be a filename of a file-like object"
+            )
 
     @staticmethod
-    def loadproto(filename):
+    def loadproto(file):
         """
         Loads a circuit from a protobuf (binary) file.
 
@@ -875,10 +888,19 @@ class Circuit:
         from mimiqcircuits.proto import circuit_pb2
         from mimiqcircuits.proto.circuitproto import fromproto_circuit
 
-        with open(filename, "rb") as f:
+        if isinstance(file, str):
+            with open(file, "rb") as f:
+                circuit_proto = circuit_pb2.Circuit()
+                circuit_proto.ParseFromString(f.read())
+                return fromproto_circuit(circuit_proto)
+        elif hasattr(file, "read"):
             circuit_proto = circuit_pb2.Circuit()
-            circuit_proto.ParseFromString(f.read())
+            circuit_proto.ParseFromString(file.read())
             return fromproto_circuit(circuit_proto)
+        else:
+            raise ValueError(
+                "Invalid file object. Sould be a filename of a file-like object"
+            )
 
     def draw(self):
         """
@@ -1426,120 +1448,120 @@ class Circuit:
 
     def sample_mixedunitaries(self, rng=None, ids=False):
         """
-        sample_mixedunitaries(rng=None, ids=False)
+            sample_mixedunitaries(rng=None, ids=False)
 
-    Samples one unitary gate for each mixed unitary Kraus channel in the circuit.
+        Samples one unitary gate for each mixed unitary Kraus channel in the circuit.
 
-    This is possible because for mixed unitary noise channels, the probabilities of each
-    Kraus operator are fixed (state-independent).
+        This is possible because for mixed unitary noise channels, the probabilities of each
+        Kraus operator are fixed (state-independent).
 
-    Note: This function is internally called (before applying any gate) when executing
-    a circuit with noise using trajectories. It can also be used to generate samples
-    of circuits without running them.
+        Note: This function is internally called (before applying any gate) when executing
+        a circuit with noise using trajectories. It can also be used to generate samples
+        of circuits without running them.
 
-    See also:
-        - :func:`krauschannel.ismixedunitary`
-        - :class:`MixedUnitary`
+        See also:
+            - :func:`krauschannel.ismixedunitary`
+            - :class:`MixedUnitary`
 
-    Args:
-        rng (optional): Random number generator. If not provided, Python's default
-            random number generator is used.
-        ids (optional): Boolean, default=False. Determines whether to include identity
-            Kraus operators in the sampled circuit. If True, identity gates are added
-            to the circuit; otherwise, they are omitted. Usually, most selected Kraus
-            operators will be identity gates.
+        Args:
+            rng (optional): Random number generator. If not provided, Python's default
+                random number generator is used.
+            ids (optional): Boolean, default=False. Determines whether to include identity
+                Kraus operators in the sampled circuit. If True, identity gates are added
+                to the circuit; otherwise, they are omitted. Usually, most selected Kraus
+                operators will be identity gates.
 
-    Returns:
-        Circuit: A copy of the circuit with every mixed unitary Kraus channel replaced
-        by one of the unitary gates of the channel. Identity gates are omitted unless
-        `ids=True`.
+        Returns:
+            Circuit: A copy of the circuit with every mixed unitary Kraus channel replaced
+            by one of the unitary gates of the channel. Identity gates are omitted unless
+            `ids=True`.
 
-    Examples:
-        Gates and non-mixed-unitary Kraus channels remain unchanged:
+        Examples:
+            Gates and non-mixed-unitary Kraus channels remain unchanged:
 
-        >>> from mimiqcircuits import *
-        >>> c = Circuit()
-        >>> c.push(GateH(), [1, 2, 3])
-        4-qubit circuit with 3 instructions:
-        ├── H @ q[1]
-        ├── H @ q[2]
-        └── H @ q[3]
-        <BLANKLINE>
-        >>> c.push(Depolarizing1(0.5), [1, 2, 3])
-        4-qubit circuit with 6 instructions:
-        ├── H @ q[1]
-        ├── H @ q[2]
-        ├── H @ q[3]
-        ├── Depolarizing(0.5) @ q[1]
-        ├── Depolarizing(0.5) @ q[2]
-        └── Depolarizing(0.5) @ q[3]
-        <BLANKLINE>
-        >>> c.push(AmplitudeDamping(0.5), [1, 2, 3])
-        4-qubit circuit with 9 instructions:
-        ├── H @ q[1]
-        ├── H @ q[2]
-        ├── H @ q[3]
-        ├── Depolarizing(0.5) @ q[1]
-        ├── Depolarizing(0.5) @ q[2]
-        ├── Depolarizing(0.5) @ q[3]
-        ├── AmplitudeDamping(0.5) @ q[1]
-        ├── AmplitudeDamping(0.5) @ q[2]
-        └── AmplitudeDamping(0.5) @ q[3]
-        <BLANKLINE>
-        
-        >>> rng = random.Random(42)
-        
-        >>> new_circuit = c.sample_mixedunitaries(rng=rng, ids=True)
-        >>> print(new_circuit)
-        4-qubit circuit with 9 instructions:
-        ├── H @ q[1]
-        ├── H @ q[2]
-        ├── H @ q[3]
-        ├── X @ q[1]
-        ├── I @ q[2]
-        ├── I @ q[3]
-        ├── AmplitudeDamping(0.5) @ q[1]
-        ├── AmplitudeDamping(0.5) @ q[2]
-        └── AmplitudeDamping(0.5) @ q[3]
+            >>> from mimiqcircuits import *
+            >>> c = Circuit()
+            >>> c.push(GateH(), [1, 2, 3])
+            4-qubit circuit with 3 instructions:
+            ├── H @ q[1]
+            ├── H @ q[2]
+            └── H @ q[3]
+            <BLANKLINE>
+            >>> c.push(Depolarizing1(0.5), [1, 2, 3])
+            4-qubit circuit with 6 instructions:
+            ├── H @ q[1]
+            ├── H @ q[2]
+            ├── H @ q[3]
+            ├── Depolarizing(0.5) @ q[1]
+            ├── Depolarizing(0.5) @ q[2]
+            └── Depolarizing(0.5) @ q[3]
+            <BLANKLINE>
+            >>> c.push(AmplitudeDamping(0.5), [1, 2, 3])
+            4-qubit circuit with 9 instructions:
+            ├── H @ q[1]
+            ├── H @ q[2]
+            ├── H @ q[3]
+            ├── Depolarizing(0.5) @ q[1]
+            ├── Depolarizing(0.5) @ q[2]
+            ├── Depolarizing(0.5) @ q[3]
+            ├── AmplitudeDamping(0.5) @ q[1]
+            ├── AmplitudeDamping(0.5) @ q[2]
+            └── AmplitudeDamping(0.5) @ q[3]
+            <BLANKLINE>
 
-        By default, identities are not included:
+            >>> rng = random.Random(42)
 
-        >>> new_circuit = c.sample_mixedunitaries(rng=rng)
-        >>> print(new_circuit)
-        4-qubit circuit with 8 instructions:
-        ├── H @ q[1]
-        ├── H @ q[2]
-        ├── H @ q[3]
-        ├── Y @ q[2]
-        ├── Y @ q[3]
-        ├── AmplitudeDamping(0.5) @ q[1]
-        ├── AmplitudeDamping(0.5) @ q[2]
-        └── AmplitudeDamping(0.5) @ q[3]
+            >>> new_circuit = c.sample_mixedunitaries(rng=rng, ids=True)
+            >>> print(new_circuit)
+            4-qubit circuit with 9 instructions:
+            ├── H @ q[1]
+            ├── H @ q[2]
+            ├── H @ q[3]
+            ├── X @ q[1]
+            ├── I @ q[2]
+            ├── I @ q[3]
+            ├── AmplitudeDamping(0.5) @ q[1]
+            ├── AmplitudeDamping(0.5) @ q[2]
+            └── AmplitudeDamping(0.5) @ q[3]
 
-        Different calls to the function generate different results:
+            By default, identities are not included:
 
-        >>> new_circuit = c.sample_mixedunitaries(rng=rng)
-        >>> print(new_circuit)
-        4-qubit circuit with 7 instructions:
-        ├── H @ q[1]
-        ├── H @ q[2]
-        ├── H @ q[3]
-        ├── Z @ q[1]
-        ├── AmplitudeDamping(0.5) @ q[1]
-        ├── AmplitudeDamping(0.5) @ q[2]
-        └── AmplitudeDamping(0.5) @ q[3]
+            >>> new_circuit = c.sample_mixedunitaries(rng=rng)
+            >>> print(new_circuit)
+            4-qubit circuit with 8 instructions:
+            ├── H @ q[1]
+            ├── H @ q[2]
+            ├── H @ q[3]
+            ├── Y @ q[2]
+            ├── Y @ q[3]
+            ├── AmplitudeDamping(0.5) @ q[1]
+            ├── AmplitudeDamping(0.5) @ q[2]
+            └── AmplitudeDamping(0.5) @ q[3]
 
-        >>> new_circuit = c.sample_mixedunitaries(rng=rng)
-        >>> print(new_circuit)
-        4-qubit circuit with 7 instructions:
-        ├── H @ q[1]
-        ├── H @ q[2]
-        ├── H @ q[3]
-        ├── X @ q[3]
-        ├── AmplitudeDamping(0.5) @ q[1]
-        ├── AmplitudeDamping(0.5) @ q[2]
-        └── AmplitudeDamping(0.5) @ q[3]
-    """
+            Different calls to the function generate different results:
+
+            >>> new_circuit = c.sample_mixedunitaries(rng=rng)
+            >>> print(new_circuit)
+            4-qubit circuit with 7 instructions:
+            ├── H @ q[1]
+            ├── H @ q[2]
+            ├── H @ q[3]
+            ├── Z @ q[1]
+            ├── AmplitudeDamping(0.5) @ q[1]
+            ├── AmplitudeDamping(0.5) @ q[2]
+            └── AmplitudeDamping(0.5) @ q[3]
+
+            >>> new_circuit = c.sample_mixedunitaries(rng=rng)
+            >>> print(new_circuit)
+            4-qubit circuit with 7 instructions:
+            ├── H @ q[1]
+            ├── H @ q[2]
+            ├── H @ q[3]
+            ├── X @ q[3]
+            ├── AmplitudeDamping(0.5) @ q[1]
+            ├── AmplitudeDamping(0.5) @ q[2]
+            └── AmplitudeDamping(0.5) @ q[3]
+        """
 
         if rng is None:
             rng = random()
@@ -1565,6 +1587,7 @@ class Circuit:
                 scirc.push(inst)
 
         return scirc
+
 
 # export the cirucit classes
 __all__ = ["Instruction", "Circuit"]

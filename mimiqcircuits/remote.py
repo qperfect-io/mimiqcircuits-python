@@ -378,6 +378,11 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             if isinstance(circuits, (Circuit, str)):
                 circuits = [circuits]
 
+            if len(circuits) > 1 and algorithm == "auto":
+                raise ValueError(
+                    "The 'auto' algorithm is not supported in batch mode. Please specify 'mps' or 'statevector' for batch executions."
+                )
+
             if not circuits:
                 raise ValueError("The provided list of circuits is empty. At least one circuit is required.")
 

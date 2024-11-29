@@ -226,7 +226,7 @@ class QCSResults:
 
         return hist
 
-    def saveproto(self, filename):
+    def saveproto(self, file):
         """Save QCSResults object to a Protocol Buffers file.
 
         Examples:
@@ -269,7 +269,7 @@ class QCSResults:
             ├── 1 executions
             ├── 0 amplitudes
             └── 1000 samples
-            
+
             >>> tmpfile = tempfile.NamedTemporaryFile(suffix=".pb", delete=True)
             >>> res.saveproto(tmpfile.name)
             7169
@@ -300,11 +300,14 @@ class QCSResults:
                     res.saveproto("example.pb")
                     res.loadproto("example.pb")
         """
-        with open(filename, "wb") as f:
-            return f.write(toproto_qcsr(self).SerializeToString())
+        if isinstance(file, str):
+            with open(file, "wb") as f:
+                return f.write(toproto_qcsr(self).SerializeToString())
+        elif hasattr(file, "write"):
+            return file.write(toproto_qcsr(self).SerializeToString())
 
     @staticmethod
-    def loadproto(filename):
+    def loadproto(file):
         """Load QCSResults object from a Protocol Buffers file.
 
         The :func:`loadproto` method is a static method and should be called on the class,
@@ -317,19 +320,14 @@ class QCSResults:
         from mimiqcircuits.proto import qcsresults_pb2
 
         qcs_results_proto = qcsresults_pb2.QCSResults()
-        with open(filename, "rb") as f:
-            qcs_results_proto.ParseFromString(f.read())
+
+        if isinstance(file, str):
+            with open(file, "rb") as f:
+                qcs_results_proto.ParseFromString(f.read())
+        elif hasattr(file, "read"):
+            qcs_results_proto.ParseFromString(file.read())
+
         return fromproto_qcsr(qcs_results_proto)
-
-
-def save_results(filename, results):
-    """Saves the results to a ProtoBuf file."""
-    return results.saveproto(filename)
-
-
-def load_results(filename):
-    """Loads QCSResults from a ProtoBuf file."""
-    return QCSResults.loadproto(filename)
 
 
 __all__ = ["QCSResults"]

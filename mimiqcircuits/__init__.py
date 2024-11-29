@@ -29,7 +29,13 @@ from mimiqcircuits.operations.inverse import Inverse
 from mimiqcircuits.operations.power import Power
 from mimiqcircuits.operations.barrier import Barrier
 from mimiqcircuits.operations.ifstatement import IfStatement
-from mimiqcircuits.operations.measure import AbstractMeasurement, Measure, MeasureX, MeasureY, MeasureZ
+from mimiqcircuits.operations.measure import (
+    AbstractMeasurement,
+    Measure,
+    MeasureX,
+    MeasureY,
+    MeasureZ,
+)
 from mimiqcircuits.operations.reset import Reset, ResetX, ResetY, ResetZ
 from mimiqcircuits.operations.gates.gate import Gate
 
@@ -87,8 +93,6 @@ from mimiqcircuits.instruction import Instruction
 
 from mimiqcircuits.remote import MimiqConnection
 
-import mimiqcircuits.matrices as matrices
-
 from mimiqcircuits.gatedecl import GateCall, GateDecl, gatedecl
 
 from mimiqcircuits.lazy import control, parallel, inverse, power, LazyArg, LazyExpr
@@ -97,7 +101,7 @@ from mimiqcircuits.operations.gates.generalized.diffusion import Diffusion
 
 from mimiqcircuits.operations.gates.generalized.polynomialoracle import PolynomialOracle
 
-from mimiqcircuits.qcsresults import QCSResults, save_results, load_results
+from mimiqcircuits.qcsresults import QCSResults
 from mimiqcircuits.canvas import AsciiCanvas, AsciiCircuit
 from mimiqcircuits.operations.operator import AbstractOperator
 from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
@@ -161,12 +165,22 @@ from mimiqcircuits.operations.measurereset import (
 )
 from mimiqcircuits.operations.gates.delay import Delay
 from mimiqcircuits.operations.noisechannel.standards.projectivenoise import (
-    ProjectiveNoise, ProjectiveNoiseX, ProjectiveNoiseY, ProjectiveNoiseZ
+    ProjectiveNoise,
+    ProjectiveNoiseX,
+    ProjectiveNoiseY,
+    ProjectiveNoiseZ,
 )
 from mimiqcircuits.operations.pairmeasure import MeasureXX, MeasureYY, MeasureZZ
 from mimiqcircuits.operations.rescaledgates import RescaledGate
-from mimiqcircuits.operations.annotations import AbstractAnnotation, Detector, QubitCoordinates, ShiftCoordinates, ObservableInclude, Tick
-from mimiqcircuits.classical.classical_not import Not 
+from mimiqcircuits.operations.annotations import (
+    AbstractAnnotation,
+    Detector,
+    QubitCoordinates,
+    ShiftCoordinates,
+    ObservableInclude,
+    Tick,
+)
+from mimiqcircuits.classical.classical_not import Not
 
 
 # Export specific classes, and functions.
@@ -251,7 +265,6 @@ __all__ = [
     "Instruction",
     "GateP",
     "MimiqConnection",
-    "matrices",
     "GateCall",
     "GateDecl",
     "gatedecl",
@@ -264,8 +277,6 @@ __all__ = [
     "Diffusion",
     "PolynomialOracle",
     "QCSResults",
-    "save_results",
-    "load_results",
     "AsciiCanvas",
     "AsciiCircuit",
     "AbstractOperator",
@@ -322,5 +333,5 @@ __all__ = [
     "ShiftCoordinates",
     "ObservableInclude",
     "Tick",
-    "Not"
+    "Not",
 ]
