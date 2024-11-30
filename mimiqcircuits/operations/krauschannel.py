@@ -94,7 +94,7 @@ class krauschannel(Operation):
             ]
         """
         
-        if self.numparams == 0:
+        if self.numparams() == 0:
             return self.krausmatrices()
 
         params = []
@@ -195,7 +195,6 @@ class krauschannel(Operation):
             "Probabilities can only be returned from a mixed unitary channel."
         )
 
-    @property
     def numparams(self):
         return len(self._parnames)
 

@@ -14,10 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
 from mimiqcircuits import Operation
-from mimiqcircuits.canvas import _gate_name_padding
 from mimiqcircuits.operations.operator import AbstractOperator
 import mimiqcircuits as mc
 
@@ -83,10 +80,11 @@ class ExpectationValue(Operation):
 
         if not isinstance(op, AbstractOperator):
             raise TypeError(f"cannot get Expectation Value of {op.__class__.__name__}.")
-        
-        if not isinstance(op, mc.PauliString) and not (1 <= op._num_qubits <= 2):
-            raise ValueError("ExpectationValue only supports 1- or 2-qubit operators unless the operator is a PauliString.")
 
+        if not isinstance(op, mc.PauliString) and not (1 <= op._num_qubits <= 2):
+            raise ValueError(
+                "ExpectationValue only supports 1- or 2-qubit operators unless the operator is a PauliString."
+            )
 
         super().__init__()
 
@@ -132,6 +130,9 @@ class ExpectationValue(Operation):
     def asciiwidth(self, qubits, bits=[], zvars=[]):
         """Calculate the width for ASCII drawing."""
         return len(self.__str__()) + 8
+
+    def get_operation(self):
+        return self.op
 
 
 __all__ = ["ExpectationValue"]

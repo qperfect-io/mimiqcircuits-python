@@ -75,10 +75,6 @@ class Projector0(mc.AbstractOperator):
         return se.Matrix([[self.a, 0], [0, 0]])
 
     @property
-    def numparams(self):
-        return len(self._parnames)
-
-    @property
     def parnames(self):
         return self._parnames
 
@@ -147,10 +143,6 @@ class Projector1(mc.AbstractOperator):
         return se.Matrix([[0, 0], [0, self.a]])
 
     @property
-    def numparams(self):
-        return len(self._parnames)
-
-    @property
     def parnames(self):
         return self._parnames
 
@@ -217,10 +209,6 @@ class ProjectorX0(mc.AbstractOperator):
 
     def _matrix(self):
         return self.a / 2 * se.Matrix([[1, 1], [1, 1]])
-
-    @property
-    def numparams(self):
-        return len(self._parnames)
 
     @property
     def parnames(self):
@@ -292,10 +280,6 @@ class ProjectorX1(mc.AbstractOperator):
         return self.a / 2 * se.Matrix([[1, -1], [-1, 1]])
 
     @property
-    def numparams(self):
-        return len(self._parnames)
-
-    @property
     def parnames(self):
         return self._parnames
 
@@ -364,10 +348,6 @@ class ProjectorY0(mc.AbstractOperator):
         return self.a / 2 * se.Matrix([[1, -1j], [1j, 1]])
 
     @property
-    def numparams(self):
-        return len(self._parnames)
-
-    @property
     def parnames(self):
         return self._parnames
 
@@ -434,10 +414,6 @@ class ProjectorY1(mc.AbstractOperator):
 
     def _matrix(self):
         return self.a / 2 * se.Matrix([[1, 1j], [-1j, 1]])
-
-    @property
-    def numparams(self):
-        return len(self._parnames)
 
     @property
     def parnames(self):
@@ -509,10 +485,6 @@ class Projector00(mc.AbstractOperator):
         return se.Matrix([[self.a, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
 
     @property
-    def numparams(self):
-        return len(self._parnames)
-
-    @property
     def parnames(self):
         return self._parnames
 
@@ -580,10 +552,6 @@ class Projector01(mc.AbstractOperator):
 
     def _matrix(self):
         return se.Matrix([[0, 0, 0, 0], [0, self.a, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
-
-    @property
-    def numparams(self):
-        return len(self._parnames)
 
     @property
     def parnames(self):
@@ -655,10 +623,6 @@ class Projector10(mc.AbstractOperator):
         return se.Matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, self.a, 0], [0, 0, 0, 0]])
 
     @property
-    def numparams(self):
-        return len(self._parnames)
-
-    @property
     def parnames(self):
         return self._parnames
 
@@ -726,10 +690,6 @@ class Projector11(mc.AbstractOperator):
 
     def _matrix(self):
         return se.Matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, self.a]])
-
-    @property
-    def numparams(self):
-        return len(self._parnames)
 
     @property
     def parnames(self):

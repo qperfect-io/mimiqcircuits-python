@@ -76,10 +76,6 @@ class AbstractOperator(Operation):
     def __str__(self):
         return f"{self.opname()}"
 
-    @property
-    def numparams(self):
-        return len(self._parnames)
-
     @staticmethod
     def isunitary():
         """Check if the object is unitary.
@@ -141,7 +137,7 @@ class AbstractOperator(Operation):
         Raises:
             ValueError: If a parameter cannot be evaluated to a numerical value.
         """
-        if self.numparams == 0:
+        if self.numparams() == 0:
             return self.matrix()
 
         params = self.getparams()
