@@ -1,0 +1,32 @@
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    if: github.repository == 'qperfect-io/mimiqcircuits-python'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3  # Check out the code
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'  # Set your Python version
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry config virtualenvs.create false
+          poetry install --no-interaction --no-ansi
+
+      - name: Build Package
+        run: |
+          poetry build
+
+      - name: Publish to PyPI
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}  # Store your PyPI token as a secret in GitHub
+        run: |
+          poetry publish --build --username __token__ --password $PYPI_TOKEN
