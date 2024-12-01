@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mimiqcircuits"
-version = "0.15.2"
+version = "0.15.3"
 description = ""
 authors = ["Guido Masella <guido.masella@qperfect.io>"]
 readme = "README.md"
@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.9"
 numpy = "^1.26"
-mimiqlink = { git = "https://github.com/qperfect-io/mimiqlink-python.git" }
+mimiqlink = "^0.7"
 bitarray = "^2.9"
 symengine = "^0.11"
 sympy = "^1.12"
