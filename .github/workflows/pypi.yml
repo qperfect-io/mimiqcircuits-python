@@ -29,4 +29,5 @@ jobs:
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}  # Store your PyPI token as a secret in GitHub
         run: |
-          poetry publish --build --username __token__ --password $PYPI_TOKEN
+          rm -rf dist/
+          poetry publish --build --username __token__ --password $PYPI_TOKEN --no-interaction
