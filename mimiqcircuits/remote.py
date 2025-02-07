@@ -136,11 +136,10 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             **Connecting to server**
 
             >>> from mimiqcircuits import *
-            >>> import os
-            >>> conn = MimiqConnection(os.getenv("MIMIQCLOUD2"))
-            >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
+            >>> conn = MimiqConnection()
+            >>> conn.connect()
             Connection:
-            ├── url: https://mimiqfast.qperfect.io/api
+            ├── url: https://mimiq.qperfect.io/api
             ├── Computing time: 597/10000 minutes
             ├── Executions: 452/10000
             ├── Max time limit per request: 180 minutes

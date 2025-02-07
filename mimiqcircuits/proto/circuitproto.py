@@ -297,6 +297,15 @@ def fromproto_complex(complex_proto):
         return real
     return complex(real, imag)
 
+def fromproto_generalized_gate(generalized_proto):
+    name = generalized_proto.name
+    args = [fromproto(arg) for arg in generalized_proto.args]
+    qregsizes = list(generalized_proto.qregsizes)  
+    if name in GENERALIZED_GATE_MAP:
+        return GENERALIZED_GATE_MAP[name](*qregsizes, *args)
+
+    else:
+        raise ValueError(f"Unsupported generalized gate name: {name}")
 
 # Gate conversion functions
 def toproto_gate(gate):
@@ -309,10 +318,17 @@ def toproto_gate(gate):
 
     # Generalized conversion functions
     if hasattr(gate, "name") and gate.name in GENERALIZED_GATE_MAP:
-        params = [toproto(param) for param in gate.getparams()]
+        args = [toproto(param) for param in gate.getparams()]
+        
+        # Special Case: PolynomialOracle (Ensures Correct Parameter Order)
+        if isinstance(gate, mc.PolynomialOracle):
+            args = [toproto(arg) for arg in gate._params[2:]]  # Skip nx, ny
+        
         return circuit_pb2.Gate(
             generalized=circuit_pb2.Generalized(
-                name=gate.name, args=params, qregsizes=gate.qregsizes
+                name=gate.name,
+                args=args,  # Processed params
+                qregsizes=list(getattr(gate, "_qregsizes", [])),  # Ensure qregsizes exist
             )
         )
 
@@ -418,6 +434,9 @@ def fromproto_gate(gate_proto):
         matrix_size = 2**gate_proto.customgate.numqubits 
         original_matrix = np.array(U_matrix).reshape(matrix_size, matrix_size).T
         return mc.GateCustom(matrix=original_matrix)
+    
+    elif gate_proto.HasField("generalized"):
+        return fromproto_generalized_gate(gate_proto.generalized)
 
     elif gate_proto.HasField("control"):
         control_gate = fromproto_gate(gate_proto.control.operation)
@@ -966,6 +985,9 @@ def fromproto_operation(operation_proto):
                 return annotation_class(notes)
 
             return annotation_class(*notes)
+        
+    elif operation_proto.HasField("generalized"):
+        return fromproto_generalized_gate(operation_proto.generalized)
 
     else:
         raise ValueError(

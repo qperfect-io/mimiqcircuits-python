@@ -232,7 +232,6 @@ class QCSResults:
         Examples:
 
             >>> from mimiqcircuits import *
-            >>> import os
             >>> from symengine import *
             >>> import tempfile
             >>> x, y = symbols("x y")
@@ -241,10 +240,10 @@ class QCSResults:
             1-qubit circuit with 1 instructions:
             └── H @ q[0]
             <BLANKLINE>
-            >>> conn = MimiqConnection(os.getenv("MIMIQCLOUD2"))
-            >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
+            >>> conn = MimiqConnection()
+            >>> conn.connect()
             Connection:
-            ├── url: https://mimiqfast.qperfect.io/api
+            ├── url: https://mimiq.qperfect.io/api
             ├── Computing time: 597/10000 minutes
             ├── Executions: 451/10000
             ├── Max time limit per request: 180 minutes

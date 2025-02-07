@@ -32,7 +32,7 @@ class GateCustom(mcg.Gate):
         >>> c = Circuit()
         >>> c.push(GateCustom(matrix), 0, 1)
         2-qubit circuit with 1 instructions:
-        └── Custom([1.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I]...[0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 1.0*I, 0.0 + 0.0*I]) @ q[0,1]
+        └── Custom(...) @ q[0,1]
         <BLANKLINE>
     """
 
@@ -103,7 +103,7 @@ class GateCustom(mcg.Gate):
         return self.pretty_print()
 
     def __str__(self):
-        return f"{self._name}({se.Matrix(self.matrix).tolist()[0]}...{se.Matrix(self.matrix).tolist()[-1]})"
+        return f"{self._name}(...)"
 
     def pretty_print(self):
         if isinstance(self.matrix, se.Matrix):

@@ -83,7 +83,7 @@ class Diffusion(mc.Gate):
     def _decompose(self, circ, qubits, bits, zvars):
         circ.push(mc.GateRY(pi / 2), qubits)
         circ.push(mc.control(self.num_qubits - 1, mc.GateZ()), *qubits)
-        circ.push(mc.GateRY(pi / 2), qubits)
+        circ.push(mc.GateRY(-pi / 2), qubits)
         return circ
 
 

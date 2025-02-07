@@ -26,7 +26,7 @@ from itertools import repeat
 import shutil
 from typing import List, Union
 import random
-
+import numpy as np
 
 class Circuit:
     """Representation of a quantum circuit.
@@ -362,6 +362,7 @@ class Circuit:
             └── M @ q[2], c[2]
             <BLANKLINE>
         """
+        args = tuple(int(arg) if isinstance(arg, np.integer) else arg for arg in args)
         N = 0
         M = 0
         Z = 0
@@ -757,23 +758,26 @@ class Circuit:
 
     def depth(self):
         """
-        Computes the depth of the quantum circuit.
+        Computes the depth of the quantum circuit, including qubits, bits, and z-registers.
         """
         if self.empty() or self.num_qubits() == 0:
             return 0
 
-        d = [0 for _ in range(self.num_qubits() + self.num_bits())]
+        d = [0 for _ in range(self.num_qubits() + self.num_bits() + self.num_zvars())]
 
         for g in self:
             if isinstance(g.operation, mc.Barrier):
                 continue
             nq = self.num_qubits()
-            optargets = g.qubits + tuple(map(lambda x: x + nq, g.bits))
+            nb = self.num_bits()
+            optargets = g.qubits + tuple(map(lambda x: x + nq, g.bits)) + tuple(map(lambda x: x + nq + nb, g.zvars))
             dm = max([d[t] for t in optargets])
             for t in g.qubits:
                 d[t] = dm + 1
             for t in g.bits:
                 d[t + nq] = dm + 1
+            for t in g.zvars:
+                d[t + nq + nb] = dm + 1
 
         return max(d)
 
