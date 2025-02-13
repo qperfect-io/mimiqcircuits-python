@@ -28,6 +28,7 @@ from typing import List, Union
 import random
 import numpy as np
 
+
 class Circuit:
     """Representation of a quantum circuit.
 
@@ -770,7 +771,11 @@ class Circuit:
                 continue
             nq = self.num_qubits()
             nb = self.num_bits()
-            optargets = g.qubits + tuple(map(lambda x: x + nq, g.bits)) + tuple(map(lambda x: x + nq + nb, g.zvars))
+            optargets = (
+                g.qubits
+                + tuple(map(lambda x: x + nq, g.bits))
+                + tuple(map(lambda x: x + nq + nb, g.zvars))
+            )
             dm = max([d[t] for t in optargets])
             for t in g.qubits:
                 d[t] = dm + 1
@@ -862,15 +867,18 @@ class Circuit:
         """
         from mimiqcircuits.proto.circuitproto import toproto_circuit
 
-        if isinstance(file, str):
-            with open(file, "wb") as f:
-                return f.write(toproto_circuit(self).SerializeToString())
-        elif hasattr(file, "write"):
+        if hasattr(file, "write"):
             return file.write(toproto_circuit(self).SerializeToString())
         else:
-            raise ValueError(
-                "Invalid file object. Sould be a filename of a file-like object"
-            )
+            try:
+                with open(file, "wb") as f:
+                    return f.write(toproto_circuit(self).SerializeToString())
+            except TypeError:
+                raise ValueError(
+                    "Invalid file object. Sould be a filename of a file-like object"
+                )
+            except Exception as e:
+                raise e
 
     @staticmethod
     def loadproto(file):

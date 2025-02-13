@@ -67,7 +67,6 @@ class Control(Gate):
         else:
             raise TypeError("Operation must be an Gate object or type.")
 
-
         if op.num_bits != 0:
             raise TypeError("Power operation cannot act on classical bits.")
 
@@ -203,21 +202,30 @@ class Control(Gate):
             (1, mc.GateSDG): mc.GateCSDG._decompose,
         }
 
+        controls = qubits[: self.num_controls]
+        targets = qubits[self.num_controls :]
+        print(targets)
+        print(controls)
+
         key = (self.num_controls, type(self.op))
         if key in decompose_map:
             return decompose_map[key](self, circ, qubits, bits, zvars)
 
-        elif self.num_controls == 1 and self.num_qubits != 1:
-            newcirc = self.op._decompose(mc.Circuit(), qubits[1:], bits, zvars)
+        elif self.num_controls == 1 or self.num_targets != 1:
+            newcirc = self.op._decompose(mc.Circuit(), targets, bits, zvars)
 
             for inst in newcirc:
-                return circ.push(Control(1, inst._operation), qubits[0], qubits[1:])
-
-        elif not isinstance(self.op, Control) and self.op.num_qubits > 1:
-            return circ.push(self, *qubits)
+                print("control decompose ", inst)
+                print(inst.qubits)
+                circ.push(
+                    Control(self.num_controls, inst._operation),
+                    *controls,
+                    *(inst.qubits),
+                )
+            return circ
 
         else:
-            return ctrldecomp.control_decompose(circ, self.op, qubits[:-1], qubits[-1])
+            return ctrldecomp.control_decompose(circ, self.op, controls, targets[0])
 
 
 __all__ = ["Control"]

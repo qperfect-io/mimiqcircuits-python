@@ -287,9 +287,7 @@ For example, :math:`\sqrt{\mathrm{GateS}} = \mathrm{GateT}`, therefore, the foll
     >>> power(GateS(), 1/2)
     T
 
-.. doctest:: Details 
-
-    The power method will attempt to realize simplifications whenever it can, for example asking for the square of :class:`~mimiqcircuits.GateX` will directly give you :class:`~mimiqcircuits.GateID`.
+The power method will attempt to realize simplifications whenever it can, for example asking for the square of :class:`~mimiqcircuits.GateX` will directly give you :class:`~mimiqcircuits.GateID`.
 
 Inverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

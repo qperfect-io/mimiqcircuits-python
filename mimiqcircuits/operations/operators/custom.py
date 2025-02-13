@@ -88,7 +88,7 @@ class Operator(mc.AbstractOperator):
             raise ValueError("Dimension of operator has to be 2^n with n>=1")
 
         # Determine the number of qubits from the matrix dimension
-        self.N = int(se.log(dim_rows, 2))
+        self.N = int(np.log2(dim_rows))
         if self.N < 1:
             raise ValueError("Cannot define a 0-qubit operator")
         if self.N > 2:
@@ -171,5 +171,6 @@ class Operator(mc.AbstractOperator):
         """In-place rescaling of the operator matrix."""
         self.mat *= scale
         return self
+
 
 __all__ = ["Operator"]

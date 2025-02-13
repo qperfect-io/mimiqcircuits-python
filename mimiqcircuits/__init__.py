@@ -183,6 +183,105 @@ from mimiqcircuits.operations.annotations import (
 from mimiqcircuits.classical.classical_not import Not
 
 
+class GATES:
+    """
+    Helper class to list gates.
+
+    **NOTE**: Cannot instantiated called directly. Use `GATES.list()` for a list
+    of gate types, and `help(GATES)` for the .
+
+
+    **Single qubit gates**
+        :func:`GateX` :func:`GateY` :func:`GateZ` :func:`GateH`
+        :func:`GateS` :func:`GateSDG`
+        :func:`GateT` :func:`GateTDG`
+        :func:`GateSX` :func:`GateSXDG`
+        :func:`GateID`
+
+    **Single qubit gates (parametric)**
+        :func:`GateU` :func:`GateP`
+        :func:`GateRX` :func:`GateRY` :func:`GateRZ` :func:`GateP`
+
+    **Two qubit gates**
+        :func:`GateCX` :func:`GateCY` :func:`GateCZ`
+        :func:`GateCH`
+        :func:`GateSWAP` :func:`GateISWAP`
+        :func:`GateCS` :func:`GateCSX`
+        :func:`GateECR` :func:`GateDCX`
+
+    **Two qubit gates (parametric)**
+        :func:`GateCU`
+        :func:`GateCP`
+        :func:`GateCRX` :func:`GateCRY` :func:`GateCRZ`
+        :func:`GateRXX` :func:`GateRYY` :func:`GateRZZ`
+        :func:`GateXXplusYY` :func:`GateXXminusYY`
+
+    **Other**
+        :func:`GateCustom`
+    """
+
+    def __new__(cls):
+        raise NotImplementedError
+
+    @staticmethod
+    def list():
+        return [
+            GateCustom,
+            GateU,
+            GateID,
+            GateX,
+            GateY,
+            GateZ,
+            GateH,
+            GateHXY,
+            GateHXZ,
+            GateHYZ,
+            GateS,
+            GateSDG,
+            GateT,
+            GateTDG,
+            GateSX,
+            GateSXDG,
+            GateSY,
+            GateSYDG,
+            GateRX,
+            GateRY,
+            GateRZ,
+            GateR,
+            GateU1,
+            GateU2,
+            GateU3,
+            GateCX,
+            GateCY,
+            GateCZ,
+            GateCH,
+            GateSWAP,
+            GateISWAP,
+            GateCS,
+            GateCSDG,
+            GateCSX,
+            GateCSXDG,
+            GateECR,
+            GateDCX,
+            GateCP,
+            GateCU,
+            GateCRX,
+            GateCRY,
+            GateCRZ,
+            GateRXX,
+            GateRYY,
+            GateRZZ,
+            GateRZX,
+            GateXXplusYY,
+            GateXXminusYY,
+            GateCCX,
+            GateC3X,
+            GateCCP,
+            GateCSWAP,
+            GateP,
+        ]
+
+
 # Export specific classes, and functions.
 __all__ = [
     "Circuit",
@@ -334,4 +433,5 @@ __all__ = [
     "ObservableInclude",
     "Tick",
     "Not",
+    "GATES",
 ]

@@ -475,6 +475,8 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
             # Make the request to the server
             emutype = "CIRC"
+            
+            sleep(0.1)
             return self.request(
                 emutype,
                 algorithm,
