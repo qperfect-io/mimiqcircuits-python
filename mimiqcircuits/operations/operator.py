@@ -80,11 +80,7 @@ class AbstractOperator(Operation):
     def isunitary():
         """Check if the object is unitary.
 
-        This static method returns `False` for all instances,
-        indicating that the object is not unitary by default.
-
-        Returns:
-            bool: Always returns `False`.
+        By default, this method returns `False` unless explicitly overridden in a subclass.
         """
         return False
 

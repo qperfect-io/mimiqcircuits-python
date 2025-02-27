@@ -104,6 +104,10 @@ class Gate(AbstractOperator):
             params[i] = params[i].subs(d)
 
         return type(self)(*params)
+    
+    @staticmethod
+    def isunitary():
+        return True
 
 
 __all__ = ["Gate"]

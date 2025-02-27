@@ -68,8 +68,8 @@ class GateCP(mctrl.Control):
         <BLANKLINE>
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(1, GateP(*args, **kwargs))
+    def __init__(self, lmbda):
+        super().__init__(1, GateP(lmbda))
 
     def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits

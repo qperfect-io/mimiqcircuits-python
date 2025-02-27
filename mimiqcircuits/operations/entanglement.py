@@ -90,6 +90,10 @@ class BondDim(Operation):
 
     def control(self, num_qubits):
         raise TypeError("Controlled BondDim is not defined.")
+    
+    @staticmethod
+    def isunitary():
+        return True
 
 
 class VonNeumannEntropy(Operation):
@@ -167,6 +171,10 @@ class VonNeumannEntropy(Operation):
 
     def control(self, num_qubits):
         raise TypeError("Controlled VonNeumannEntropy is not defined.")
+    
+    @staticmethod
+    def isunitary():
+        return True
 
 
 class SchmidtRank(Operation):
@@ -242,6 +250,10 @@ class SchmidtRank(Operation):
 
     def control(self, num_qubits):
         raise TypeError("Controlled SchmidtRank is not defined.")
+    
+    @staticmethod
+    def isunitary():
+        return True
 
 
 __all__ = ["BondDim", "VonNeumannEntropy", "SchmidtRank"]

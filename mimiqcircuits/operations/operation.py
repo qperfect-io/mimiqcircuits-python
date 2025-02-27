@@ -128,7 +128,7 @@ class Operation(ABC):
 
     def is_symbolic(self):
         return any(
-            isinstance(param, (se.Basic, sp.Basic, str)) and not param.is_number
+            isinstance(param, (se.Basic, sp.Basic)) and not param.evalf().is_number
             for param in self.getparams()
         )
 
@@ -177,6 +177,14 @@ class Operation(ABC):
         return self
 
     def isidentity(self):
+        return False
+    
+    @classmethod
+    def isunitary(self):
+        """Check if the class represents a unitary operator.
+        
+        By default, this method returns `False` unless explicitly overridden in a subclass.
+        """
         return False
 
     def asciiwidth(self, qubits, bits, zvars):

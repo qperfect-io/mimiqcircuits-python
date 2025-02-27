@@ -72,13 +72,8 @@ class GateCU(mctrl.Control):
         <BLANKLINE>
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(1, GateU(*args, **kwargs))
-
-        self.theta = args[0]
-        self.phi = args[1]
-        self.lmbda = args[2]
-        self.gamma = args[3]
+    def __init__(self, theta, phi, lmbda, gamma):
+        super().__init__(1, GateU(theta, phi, lmbda, gamma))
 
     def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits

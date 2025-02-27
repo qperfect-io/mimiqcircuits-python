@@ -87,7 +87,7 @@ class PauliString(mc.Gate):
         self._qregsizes = [
             self._num_qubits,
         ]
-        self._parnames = "pauli"
+        self._parnames = ("pauli",)
 
         if self._num_qubits < 1:
             raise ValueError("Pauli string cannot be empty.")

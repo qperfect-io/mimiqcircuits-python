@@ -204,9 +204,6 @@ class Control(Gate):
 
         controls = qubits[: self.num_controls]
         targets = qubits[self.num_controls :]
-        print(targets)
-        print(controls)
-
         key = (self.num_controls, type(self.op))
         if key in decompose_map:
             return decompose_map[key](self, circ, qubits, bits, zvars)
@@ -215,8 +212,6 @@ class Control(Gate):
             newcirc = self.op._decompose(mc.Circuit(), targets, bits, zvars)
 
             for inst in newcirc:
-                print("control decompose ", inst)
-                print(inst.qubits)
                 circ.push(
                     Control(self.num_controls, inst._operation),
                     *controls,

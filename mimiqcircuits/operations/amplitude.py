@@ -67,6 +67,9 @@ class Amplitude(Operation):
 
     def __str__(self):
         return f'{self._name}(bs"{self.bs.to01()}")'
-
+    
+    @staticmethod
+    def isunitary():
+        return True
 
 __all__ = ["Amplitude"]

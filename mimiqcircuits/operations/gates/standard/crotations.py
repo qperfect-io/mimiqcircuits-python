@@ -72,8 +72,8 @@ class GateCRX(mctrl.Control):
         <BLANKLINE>
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(1, GateRX(*args, **kwargs))
+    def __init__(self, theta):
+        super().__init__(1, GateRX(theta))
 
     def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits
@@ -136,8 +136,8 @@ class GateCRY(mctrl.Control):
         <BLANKLINE>
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(1, GateRY(*args, **kwargs))
+    def __init__(self, theta):
+        super().__init__(1, GateRY(theta))
 
     def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits
@@ -198,8 +198,8 @@ class GateCRZ(mctrl.Control):
         <BLANKLINE>
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(1, GateRZ(*args, **kwargs))
+    def __init__(self, theta):
+        super().__init__(1, GateRZ(theta))
 
     def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits

@@ -115,7 +115,8 @@ class ExpectationValue(Operation):
             "Cannot elevate an ExpectationValue operation to any power."
         )
 
-    def isunitary(self):
+    @staticmethod
+    def isunitary():
         return True
 
     def __str__(self):

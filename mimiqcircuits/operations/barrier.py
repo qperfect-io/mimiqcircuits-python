@@ -103,6 +103,10 @@ class Barrier(Operation):
 
     def asciiwidth(self, qubits, bits, zvars):
         return 1
+    
+    @staticmethod
+    def isunitary():
+        return True
 
 
 # export operations
