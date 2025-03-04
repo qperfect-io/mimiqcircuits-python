@@ -128,7 +128,8 @@ class Operation(ABC):
 
     def is_symbolic(self):
         return any(
-            isinstance(param, (se.Basic, sp.Basic)) and not param.evalf().is_number
+            isinstance(param, (se.Basic, sp.Basic)
+                       ) and not param.evalf().is_number
             for param in self.getparams()
         )
 
@@ -147,9 +148,20 @@ class Operation(ABC):
         return isinstance(other, type(self)) and self.__dict__ == other.__dict__
 
     def copy(self):
+        """Creates a shallow copy of the operation.
+            To create a full copy use deepcopy() instead.
+
+        Returns:
+            Operation: A new Operation object containing references to the same attributes as the original circuit
+        """
         return copy.copy(self)
 
     def deepcopy(self):
+        """Creates a copy of the object and for all its attributes
+
+        Returns:
+            Operation: A new Operation object fully identical the original circuit
+        """
         return copy.deepcopy(self)
 
     @abstractmethod
@@ -178,11 +190,11 @@ class Operation(ABC):
 
     def isidentity(self):
         return False
-    
+
     @classmethod
     def isunitary(self):
         """Check if the class represents a unitary operator.
-        
+
         By default, this method returns `False` unless explicitly overridden in a subclass.
         """
         return False

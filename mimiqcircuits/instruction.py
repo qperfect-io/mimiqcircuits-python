@@ -204,9 +204,20 @@ class Instruction:
         return Instruction(self.operation.inverse(), self.qubits, self.bits)
 
     def copy(self):
+        """Creates a shallow copy of the instruction.
+            To create a full copy use deepcopy() instead.
+
+        Returns:
+            Instruction: A new Instruction object containing references to the same attributes as the original circuit
+        """
         return copy.copy(self)
 
     def deepcopy(self):
+        """Creates a copy of the object and for all its attributes
+
+        Returns:
+            Instruction: A new Instruction object fully identical the original circuit
+        """
         return copy.deepcopy(self)
 
     def _decompose(self, circ):
@@ -271,7 +282,7 @@ def _partition(arr, indices):
     partitions = [vec[: indices[0]]]
 
     for i in range(1, len(indices)):
-        partitions.append(vec[indices[i - 1] : indices[i]])
+        partitions.append(vec[indices[i - 1]: indices[i]])
 
     return partitions
 
@@ -280,7 +291,8 @@ def _string_with_square(arr, sep):
     return (
         "["
         + sep.join(
-            map(lambda e: sep.join(map(str, e)) if isinstance(e, list) else str(e), arr)
+            map(lambda e: sep.join(map(str, e))
+                if isinstance(e, list) else str(e), arr)
         )
         + "]"
     )

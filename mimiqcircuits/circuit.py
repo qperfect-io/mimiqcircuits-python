@@ -193,7 +193,8 @@ class Circuit:
             instructions = []
 
         if not isinstance(instructions, list):
-            raise TypeError("Circuit should be initialized with a list of Instruction")
+            raise TypeError(
+                "Circuit should be initialized with a list of Instruction")
 
         for instruction in instructions:
             if not isinstance(instruction, Instruction):
@@ -363,7 +364,8 @@ class Circuit:
             └── M @ q[2], c[2]
             <BLANKLINE>
         """
-        args = tuple(int(arg) if isinstance(arg, np.integer) else arg for arg in args)
+        args = tuple(int(arg) if isinstance(
+            arg, np.integer) else arg for arg in args)
         N = 0
         M = 0
         Z = 0
@@ -411,7 +413,8 @@ class Circuit:
                 targets.append(arg)
                 hasiterable = True
             else:
-                raise TypeError(f"Invalid target type for {arg} of type {type(arg)}")
+                raise TypeError(
+                    f"Invalid target type for {arg} of type {type(arg)}")
         if args:
             larg = args[-1]
             if isinstance(larg, int):
@@ -422,15 +425,18 @@ class Circuit:
             elif isinstance(larg, Iterable):
                 targets.append(larg)
             else:
-                raise TypeError(f"Invalid target type for {arg} of type {type(larg)}")
+                raise TypeError(
+                    f"Invalid target type for {arg} of type {type(larg)}")
 
             for tg in zip(*targets):
                 if operation == mc.Barrier:
-                    self.instructions.append(Instruction(mc.Barrier(N), (*tg,), (), ()))
+                    self.instructions.append(
+                        Instruction(mc.Barrier(N), (*tg,), (), ()))
                 else:
                     self.instructions.append(
                         Instruction(
-                            operation, (*tg[:N],), (*tg[N : N + M],), (*tg[N + M :],)
+                            operation, (*tg[:N],), (*
+                                                    tg[N: N + M],), (*tg[N + M:],)
                         )
                     )
         else:
@@ -518,7 +524,8 @@ class Circuit:
             self._emplace_operation(op(*[len(reg) for reg in regs]), regs)
         elif isinstance(op, mc.Parallel):
             if any((isinstance(reg, Iterable) and len(reg) != 1) for reg in regs):
-                raise ValueError("Each iterable should contain exactly one qubit.")
+                raise ValueError(
+                    "Each iterable should contain exactly one qubit.")
             self.push(op, *regs)
         elif isinstance(op, mc.Operation):
             if isinstance(op, mc.AbstractOperator) and not isinstance(op, mc.Gate):
@@ -622,7 +629,8 @@ class Circuit:
                 self.instructions.insert(
                     index,
                     Instruction(
-                        operation, (*args[:N],), (*args[N : N + M],), (*args[N + M :],)
+                        operation, (*args[:N],), (*
+                                                  args[N: N + M],), (*args[N + M:],)
                     ),
                 )
 
@@ -764,7 +772,8 @@ class Circuit:
         if self.empty() or self.num_qubits() == 0:
             return 0
 
-        d = [0 for _ in range(self.num_qubits() + self.num_bits() + self.num_zvars())]
+        d = [0 for _ in range(self.num_qubits() +
+                              self.num_bits() + self.num_zvars())]
 
         for g in self:
             if isinstance(g.operation, mc.Barrier):
@@ -787,9 +796,20 @@ class Circuit:
         return max(d)
 
     def copy(self):
+        """Creates a shallow copy of the circuit.
+            To create a full copy use deepcopy() instead.
+
+        Returns:
+            Circuit: A new Circuit object containing references to the same attributes as the original circuit
+        """
         return copy.copy(self)
 
     def deepcopy(self):
+        """Creates a copy of the object and for all its attributes
+
+        Returns:
+            Circuit: A new Circuit object fully identical the original circuit
+        """
         return copy.deepcopy(self)
 
     def get_on_qubits(self, target_qubits):
@@ -959,7 +979,8 @@ class Circuit:
                 print(canvas.canvas)
                 print("...")
                 canvas.reset()
-                canvas.draw_wires(range(num_qubits), range(num_bits), range(num_zvars))
+                canvas.draw_wires(range(num_qubits), range(
+                    num_bits), range(num_zvars))
 
             if required_width > canvas.canvas.get_cols() - canvas.get_current_col():
                 raise ValueError(
@@ -1184,7 +1205,8 @@ class Circuit:
             raise ValueError(f"{g} must be an Operation")
 
         if not isinstance(kraus, (mc.krauschannel, mc.Gate)):
-            raise ValueError(f"{kraus} is not of type {mc.krauschannel} or {mc.Gate}")
+            raise ValueError(
+                f"{kraus} is not of type {mc.krauschannel} or {mc.Gate}")
 
         if g == kraus:
             raise ValueError(
@@ -1229,7 +1251,8 @@ class Circuit:
             raise ValueError(f"{g} must be an Operation")
 
         if not isinstance(kraus, (mc.krauschannel, mc.Gate)):
-            raise ValueError(f"{kraus} is not of type {mc.krauschannel} or {mc.Gate}")
+            raise ValueError(
+                f"{kraus} is not of type {mc.krauschannel} or {mc.Gate}")
 
         if g == kraus:
             raise ValueError(
@@ -1254,10 +1277,12 @@ class Circuit:
 
                 for rel, j in enumerate(inds):
                     if before:
-                        self.insert(i + rel, kraus, *self.instructions[j].qubits)
+                        self.insert(i + rel, kraus, *
+                                    self.instructions[j].qubits)
                     else:
                         self.insert(
-                            inds[-1] + 1 + rel, kraus, *self.instructions[j].qubits
+                            inds[-1] + 1 + rel, kraus, *
+                            self.instructions[j].qubits
                         )
 
                 i += len(inds)  # Noise block shifting
@@ -1407,14 +1432,16 @@ class Circuit:
 
         # Check types of 'before' and 'parallel' and ensure they are the correct length
         if not isinstance(before, (bool, list)):
-            raise TypeError("Parameter 'before' has to be a bool or a list of bool.")
+            raise TypeError(
+                "Parameter 'before' has to be a bool or a list of bool.")
         if isinstance(before, list) and len(before) != nops:
             raise ValueError(
                 "Vector 'before' must have the same length as the vector of operations."
             )
 
         if not isinstance(parallel, (bool, list)):
-            raise TypeError("Parameter 'parallel' has to be a bool or a list of bool.")
+            raise TypeError(
+                "Parameter 'parallel' has to be a bool or a list of bool.")
         if isinstance(parallel, list) and len(parallel) != nops:
             raise ValueError(
                 "Vector 'parallel' must have the same length as the vector of operations."
@@ -1429,7 +1456,8 @@ class Circuit:
         # Validate each operation and noise channel pair
         for operation, noise in zip(g, kraus):
             if not isinstance(operation, mc.Operation):
-                raise ValueError(f"{operation} must be an instance of mc.Operation")
+                raise ValueError(
+                    f"{operation} must be an instance of mc.Operation")
             # Check for individual noise type in the list case
             if isinstance(noise, list):
                 for n in noise:
@@ -1452,9 +1480,11 @@ class Circuit:
             g, kraus, before, parallel
         ):
             if add_parallel:
-                self.add_noise_to_gate_parallel(operation, noise, before=add_before)
+                self.add_noise_to_gate_parallel(
+                    operation, noise, before=add_before)
             else:
-                self.add_noise_to_gate_single(operation, noise, before=add_before)
+                self.add_noise_to_gate_single(
+                    operation, noise, before=add_before)
 
         return self
 
@@ -1589,7 +1619,8 @@ class Circuit:
                 r = rng.random()
 
                 # Use `next` to find the index of the first cumulative probability greater than `r`
-                index = next(i for i, p in enumerate(cumulative_probs) if p > r)
+                index = next(i for i, p in enumerate(
+                    cumulative_probs) if p > r)
 
                 gate = op.unitarygates()[index]
 

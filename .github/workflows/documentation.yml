@@ -7,13 +7,13 @@ on:
 jobs:
   docs:
     permissions:
-        contents: write
+      contents: write
     name: Documentation
     if: github.repository == 'qperfect-io/mimiqcircuits-python'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11"]
+        python-version: ["3.12"]
 
     steps:
       - uses: actions/checkout@v3
