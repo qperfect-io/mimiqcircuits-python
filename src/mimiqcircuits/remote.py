@@ -64,11 +64,14 @@ TYPE_PROTO = "proto"
 TYPE_QASM = "qasm"
 TYPE_STIM = "stim"
 
+
 class QCSError:
     def __init__(self, error):
         self.error = error
+
     def __repr__(self):
         return self.error
+
 
 class MimiqConnection(mimiqlink.MimiqConnection):
     """Represents a connection to the Mimiq Server.
@@ -95,9 +98,11 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         timelimit=None,
         bonddim=None,
         entdim=None,
+        fuse=None,
+        reorderqubits=None,
         seed=None,
         qasmincludes=None,
-        force=False, 
+        force=False,
         **kwargs,
     ):
         """
@@ -113,6 +118,8 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             timelimit (int, optional): The maximum execution time in minutes. Defaults to None.
             bonddim (int, optional): The bond dimension to use. Defaults to None.
             entdim (int, optional): The entanglement dimension to use. Defaults to None.
+            fuse (bool, optional): Whether to fuse gates. Defaults to None (let the remote service decide).
+            reorderqubits (bool, optional): Whether to reorder qubits. Defaults to None (let the remote service decide).
             seed (int, optional): A seed for random number generation. Defaults to None.
             qasmincludes (list of str, optional): Additional QASM includes. Defaults to None.
             **kwargs: Additional keyword arguments.
@@ -364,10 +371,13 @@ class MimiqConnection(mimiqlink.MimiqConnection):
         if algorithm in ["mps", "auto"]:
             actual_entdim = DEFAULT_ENTDIM if entdim is None else entdim
             if actual_entdim < MIN_ENTDIM and not force:
-                raise ValueError(f"entdim must be between {MIN_ENTDIM} and {MAX_ENTDIM}")
+                raise ValueError(
+                    f"entdim must be between {MIN_ENTDIM} and {MAX_ENTDIM}"
+                )
             elif actual_entdim < MIN_ENTDIM and force:
-                print(f"Warning: Running simulation with entdim={actual_entdim}. Results may be misleading.")
-
+                print(
+                    f"Warning: Running simulation with entdim={actual_entdim}. Results may be misleading."
+                )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             allfiles = []
@@ -383,18 +393,25 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                 )
 
             if not circuits:
-                raise ValueError("The provided list of circuits is empty. At least one circuit is required.")
+                raise ValueError(
+                    "The provided list of circuits is empty. At least one circuit is required."
+                )
 
             for i, c in enumerate(circuits):
                 if not isinstance(c, (Circuit, str)):
-                    raise TypeError(f"Invalid type at index {i}: expected Circuit or QASM file path, got {type(c).__name__}.")
+                    raise TypeError(
+                        f"Invalid type at index {i}: expected Circuit or QASM file path, got {type(c).__name__}."
+                    )
 
                 if isinstance(c, Circuit) and len(c) == 0:
-                    raise ValueError(f"Empty Circuit object at index {i} is not allowed.")
+                    raise ValueError(
+                        f"Empty Circuit object at index {i} is not allowed."
+                    )
 
                 if isinstance(c, str) and not os.path.isfile(c):
-                    raise ValueError(f"Invalid QASM file path at index {i}: {c} does not exist.")
-
+                    raise ValueError(
+                        f"Invalid QASM file path at index {i}: {c} does not exist."
+                    )
 
             for i, circuit in enumerate(circuits):
                 if isinstance(circuit, Circuit) and circuit.is_symbolic():
@@ -403,7 +420,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                     )
                 if isinstance(circuit, Circuit):
                     circuit_filename = os.path.join(
-                        tmpdir, f"{CIRCUIT_FNAME}{i+1}.{EXTENSION_PROTO}"
+                        tmpdir, f"{CIRCUIT_FNAME}{i + 1}.{EXTENSION_PROTO}"
                     )
                     circuit.saveproto(circuit_filename)
                     circuit_files.append(
@@ -417,7 +434,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                     if not os.path.isfile(circuit):
                         raise FileNotFoundError(f"QASM file {circuit} not found.")
                     circuit_filename = os.path.join(
-                        tmpdir, f"{CIRCUIT_FNAME}{i+1}.{EXTENSION_QASM}"
+                        tmpdir, f"{CIRCUIT_FNAME}{i + 1}.{EXTENSION_QASM}"
                     )
                     shutil.copyfile(circuit, circuit_filename)
 
@@ -452,6 +469,12 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             if entdim is not None:
                 pars["entDimension"] = entdim
 
+            if fuse is not None:
+                pars["fuse"] = fuse
+
+            if reorderqubits is not None:
+                pars["reorderQubits"] = reorderqubits
+
             # Add any additional keyword arguments
             pars.update(kwargs)
 
@@ -475,7 +498,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
             # Make the request to the server
             emutype = "CIRC"
-            
+
             sleep(0.1)
             return self.request(
                 emutype,

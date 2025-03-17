@@ -194,6 +194,7 @@ class GateCall(mc.Gate):
         self._num_qubits = decl.num_qubits
         self._decl = decl
         self._args = args
+        self._qregsizes = [self._num_qubits]
 
     def _matrix(self):
         pass

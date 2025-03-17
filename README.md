@@ -2,15 +2,19 @@
 
 *A library to handle quantum circuits for **QPerfect**'s MIMIQ Emulator.*
 
-| **Documentation**                                                               | **Build Status**                                                                                |
-|:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
-| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][GHA-img]][GHA-url] |
+| **Documentation** | **Build Status** |
+|:----:|:----:|
+| [![][docs-stable-img]][docs-stable-url] | [![][GHA-img]][GHA-url] |
 
 ## Installation
 
+```sh
+pip install mimiqcircuits
+
+# or
+
+pip install mimiqcircuits[visualization]
 ```
-pip install "mimiqcircuits @ git+https://github.com/qperfect-io/mimiqcircuits-python.git
-````
 
 ## Documentation
 
@@ -29,26 +33,26 @@ on [our website](https://qperfect.io/index.php/mimiq-circuits).
 
 ## Related projects
 
-* [MimiqCircuits.jl](https://github.com/qperfect-io/MimiqCircuits.jl) the Julia version of this library.
+- [MimiqCircuits.jl](https://github.com/qperfect-io/MimiqCircuits.jl) the Julia version of this library.
 
 ## COPYRIGHT
 
-Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+> Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
+>
+> Licensed under the Apache License, Version 2.0 (the "License");
+> you may not use this file except in compliance with the License.
+> You may obtain a copy of the License at
+>
+>     <http://www.apache.org/licenses/LICENSE-2.0>
+>
+> Unless required by applicable law or agreed to in writing, software
+> distributed under the License is distributed on an "AS IS" BASIS,
+> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+> See the License for the specific language governing permissions and
+> limitations under the License.
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://qperfect-io.github.io/mimiqcircuits-python/
 
-[GHA-img]: https://github.com/qperfect-io/mimiqcircuits-python/workflows/test/badge.svg
-[GHA-url]: https://github.com/qperfect-io/mimiqcircuits-python/actions?query=workflows/test
+[GHA-img]: https://github.com/qperfect-io/mimiqcircuits-python/workflows/Test/badge.svg
+[GHA-url]: https://github.com/qperfect-io/mimiqcircuits-python/actions/workflows/test.yml

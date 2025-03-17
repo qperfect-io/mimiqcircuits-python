@@ -212,10 +212,12 @@ class Control(Gate):
             newcirc = self.op._decompose(mc.Circuit(), targets, bits, zvars)
 
             for inst in newcirc:
+                inst_controls = list(controls)
+                inst_targets = [q for q in qubits if q not in inst_controls][:inst._operation.num_qubits]
                 circ.push(
                     Control(self.num_controls, inst._operation),
-                    *controls,
-                    *(inst.qubits),
+                    *inst_controls,
+                    *inst_targets,
                 )
             return circ
 

@@ -31,8 +31,10 @@ the rotation you can use :class:`~mimiqcircuits.gatedecl.GateDecl` as follows:
     >>> rot = symbols('x')
     >>> @gatedecl("ansatz")
     ... def ansatz(rot):
-    ...     insts = [Instruction(GateX(), (0,)), Instruction(GateRX(rot), (1,))]
-    ...     return insts
+    ...     c= Circuit()
+    ...     c.push(GateX(),0)
+    ...     c.push(GateP(rot),1)
+    ...     return c
 
     >>> ansatz(rot)
     ansatz(x)
@@ -41,10 +43,8 @@ Here, `ansatz` is simply the name that will be shown when printing or drawing
 the circuit, `(rot)` defines the gate parameters.
 
 As you can see in the code above, to generate your own gate declaration you will need to 
-instantiate :class:`~mimiqcircuits.Instruction`s. Instructions are instantiated using one 
-operation followed by a list of targets needed by the operation. The order of the target follows the usual 
-quantum register -> classical register -> Z-register order. Basically, it works the same 
-way as :meth:`~mimiqcircuits.Circuit.push` except that no circuit is 
+instantiate :class:`~mimiqcircuits.Circuit`. A circuit is created by sequentially applying operations using :meth:`~mimiqcircuits.Circuit.push`, 
+where each operation is followed by its targets. The target order follows the standard convention quantum register -> classical register -> Z-register order.
 passed as an argument.
 
 .. doctest::
@@ -60,7 +60,7 @@ You can check the instructions inside `ansatz` by using `decompose` method:
     >>> ansatz(pi/2).decompose()
     2-qubit circuit with 2 instructions:
     ├── X @ q[0]
-    └── RX((1/2)*pi) @ q[1]
+    └── P((1/2)*pi) @ q[1]
     <BLANKLINE>
 
 

@@ -97,7 +97,7 @@ class GateRXX(mc.Gate):
         return GateRXX(-self.theta)
 
     def _decompose(self, circ, qubits, bits, zvars):
-        a, b = range(self.num_qubits)
+        a, b = qubits
 
         circ.push(mc.GateH(), a)
         circ.push(mc.GateH(), b)
@@ -186,7 +186,7 @@ class GateRYY(mc.Gate):
         return GateRYY(-self.theta)
 
     def _decompose(self, circ, qubits, bits, zvars):
-        a, b = range(self.num_qubits)
+        a, b = qubits
 
         circ.push(mc.GateRX(pi / 2), a)
         circ.push(mc.GateRX(pi / 2), b)
@@ -347,8 +347,7 @@ class GateRZX(mc.Gate):
         return GateRZX(-self.theta)
 
     def _decompose(self, circ, qubits, bits, zvars):
-        a, b = range(self.num_qubits)
-
+        a, b = qubits
         circ.push(mc.GateH(), b)
         circ.push(mc.GateCX(), a, b)
         circ.push(mc.GateRZ(self.theta), b)
@@ -443,7 +442,7 @@ class GateXXplusYY(mc.Gate):
         return GateXXplusYY(-self.theta, self.beta)
 
     def _decompose(self, circ, qubits, bits, zvars):
-        a, b = range(self.num_qubits)
+        a, b = qubits
 
         circ.push(mc.GateRZ(self.beta), a)
         circ.push(mc.GateRZ(-pi / 2), b)
@@ -548,7 +547,7 @@ class GateXXminusYY(mc.Gate):
         return GateXXminusYY(-self.theta, self.beta)
 
     def _decompose(self, circ, qubits, bits, zvars):
-        a, b = range(self.num_qubits)
+        a, b = qubits
 
         circ.push(mc.GateRZ(-self.beta), b)
         circ.push(mc.GateRZ(-pi / 2), a)

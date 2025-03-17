@@ -1,6 +1,6 @@
 [project]
 name = "mimiqcircuits"
-version = "0.16.0"
+version = "0.17.1"
 description = "User API for MIMIQ by QPerfect. Build quantum circuits, schedule remote simulations, and explore simulation results."
 authors = [{ name = "Guido Masella", email = "guido.masella@qperfect.io" }]
 readme = "README.md"
