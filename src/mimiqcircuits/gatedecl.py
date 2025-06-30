@@ -238,7 +238,7 @@ class GateCall(mc.Gate):
 
     def evaluate(self, d):
         new_args = [
-            arg.subs(d) if not isinstance(arg, (int, float)) else arg
+            arg.subs(d) if hasattr(arg, "subs") else arg
             for arg in self._args
         ]
         return type(self)(self._decl, tuple(new_args))
