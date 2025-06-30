@@ -234,7 +234,7 @@ class GateCall(mc.Gate):
         return circ
 
     def __str__(self):
-        return f"{self._decl.name}({', '.join(map(str, self._args))})"
+        return f"{self._decl.name}"
 
     def evaluate(self, d):
         new_args = [
