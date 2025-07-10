@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 import mimiqcircuits as mc
 
 
-class GateCCP(mc.Control):
+def GateCCP(lmbda):
     r"""Three qubit Controlled-Controlled-Phase gate.
 
     By convention, the first two qubits are the controls and the third is the
@@ -59,16 +59,16 @@ class GateCCP(mc.Control):
         └── CP((1/2)*lmbda) @ q[0], q[2]
         <BLANKLINE>
     """
+    return mc.Control(2, mc.GateP(lmbda))
 
-    def __init__(self, lmbda):
-        super().__init__(2, mc.GateP(lmbda))
 
-    def _decompose(self, circ, qubits, bits, zvars):
-        c1, c2, t = qubits
-        lmbda = self.op.lmbda
-        circ.push(mc.GateCP(lmbda / 2), c2, t)
-        circ.push(mc.GateCX(), c1, c2)
-        circ.push(mc.GateCP(-lmbda / 2), c2, t)
-        circ.push(mc.GateCX(), c1, c2)
-        circ.push(mc.GateCP(lmbda / 2), c1, t)
-        return circ
+@mc.register_control_decomposition(2, mc.GateP)
+def _decompose_gateccp(gate, circ, qubits, bits, zvars):
+    c1, c2, t = qubits
+    lmbda = gate.op.lmbda
+    circ.push(mc.GateCP(lmbda / 2), c2, t)
+    circ.push(mc.GateCX(), c1, c2)
+    circ.push(mc.GateCP(-lmbda / 2), c2, t)
+    circ.push(mc.GateCX(), c1, c2)
+    circ.push(mc.GateCP(lmbda / 2), c1, t)
+    return circ

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "pauli.proto";
+
+message HamiltonianTerm {
+    double coefficient = 1;
+    PauliString pauli = 2;
+    repeated int64 qubits = 3;
+}
+
+message Hamiltonian {
+    repeated HamiltonianTerm terms = 1;
+}

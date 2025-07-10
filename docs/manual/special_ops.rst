@@ -129,6 +129,216 @@ Note that this type of combined operation does not work if we pass a circuit as 
 (more precisely, a :class:`~mimiqcircuits.GateCall`, see note above).
 
 
+Blocks of Instructions
+----------------------
+.. _blocks-of-instructions:
+
+Blocks in MIMIQ allow you to encapsulate a collection of quantum operations as a reusable unit. 
+They're particularly useful when you want to group instructions together that implement a specific algorithm or subroutine.
+
+Unlike gate declarations that create new gates, blocks simply group existing instructions without restriction on their nature or type.
+
+A :class:`~mimiqcircuits.Block`` can be created in several ways:
+
+.. doctest::
+
+    # From an existing circuit
+    >>> circ = Circuit()
+    >>> circ.push(GateH(), 0)
+    1-qubit circuit with 1 instructions:
+    └── H @ q[0]
+    <BLANKLINE>
+
+    >>> circ.push(GateCX(), 0, 1)
+    2-qubit circuit with 2 instructions:
+    ├── H @ q[0]
+    └── CX @ q[0], q[1]
+    <BLANKLINE>
+
+    >>> block = Block(circ)
+    >>> block
+    2-qubit block ... with 2 instructions:
+    ├── H @ q[0]
+    └── CX @ q[0], q[1]
+
+    # From a list of instructions
+    >>> inst = [Instruction(GateX(), (0,)), Instruction(GateY(), (1,))]
+    >>> block2 = Block(inst)
+    >>> block2
+    2-qubit block ... with 2 instructions:
+    ├── X @ q[0]
+    └── Y @ q[1]
+
+    # Empty block with specified dimensions
+    >>> block3 = Block(2, 1, 0)  # 2 qubits, 1 classical bit, 0 z-variables
+    >>> block3
+    empty circuit
+
+Example: Error Correction Code Block
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _Error-Correction-block:
+
+.. doctest::
+
+    >>> def error_detection_block():
+    ...     c = Circuit()
+    ...     c.push(GateCX(), 0, 1)
+    ...     c.push(GateCX(), 0, 2)
+    ...     c.push(MeasureZ(), 1, 0)  # Measure q[1] → c[0]
+    ...     c.push(MeasureZ(), 2, 1)  # Measure q[2] → c[1]
+    ...     c.push(IfStatement(GateX(), BitString("01")), 0, 0, 1)  # Error correction
+    ...     c.push(IfStatement(GateX(), BitString("10")), 0, 0, 1)  # Error correction
+    ...     return Block(c)
+
+    >>> error_detection = error_detection_block()
+    >>> error_detection
+    3-qubit, 2-bit block ... with 6 instructions:
+    ├── CX @ q[0], q[1]
+    ├── CX @ q[0], q[2]
+    ├── M @ q[1], c[0]
+    ├── M @ q[2], c[1]
+    ├── IF (c==01) X @ q[0], c[0,1]
+    └── IF (c==10) X @ q[0], c[0,1]
+    
+    >>> main_circuit = Circuit()
+    >>> main_circuit.push(error_detection, 0, 1, 2, 0, 1)
+    3-qubit, 2-bit circuit with 1 instructions:
+    └── block ... @ q[0,1,2], c[0,1]
+    <BLANKLINE>
+   
+    >>> main_circuit.push(GateH(), 1)
+    3-qubit, 2-bit circuit with 2 instructions:
+    ├── block ... @ q[0,1,2], c[0,1]
+    └── H @ q[1]
+    <BLANKLINE>
+   
+   
+    >>> main_circuit.push(error_detection, 0, 1, 2, 0, 1)
+    3-qubit, 2-bit circuit with 3 instructions:
+    ├── block ... @ q[0,1,2], c[0,1]
+    ├── H @ q[1]
+    └── block ... @ q[0,1,2], c[0,1]
+    <BLANKLINE>
+    
+   
+Working with Blocks
+^^^^^^^^^^^^^^^^^^^
+.. _working-with-blocks:
+
+.. doctest::
+
+    >>> b = Block(2, 1, 0)
+    >>> b
+    empty circuit
+    >>> b.push(GateH(), 0)
+    >>> b.push(GateX(), 1)
+    >>> b.push(GateCX(), 0, 1)
+
+Blocks can be iterated over, indexed, and have a length just like circuits:
+
+.. doctest::
+
+    >>> len(b)
+    3
+   
+    >>> b[0]
+    H @ q[0]
+
+Trying to add operations that use more resources than the block dimensions will result in an error:
+
+.. doctest::
+
+    >>> try:
+    ...     b.push(GateZ(), 3)
+    ... except Exception as e:
+    ...     print(type(e).__name__)
+    ValueError
+ 
+
+When to Use Blocks vs Gate Declarations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _when-Use-blocks-vs-gatedeclaration:
+
+Use :class:`~mimiqcircuits.Block` when you want to:
+
+- Group a sequence of operations for organization
+- Reuse a routine with control/measurement logic
+- Include operations that are not unitary
+
+Use :class:`~mimiqcircuits.GateDecl` when you want to:
+
+- Define a new named unitary gate
+- Create parameterized gates
+- Use symbolic arguments and controlled gate behavior
+
+
+Repeated Operations
+-------------------
+.. _reseated-operations:
+
+The :class:`~mimiqcircuits.Repeat` operation allows you to apply the same quantum instruction multiple times. 
+operation allows you to apply the same quantum operation multiple times. This can be particularly useful for algorithms that 
+require iterative application of the same operation, such as quantum walks or amplitude amplification.
+
+Creating Repeated Operations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _creating-reapeated-operations:
+
+There are two main ways to create repeated operations:
+
+.. code-block:: python
+
+    # Method 1: Using the Repeat constructor directly
+    Repeat(n, operation)  # Repeats the given operation `n` times
+
+    # Method 2: Using the `repeat` helper function (recommended)
+    repeat(n, operation)  # Repeats the operation with optional simplification logic
+
+    # Alternative: Using the `.repeat()` method on an operation instance
+    operation.repeat(n)   # Shorthand for repeating an operation `n` times
+
+
+.. doctest::
+    :hide:
+
+    >>> from symengine import Symbol
+
+.. doctest::
+
+    >>> Repeat(3, GateX())
+    ∏³ X
+   
+    >>> GateRX(Symbol("theta")).repeat(5)
+    ∏⁵ RX(theta)
+    
+    >>> repeat(5, GateRX(Symbol("theta"))).evaluate({"theta": 1})
+    ∏⁵ RX(1)
+
+    >>> c = Circuit()
+    >>> c.push(repeat(3, GateH()), 0)
+    1-qubit circuit with 1 instructions:
+    └── ∏³ H @ q[0]
+    <BLANKLINE>
+   
+    >>> c.push(repeat(5, GateRX(Symbol("θ"))), 1)
+    2-qubit circuit with 2 instructions:
+    ├── ∏³ H @ q[0]
+    └── ∏⁵ RX(θ) @ q[1]
+    <BLANKLINE>
+   
+    >>> c.decompose()
+    2-qubit circuit with 8 instructions:
+    ├── H @ q[0]
+    ├── H @ q[0]
+    ├── H @ q[0]
+    ├── RX(θ) @ q[1]
+    ├── RX(θ) @ q[1]
+    ├── RX(θ) @ q[1]
+    ├── RX(θ) @ q[1]
+    └── RX(θ) @ q[1]
+    <BLANKLINE>
+ 
+
 Composite Gates
 ---------------------------------
 .. _composite-gates:

@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,12 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.operations.power import Power
-from mimiqcircuits.operations.inverse import Inverse
-from mimiqcircuits.operations.gates.standard.pauli import GateZ
-from mimiqcircuits.operations.gates.standard.u import GateU
-from mimiqcircuits.operations.utils import control_one_defined
-import mimiqcircuits as mc
 from symengine import pi
 
+import mimiqcircuits as mc
 
-class GateS(Power):
+
+def GateS():
     r"""Single qubit gate S.
 
     It induces a :math:`\frac{\pi}{2}` phase gate.
@@ -57,58 +53,20 @@ class GateS(Power):
         └── U(0, 0, (1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-
-    _name = "S"
-
-    def __init__(self):
-        super().__init__(GateZ(), 1 / 2)
-
-    def isopalias(self):
-        return True
-
-    def inverse(self):
-        return GateSDG()
-
-    def _power(self, p):
-        pmod = p % 4
-
-        # sqrt(S) = T
-        if pmod == 1 / 2:
-            return mc.GateT()
-
-        # T * T^7 = S^2 * S^2 = Z * Z = ID => T^7 = TDG
-        if pmod == 7 / 2:
-            return mc.GateTDG()
-
-        # Z^(2n) = ID => S^(4n) = ID
-        if p % 4 == 0:
-            return mc.GateID()
-
-        # Z^(2n + 1) = Z => S^(4n + 1) = S
-        if p % 4 == 1:
-            return mc.GateS()
-
-        #  S^(4n + 3) = SDG
-        if p % 4 == 3:
-            return mc.GateSDG()
-
-        # sqrt(Z) = S
-        if p % 2 == 0:
-            return mc.GateZ().power(p / 2)
-
-    def _control(self, n):
-        return control_one_defined(n, self, mc.GateCS())
-
-    def __str__(self):
-        return f"{self.name}"
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        q = qubits[0]
-        circ.push(GateU(0, 0, pi / 2), q)
-        return circ
+    return mc.Power(mc.GateZ(), 1 / 2)
 
 
-class GateSDG(Inverse):
+mc.register_power_alias(mc.GateZ, 1 / 2, "S")
+
+
+@mc.register_power_decomposition(mc.GateZ, 1 / 2)
+def _decompose_gates(self, circ, qubits, bits, zvars):
+    q = qubits[0]
+    circ.push(mc.GateU(0, 0, pi / 2), q)
+    return circ
+
+
+def GateSDG():
     r"""Single qubit S-dagger gate (conjugate transpose of the S gate).
 
     **Matrix representation:**
@@ -133,26 +91,17 @@ class GateSDG(Inverse):
         └── S† @ q[0]
         <BLANKLINE>
         >>> GateSDG().power(2), GateSDG().inverse()
-        (S†**2, S)
+        ((S†)**2, S)
         >>> GateSDG().decompose()
         1-qubit circuit with 1 instructions:
         └── U(0, 0, (-1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
+    return mc.Inverse(GateS())
 
-    def __init__(self):
-        super().__init__(GateS())
 
-    def isopalias(self):
-        return True
-
-    def inverse(self):
-        return GateS()
-
-    def _control(self, n):
-        return control_one_defined(n, self, mc.GateCSDG())
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        q = qubits[0]
-        circ.push(GateU(0, 0, -pi / 2), q)
-        return circ
+@mc.register_inverse_decomposition((mc.Power, mc.GateZ, 1 / 2))
+def _decompose_gatesdg(self, circ, qubits, bits, zvars):
+    q = qubits[0]
+    circ.push(mc.GateU(0, 0, -pi / 2), q)
+    return circ

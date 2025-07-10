@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -147,9 +147,7 @@ class Kraus(krauschannel):
         # Perform the sum of E_k^† E_k = I check directly here
         M = 1 << self.N  # Equivalent to 2^N
 
-        if not any(
-            any(not element.is_number for element in op.matrix()) for op in Es
-        ):
+        if not any(any(not element.is_number for element in op.matrix()) for op in Es):
             # Perform normalization check only for purely numeric matrices
             ksum = sum(
                 np.array(op.matrix().tolist(), dtype=np.complex128).conj().T
@@ -188,7 +186,10 @@ class Kraus(krauschannel):
                 # Substitute symbolic parameters in the matrix
                 matrix = op.matrix()
                 evaluated_matrix = se.Matrix(
-                    [[element.subs(values) for element in row] for row in matrix.tolist()]
+                    [
+                        [element.subs(values) for element in row]
+                        for row in matrix.tolist()
+                    ]
                 )
                 evaluated_E.append(mc.Operator(evaluated_matrix))
             else:
@@ -196,7 +197,6 @@ class Kraus(krauschannel):
                 evaluated_E.append(op.evaluate(values))
 
         return Kraus(evaluated_E)
-
 
     def _convert_to_matrix(self, operator):
         """Converts matrices to symengine.Matrix, stripping imaginary parts if zero."""
@@ -221,9 +221,11 @@ class Kraus(krauschannel):
         """String representation, listing either AbstractOperators or matrix slices."""
         matrices_str = ", ".join(
             [
-                f"[{matrix[0, 0]}, ... ,{matrix[-1, -1]}]"
-                if isinstance(matrix, se.Matrix)
-                else str(matrix)
+                (
+                    f"[{matrix[0, 0]}, ... ,{matrix[-1, -1]}]"
+                    if isinstance(matrix, se.Matrix)
+                    else str(matrix)
+                )
                 for matrix in self.E
             ]
         )

@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ from mimiqcircuits.operations.operation import Operation
 import mimiqcircuits as mc
 import copy
 import numpy as np
+from mimiqcircuits.matrices import reorder_qubits_matrix
 
 
 def _allunique(lst):
@@ -187,6 +188,12 @@ class Instruction:
     def get_operation(self):
         return self.operation
 
+    def getparams(self):
+        return self.operation.getparams()
+
+    def listvars(self):
+        return self.operation.listvars()
+
     def asciiwidth(self):
         return self.operation.asciiwidth(self._qubits, self._bits)
 
@@ -231,8 +238,31 @@ class Instruction:
             self.operation.evaluate(d), self.qubits, self.bits, self.zvars
         )
 
+    def matrix(self, nq: int = None):
+        """
+        Return the matrix of this instruction, expanded and reordered to act on `nq` qubits if specified.
+        """
+        op = self.get_operation()
+        qubits = self.get_qubits()
+
+        if nq is None:
+            if len(qubits) == 0:
+                raise ValueError("Cannot infer nq: instruction has no qubit targets.")
+            nq = max(qubits) + 1
+
+        M = op.matrix()
+        if hasattr(op, "numparams") and op.numparams == 0:
+            return reorder_qubits_matrix(M.copy(), qubits, nq)
+        return reorder_qubits_matrix(M, qubits, nq)
+
     def __str__(self):
         compact = False
+        if hasattr(self.operation, "format_with_targets"):
+            # Custom rendering — do not append @ targets
+            return self.operation.format_with_targets(
+                self.qubits, self.bits, self.zvars
+            )
+
         op = str(self.operation)
         nq = len(self.qubits)
         nb = len(self.bits)
@@ -264,7 +294,9 @@ class Instruction:
                 targets += c_targets
 
             if nz != 0:
-                if nq != 0 or nb != 0:  # Add a separator before z-vars only if qubits or bits exist
+                if (
+                    nq != 0 or nb != 0
+                ):  # Add a separator before z-vars only if qubits or bits exist
                     targets += f", "
                 z_partition = _partition(
                     self.get_zvars(), np.cumsum(self.operation.zregsizes)
@@ -282,7 +314,7 @@ def _partition(arr, indices):
     partitions = [vec[: indices[0]]]
 
     for i in range(1, len(indices)):
-        partitions.append(vec[indices[i - 1]: indices[i]])
+        partitions.append(vec[indices[i - 1] : indices[i]])
 
     return partitions
 
@@ -291,8 +323,7 @@ def _string_with_square(arr, sep):
     return (
         "["
         + sep.join(
-            map(lambda e: sep.join(map(str, e))
-                if isinstance(e, list) else str(e), arr)
+            map(lambda e: sep.join(map(str, e)) if isinstance(e, list) else str(e), arr)
         )
         + "]"
     )

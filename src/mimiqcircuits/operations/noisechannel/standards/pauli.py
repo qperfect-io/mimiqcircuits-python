@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ class PauliNoise(krauschannel):
                 raise ValueError("All Pauli strings must be of the same length.")
 
         # Check if any probability is symbolic; skip range and sum checks if so
-        if not any(isinstance(prob,(se.Basic, sp.Basic)) for prob in p):
+        if not any(isinstance(prob, (se.Basic, sp.Basic)) for prob in p):
             if not np.isclose(sum(p), 1, rtol=1e-8):
                 raise ValueError("List of probabilities should add up to 1.")
 
@@ -126,25 +126,32 @@ class PauliNoise(krauschannel):
     def evaluate(self, d={}):
         # Substitute and evaluate each probability expression if possible
         evaluated_p = [
-            float(prob.subs(d).evalf()) if hasattr(prob, 'subs') and prob.subs(d).is_number 
-            else prob.subs(d) if hasattr(prob, 'subs') 
-            else prob
+            (
+                float(prob.subs(d).evalf())
+                if hasattr(prob, "subs") and prob.subs(d).is_number
+                else prob.subs(d) if hasattr(prob, "subs") else prob
+            )
             for prob in self.p
         ]
 
         # Range check: Only perform the check if `prob` is numeric
         for prob in evaluated_p:
             if isinstance(prob, (int, float)) and (prob < 0 or prob > 1):
-                raise ValueError("All numeric probabilities must be between 0 and 1 after evaluation.")
+                raise ValueError(
+                    "All numeric probabilities must be between 0 and 1 after evaluation."
+                )
 
         # Sum check: Only perform if all probabilities are numeric
         numeric_probs = [prob for prob in evaluated_p if isinstance(prob, (int, float))]
-        if len(numeric_probs) == len(evaluated_p) and not np.isclose(sum(numeric_probs), 1, rtol=1e-8):
-            raise ValueError("Numeric probabilities should add up to 1 after evaluation.")
+        if len(numeric_probs) == len(evaluated_p) and not np.isclose(
+            sum(numeric_probs), 1, rtol=1e-8
+        ):
+            raise ValueError(
+                "Numeric probabilities should add up to 1 after evaluation."
+            )
 
         # Return a new PauliNoise instance with the evaluated probabilities and the same Pauli strings
         return PauliNoise(evaluated_p, [str(s) for s in self.paulistr])
-
 
     def krausmatrices(self):
         probabilities = np.sqrt(self.probabilities())
@@ -157,8 +164,11 @@ class PauliNoise(krauschannel):
 
     def krausoperators(self):
         probabilities = np.sqrt(self.probabilities())
-        pauli_strings = self.unitarygates()  
-        return [mc.RescaledGate(pauli, prob) for pauli, prob in zip(pauli_strings, probabilities)]
+        pauli_strings = self.unitarygates()
+        return [
+            mc.RescaledGate(pauli, prob)
+            for pauli, prob in zip(pauli_strings, probabilities)
+        ]
 
     def probabilities(self):
         return self.p
@@ -257,13 +267,15 @@ class PauliX(krauschannel):
     def evaluate(self, d={}):
         # Substitute and evaluate `self.p` using the provided dictionary `d`
         evaluated_p = (
-            float(self.p.subs(d).evalf()) if hasattr(self.p, 'subs') and self.p.subs(d).is_number
-            else self.p.subs(d) if hasattr(self.p, 'subs')
-            else self.p
+            float(self.p.subs(d).evalf())
+            if hasattr(self.p, "subs") and self.p.subs(d).is_number
+            else self.p.subs(d) if hasattr(self.p, "subs") else self.p
         )
 
         # Range check: Only perform if `evaluated_p` is numeric
-        if isinstance(evaluated_p, (int, float)) and (evaluated_p < 0 or evaluated_p > 1):
+        if isinstance(evaluated_p, (int, float)) and (
+            evaluated_p < 0 or evaluated_p > 1
+        ):
             raise ValueError("Probability p must be between 0 and 1 after evaluation.")
 
         # Return a new instance of the same class with the evaluated probability
@@ -326,15 +338,17 @@ class PauliY(krauschannel):
         self.p = p
         super().__init__()
         self._parnames = "p"
-    
+
     def evaluate(self, d={}):
         evaluated_p = (
-            float(self.p.subs(d).evalf()) if hasattr(self.p, 'subs') and self.p.subs(d).is_number
-            else self.p.subs(d) if hasattr(self.p, 'subs')
-            else self.p
+            float(self.p.subs(d).evalf())
+            if hasattr(self.p, "subs") and self.p.subs(d).is_number
+            else self.p.subs(d) if hasattr(self.p, "subs") else self.p
         )
 
-        if isinstance(evaluated_p, (int, float)) and (evaluated_p < 0 or evaluated_p > 1):
+        if isinstance(evaluated_p, (int, float)) and (
+            evaluated_p < 0 or evaluated_p > 1
+        ):
             raise ValueError("Probability p must be between 0 and 1 after evaluation.")
 
         return type(self)(evaluated_p)
@@ -408,16 +422,18 @@ class PauliZ(krauschannel):
 
     def evaluate(self, d={}):
         evaluated_p = (
-            float(self.p.subs(d).evalf()) if hasattr(self.p, 'subs') and self.p.subs(d).is_number
-            else self.p.subs(d) if hasattr(self.p, 'subs')
-            else self.p
+            float(self.p.subs(d).evalf())
+            if hasattr(self.p, "subs") and self.p.subs(d).is_number
+            else self.p.subs(d) if hasattr(self.p, "subs") else self.p
         )
 
-        if isinstance(evaluated_p, (int, float)) and (evaluated_p < 0 or evaluated_p > 1):
+        if isinstance(evaluated_p, (int, float)) and (
+            evaluated_p < 0 or evaluated_p > 1
+        ):
             raise ValueError("Probability p must be between 0 and 1 after evaluation.")
 
         return type(self)(evaluated_p)
-    
+
     def krausmatrices(self):
         probabilities = np.sqrt(self.probabilities())
         unitary_matrices = self.unitarymatrices()

@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ class SigmaMinus(AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(SigmaMinus()), 1, 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨SigmaMinus(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -122,7 +122,7 @@ class SigmaPlus(AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(SigmaPlus()), 1, 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨SigmaPlus(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """

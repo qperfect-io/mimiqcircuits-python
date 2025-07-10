@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,11 +36,11 @@ class MeasureZZ(Operation):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureZZ(), 0, 1, 0)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 1-bit circuit with 1 instructions:
         └── MZZ @ q[0,1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit circuit with 3 instructions:
+        2-qubit, 1-bit circuit with 3 instructions:
         ├── CX @ q[0], q[1]
         ├── M @ q[1], c[0]
         └── CX @ q[0], q[1]
@@ -82,16 +82,16 @@ class MeasureZZ(Operation):
 class MeasureXX(Operation):
     r"""MeasureXX operation.
 
-    The MeasureXX operation measures the joint parity of two qubits in the X-basis, determining whether 
-    the qubits are in the same or different states within this basis. The operation begins by applying a 
-    controlled-X (CX) gate between the two qubits to entangle them. 
-    Following this, a Hadamard (H) gate is applied to the first qubit, rotating it into the X-basis. 
-    The second qubit, designated as the target, is then measured to extract the parity information. 
-    After the measurement, the Hadamard gate is applied again to the first qubit to reverse the rotation, 
-    and a second controlled-X (CX) gate is applied to disentangle the qubits, restoring the system to its original state. 
+    The MeasureXX operation measures the joint parity of two qubits in the X-basis, determining whether
+    the qubits are in the same or different states within this basis. The operation begins by applying a
+    controlled-X (CX) gate between the two qubits to entangle them.
+    Following this, a Hadamard (H) gate is applied to the first qubit, rotating it into the X-basis.
+    The second qubit, designated as the target, is then measured to extract the parity information.
+    After the measurement, the Hadamard gate is applied again to the first qubit to reverse the rotation,
+    and a second controlled-X (CX) gate is applied to disentangle the qubits, restoring the system to its original state.
     Through this sequence, the MeasureXX operation efficiently captures the parity relationship of the qubits in the X-basis.
-    
-    A result of `0` indicates that the qubits are in the same state, while a 
+
+    A result of `0` indicates that the qubits are in the same state, while a
     result of `1` indicates that they are in different states.
 
 
@@ -104,11 +104,11 @@ class MeasureXX(Operation):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureXX(), 0, 1, 0)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 1-bit circuit with 1 instructions:
         └── MXX @ q[0,1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit circuit with 5 instructions:
+        2-qubit, 1-bit circuit with 5 instructions:
         ├── CX @ q[0], q[1]
         ├── H @ q[0]
         ├── M @ q[1], c[0]
@@ -153,8 +153,8 @@ class MeasureXX(Operation):
 
 class MeasureYY(Operation):
     r"""MeasureYY operation.
-    
-    The MeasureYY operation measures the joint parity of two qubits in the Y-basis, 
+
+    The MeasureYY operation measures the joint parity of two qubits in the Y-basis,
     determining whether they are in the same or different states in this basis.
     This is achieved by first applying an S gate (a π/2 phase shift) to both qubits,
     followed by a controlled-X (CX) gate. A Hadamard gate (H) is then applied to the
@@ -172,11 +172,11 @@ class MeasureYY(Operation):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureYY(), 0, 1, 0)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 1-bit circuit with 1 instructions:
         └── MYY @ q[0,1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit circuit with 10 instructions:
+        2-qubit, 1-bit circuit with 10 instructions:
         ├── S @ q[0]
         ├── S @ q[1]
         ├── CX @ q[0], q[1]

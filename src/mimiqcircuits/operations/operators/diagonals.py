@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ class DiagonalOp(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(DiagonalOp(1, 0.5)), 1, 2)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 3-zvar circuit with 1 instructions:
         └── ⟨D(1, 0.5)⟩ @ q[1], z[2]
         <BLANKLINE>
     """
@@ -89,8 +89,7 @@ class DiagonalOp(mc.AbstractOperator):
 
     def opsquared(self):
         """Return the operator with each parameter squared."""
-        return DiagonalOp(abs(self.a)**2, abs(self.b)**2)
-
+        return DiagonalOp(abs(self.a) ** 2, abs(self.b) ** 2)
 
 
 __all__ = ["DiagonalOp"]

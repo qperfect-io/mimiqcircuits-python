@@ -107,6 +107,7 @@ def test_kraus_proto(tmpdir):
     kraus = mc.Kraus([E1, E2])
     base_noise_channel_test(circuit, kraus, tmpdir)
 
+
 # Test Cases for gates and operations
 def base_gate_operation_test(circuit, operation, tmpdir, *args):
     temp_file = tmpdir.join("test.pb")
@@ -125,20 +126,24 @@ def test_cnot_proto(tmpdir):
     cnot = mc.GateCX()
     base_gate_operation_test(circuit, cnot, tmpdir, 0, 1)
 
+
 def test_cz_proto(tmpdir):
     circuit = mc.Circuit()
     cz = mc.GateCZ()
     base_gate_operation_test(circuit, cz, tmpdir, 0, 1)
+
 
 def test_swap_proto(tmpdir):
     circuit = mc.Circuit()
     swap = mc.GateSWAP()
     base_gate_operation_test(circuit, swap, tmpdir, 0, 1)
 
+
 def test_gate_u_proto(tmpdir):
     circuit = mc.Circuit()
     gate_u = mc.GateU(0.5, 0.3, 0.1)
     base_gate_operation_test(circuit, gate_u, tmpdir, 0)
+
 
 def test_gate_custom_proto(tmpdir):
     circuit = mc.Circuit()
@@ -146,172 +151,230 @@ def test_gate_custom_proto(tmpdir):
     gate_custom = mc.GateCustom(custom_matrix)
     base_gate_operation_test(circuit, gate_custom, tmpdir, 0)
 
+
 def test_gate_x_proto(tmpdir):
     circuit = mc.Circuit()
     gate_x = mc.GateX()
     base_gate_operation_test(circuit, gate_x, tmpdir, 0)
+
 
 def test_gate_y_proto(tmpdir):
     circuit = mc.Circuit()
     gate_y = mc.GateY()
     base_gate_operation_test(circuit, gate_y, tmpdir, 0)
 
+
 def test_gate_z_proto(tmpdir):
     circuit = mc.Circuit()
     gate_z = mc.GateZ()
     base_gate_operation_test(circuit, gate_z, tmpdir, 0)
+
 
 def test_gate_h_proto(tmpdir):
     circuit = mc.Circuit()
     gate_h = mc.GateH()
     base_gate_operation_test(circuit, gate_h, tmpdir, 0)
 
+
 def test_gate_s_proto(tmpdir):
     circuit = mc.Circuit()
     gate_s = mc.GateS()
     base_gate_operation_test(circuit, gate_s, tmpdir, 0)
+
 
 def test_gate_s_proto(tmpdir):
     circuit = mc.Circuit()
     gate_s = mc.GateSDG()
     base_gate_operation_test(circuit, gate_s, tmpdir, 0)
 
+
 def test_gate_t_proto(tmpdir):
     circuit = mc.Circuit()
     gate_t = mc.GateTDG()
     base_gate_operation_test(circuit, gate_t, tmpdir, 0)
+
 
 def test_gate_t_proto(tmpdir):
     circuit = mc.Circuit()
     gate_t = mc.GateT()
     base_gate_operation_test(circuit, gate_t, tmpdir, 0)
 
+
 def test_gate_rx_proto(tmpdir):
     circuit = mc.Circuit()
     gate_rx = mc.GateRX(np.pi / 4)
     base_gate_operation_test(circuit, gate_rx, tmpdir, 0)
+
 
 def test_gate_ry_proto(tmpdir):
     circuit = mc.Circuit()
     gate_ry = mc.GateRY(np.pi / 4)
     base_gate_operation_test(circuit, gate_ry, tmpdir, 0)
 
+
 def test_gate_rz_proto(tmpdir):
     circuit = mc.Circuit()
     gate_rz = mc.GateRZ(random())
     base_gate_operation_test(circuit, gate_rz, tmpdir, 0)
+
 
 def test_gate_xxplusyy_proto(tmpdir):
     circuit = mc.Circuit()
     gate_xxplusyy = mc.GateXXplusYY(np.pi / 4, random())
     base_gate_operation_test(circuit, gate_xxplusyy, tmpdir, 0, 1)
 
+
 def test_gate_xxminusyy_proto(tmpdir):
     circuit = mc.Circuit()
     gate_xxplusyy = mc.GateXXminusYY(np.pi / 4, random())
     base_gate_operation_test(circuit, gate_xxplusyy, tmpdir, 0, 1)
+
 
 def test_gate_Control_proto(tmpdir):
     circuit = mc.Circuit()
     Control = mc.Control(3, mc.GateR(np.pi / 4, random()))
     base_gate_operation_test(circuit, Control, tmpdir, 0, 1, 2, 3)
 
+
 def test_Amplitude_proto(tmpdir):
     circuit = mc.Circuit()
     amp = mc.Amplitude(mc.BitString("01"))
     base_gate_operation_test(circuit, amp, tmpdir, 0)
 
+
 def test_ExpectationValue_control_proto(tmpdir):
     circuit = mc.Circuit()
-    exp = mc.ExpectationValue(mc.Control(1, mc.Power(mc.GateX(), 1/2)))
+    exp = mc.ExpectationValue(mc.Control(1, mc.Power(mc.GateX(), 1 / 2)))
     base_gate_operation_test(circuit, exp, tmpdir, 0, 1, 0)
+
 
 def test_gate_ExpectationValue_proto(tmpdir):
     circuit = mc.Circuit()
     exp = mc.ExpectationValue(mc.PauliString("XYZI"))
     base_gate_operation_test(circuit, exp, tmpdir, 0, 1, 2, 3, 0)
 
+
 def test_gate_BondDim_proto(tmpdir):
     circuit = mc.Circuit()
     exp = mc.BondDim()
     base_gate_operation_test(circuit, exp, tmpdir, 0, 0)
+
 
 def test_gate_SchmidtRank_proto(tmpdir):
     circuit = mc.Circuit()
     sch = mc.SchmidtRank()
     base_gate_operation_test(circuit, sch, tmpdir, 0, 0)
 
+
 def test_VonNeumannEntropy_proto(tmpdir):
     circuit = mc.Circuit()
     von = mc.VonNeumannEntropy()
     base_gate_operation_test(circuit, von, tmpdir, 0, 0)
 
+
 def test_IfStatement_proto(tmpdir):
     circuit = mc.Circuit()
-    ifs = mc.IfStatement(mc.GateX(), mc.BitString('1'))
+    ifs = mc.IfStatement(mc.GateX(), mc.BitString("1"))
     base_gate_operation_test(circuit, ifs, tmpdir, 0, 0)
+
 
 def test_MeasureX_proto(tmpdir):
     circuit = mc.Circuit()
     mx = mc.MeasureX()
     base_gate_operation_test(circuit, mx, tmpdir, 0, 0)
 
+
 def test_MeasureY_proto(tmpdir):
     circuit = mc.Circuit()
     my = mc.MeasureY()
     base_gate_operation_test(circuit, my, tmpdir, 0, 0)
+
 
 def test_MeasureZ_proto(tmpdir):
     circuit = mc.Circuit()
     mz = mc.MeasureZ()
     base_gate_operation_test(circuit, mz, tmpdir, 0, 0)
 
+
 def test_Measure_proto(tmpdir):
     circuit = mc.Circuit()
     m = mc.Measure()
     base_gate_operation_test(circuit, m, tmpdir, 0, 0)
+
 
 def test_MeasureResetX_proto(tmpdir):
     circuit = mc.Circuit()
     mrx = mc.MeasureResetX()
     base_gate_operation_test(circuit, mrx, tmpdir, 0, 0)
 
+
 def test_MeasureResetZ_proto(tmpdir):
     circuit = mc.Circuit()
     mrz = mc.MeasureResetZ()
     base_gate_operation_test(circuit, mrz, tmpdir, 0, 0)
+
 
 def test_gate_MeasureResetY_proto(tmpdir):
     circuit = mc.Circuit()
     mry = mc.MeasureResetY()
     base_gate_operation_test(circuit, mry, tmpdir, 0, 0)
 
+
 def test_Reset_proto(tmpdir):
     circuit = mc.Circuit()
     res = mc.Reset()
     base_gate_operation_test(circuit, res, tmpdir, 0)
+
 
 def test_gate_Power_proto(tmpdir):
     circuit = mc.Circuit()
     pow = mc.Power(mc.GateR(random(), random()), random())
     base_gate_operation_test(circuit, pow, tmpdir, 0)
 
+
 def test_Inverse_proto(tmpdir):
     circuit = mc.Circuit()
     inv = mc.Inverse(mc.GateR(random(), random()))
     base_gate_operation_test(circuit, inv, tmpdir, 0)
+
 
 def test_Inverse_p_proto(tmpdir):
     circuit = mc.Circuit()
     inv = mc.Inverse(mc.Parallel(2, mc.GateR(random(), random())))
     base_gate_operation_test(circuit, inv, tmpdir, 0, 1)
 
+
 def test_gate_delay_proto(tmpdir):
     circuit = mc.Circuit()
     delay = mc.Delay()
     base_gate_operation_test(circuit, delay, tmpdir, 0)
 
+
 def test_Not_proto(tmpdir):
     circuit = mc.Circuit()
     not_gate = mc.Not()
     base_gate_operation_test(circuit, not_gate, tmpdir, 0)
+
+
+def test_rpauli_proto(tmpdir):
+    circuit = mc.Circuit()
+    rpauli_gate = mc.RPauli(mc.PauliString("XYZIXYZI"), 1.23456789)
+    base_gate_operation_test(circuit, rpauli_gate, tmpdir, 0, 1, 2, 3, 4, 5, 6, 7)
+
+
+def test_rpauli_proto(tmpdir):
+    from symengine import symbols
+
+    x = symbols("x")
+    circuit = mc.Circuit()
+    rpauli_gate = mc.RPauli(mc.PauliString("XYZIXYZI"), x)
+    base_gate_operation_test(circuit, rpauli_gate, tmpdir, 0, 1, 2, 3, 4, 5, 6, 7)
+
+
+def test_rnz_proto(tmpdir):
+    from symengine import symbols
+
+    x = symbols("x")
+    circuit = mc.Circuit()
+    rnz_gate = mc.GateRNZ(8, x)
+    base_gate_operation_test(circuit, rnz_gate, tmpdir, 0, 1, 2, 3, 4, 5, 6, 7)

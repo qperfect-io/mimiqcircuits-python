@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,11 +31,11 @@ class MeasureReset(AbstractMeasurement):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureReset(), 1, 0)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 1-bit circuit with 1 instructions:
         └── MR @ q[1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit circuit with 2 instructions:
+        2-qubit, 1-bit circuit with 2 instructions:
         ├── M @ q[1], c[0]
         └── IF (c==1) X @ q[1], c[0]
         <BLANKLINE>
@@ -91,11 +91,11 @@ class MeasureResetX(AbstractMeasurement):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureResetX(), 1, 0)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 1-bit circuit with 1 instructions:
         └── MRX @ q[1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit circuit with 3 instructions:
+        2-qubit, 1-bit circuit with 3 instructions:
         ├── H @ q[1]
         ├── MR @ q[1], c[0]
         └── H @ q[1]
@@ -142,7 +142,7 @@ class MeasureResetY(AbstractMeasurement):
 
     The MeasureResetY operation applies (HYZ) gate to
     the qubit, performs a MeasureReset operation,
-    and then applies another HYZ gate. 
+    and then applies another HYZ gate.
     This sequence effectively measures the qubit in
     the Y-basis.
 
@@ -155,11 +155,11 @@ class MeasureResetY(AbstractMeasurement):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureResetY(), 1, 0)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 1-bit circuit with 1 instructions:
         └── MRY @ q[1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit circuit with 3 instructions:
+        2-qubit, 1-bit circuit with 3 instructions:
         ├── HYZ @ q[1]
         ├── MR @ q[1], c[0]
         └── HYZ @ q[1]
@@ -200,12 +200,13 @@ class MeasureResetY(AbstractMeasurement):
     def __str__(self):
         return f"{self._name}"
 
+
 class MeasureResetZ(AbstractMeasurement):
-    r"""This class  acting as an alias for :class:`MeasureReset`.
-    """
+    r"""This class  acting as an alias for :class:`MeasureReset`."""
+
     def __new__(self):
         return MeasureReset()
 
 
 # export operations
-__all__ = ["MeasureReset", "MeasureResetX", "MeasureResetY",  "MeasureResetZ"]
+__all__ = ["MeasureReset", "MeasureResetX", "MeasureResetY", "MeasureResetZ"]

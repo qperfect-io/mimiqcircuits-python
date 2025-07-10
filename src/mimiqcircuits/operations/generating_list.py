@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,23 +47,6 @@ class InheritanceTree:
             :class:`DiagonalOp`
             :class:`Gate`
                 :class:`Control`
-                    :class:`GateC3X`
-                    :class:`GateCCP`
-                    :class:`GateCCX`
-                    :class:`GateCH`
-                    :class:`GateCP`
-                    :class:`GateCRX`
-                    :class:`GateCRY`
-                    :class:`GateCRZ`
-                    :class:`GateCS`
-                    :class:`GateCSDG`
-                    :class:`GateCSWAP`
-                    :class:`GateCSX`
-                    :class:`GateCSXDG`
-                    :class:`GateCU`
-                    :class:`GateCX`
-                    :class:`GateCY`
-                    :class:`GateCZ`
                 :class:`Delay`
                 :class:`Diffusion`
                 :class:`GateCall`
@@ -78,6 +61,7 @@ class InheritanceTree:
                 :class:`GateISWAP`
                 :class:`GateP`
                 :class:`GateR`
+                :class:`GateRNZ`
                 :class:`GateRX`
                 :class:`GateRXX`
                 :class:`GateRY`
@@ -96,20 +80,15 @@ class InheritanceTree:
                 :class:`GateY`
                 :class:`GateZ`
                 :class:`Inverse`
-                    :class:`GateSDG`
-                    :class:`GateSXDG`
                     :class:`GateSYDG`
-                    :class:`GateTDG`
                 :class:`Parallel`
                 :class:`PauliString`
                 :class:`PhaseGradient`
                 :class:`PolynomialOracle`
                 :class:`Power`
-                    :class:`GateS`
-                    :class:`GateSX`
                     :class:`GateSY`
-                    :class:`GateT`
                 :class:`QFT`
+                :class:`RPauli`
             :class:`Operator`
             :class:`Projector0`
             :class:`Projector00`
@@ -126,15 +105,20 @@ class InheritanceTree:
             :class:`RescaledGate`
             :class:`SigmaMinus`
             :class:`SigmaPlus`
+        :class:`Add`
         :class:`Amplitude`
         :class:`Barrier`
+        :class:`Block`
         :class:`BondDim`
         :class:`ExpectationValue`
         :class:`IfStatement`
         :class:`MeasureXX`
         :class:`MeasureYY`
         :class:`MeasureZZ`
+        :class:`Multiply`
         :class:`Not`
+        :class:`Pow`
+        :class:`Repeat`
         :class:`SchmidtRank`
         :class:`VonNeumannEntropy`
         :class:`krauschannel`

@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ class krauschannel(Operation):
             [0.447213595499958, 0]
             ]
         """
-        
+
         if self.numparams() == 0:
             return self.krausmatrices()
 
@@ -198,7 +198,6 @@ class krauschannel(Operation):
     def numparams(self):
         return len(self._parnames)
 
-
     def cumprobabilities(self):
         """
         Returns the cumulative sum of probabilities for each Kraus operator in a mixed unitary channel.
@@ -225,7 +224,9 @@ class krauschannel(Operation):
 
     def _cumprobabilities(self, mixed_unitary):
         if not mixed_unitary:
-            raise ValueError("Cumulative probabilities only available for mixed unitary channels.")
+            raise ValueError(
+                "Cumulative probabilities only available for mixed unitary channels."
+            )
         return [se.RealDouble(cp) for cp in np.cumsum(self.probabilities())]
 
     def unwrappedcumprobabilities(self):
@@ -250,7 +251,9 @@ class krauschannel(Operation):
         Returns:
             list: A list of matrices representing the Kraus operators.
         """
-        raise NotImplementedError("This method should be implemented for the specific Kraus channel.")
+        raise NotImplementedError(
+            "This method should be implemented for the specific Kraus channel."
+        )
 
     def squaredkrausoperators(self):
         """
@@ -296,7 +299,9 @@ class krauschannel(Operation):
             ]
         """
         if not self.ismixedunitary():
-            raise ValueError("unitarymatrices only available for mixed unitary Kraus channels.")
+            raise ValueError(
+                "unitarymatrices only available for mixed unitary Kraus channels."
+            )
         return [se.Matrix(g.matrix().tolist()) for g in self.unitarygates()]
 
     def unwrappedunitarymatrices(self):
@@ -308,27 +313,27 @@ class krauschannel(Operation):
             list: A list of unitary matrices as numerical values.
         """
         matrices = []
-        
+
         for matrix in self.unitarymatrices():
             # Prepare a list to hold the converted values
             flat_matrix = []
-            
+
             for i in range(matrix.rows):
                 for j in range(matrix.cols):
                     entry = matrix[i, j]
                     # Convert symbolic expression to numerical form
                     entry_numeric = sp.N(entry)
-                    
+
                     # Handle real and complex parts separately
                     if entry_numeric.is_real:
                         flat_matrix.append(float(entry_numeric))
                     else:
                         flat_matrix.append(complex(entry_numeric))
-            
+
             # Create a new symengine matrix from the flattened list
             new_matrix = se.Matrix(matrix.rows, matrix.cols, flat_matrix)
             matrices.append(new_matrix)
-        
+
         return matrices
 
     def unitarygates(self):

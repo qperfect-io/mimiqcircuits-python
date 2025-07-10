@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,9 +25,10 @@ class AbstractAnnotation(mc.Operation):
 
     Abstract base class for annotations in quantum circuits.
 
-    This class is used as a base for defining various annotation types, such as `Detector`, `QubitCoordinates`, 
+    This class is used as a base for defining various annotation types, such as `Detector`, `QubitCoordinates`,
     `ShiftCoordinates`,`Tick`, `ObservableInclude`, which provide metadata or structural information for quantum circuits.
     """
+
     pass
 
 
@@ -37,9 +38,9 @@ class Detector(AbstractAnnotation):
 
     An annotation class representing a detector in a quantum circuit.
 
-    The `Detector` operation monitors the parity of measurement results over `N` classical bits, where the parity should remain deterministic under ideal, noiseless execution. 
-    The Detector ensures that the combined parity (even or odd) of a set of measurement results is consistent. 
-    If noise or errors disrupt the circuit, the Detector can identify this through unexpected changes in parity, signaling potential measurement errors. 
+    The `Detector` operation monitors the parity of measurement results over `N` classical bits, where the parity should remain deterministic under ideal, noiseless execution.
+    The Detector ensures that the combined parity (even or odd) of a set of measurement results is consistent.
+    If noise or errors disrupt the circuit, the Detector can identify this through unexpected changes in parity, signaling potential measurement errors.
     This functionality helps in error detection by revealing inconsistencies caused by disturbances.
 
     See Also:
@@ -80,15 +81,16 @@ class Detector(AbstractAnnotation):
 
         >>> c = Circuit()
         >>> c.push(Detector(1), 0)
-        0-qubit circuit with 1 instructions:
+        1-bit circuit with 1 instructions:
         └── Detector() @ c[0]
         <BLANKLINE>
         >>> c.push(Detector(1, [0.5, 1.0]), 1)
-        0-qubit circuit with 2 instructions:
+        2-bit circuit with 2 instructions:
         ├── Detector() @ c[0]
         └── Detector(0.5, 1.0) @ c[1]
         <BLANKLINE>
     """
+
     _name = "Detector"
     _num_zvars = 0
     _num_qubits = 0
@@ -109,7 +111,7 @@ class Detector(AbstractAnnotation):
             return object.__new__(cls)
         elif len(args) > 1 and all(isinstance(arg, float) for arg in args):
             return LazyExpr(cls, LazyArg(), args)
-            
+
         else:
             raise ValueError("Incorrect Detector arguments")
 
@@ -153,7 +155,7 @@ class Detector(AbstractAnnotation):
 class QubitCoordinates(AbstractAnnotation):
     r"""QubitCoordinates operation for specifying qubit positions.
 
-    An annotation class used to specify the spatial location of a qubit in a quantum circuit. 
+    An annotation class used to specify the spatial location of a qubit in a quantum circuit.
     Coordinates do not affect simulation results but are useful for visualizing and organizing qubit layouts within the circuit.
 
     See Also:
@@ -162,7 +164,7 @@ class QubitCoordinates(AbstractAnnotation):
         :class:`ObservableInclude`
         :class:`Tick`
 
-        
+
     Examples:
 
         Adding QubitCoordinates to a circuit:
@@ -179,6 +181,7 @@ class QubitCoordinates(AbstractAnnotation):
         └── QubitCoordinates(0.2, 0.3) @ q[0]
         <BLANKLINE>
     """
+
     _name = "QubitCoordinates"
     _num_zvars = 0
     _num_cregs = 0
@@ -216,7 +219,7 @@ class QubitCoordinates(AbstractAnnotation):
 class ShiftCoordinates(AbstractAnnotation):
     r"""ShiftCoordinates operation for shifting the coordinates of qubits.
 
-    An annotation class used to apply a shift to the spatial coordinates of subsequent qubit or detector annotations in a quantum circuit. 
+    An annotation class used to apply a shift to the spatial coordinates of subsequent qubit or detector annotations in a quantum circuit.
     `ShiftCoordinates` accumulates offsets that adjust the position of related circuit components, aiding in visualization without affecting the simulation.
 
     See Also:
@@ -242,10 +245,11 @@ class ShiftCoordinates(AbstractAnnotation):
         [0.1, 0.9]
         >>> c = Circuit()
         >>> c.push(ShiftCoordinates(0.4, 0.2))
-        0-qubit circuit with 1 instructions:
+         circuit with 1 instructions:
         └── ShiftCoordinates(0.4, 0.2)
         <BLANKLINE>
     """
+
     _name = "ShiftCoordinates"
     _num_zvars = 0
     _num_cregs = 0
@@ -291,13 +295,13 @@ class ShiftCoordinates(AbstractAnnotation):
 class ObservableInclude(AbstractAnnotation):
     r"""ObservableInclude operation for including observable index.
 
-    An annotation class for adding measurement records to a specified logical observable within a quantum circuit. 
+    An annotation class for adding measurement records to a specified logical observable within a quantum circuit.
     Observables are sets of measurements expected to produce a deterministic result, used to track specific logical qubit states across operations.
 
-    The ObservableInclude class tags a group of measurement records as a logical observable, 
-    representing a consistent, predictable result under noiseless conditions. 
-    This grouping allows for tracking the state of logical qubits across circuit operations, which is crucial for error correction. 
-    Logical observables monitor encoded qubit states by combining multiple measurements, providing robustness against noise 
+    The ObservableInclude class tags a group of measurement records as a logical observable,
+    representing a consistent, predictable result under noiseless conditions.
+    This grouping allows for tracking the state of logical qubits across circuit operations, which is crucial for error correction.
+    Logical observables monitor encoded qubit states by combining multiple measurements, providing robustness against noise
     and helping to identify any deviations that indicate potential errors.
 
     See Also:
@@ -315,10 +319,11 @@ class ObservableInclude(AbstractAnnotation):
         ObservableInclude()
         >>> c= Circuit()
         >>> c.push(ObservableInclude(1), 0)
-        0-qubit circuit with 1 instructions:
+        1-bit circuit with 1 instructions:
         └── ObservableInclude() @ c[0]
         <BLANKLINE>
     """
+
     _name = "ObservableInclude"
     _num_zvars = 0
     _num_qubits = 0
@@ -355,7 +360,9 @@ class ObservableInclude(AbstractAnnotation):
             raise ValueError("Incorrect ObservableInclude arguments")
 
         if not isinstance(N, int) or N <= 0:
-            raise ValueError("ObservableIncludes should be applied to at least 1 classical bit.")
+            raise ValueError(
+                "ObservableIncludes should be applied to at least 1 classical bit."
+            )
 
         self._num_bits = N
         self.notes = [int(note) for note in notes]
@@ -397,10 +404,11 @@ class Tick(AbstractAnnotation):
 
         >>> c = Circuit()
         >>> c.push(tick)
-        0-qubit circuit with 1 instructions:
+         circuit with 1 instructions:
         └── Tick
         <BLANKLINE>
     """
+
     _name = "Tick"
     _num_zvars = 0
     _num_cregs = 0
@@ -412,7 +420,7 @@ class Tick(AbstractAnnotation):
     @staticmethod
     def opname():
         return "Tick"
-    
+
     def get_notes(self):
         return []
 

@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ class Projector0(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector0()), 1, 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨P₀(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -124,7 +124,7 @@ class Projector1(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector1()), 1, 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨P₁(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -192,7 +192,7 @@ class ProjectorX0(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(ProjectorX0()), 1, 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨PX₀(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -260,7 +260,7 @@ class ProjectorX1(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(ProjectorX1()), 1, 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨PX₁(1)⟩ @ q[1], z[1]
         <BLANKLINE>
         
@@ -329,7 +329,7 @@ class ProjectorY0(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(ProjectorY0()), 1, 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨PY₀(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -397,7 +397,7 @@ class ProjectorY1(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(ProjectorY1()), 1, 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨PY₁(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -466,7 +466,7 @@ class Projector00(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector00()), 1, 2, 1)
-        3-qubit circuit with 1 instructions:
+        3-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨P₀₀(1)⟩ @ q[1,2], z[1]
         <BLANKLINE>
     """
@@ -535,7 +535,7 @@ class Projector01(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector01()), 1, 2, 1)
-        3-qubit circuit with 1 instructions:
+        3-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨P₀₁(1)⟩ @ q[1,2], z[1]
         <BLANKLINE>
     """
@@ -604,7 +604,7 @@ class Projector10(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector10()), 1, 2, 1)
-        3-qubit circuit with 1 instructions:
+        3-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨P₁₀(1)⟩ @ q[1,2], z[1]
         <BLANKLINE>
     """
@@ -673,7 +673,7 @@ class Projector11(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector11()), 1, 2, 1)
-        3-qubit circuit with 1 instructions:
+        3-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨P₁₁(1)⟩ @ q[1,2], z[1]
         <BLANKLINE>
     """
@@ -707,11 +707,13 @@ class Projector11(mc.AbstractOperator):
 
     def opsquared(self):
         return Projector11(abs(self.a) ** 2)
-    
+
+
 class ProjectorZ0(mc.AbstractOperator):
     r"""ProjectorZ0()
     Alias for :class:`Projector0`
     """
+
     def __new__(self):
         return Projector0()
 
@@ -720,8 +722,10 @@ class ProjectorZ1(mc.AbstractOperator):
     r"""ProjectorZ1()
     Alias for :class:`Projector1`
     """
+
     def __new__(self):
         return Projector1()
+
 
 __all__ = [
     "Projector0",
@@ -735,5 +739,5 @@ __all__ = [
     "ProjectorX1",
     "ProjectorX0",
     "ProjectorZ1",
-    "ProjectorZ0"
+    "ProjectorZ0",
 ]

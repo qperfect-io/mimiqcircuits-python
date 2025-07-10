@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List, Tuple
+from typing import Tuple
 import mimiqcircuits as mc
+from symengine import Symbol
+import symengine as se
+import numpy as np
+import sympy as sp
 
 
 class GateDecl:
@@ -24,12 +28,12 @@ class GateDecl:
 
     Examples:
 
-        **First way**
+        First Way
+
+        Import necessary libaries
 
         >>> from symengine import symbols
         >>> from mimiqcircuits import *
-
-        Define symbols for the gate arguments
 
         >>> x, y = symbols('x y')
 
@@ -42,7 +46,7 @@ class GateDecl:
         ...     c.push(GateRX(x), 1)
         ...     return c
 
-        Create a GateDecl object using the decorator
+        Create calls to the gate declariation
 
         >>> ansatz(x)
         ansatz(x)
@@ -58,13 +62,16 @@ class GateDecl:
         └── RX(x) @ q[1]
         <BLANKLINE>
 
-         >>> ansatz(2).decompose()
-         2-qubit circuit with 2 instructions:
-         ├── X @ q[0]
-         └── RX(2) @ q[1]
-         <BLANKLINE>
+        >>> ansatz(2)
+        ansatz(2)
 
-        **Second Way**
+        >>> ansatz(2).decompose()
+        2-qubit circuit with 2 instructions:
+        ├── X @ q[0]
+        └── RX(2) @ q[1]
+        <BLANKLINE>
+
+        Second Way
 
         >>> from symengine import *
         >>> from mimiqcircuits import *
@@ -85,7 +92,7 @@ class GateDecl:
         ├── XXplusYY(x, y) @ q[0,1]
         └── RX(x) @ q[1]
         <BLANKLINE>
-        >>> gate_decl = GateDecl("ansatz", ('x','y'), c)
+        >>> gate_decl = GateDecl("ansatz", (x,y), c)
         >>> gate_decl
         gate ansatz(x, y) =
         ├── XXplusYY(x, y) @ q[0,1]
@@ -114,11 +121,9 @@ class GateDecl:
 
     _name = "GateDecl"
 
-    def __init__(
-        self, name: str, arguments: Tuple[str, ...], circuit: mc.Circuit
-    ):
-        if not all(isinstance(arg, str) for arg in arguments):
-            raise TypeError("All GateDecl arguments must be strings.")
+    def __init__(self, name: str, arguments: Tuple[Symbol, ...], circuit: mc.Circuit):
+        if not all(isinstance(arg, Symbol) for arg in arguments):
+            raise TypeError("All GateDecl arguments must be symbols.")
 
         if len(circuit) == 0:
             raise ValueError("GateDecl cannot be defined from empty circuits.")
@@ -145,7 +150,7 @@ class GateDecl:
         return self.circuit.num_qubits()
 
     @num_qubits.setter
-    def num_qubits(self, value):
+    def num_qubits(self, _):
         raise ValueError("Cannot set num_qubits. Read only parameter.")
 
     @property
@@ -153,7 +158,7 @@ class GateDecl:
         return self.circuit.num_bits()
 
     @num_bits.setter
-    def num_bits(self, value):
+    def num_bits(self, _):
         raise ValueError("Cannot set num_bits. Read only parameter.")
 
     @property
@@ -161,7 +166,7 @@ class GateDecl:
         return self.circuit.num_zvars()
 
     @num_zvars.setter
-    def num_zvars(self, value):
+    def num_zvars(self, _):
         raise ValueError("Cannot set num_zvars. Read only parameter.")
 
     def __str__(self):
@@ -178,6 +183,9 @@ class GateDecl:
 
     def __repr__(self):
         return str(self)
+
+    def __call__(self, *args):
+        return mc.GateCall(self, args)
 
 
 class GateCall(mc.Gate):
@@ -243,23 +251,33 @@ class GateCall(mc.Gate):
         ]
         return type(self)(self._decl, tuple(new_args))
 
+    def matrix(self):
+        from functools import reduce
+
+        N = self._num_qubits
+        dim = 2**N
+        identity = se.Matrix(np.eye(dim, dtype=complex).tolist())
+
+        iter = map(lambda inst: inst.matrix(N), self.decompose())
+        return reduce(lambda a, b: a * b, reversed(list(iter)), identity)
+
 
 def gatedecl(name):
     def decorator(func):
-        def wrapper(*args, **kwargs):
-            circ = func(*args, **kwargs)
+        def get_arg_names(func):
+            import inspect
 
-            if not isinstance(circ, mc.Circuit):
-                raise ValueError("GateDecl must return a Circuit object.")
+            sig = inspect.signature(func)
+            return tuple(sig.parameters.keys())
 
-            arguments = [str(arg) for arg in args] + [
-                f"{key}={value}" for key, value in kwargs.items()
-            ]
+        arguments = [Symbol(arg) for arg in get_arg_names(func)]
 
-            decl = GateDecl(name, arguments, circ)
-            return GateCall(decl, args)
+        circ = func(*arguments)
 
-        return wrapper
+        if not isinstance(circ, mc.Circuit):
+            raise ValueError("GateDecl must return a Circuit object.")
+
+        return GateDecl(name, tuple(arguments), circ)
 
     return decorator
 

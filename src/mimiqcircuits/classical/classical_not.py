@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 from mimiqcircuits import Operation
 
+
 class Not(Operation):
     r"""
     Not operation.
@@ -32,7 +33,7 @@ class Not(Operation):
         '!'
         >>> c = Circuit()
         >>> c.push(Not(), 1)
-        0-qubit circuit with 1 instructions:
+        2-bit circuit with 1 instructions:
         └── ! @ c[1]
         <BLANKLINE>
     """
@@ -56,5 +57,6 @@ class Not(Operation):
 
     def __repr__(self):
         return f"{self._name}"
-    
+
+
 __all__ = ["Not"]

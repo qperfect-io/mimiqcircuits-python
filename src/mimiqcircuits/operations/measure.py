@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,17 +22,18 @@ import mimiqcircuits as mc
 class AbstractMeasurement(Operation):
 
     _name = "AbstractMeasurement"
+
     def iswrapper(self):
         return False
-    
+
     def __str__(self):
         return self._name
-    
+
 
 class Measure(AbstractMeasurement):
     """Measure operation.
 
-    This operation performs a measurement in the computational basis (Z-basis) and stores the result in a classical register. 
+    This operation performs a measurement in the computational basis (Z-basis) and stores the result in a classical register.
 
     The measurement projects the quantum state onto either the :math:`|0⟩` or :math:`|1⟩` state, corresponding to the classical bit values of 0 and 1, respectively.
 
@@ -46,14 +47,14 @@ class Measure(AbstractMeasurement):
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Measure(),0,0)
-        1-qubit circuit with 1 instructions:
+        1-qubit, 1-bit circuit with 1 instructions:
         └── M @ q[0], c[0]
         <BLANKLINE>
 
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Measure(), range(0,3), range(0,3))
-        3-qubit circuit with 3 instructions:
+        3-qubit, 3-bit circuit with 3 instructions:
         ├── M @ q[0], c[0]
         ├── M @ q[1], c[1]
         └── M @ q[2], c[2]
@@ -105,12 +106,12 @@ class MeasureX(AbstractMeasurement):
 
         >>> c = Circuit()
         >>> c.push(MeasureX(), 2, 1)
-        3-qubit circuit with 1 instructions:
+        3-qubit, 2-bit circuit with 1 instructions:
         └── MX @ q[2], c[1]
         <BLANKLINE>
 
         >>> c.push(MeasureX(), 3, 4)
-        4-qubit circuit with 2 instructions:
+        4-qubit, 5-bit circuit with 2 instructions:
         ├── MX @ q[2], c[1]
         └── MX @ q[3], c[4]
         <BLANKLINE>
@@ -169,16 +170,17 @@ class MeasureY(AbstractMeasurement):
 
         >>> c = Circuit()
         >>> c.push(MeasureY(), 2, 1)
-        3-qubit circuit with 1 instructions:
+        3-qubit, 2-bit circuit with 1 instructions:
         └── MY @ q[2], c[1]
         <BLANKLINE>
 
         >>> c.push(MeasureY(), 3, 4)
-        4-qubit circuit with 2 instructions:
+        4-qubit, 5-bit circuit with 2 instructions:
         ├── MY @ q[2], c[1]
         └── MY @ q[3], c[4]
         <BLANKLINE>
     """
+
     _name = "MY"
     _num_bits = 1
     _num_qubits = 1
@@ -229,12 +231,12 @@ class MeasureZ(AbstractMeasurement):
 
         >>> c = Circuit()
         >>> c.push(MeasureZ(), 0, 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit, 1-bit circuit with 1 instructions:
         └── M @ q[0], c[0]
         <BLANKLINE>
 
         >>> c.push(MeasureZ(), 1, 2)
-        2-qubit circuit with 2 instructions:
+        2-qubit, 3-bit circuit with 2 instructions:
         ├── M @ q[0], c[0]
         └── M @ q[1], c[2]
         <BLANKLINE>

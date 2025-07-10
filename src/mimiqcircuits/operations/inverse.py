@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,26 @@ import mimiqcircuits as mc
 import mimiqcircuits.lazy as lz
 from mimiqcircuits.printutils import print_wrapped_parens
 from mimiqcircuits.operations.gates.gate import Gate
+
+_inverse_decomposition_registry = {}
+_inverse_aliases_registry = {}
+
+
+def register_inverse_alias(exponent, gate_type, name):
+    """Register an alias for an inverse gate definition"""
+    key = (exponent, gate_type)
+    _inverse_aliases_registry[key] = name
+
+
+def register_inverse_decomposition(gate_type):
+    """Decorator to register a decomposition function for a gate type"""
+
+    def decorator(decomp_func):
+        key = (gate_type,)
+        _inverse_decomposition_registry[key] = decomp_func
+        return decomp_func
+
+    return decorator
 
 
 class Inverse(Gate):
@@ -61,7 +81,6 @@ class Inverse(Gate):
         else:
             raise ValueError("Operation must be an Gate object or type.")
 
-
         if op.num_bits != 0:
             raise ValueError("Cannot inverte operation with classical bits.")
 
@@ -72,7 +91,15 @@ class Inverse(Gate):
         self._qregsizes = op._qregsizes
         self._parnames = op.parnames
 
+    def isopalias(self):
+        key = self.gettypekey()[1:]
+        return key in _inverse_aliases_registry
+
     def __str__(self):
+        key = self.gettypekey()[1:]
+        if key in _inverse_aliases_registry:
+            return _inverse_aliases_registry[key]
+
         return f"{print_wrapped_parens(self.op)}†"
 
     def iswrapper(self):
@@ -116,14 +143,21 @@ class Inverse(Gate):
             return mc.Parallel(num_repeats, self)
         else:
             raise ValueError("Invalid number of arguments.")
-    
+
     def _matrix(self):
         return self.op.matrix().inv()
 
     def evaluate(self, d):
         return self.op.evaluate(d).inverse()
 
+    def gettypekey(self):
+        return (Inverse, self.op.gettypekey())
+
     def _decompose(self, circ, qubits, bits, zvars):
+        key = self.gettypekey()[1:]
+        if key in _inverse_decomposition_registry:
+            return _inverse_decomposition_registry[key](self, circ, qubits, bits, zvars)
+
         newc = self.op._decompose(mc.Circuit(), qubits, bits, zvars).inverse()
         circ.append(newc)
         return circ

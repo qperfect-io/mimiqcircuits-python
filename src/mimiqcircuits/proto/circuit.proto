@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "bitvector.proto";
+import "pauli.proto";
 
 enum Irrational {
     PI = 0;
@@ -98,8 +99,16 @@ message CustomGate {
     repeated ComplexArg matrix = 2;
 }
 
+enum GeneralizedType {
+    QFT = 0;
+    PhaseGradient = 1;
+    PolynomialOracle = 2;
+    Diffusion = 3;
+    GateRNZ = 4;
+}
+
 message Generalized {
-    string name = 1;
+    GeneralizedType mtype = 1;
     repeated Arg args = 2;
     repeated int64 qregsizes = 3;
 }
@@ -133,15 +142,20 @@ message GateCall {
     repeated Arg args = 2;
 }
 
+message CachedGateCall {
+    uint64 id = 1;
+    repeated Arg args = 2;
+}
+
 message GateDecl {
     string name = 1;
     repeated Symbol args = 2;
     repeated Instruction instructions = 3;
 }
 
-message PauliString {
-    int64 numqubits = 1;
-    string pauli =  2;
+message RPauli {
+    PauliString pauli = 1;
+    Arg theta = 2;
 }
 
 message Gate {
@@ -155,6 +169,8 @@ message Gate {
         Parallel parallel = 7;
         GateCall gatecall = 8;
         PauliString paulistring = 9;
+        CachedGateCall cachedgatecall = 10;
+        RPauli rpauli = 11;
     }
 }
 
@@ -209,6 +225,8 @@ message Operator {
         SimpleOperator simpleoperator = 10;
         CustomOperator customoperator = 11;
         RescaledGate rescaledgate = 12;
+        CachedGateCall cachedgatecall = 13;
+        RPauli rpauli = 14;
     }
 }
 
@@ -262,6 +280,11 @@ message KrausChannel {
     }
 }
 
+message Repeat {
+    int64 numrepeats = 1;
+    Operation operation = 2;
+}
+
 enum OperationType {
     MeasureX = 0;
     MeasureY = 1;
@@ -276,6 +299,7 @@ enum OperationType {
     SchmidtRank = 10;
     VonNeumannEntropy = 11;
     Not = 12;
+    Pow = 13;
 }
 
 message SimpleOperation {
@@ -283,13 +307,23 @@ message SimpleOperation {
     repeated Arg parameters = 2;
 }
 
+enum GeneralizedOperationType {
+    Barrier = 0;
+    Add = 1;
+    Multiply = 2;
+}
+
+message GeneralizedOperation {
+    GeneralizedOperationType mtype = 1;
+    int64 numqubits = 2;
+    int64 numbits = 3;
+    int64 numzvars = 4;
+    repeated Arg parameters = 5;
+}
+
 message IfStatement {
     Operation operation = 1;
     BitVector bitstring = 2;
-}
-
-message Barrier {
-    int64 numqubits = 1;
 }
 
 message Amplitude {
@@ -318,14 +352,17 @@ message SimpleAnnotation {
     repeated Note notes = 2;
 }
 
-message Detector {
-    int64 numqubits = 1;
-    repeated Note notes = 2;
+enum GeneralizedAnnotationType {
+    Detector = 0;
+    ObservableInclude = 1;
 }
 
-message ObservableInclude {
-    int64 numbits = 1;
-    repeated Note notes = 2;
+message GeneralizedAnnotation {
+    GeneralizedAnnotationType mtype = 1;
+    int64 numqubits = 2;
+    int64 numbits = 3;
+    int64 numzvars = 4;
+    repeated Note notes = 5;
 }
 
 message Operation {
@@ -349,12 +386,15 @@ message Operation {
         RescaledGate rescaledgate = 17;
         SimpleOperation simpleoperation = 18;
         IfStatement ifstatement = 19;
-        Barrier barrier = 20;
+        GeneralizedOperation generalizedoperation = 20;
         Amplitude amplitude = 21;
         ExpectationValue expectationvalue = 22;
-        Detector detector = 23;
-        ObservableInclude observableinc = 24;
-        SimpleAnnotation simpleannotation = 25;
+        SimpleAnnotation simpleannotation = 23;
+        GeneralizedAnnotation generalizedannotation = 24;
+        CachedGateCall cachedgatecall = 25;
+        RPauli rpauli = 26;
+        Repeat repeat = 27;
+        Block block = 28;
     }
 }
 
@@ -365,6 +405,22 @@ message Instruction {
     repeated int64 ztargets = 4;
 }
 
+message Declaration { 
+  oneof decl {
+    GateDecl gatedecl = 1;
+    Block block = 2;
+  }
+}
+
 message Circuit {
     repeated Instruction instructions = 1;
+    map<uint64, Declaration> decls = 2;
+    repeated uint64 declorder = 3;
+}
+
+message Block {
+  int64 numqubits = 1;
+  int64 numbits = 2;
+  int64 numzvars = 3;
+  repeated Instruction instructions = 4;
 }

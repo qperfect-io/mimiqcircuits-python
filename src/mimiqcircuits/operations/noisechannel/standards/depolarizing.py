@@ -98,7 +98,7 @@ class Depolarizing(krauschannel):
     def __init__(self, N, p):
         if N < 1:
             raise ValueError("Cannot define a 0-qubit depolarizing noise channel")
-        if not isinstance (p, (se.Basic, sp.Basic)) and (p < 0 or p > 1):
+        if not isinstance(p, (se.Basic, sp.Basic)) and (p < 0 or p > 1):
             raise ValueError("Probability p needs to be between 0 and 1.")
         self.N = N
         self.p = p
@@ -114,9 +114,13 @@ class Depolarizing(krauschannel):
         return self._num_qubits
 
     def evaluate(self, d={}):
-        if hasattr(self.p, 'subs'):
+        if hasattr(self.p, "subs"):
             substituted_p = self.p.subs(d)
-            evaluated_p = float(substituted_p.evalf()) if substituted_p.is_number else substituted_p
+            evaluated_p = (
+                float(substituted_p.evalf())
+                if substituted_p.is_number
+                else substituted_p
+            )
         else:
             evaluated_p = self.p
 

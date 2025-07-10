@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 
 from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from mimiqcircuits.operations.gates.standard.cphase import GateCP
-import mimiqcircuits.operations.control as mctrl
+import mimiqcircuits as mc
 from symengine import pi
 
 
-class GateCS(mctrl.Control):
+def GateCS():
     r"""Two qubit Controlled-S gate.
 
     By convention, the first qubit is the control and the second is
@@ -55,25 +55,23 @@ class GateCS(mctrl.Control):
         └── CS @ q[0], q[1]
         <BLANKLINE>
         >>> GateCS().power(2), GateCS().inverse()
-        (CZ, CS†)
+        (CZ, C(S†))
         >>> GateCS().decompose()
         2-qubit circuit with 1 instructions:
-        └── CP((1/2)*pi) @ q[0], q[1]
+        └── CU(0, 0, (1/2)*pi, 0.0) @ q[0], q[1]
         <BLANKLINE>
     """
-
-    def __init__(self):
-        super().__init__(1, GateS())
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        a, b = qubits
-
-        circ.push(GateCP(pi / 2), a, b)
-
-        return circ
+    return mc.Control(1, GateS())
 
 
-class GateCSDG(mctrl.Control):
+@mc.register_control_decomposition(1, mc.GateS)
+def _decompose_gatecs(gate, circ, qubits, bits, zvars):
+    a, b = qubits
+    circ.push(GateCP(pi / 2), a, b)
+    return circ
+
+
+def GateCSDG():
     r"""Adjoint of two qubit Controlled-S gate.
 
     By convention, the first qubit is the control and the second is
@@ -92,7 +90,7 @@ class GateCSDG(mctrl.Control):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCSDG(), GateCSDG().num_controls, GateCSDG().num_targets, GateCSDG().num_qubits
-        (CS†, 1, 1, 2)
+        (C(S†), 1, 1, 2)
         >>> GateCSDG().matrix()
         [1.0, 0, 0, 0]
         [0, 1.0, 0, 0]
@@ -102,22 +100,20 @@ class GateCSDG(mctrl.Control):
         >>> c = Circuit().push(GateCSDG(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CS† @ q[0], q[1]
+        └── C(S†) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSDG().power(2), GateCSDG().inverse()
-        (C(S†**2), CS)
+        (C((S†)**2), CS)
         >>> GateCSDG().decompose()
         2-qubit circuit with 1 instructions:
-        └── CP((-1/2)*pi) @ q[0], q[1]
+        └── CU(0, 0, (-1/2)*pi, 0.0) @ q[0], q[1]
         <BLANKLINE>
     """
+    return mc.Control(1, mc.GateSDG())
 
-    def __init__(self):
-        super().__init__(1, GateSDG())
 
-    def _decompose(self, circ, qubits, bits, zvars):
-        a, b = range(self.num_qubits)
-
-        circ.push(GateCP(-pi / 2), a, b)
-
-        return circ
+@mc.register_control_decomposition(1, mc.GateSDG)
+def _decompose_gatecsdg(gate, circ, qubits, bits, zvars):
+    a, b = qubits
+    circ.push(GateCP(-pi / 2), a, b)
+    return circ

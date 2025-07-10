@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -144,7 +144,9 @@ class BitString:
                 bitstring = arg * "0"
             else:
                 if not all(0 <= i < arg for i in indices):
-                    raise ValueError("Index out of range for the given number of qubits.")
+                    raise ValueError(
+                        "Index out of range for the given number of qubits."
+                    )
                 bitstring = "".join("1" if i in indices else "0" for i in range(arg))
         elif isinstance(arg, (str, bitarray, frozenbitarray, list, tuple)):
             bitstring = arg
@@ -328,16 +330,16 @@ class BitString:
         if type(index) is slice:
             return BitString(self.bits[index])
         return self.bits[index]
-    
+
     def __setitem__(self, index, value):
         """Set a specific bit by creating a new frozenbitarray."""
         if not isinstance(value, (bool, int)) or value not in (0, 1):
             raise ValueError("Value must be a boolean or an integer (0 or 1).")
-        
+
         # Convert frozenbitarray to a mutable bitarray
         temp_bits = self._bits.tolist()
         temp_bits[index] = value
-        
+
         # Recreate the frozenbitarray with the updated bits
         self._bits = frozenbitarray(temp_bits)
 

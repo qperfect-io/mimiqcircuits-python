@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +15,30 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.__version__ import __version__
+from mimiqcircuits.__version__ import __version__  # noqa: F401
 
 from mimiqcircuits.circuit import Circuit
 
 from mimiqcircuits.bitstrings import BitString
 
 from mimiqcircuits.operations.operation import Operation
+from mimiqcircuits.operations.operator import AbstractOperator
 
-from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.control import (
+    Control,
+    register_control_decomposition,
+)  # noqa: F401
+from mimiqcircuits.operations.inverse import (
+    Inverse,
+    register_inverse_decomposition,  # noqa: F401
+    register_inverse_alias,  # noqa: F401
+)
+from mimiqcircuits.operations.power import (
+    Power,
+    register_power_decomposition,  # noqa: F401
+    register_power_alias,  # noqa: F401
+)
 from mimiqcircuits.operations.parallel import Parallel
-from mimiqcircuits.operations.inverse import Inverse
-from mimiqcircuits.operations.power import Power
 from mimiqcircuits.operations.barrier import Barrier
 from mimiqcircuits.operations.ifstatement import IfStatement
 from mimiqcircuits.operations.measure import (
@@ -88,6 +100,7 @@ from mimiqcircuits.operations.gates.standard.cswap import GateCSWAP
 
 from mimiqcircuits.operations.gates.generalized.qft import QFT
 from mimiqcircuits.operations.gates.generalized.phasegradient import PhaseGradient
+from mimiqcircuits.operations.gates.generalized.rnz import GateRNZ
 
 from mimiqcircuits.instruction import Instruction
 
@@ -103,7 +116,6 @@ from mimiqcircuits.operations.gates.generalized.polynomialoracle import Polynomi
 
 from mimiqcircuits.qcsresults import QCSResults
 from mimiqcircuits.canvas import AsciiCanvas, AsciiCircuit
-from mimiqcircuits.operations.operator import AbstractOperator
 from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
 from mimiqcircuits.operations.noisechannel.standards.ampdamping import (
     AmplitudeDamping,
@@ -149,7 +161,6 @@ from mimiqcircuits.operations.noisechannel.standards.pauli import (
     PauliY,
     PauliZ,
 )
-from mimiqlink.connection import QPERFECT_CLOUD, QPERFECT_CLOUD2
 from mimiqcircuits.operations.amplitude import Amplitude
 from mimiqcircuits.operations.expectationvalue import ExpectationValue
 from mimiqcircuits.operations.entanglement import (
@@ -181,6 +192,23 @@ from mimiqcircuits.operations.annotations import (
     Tick,
 )
 from mimiqcircuits.classical.classical_not import Not
+from mimiqcircuits.complex import Pow, Add, Multiply
+from mimiqcircuits.operations.block import Block
+from mimiqcircuits.operations.repeat import Repeat, repeat
+
+# needed to initialize the registers
+import mimiqcircuits.proto.circuitproto
+
+from mimiqlink import QPERFECT_CLOUD, QPERFECT_DEV, PLANQK_API
+from mimiqcircuits.hamiltonian import (
+    Hamiltonian,
+    HamiltonianTerm,
+    push_expval,
+    push_suzukitrotter,
+    push_lietrotter,
+    push_yoshidatrotter,
+)
+from mimiqcircuits.operations.gates.generalized.rpauli import RPauli
 
 
 class GATES:
@@ -411,7 +439,8 @@ __all__ = [
     "Kraus",
     "MixedUnitary",
     "QPERFECT_CLOUD",
-    "QPERFECT_CLOUD2",
+    "QPERFECT_DEV",
+    "PLANQK_API",
     "Amplitude",
     "ExpectationValue",
     "BondDim",
@@ -433,5 +462,19 @@ __all__ = [
     "ObservableInclude",
     "Tick",
     "Not",
+    "Pow",
+    "Add",
+    "Multiply",
     "GATES",
+    "Hamiltonian",
+    "HamiltonianTerm",
+    "push_expval",
+    "push_suzukitrotter",
+    "push_lietrotter",
+    "RPauli",
+    "GateRNZ",
+    "push_yoshidatrotter",
+    "Block",
+    "Repeat",
+    "repeat",
 ]

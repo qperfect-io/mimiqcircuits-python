@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ class BondDim(Operation):
         >>> k = 5
         >>> c = Circuit()
         >>> c.push(BondDim(), k, 1)
-        6-qubit circuit with 1 instructions:
+        6-qubit, 2-zvar circuit with 1 instructions:
         └── BondDim @ q[5], z[1]
         <BLANKLINE>
     """
@@ -90,7 +90,7 @@ class BondDim(Operation):
 
     def control(self, num_qubits):
         raise TypeError("Controlled BondDim is not defined.")
-    
+
     @staticmethod
     def isunitary():
         return True
@@ -132,7 +132,7 @@ class VonNeumannEntropy(Operation):
         >>> k = 5
         >>> c = Circuit()
         >>> c.push(VonNeumannEntropy(), k, 1)
-        6-qubit circuit with 1 instructions:
+        6-qubit, 2-zvar circuit with 1 instructions:
         └── VonNeumannEntropy @ q[5], z[1]
         <BLANKLINE>
     """
@@ -171,7 +171,7 @@ class VonNeumannEntropy(Operation):
 
     def control(self, num_qubits):
         raise TypeError("Controlled VonNeumannEntropy is not defined.")
-    
+
     @staticmethod
     def isunitary():
         return True
@@ -211,7 +211,7 @@ class SchmidtRank(Operation):
         >>> k = 5
         >>> c = Circuit()
         >>> c.push(SchmidtRank(), k, 1)
-        6-qubit circuit with 1 instructions:
+        6-qubit, 2-zvar circuit with 1 instructions:
         └── SchmidtRank @ q[5], z[1]
         <BLANKLINE>
     """
@@ -250,7 +250,7 @@ class SchmidtRank(Operation):
 
     def control(self, num_qubits):
         raise TypeError("Controlled SchmidtRank is not defined.")
-    
+
     @staticmethod
     def isunitary():
         return True

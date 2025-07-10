@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ class MixedUnitary(krauschannel):
         ├── MixedUnitary((0.9, "Custom([1 0; 0 1])"),(0.1, "Custom([0 1; 1 0])")) @ q[0]
         └── MixedUnitary((0.8, "Custom([1.0 0; 0 1.0])"),(0.2, "Custom([0.995004165278026 -0.0 - 0.0998334166468282*I; -0.0 - 0.0998334166468282*I 0.995004165278026])")) @ q[1]
         <BLANKLINE>
-    
+
         RescaleGate
 
         >>> p1= 0.2
@@ -122,7 +122,7 @@ class MixedUnitary(krauschannel):
             ):
                 raise ValueError("Expected a list of RescaledGate objects.")
             self.gates = rescaledgates
-            self.p = [g.get_scale()**2 for g in self.gates] 
+            self.p = [g.get_scale() ** 2 for g in self.gates]
             self.U = [g.get_operation() for g in self.gates]
 
         elif len(args) == 2:
@@ -180,7 +180,7 @@ class MixedUnitary(krauschannel):
 
         super().__init__()
         self._num_qubits = self.N
-     
+
     def evaluate(self, values: dict):
         """Evaluates symbolic parameters in the MixedUnitary using a dictionary of values.
 
@@ -190,15 +190,22 @@ class MixedUnitary(krauschannel):
         Returns:
             MixedUnitary: A new MixedUnitary instance with evaluated parameters.
         """
-        evaluated_p = [p.subs(values) if hasattr(p, 'subs') else p for p in self.p]
+        evaluated_p = [p.subs(values) if hasattr(p, "subs") else p for p in self.p]
 
-        if all(isinstance(prob, (float, int)) or prob.is_number for prob in evaluated_p):
-    
-            numeric_probs = [float(prob) if isinstance(prob, se.Basic) else prob for prob in evaluated_p]
+        if all(
+            isinstance(prob, (float, int)) or prob.is_number for prob in evaluated_p
+        ):
+
+            numeric_probs = [
+                float(prob) if isinstance(prob, se.Basic) else prob
+                for prob in evaluated_p
+            ]
             if not np.allclose(np.sum(numeric_probs), 1, rtol=1e-13):
                 raise ValueError("Evaluated probabilities must sum to 1.")
 
-        evaluated_U = [u.evaluate(values) if hasattr(u, 'evaluate') else u for u in self.U]
+        evaluated_U = [
+            u.evaluate(values) if hasattr(u, "evaluate") else u for u in self.U
+        ]
 
         return MixedUnitary(evaluated_p, evaluated_U)
 
@@ -208,14 +215,16 @@ class MixedUnitary(krauschannel):
 
         # Convert gates to matrices before multiplying
         unitary_matrices = [
-            gate.matrix() if hasattr(gate, 'matrix') and callable(gate.matrix) else gate.matrix
+            (
+                gate.matrix()
+                if hasattr(gate, "matrix") and callable(gate.matrix)
+                else gate.matrix
+            )
             for gate in unitary_gates
         ]
 
         # Make sure calling matrix() or using matrices
-        return [
-            prob * matrix for prob, matrix in zip(probabilities, unitary_matrices)
-        ]
+        return [prob * matrix for prob, matrix in zip(probabilities, unitary_matrices)]
 
     def probabilities(self):
         return self.p

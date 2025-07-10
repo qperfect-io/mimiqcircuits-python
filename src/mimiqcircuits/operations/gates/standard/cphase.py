@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
 # limitations under the License.
 #
 
-import mimiqcircuits.operations.control as mctrl
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.phase import GateP
+import mimiqcircuits as mc
 
 
-class GateCP(mctrl.Control):
+def GateCP(lmbda):
     r"""Two qubit Controlled-Phase gate.
 
     By convention, the first qubit is the control and the second is
@@ -67,17 +67,17 @@ class GateCP(mctrl.Control):
         └── P((1/2)*lambda) @ q[1]
         <BLANKLINE>
     """
+    return mc.Control(1, GateP(lmbda))
 
-    def __init__(self, lmbda):
-        super().__init__(1, GateP(lmbda))
 
-    def _decompose(self, circ, qubits, bits, zvars):
-        c, t = qubits
-        lmbda2 = self.op.lmbda / 2
+@mc.register_control_decomposition(1, mc.GateP)
+def _decompose_gatecp(gate, circ, qubits, bits, zvars):
+    c, t = qubits
+    lmbda2 = gate.op.lmbda / 2
 
-        circ.push(GateP(lmbda2), c)
-        circ.push(GateCX(), c, t)
-        circ.push(GateP(-lmbda2), t)
-        circ.push(GateCX(), c, t)
-        circ.push(GateP(lmbda2), t)
-        return circ
+    circ.push(GateP(lmbda2), c)
+    circ.push(GateCX(), c, t)
+    circ.push(GateP(-lmbda2), t)
+    circ.push(GateCX(), c, t)
+    circ.push(GateP(lmbda2), t)
+    return circ

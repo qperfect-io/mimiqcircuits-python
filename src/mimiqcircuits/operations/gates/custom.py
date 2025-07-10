@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -126,9 +126,9 @@ class GateCustom(mcg.Gate):
     def evaluate(self, d):
         sympy_matrix = sp.Matrix(self.matrix)
         matrix = sympy_matrix.applyfunc(
-            lambda entry: entry.subs(d)
-            if not isinstance(entry, (float, int))
-            else entry
+            lambda entry: (
+                entry.subs(d) if not isinstance(entry, (float, int)) else entry
+            )
         )
         evaluated_matrix = se.Matrix(matrix.tolist())
         return GateCustom(evaluated_matrix)

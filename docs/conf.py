@@ -34,7 +34,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_inline_tabs",
     "sphinx.ext.doctest",
-    'recommonmark',
+    "recommonmark",
 ]
 
 templates_path = ["_templates"]
@@ -42,16 +42,16 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # Tell Sphinx to look for markdown files
 source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
+    ".rst": "restructuredtext",
+    ".md": "markdown",
 }
 master_doc = "index"
 
 # -- Options for LaTeX output -------------------------------------------------
 
-latex_engine = 'xelatex'
+latex_engine = "xelatex"
 latex_elements = {
-        'preamble': r'\usepackage{physics}',
+    "preamble": r"\usepackage{physics}",
 }
 
 # -- Options for HTML output -------------------------------------------------
@@ -61,8 +61,8 @@ html_theme = "pydata_sphinx_theme"
 html_logo = "_static/qperfect_logo.png"
 html_static_path = ["_static"]
 html_theme_options = {
-    "announcement": f'The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest {release} version.',
+    "announcement": f"The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest {release} version.",
     "show_toc_level": 1,
 }
 
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '.pytest_cache']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", ".pytest_cache"]

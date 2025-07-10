@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,7 +69,11 @@ class AmplitudeDamping(krauschannel):
         self._parnames = ("gamma",)
 
     def evaluate(self, d={}):
-        evaluated_gamma = float(self.gamma.subs(d).evalf()) if hasattr(self.gamma, 'subs') else self.gamma
+        evaluated_gamma = (
+            float(self.gamma.subs(d).evalf())
+            if hasattr(self.gamma, "subs")
+            else self.gamma
+        )
 
         if not (0 <= evaluated_gamma <= 1):
             raise ValueError("Probability after evaluation must be between 0 and 1.")
@@ -169,9 +173,13 @@ class GeneralizedAmplitudeDamping(krauschannel):
     def evaluate(self, d={}):
         # Helper function to evaluate a parameter
         def evaluate_param(param):
-            if hasattr(param, 'subs'):
+            if hasattr(param, "subs"):
                 substituted_value = param.subs(d)
-                return float(substituted_value.evalf()) if substituted_value.is_number else substituted_value
+                return (
+                    float(substituted_value.evalf())
+                    if substituted_value.is_number
+                    else substituted_value
+                )
             return param
 
         evaluated_p = evaluate_param(self.p)
@@ -179,8 +187,12 @@ class GeneralizedAmplitudeDamping(krauschannel):
 
         if isinstance(evaluated_p, (float, int)) and not (0 <= evaluated_p <= 1):
             raise ValueError("Probability p after evaluation must be between 0 and 1.")
-        if isinstance(evaluated_gamma, (float, int)) and not (0 <= evaluated_gamma <= 1):
-            raise ValueError("Probability gamma after evaluation must be between 0 and 1.")
+        if isinstance(evaluated_gamma, (float, int)) and not (
+            0 <= evaluated_gamma <= 1
+        ):
+            raise ValueError(
+                "Probability gamma after evaluation must be between 0 and 1."
+            )
 
         # Return a new instance of GeneralizedAmplitudeDamping with the evaluated values
         return GeneralizedAmplitudeDamping(evaluated_p, evaluated_gamma)

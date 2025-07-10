@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,29 +82,39 @@ class PhaseAmplitudeDamping(krauschannel):
         self._parnames = ("p", "gamma", "beta")
 
     def evaluate(self, d={}):
-        attributes = ['p', 'gamma', 'beta']
+        attributes = ["p", "gamma", "beta"]
         evaluated_values = {}
 
         for attr in attributes:
             value = getattr(self, attr)
-            if hasattr(value, 'subs'):
+            if hasattr(value, "subs"):
                 substituted_value = value.subs(d)
-                evaluated_values[attr] = float(substituted_value.evalf()) if substituted_value.is_number else substituted_value
+                evaluated_values[attr] = (
+                    float(substituted_value.evalf())
+                    if substituted_value.is_number
+                    else substituted_value
+                )
             else:
                 evaluated_values[attr] = value
 
         # Extract evaluated values
-        evaluated_p = evaluated_values['p']
-        evaluated_gamma = evaluated_values['gamma']
-        evaluated_beta = evaluated_values['beta']
+        evaluated_p = evaluated_values["p"]
+        evaluated_gamma = evaluated_values["gamma"]
+        evaluated_beta = evaluated_values["beta"]
 
         # Perform checks only if values are numeric
         if isinstance(evaluated_p, (float, int)) and not (0 <= evaluated_p <= 1):
             raise ValueError("Value of `p` must be between 0 and 1 after evaluation.")
-        if isinstance(evaluated_gamma, (float, int)) and not (0 <= evaluated_gamma <= 1):
-            raise ValueError("Value of `gamma` must be between 0 and 1 after evaluation.")
+        if isinstance(evaluated_gamma, (float, int)) and not (
+            0 <= evaluated_gamma <= 1
+        ):
+            raise ValueError(
+                "Value of `gamma` must be between 0 and 1 after evaluation."
+            )
         if isinstance(evaluated_beta, (float, int)) and not (0 <= evaluated_beta <= 1):
-            raise ValueError("Value of `beta` must be between 0 and 1 after evaluation.")
+            raise ValueError(
+                "Value of `beta` must be between 0 and 1 after evaluation."
+            )
 
         # Return a new instance with evaluated parameters
         return PhaseAmplitudeDamping(evaluated_p, evaluated_gamma, evaluated_beta)
@@ -128,7 +138,6 @@ class PhaseAmplitudeDamping(krauschannel):
             mc.SigmaMinus(pref3),
             mc.SigmaPlus(pref4),
         ]
-
 
     @property
     def parnames(self):
@@ -190,9 +199,9 @@ class ThermalNoise(krauschannel):
     ):
         if not isinstance(T1, (se.Basic, sp.Basic)) and (T1 < 0):
             raise ValueError("Value of T1 must be >= 0.")
-        if not isinstance(T2, (se.Basic, sp.Basic)) and  (T2 > 2 * T1):
+        if not isinstance(T2, (se.Basic, sp.Basic)) and (T2 > 2 * T1):
             raise ValueError("Value of T2 must be <= 2 * T1.")
-        if not isinstance(time, (se.Basic, sp.Basic)) and  (time < 0):
+        if not isinstance(time, (se.Basic, sp.Basic)) and (time < 0):
             raise ValueError("Value of time must be >= 0.")
         if not isinstance(ne, (se.Basic, sp.Basic)) and not (0 <= ne <= 1):
             raise ValueError("Value of ne must be between 0 and 1.")
@@ -206,25 +215,29 @@ class ThermalNoise(krauschannel):
 
     def evaluate(self, d={}):
         # List of attributes to evaluate
-        attributes = ['T1', 'T2', 'time', 'ne']
+        attributes = ["T1", "T2", "time", "ne"]
         evaluated_values = {}
 
         # Evaluate each attribute
         for attr in attributes:
             value = getattr(self, attr)
-            if hasattr(value, 'subs'):
+            if hasattr(value, "subs"):
                 # Substitute values using the dictionary and ensure substitution is applied
                 substituted_value = value.subs(d)
                 # Evaluate to a float if numeric, otherwise keep symbolic
-                evaluated_values[attr] = float(substituted_value.evalf()) if substituted_value.is_number else substituted_value
+                evaluated_values[attr] = (
+                    float(substituted_value.evalf())
+                    if substituted_value.is_number
+                    else substituted_value
+                )
             else:
                 evaluated_values[attr] = value
 
         # Extract evaluated values
-        evaluated_T1 = evaluated_values['T1']
-        evaluated_T2 = evaluated_values['T2']
-        evaluated_time = evaluated_values['time']
-        evaluated_ne = evaluated_values['ne']
+        evaluated_T1 = evaluated_values["T1"]
+        evaluated_T2 = evaluated_values["T2"]
+        evaluated_time = evaluated_values["time"]
+        evaluated_ne = evaluated_values["ne"]
 
         # Perform checks only if values are numeric
         if isinstance(evaluated_T1, (float, int)) and evaluated_T1 < 0:
@@ -238,7 +251,6 @@ class ThermalNoise(krauschannel):
 
         # Return a new instance with evaluated parameters
         return ThermalNoise(evaluated_T1, evaluated_T2, evaluated_time, evaluated_ne)
-
 
     def krausmatrices(self):
         return [se.Matrix(kraus.matrix().tolist()) for kraus in self.krausoperators()]

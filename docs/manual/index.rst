@@ -15,3 +15,5 @@ Manual
     remote_execution
     import_export
     special_topics
+    zops
+    hamiltonian

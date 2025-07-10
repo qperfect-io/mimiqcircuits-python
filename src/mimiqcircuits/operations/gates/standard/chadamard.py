@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 import mimiqcircuits as mc
 
 
-class GateCH(mc.Control):
+def GateCH():
     r"""Two qubit Controlled-Hadamard gate.
 
     By convention, the first qubit is the control and the second is
@@ -63,19 +63,19 @@ class GateCH(mc.Control):
         <BLANKLINE>
 
     """
+    return mc.Control(1, mc.GateH())
 
-    def __init__(self):
-        super().__init__(1, mc.GateH())
 
-    def _decompose(self, circ, qubits, bits, zvars):
-        c, t = qubits
+@mc.register_control_decomposition(1, mc.GateH)
+def _decompose_gatech(gate, circ, qubits, bits, zvars):
+    c, t = qubits
 
-        circ.push(mc.GateS(), t)
-        circ.push(mc.GateH(), t)
-        circ.push(mc.GateT(), t)
-        circ.push(mc.GateCX(), c, t)
-        circ.push(mc.GateTDG(), t)
-        circ.push(mc.GateH(), t)
-        circ.push(mc.GateSDG(), t)
+    circ.push(mc.GateS(), t)
+    circ.push(mc.GateH(), t)
+    circ.push(mc.GateT(), t)
+    circ.push(mc.GateCX(), c, t)
+    circ.push(mc.GateTDG(), t)
+    circ.push(mc.GateH(), t)
+    circ.push(mc.GateSDG(), t)
 
-        return circ
+    return circ

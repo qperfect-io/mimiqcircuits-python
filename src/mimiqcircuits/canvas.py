@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -350,20 +350,22 @@ class AsciiCanvas:
             for j in range(col, col + width):
                 while j >= len(self.data[i]):
                     self.data[i].append(" ")
-                if j == col and self.data[i][j] == "─":
-                    self.data[i][j] = "╴"
-                elif j == col + width - 1 and self.data[i][j] == "─":
-                    self.data[i][j] = "╶"
-                elif i == row and self.data[i][j] == "│":
-                    self.data[i][j] = "╵"
-                elif i == row + height - 1 and self.data[i][j] == "│":
-                    self.data[i][j] = "╷"
-                else:
-                    self.data[i][j] = " "
+                existing = self.data[i][j]
+                if existing in ("─", "╶", "╴", "│", "╷", "╵", " "):
+                    # Only clear common wire/line characters
+                    if j == col and existing == "─":
+                        self.data[i][j] = "╴"
+                    elif j == col + width - 1 and existing == "─":
+                        self.data[i][j] = "╶"
+                    elif i == row and existing == "│":
+                        self.data[i][j] = "╵"
+                    elif i == row + height - 1 and existing == "│":
+                        self.data[i][j] = "╷"
+                    else:
+                        self.data[i][j] = " "
 
     def draw_box(self, row, col, width, height, clean=False):
-        if clean:
-            self.draw_empty(row, col, width, height)
+        self.draw_empty(row, col, width, height)
 
         self.draw_hline(row, col, width)
         self.draw_hline(row + height - 1, col, width)
@@ -521,40 +523,77 @@ class AsciiCircuit:
 
         # Determine start and stop rows for qubits, bits, and zvars
         if bits or zvars:
-            qubit_startrow = min(qubitrow, default=float("inf"))
-            qubit_stoprow = max(qubitrow, default=0)
+            (
+                qubit_startrow,
+                qubit_stoprow,
+                bits_startrow,
+                bits_stoprow,
+                zvar_startrow,
+                zvar_stoprow,
+            ) = _used_row_bounds(qubitrow, bitrow, zvarrow, bits, zvars)
 
-            bits_startrow = bitrow if bits else float("inf")
-            bits_stoprow = bitrow if bits else 0
+            namepadding = _gate_name_padding(qubits, bits, zvars)
 
-            zvar_startrow = zvarrow if zvars else float("inf")
-            zvar_stoprow = zvarrow if zvars else 0
-
-            # Handle case where both qubits and zvars are present
-            if qubitrow and zvars:
-                # Draw box for qubits
+            if qubitrow and bits and zvars:
                 qubit_gateheight = qubit_stoprow - qubit_startrow + 1
                 qubit_midrow = qubit_startrow + qubit_gateheight // 2
-                gw = operation.asciiwidth(qubits, bits, [])
-                # Calculate zvar width first
-                gw_zvar = operation.asciiwidth([], [], zvars)
 
-                # Ensure both boxes have the same width
-                gw = max(gw, gw_zvar)
+                gw_qubits = operation.asciiwidth(qubits, [], [])
+                gw_bits = operation.asciiwidth([], bits, [])
+                gw_zvars = operation.asciiwidth([], [], zvars)
+                gw = max(gw_qubits, gw_bits, gw_zvars)
                 midcol = ccol + gw // 2
 
-                self.canvas.draw_box(
-                    qubit_startrow - 1, ccol, gw, qubit_gateheight + 2, clean=True
-                )
-                self.canvas.draw_text(
-                    str(operation), qubit_midrow, ccol + namepadding - 1
+                _draw_box_with_centered_text(
+                    self.canvas,
+                    qubit_startrow - 1,
+                    ccol,
+                    gw,
+                    qubit_gateheight + 2,
+                    str(operation),
+                    qubit_midrow,
                 )
 
-                # Draw zvars without a box, with adjusted spacing
+                if bitrow is not None:
+                    bit_string = ",".join(map(str, bits))
+                    bit_col = midcol - len(bit_string) // 2
+                    self.canvas.draw_text(bit_string, bitrow + 1, bit_col)
+
+                if zvarrow is not None:
+                    zvar_string = ",".join(map(str, zvars))
+                    zvar_col = midcol - len(zvar_string) // 2
+                    self.canvas.draw_text(zvar_string, zvarrow + 1, zvar_col)
+
+                if bitrow is not None:
+                    self.canvas.draw_double_vline(
+                        qubit_stoprow + 1, midcol, bitrow - qubit_stoprow
+                    )
+
+                if zvarrow is not None:
+                    None
+
+                endcol = ccol + gw
+
+            elif qubitrow and zvars:
+                qubit_gateheight = qubit_stoprow - qubit_startrow + 1
+                qubit_midrow = qubit_startrow + qubit_gateheight // 2
+                gw = max(
+                    operation.asciiwidth(qubits, [], []),
+                    operation.asciiwidth([], [], zvars),
+                )
+                midcol = ccol + gw // 2
+
+                _draw_box_with_centered_text(
+                    self.canvas,
+                    qubit_startrow - 1,
+                    ccol,
+                    gw,
+                    qubit_gateheight + 2,
+                    str(operation),
+                    qubit_midrow,
+                )
+
                 self.canvas.draw_text(",".join(map(str, zvars)), zvarrow + 1, midcol)
-
-                # Draw vertical double line connecting qubits and zvars
-
                 self.canvas.draw_double_vline(
                     qubit_stoprow + 1, midcol, zvar_startrow - qubit_stoprow
                 )
@@ -562,29 +601,28 @@ class AsciiCircuit:
                 endcol = ccol + gw
 
             elif qubitrow and bits:
-                # Draw box for qubits
                 qubit_gateheight = qubit_stoprow - qubit_startrow + 1
                 qubit_midrow = qubit_startrow + qubit_gateheight // 2
-                gw_qubits = operation.asciiwidth(qubits, [], [])
-                gw_bits = operation.asciiwidth([], bits, [])
-
-                # Ensure the box for qubits is as wide as needed for both qubits and bits
-                gw = max(gw_qubits, gw_bits)
+                gw = max(
+                    operation.asciiwidth(qubits, [], []),
+                    operation.asciiwidth([], bits, []),
+                )
                 midcol = ccol + gw // 2
 
-                self.canvas.draw_box(
-                    qubit_startrow - 1, ccol, gw, qubit_gateheight + 2, clean=True
-                )
-                self.canvas.draw_text(
-                    str(operation), qubit_midrow, ccol + namepadding - 1
+                _draw_box_with_centered_text(
+                    self.canvas,
+                    qubit_startrow - 1,
+                    ccol,
+                    gw,
+                    qubit_gateheight + 2,
+                    str(operation),
+                    qubit_midrow,
                 )
 
-                # Draw the bits below the qubits, centered horizontally
-                bitstr = ",".join(map(str, bits))
-                bit_start_col = midcol - len(bitstr) // 2
-                self.canvas.draw_text(bitstr, bits_startrow + 1, bit_start_col)
+                bit_string = ",".join(map(str, bits))
+                bit_col = midcol - len(bit_string) // 2
+                self.canvas.draw_text(bit_string, bits_startrow + 1, bit_col)
 
-                # Draw vertical double line connecting qubits and bits
                 self.canvas.draw_double_vline(
                     qubit_stoprow + 1, midcol, bits_stoprow - qubit_stoprow
                 )
@@ -592,37 +630,31 @@ class AsciiCircuit:
                 endcol = ccol + gw
 
             elif zvars and not qubitrow:
-                startrow = min(qubit_startrow, zvar_startrow) - 1
-                stoprow = max(qubit_stoprow, zvar_stoprow) + 1
+                startrow = min(zvar_startrow, qubit_startrow) - 1
+                stoprow = max(zvar_stoprow, qubit_stoprow) + 1
                 gateheight = stoprow - startrow + 1
                 midrow = startrow + gateheight // 2
 
-                # Draw a single box
                 gw = operation.asciiwidth(qubits, bits, zvars)
-                self.canvas.draw_box(startrow, ccol, gw, gateheight, clean=True)
                 zstr = f"{','.join(map(str, zvars))} ═> "
+                self.canvas.draw_box(startrow, ccol, gw, gateheight, clean=True)
                 self.canvas.draw_text(zstr, midrow, ccol + 1)
-                text_start_col = ccol + len(zstr) + 1
-                # Draw the operation name
-                self.canvas.draw_text(str(operation), midrow, text_start_col)
+                self.canvas.draw_text(str(operation), midrow, ccol + len(zstr) + 1)
 
                 midcol = ccol + gw // 2
                 endcol = ccol + gw
 
             elif bits and not qubitrow:
-                startrow = min(qubit_startrow, bits_startrow) - 1
-                stoprow = max(qubit_stoprow, bits_stoprow) + 1
+                startrow = min(bits_startrow, qubit_startrow) - 1
+                stoprow = max(bits_stoprow, qubit_stoprow) + 1
                 gateheight = stoprow - startrow + 1
                 midrow = startrow + gateheight // 2
 
-                # Draw a single box
                 gw = operation.asciiwidth(qubits, bits, zvars)
+                bstr = f"{','.join(map(str, bits))} ═> "
                 self.canvas.draw_box(startrow, ccol, gw, gateheight, clean=True)
-                zstr = f"{','.join(map(str, bits))} ═> "
-                self.canvas.draw_text(zstr, midrow, ccol + 1)
-                text_start_col = ccol + len(zstr) + 1
-                # Draw the operation name
-                self.canvas.draw_text(str(operation), midrow, text_start_col)
+                self.canvas.draw_text(bstr, midrow, ccol + 1)
+                self.canvas.draw_text(str(operation), midrow, ccol + len(bstr) + 1)
 
                 midcol = ccol + gw // 2
                 endcol = ccol + gw
@@ -785,6 +817,29 @@ class AsciiCircuit:
             instruction._bits,
             instruction._zvars,
         )
+
+
+def _used_row_bounds(qubitrow, bitrow, zvarrow, bits, zvars):
+    used_qubit_rows = [r for r in qubitrow if r is not None]
+    qubit_start = min(used_qubit_rows, default=float("inf"))
+    qubit_stop = max(used_qubit_rows, default=0)
+
+    bit_start = bitrow if bits else float("inf")
+    bit_stop = bitrow if bits else 0
+
+    zvar_start = zvarrow if zvars else float("inf")
+    zvar_stop = zvarrow if zvars else 0
+
+    return qubit_start, qubit_stop, bit_start, bit_stop, zvar_start, zvar_stop
+
+
+def _draw_box_with_centered_text(
+    canvas, row, col, width, height, text, center_row=None
+):
+    canvas.draw_box(row, col, width, height, clean=True)
+    if center_row is None:
+        center_row = row + height // 2
+    canvas.draw_text(text, center_row, col + (width - len(text)) // 2)
 
 
 __all__ = ["AsciiCircuit", "AsciiCanvas"]

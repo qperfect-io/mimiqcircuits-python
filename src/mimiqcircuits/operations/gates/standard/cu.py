@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 # limitations under the License.
 #
 
-import mimiqcircuits.operations.control as mctrl
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.standard.phase import GateP
+import mimiqcircuits as mc
 
 
-class GateCU(mctrl.Control):
+def GateCU(theta, phi, lmbda, gamma):
     r"""Two qubit controlled unitary gate.
 
     **Matrix representation:**
@@ -71,23 +71,23 @@ class GateCU(mctrl.Control):
         └── U((1/2)*theta, phi, 0, 0.0) @ q[1]
         <BLANKLINE>
     """
+    return mc.Control(1, GateU(theta, phi, lmbda, gamma))
 
-    def __init__(self, theta, phi, lmbda, gamma):
-        super().__init__(1, GateU(theta, phi, lmbda, gamma))
 
-    def _decompose(self, circ, qubits, bits, zvars):
-        c, t = qubits
-        theta = self.op.theta
-        phi = self.op.phi
-        lmbda = self.op.lmbda
-        gamma = self.op.gamma
+@mc.register_control_decomposition(1, mc.GateU)
+def _decompose_gatecu(gate, circ, qubits, bits, zvars):
+    c, t = qubits
+    theta = gate.op.theta
+    phi = gate.op.phi
+    lmbda = gate.op.lmbda
+    gamma = gate.op.gamma
 
-        circ.push(GateP(gamma), c)
-        circ.push(GateP((lmbda + phi) / 2), c)
-        circ.push(GateP((lmbda - phi) / 2), t)
-        circ.push(GateCX(), c, t)
-        circ.push(GateU(-theta / 2, 0, -(lmbda + phi) / 2), t)
-        circ.push(GateCX(), c, t)
-        circ.push(GateU(theta / 2, phi, 0), t)
+    circ.push(GateP(gamma), c)
+    circ.push(GateP((lmbda + phi) / 2), c)
+    circ.push(GateP((lmbda - phi) / 2), t)
+    circ.push(GateCX(), c, t)
+    circ.push(GateU(-theta / 2, 0, -(lmbda + phi) / 2), t)
+    circ.push(GateCX(), c, t)
+    circ.push(GateU(theta / 2, phi, 0), t)
 
-        return circ
+    return circ

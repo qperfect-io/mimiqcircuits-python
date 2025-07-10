@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
 # limitations under the License.
 #
 
-import mimiqcircuits.operations.control as mctrl
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.standard.phase import GateP
 from mimiqcircuits.operations.gates.standard.rotations import GateRX, GateRY, GateRZ
+import mimiqcircuits as mc
 from symengine import pi
 
 
-class GateCRX(mctrl.Control):
+def GateCRX(theta):
     r"""Two qubit Controlled-RX gate.
 
     By convention, the first qubit is the control and the second is
@@ -71,22 +71,22 @@ class GateCRX(mctrl.Control):
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
-
-    def __init__(self, theta):
-        super().__init__(1, GateRX(theta))
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        c, t = qubits
-        theta = self.op.theta
-        circ.push(GateP(pi / 2), t)
-        circ.push(GateCX(), c, t)
-        circ.push(GateU(-theta / 2, 0, 0), t)
-        circ.push(GateCX(), c, t)
-        circ.push(GateU(theta / 2, -pi / 2, 0), t)
-        return circ
+    return mc.Control(1, GateRX(theta))
 
 
-class GateCRY(mctrl.Control):
+@mc.register_control_decomposition(1, mc.GateRX)
+def _decompose_gatecrx(gate, circ, qubits, bits, zvars):
+    c, t = qubits
+    theta = gate.op.theta
+    circ.push(GateP(pi / 2), t)
+    circ.push(GateCX(), c, t)
+    circ.push(GateU(-theta / 2, 0, 0), t)
+    circ.push(GateCX(), c, t)
+    circ.push(GateU(theta / 2, -pi / 2, 0), t)
+    return circ
+
+
+def GateCRY(theta):
     r"""Two qubit Controlled-RY gate.
 
     By convention, the first qubit is the control and the second is
@@ -135,21 +135,21 @@ class GateCRY(mctrl.Control):
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
-
-    def __init__(self, theta):
-        super().__init__(1, GateRY(theta))
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        c, t = qubits
-        theta = self.op.theta
-        circ.push(GateRY(theta / 2), t)
-        circ.push(GateCX(), c, t)
-        circ.push(GateRY(-theta / 2), t)
-        circ.push(GateCX(), c, t)
-        return circ
+    return mc.Control(1, GateRY(theta))
 
 
-class GateCRZ(mctrl.Control):
+@mc.register_control_decomposition(1, mc.GateRY)
+def _decompose_gatecry(gate, circ, qubits, bits, zvars):
+    c, t = qubits
+    theta = gate.op.theta
+    circ.push(GateRY(theta / 2), t)
+    circ.push(GateCX(), c, t)
+    circ.push(GateRY(-theta / 2), t)
+    circ.push(GateCX(), c, t)
+    return circ
+
+
+def GateCRZ(lmbda):
     r"""Two qubit Controlled-RZ gate.
 
     By convention, the first qubit is the control and the second is
@@ -197,15 +197,15 @@ class GateCRZ(mctrl.Control):
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
+    return mc.Control(1, GateRZ(lmbda))
 
-    def __init__(self, theta):
-        super().__init__(1, GateRZ(theta))
 
-    def _decompose(self, circ, qubits, bits, zvars):
-        c, t = qubits
-        lmbda = self.op.lmbda
-        circ.push(GateRZ(lmbda / 2), t)
-        circ.push(GateCX(), c, t)
-        circ.push(GateRZ(-lmbda / 2), t)
-        circ.push(GateCX(), c, t)
-        return circ
+@mc.register_control_decomposition(1, mc.GateRZ)
+def _decompose_gatecrz(gate, circ, qubits, bits, zvars):
+    c, t = qubits
+    lmbda = gate.op.lmbda
+    circ.push(GateRZ(lmbda / 2), t)
+    circ.push(GateCX(), c, t)
+    circ.push(GateRZ(-lmbda / 2), t)
+    circ.push(GateCX(), c, t)
+    return circ

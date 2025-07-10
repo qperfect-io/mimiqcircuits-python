@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ T = TypeVar("T", bound=Gate)  # T is a type variable bound to Gate
 class RescaledGate(AbstractOperator, Generic[T]):
     r"""RescaledGate operation.
 
-    The `RescaledGate` represents an operation where a quantum gate is rescaled by a factor `p`, 
-    typically between 0 and 1. This rescaling modifies the action of the gate, multiplying its 
-    matrix representation by `p`. The gate to be rescaled must be an instance of the `Gate` class, 
+    The `RescaledGate` represents an operation where a quantum gate is rescaled by a factor `p`,
+    typically between 0 and 1. This rescaling modifies the action of the gate, multiplying its
+    matrix representation by `p`. The gate to be rescaled must be an instance of the `Gate` class,
     and `p` must be a valid scalar (real or symbolic) in the range [0, 1].
 
     Args:

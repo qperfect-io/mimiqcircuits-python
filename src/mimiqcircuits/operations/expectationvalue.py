@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,12 +57,12 @@ class ExpectationValue(Operation):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(GateX()), 1, 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instructions:
         └── ⟨X⟩ @ q[1], z[1]
         <BLANKLINE>
 
         >>> c.push(ExpectationValue(SigmaPlus()), 1, 2)
-        2-qubit circuit with 2 instructions:
+        2-qubit, 3-zvar circuit with 2 instructions:
         ├── ⟨X⟩ @ q[1], z[1]
         └── ⟨SigmaPlus(1)⟩ @ q[1], z[2]
         <BLANKLINE>
@@ -91,6 +91,7 @@ class ExpectationValue(Operation):
         self._num_qubits = self.op._num_qubits
         self._qregsizes = [self._num_qubits]
         self._zregsizes = [1]
+        self._parnames = tuple(op._parnames)
 
     def opname(self):
         return self._name
@@ -134,6 +135,12 @@ class ExpectationValue(Operation):
 
     def get_operation(self):
         return self.op
+
+    def getparams(self):
+        return self.op.getparams()
+
+    def evaluate(self, d):
+        return ExpectationValue(self.op.evaluate(d))
 
 
 __all__ = ["ExpectationValue"]

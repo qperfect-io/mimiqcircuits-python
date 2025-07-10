@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -113,6 +113,7 @@ class GateHXY(mc.Gate):
         └── U(0, 0, 0, (-1/4)*pi) @ q[0]
         <BLANKLINE>
     """
+
     _name = "HXY"
 
     _num_qubits = 1
@@ -128,7 +129,7 @@ class GateHXY(mc.Gate):
         return control_one_defined(n, self, mc.Control(1, GateHXY()))
 
     def _matrix(self):
-        return Matrix([[0, 1-I], [1+I, 0]]) / sqrt(2)
+        return Matrix([[0, 1 - I], [1 + I, 0]]) / sqrt(2)
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
@@ -136,7 +137,7 @@ class GateHXY(mc.Gate):
         circ.push(mc.GateZ(), q)
         circ.push(mc.GateH(), q)
         circ.push(mc.GateS(), q)
-        circ.push(mc.GateU(0, 0, 0, -pi/4), q)
+        circ.push(mc.GateU(0, 0, 0, -pi / 4), q)
         return circ
 
 
@@ -175,6 +176,7 @@ class GateHYZ(mc.Gate):
         └── U(0, 0, 0, (-1/4)*pi) @ q[0]
         <BLANKLINE>
     """
+
     _name = "HYZ"
 
     _num_qubits = 1
@@ -200,7 +202,7 @@ class GateHYZ(mc.Gate):
         circ.push(mc.GateS(), q)
         circ.push(mc.GateH(), q)
         circ.push(mc.GateZ(), q)
-        circ.push(mc.GateU(0, 0, 0, -pi/4), q)
+        circ.push(mc.GateU(0, 0, 0, -pi / 4), q)
         return circ
 
 
@@ -243,5 +245,6 @@ class GateHXZ(mc.Gate):
         └── U((1/2)*pi, 0, pi, 0.0) @ q[0]
         <BLANKLINE>
     """
+
     def __new__(self):
         return GateH()

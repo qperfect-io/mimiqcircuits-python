@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ class Amplitude(Operation):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(Amplitude(BitString(2)),0)
-        0-qubit circuit with 1 instructions:
+        1-zvar circuit with 1 instructions:
         └── Amplitude(bs"00") @ z[0]
         <BLANKLINE>
     """
@@ -67,9 +67,10 @@ class Amplitude(Operation):
 
     def __str__(self):
         return f'{self._name}(bs"{self.bs.to01()}")'
-    
+
     @staticmethod
     def isunitary():
         return True
+
 
 __all__ = ["Amplitude"]

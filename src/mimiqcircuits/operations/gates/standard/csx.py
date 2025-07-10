@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 from mimiqcircuits.operations.gates.standard.sx import GateSX, GateSXDG
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
 from mimiqcircuits.operations.gates.standard.deprecated import GateU1
-import mimiqcircuits.operations.control as mctrl
+import mimiqcircuits as mc
 from symengine import pi
 
 
-class GateCSX(mctrl.Control):
+def GateCSX():
     r"""Two qubit Controled-SX gate.
 
     By convention, the first qubit is the control and second one is the
@@ -56,29 +56,30 @@ class GateCSX(mctrl.Control):
         └── CSX @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSX().power(2), GateCSX().inverse()
-        (CX, CSX†)
+        (CX, C(SX†))
         >>> GateCSX().decompose()
-        2-qubit circuit with 3 instructions:
-        ├── H @ q[1]
-        ├── CU1((1/2)*pi) @ q[0], q[1]
-        └── H @ q[1]
+        2-qubit circuit with 4 instructions:
+        ├── C(S†) @ q[0], q[1]
+        ├── CH @ q[0], q[1]
+        ├── C(S†) @ q[0], q[1]
+        └── CU(0, 0, 0, (1/4)*pi) @ q[0], q[1]
         <BLANKLINE>
     """
-
-    def __init__(self):
-        super().__init__(1, GateSX())
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        a, b = qubits
-
-        circ.push(GateH(), b)
-        circ.push(GateU1(pi / 2).control(1), a, b)
-        circ.push(GateH(), b)
-
-        return circ
+    return mc.Control(1, GateSX())
 
 
-class GateCSXDG(mctrl.Control):
+@mc.register_control_decomposition(1, mc.GateSX)
+def _decompose_gatecsx(gate, circ, qubits, bits, zvars):
+    a, b = qubits
+
+    circ.push(GateH(), b)
+    circ.push(GateU1(pi / 2).control(1), a, b)
+    circ.push(GateH(), b)
+
+    return circ
+
+
+def GateCSXDG():
     r"""Two qubit :math:`{CSX}^\dagger` gate.
 
     **Matrix representation:**
@@ -94,7 +95,7 @@ class GateCSXDG(mctrl.Control):
     Examples:
         >>> from mimiqcircuits import *
         >>> GateCSXDG(), GateCSXDG().num_controls, GateCSXDG().num_targets, GateCSXDG().num_qubits
-        (CSX†, 1, 1, 2)
+        (C(SX†), 1, 1, 2)
         >>> GateCSXDG().matrix()
         [1.0, 0, 0, 0]
         [0, 1.0, 0, 0]
@@ -104,26 +105,27 @@ class GateCSXDG(mctrl.Control):
         >>> c = Circuit().push(GateCSXDG(), 0, 1)
         >>> c
         2-qubit circuit with 1 instructions:
-        └── CSX† @ q[0], q[1]
+        └── C(SX†) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSXDG().power(2), GateCSXDG().inverse()
-        (C(SX†**2), CSX)
+        (C((SX†)**2), CSX)
         >>> GateCSXDG().decompose()
-        2-qubit circuit with 3 instructions:
-        ├── H @ q[1]
-        ├── CU1((-1/2)*pi) @ q[0], q[1]
-        └── H @ q[1]
+        2-qubit circuit with 4 instructions:
+        ├── CS @ q[0], q[1]
+        ├── CH @ q[0], q[1]
+        ├── CS @ q[0], q[1]
+        └── CU(0, 0, 0, (-1/4)*pi) @ q[0], q[1]
         <BLANKLINE>
     """
+    return mc.Control(1, GateSXDG())
 
-    def __init__(self):
-        super().__init__(1, GateSXDG())
 
-    def _decompose(self, circ, qubits, bits, zvars):
-        a, b = range(self.num_qubits)
+@mc.register_control_decomposition(1, mc.GateSXDG)
+def _decompose_gatecsxdg(gate, circ, qubits, bits, zvars):
+    a, b = qubits
 
-        circ.push(GateH(), b)
-        circ.push(GateU1(-pi / 2).control(1), a, b)
-        circ.push(GateH(), b)
+    circ.push(GateH(), b)
+    circ.push(GateU1(-pi / 2).control(1), a, b)
+    circ.push(GateH(), b)
 
-        return circ
+    return circ

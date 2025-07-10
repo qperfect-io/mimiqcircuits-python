@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,11 +58,52 @@ CIRCUIT_FNAME = "circuit"
 
 EXTENSION_PROTO = "pb"
 EXTENSION_QASM = "qasm"
-EXTENSION_QASM = "stim"
+EXTENSION_STIM = "stim"
 
 TYPE_PROTO = "proto"
 TYPE_QASM = "qasm"
 TYPE_STIM = "stim"
+
+
+def _file_is_openqasm2(file_path: str) -> bool:
+    with open(file_path, "r") as file:
+        for line in file:
+            line = line.strip()
+            if line.startswith("//") or not line:
+                continue
+            return line.startswith("OPENQASM 2.0;")
+    return False
+
+
+def _file_may_be_stim(filepath: str) -> bool:
+    STIM_KEYWORDS = {
+        "I", "X", "Y", "Z", "C_XYZ", "C_ZYX", "H", "H_XY", "H_XZ", "H_YZ", "S",
+        "SQRT_X", "SQRT_X_DAG", "SQRT_Y", "SQRT_Y_DAG", "SQRT_Z", "SQRT_Z_DAG", "S_DAG",
+        "CNOT", "CX", "CXSWAP", "CY", "CZ", "CZSWAP", "ISWAP", "ISWAP_DAG",
+        "SQRT_XX", "SQRT_XX_DAG", "SQRT_YY", "SQRT_YY_DAG", "SQRT_ZZ", "SQRT_ZZ_DAG",
+        "SWAP", "SWAPCX", "SWAPCZ", "XCX", "XCY", "XCZ", "YCX", "YCY", "YCZ", "ZCX", "ZCY", "ZCZ",
+        "CORRELATED_ERROR", "DEPOLARIZE1", "DEPOLARIZE2", "E", "ELSE_CORRELATED_ERROR",
+        "HERALDED_ERASE", "HERALDED_PAULI_CHANNEL_1", "PAULI_CHANNEL_1", "PAULI_CHANNEL_2",
+        "X_ERROR", "Y_ERROR", "Z_ERROR", "M", "MR", "MRX", "MRY", "MRZ", "MX", "MY", "MZ",
+        "R", "RX", "RY", "RZ", "MXX", "MYY", "MZZ", "MPP", "SPP", "SPP_DAG",
+        "REPEAT", "DETECTOR", "MPAD", "OBSERVABLE_INCLUDE", "QUBIT_COORDS", "SHIFT_COORDS", "TICK"
+    }
+
+    try:
+        with open(filepath, "r") as f:
+            while True:
+                line = f.readline()
+                if not line:
+                    break
+                line = line.strip()
+                if line.startswith("#") or line == "":
+                    continue
+                first_word = line.split()[0] if line.split() else ""
+                if first_word in STIM_KEYWORDS:
+                    return True
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File {filepath} not found.")
+    return False
 
 
 class QCSError:
@@ -73,20 +114,48 @@ class QCSError:
         return self.error
 
 
-class MimiqConnection(mimiqlink.MimiqConnection):
-    """Represents a connection to the Mimiq Server.
+class RemoteConnection:
+    """Base class for connections to the Mimiq Server.
 
-    Inherits from: mimiqlink.MimiqConnection python.
+    This class provides common functionality for both MimiqConnection and PlanqkConnection.
     """
+
+    def __init__(self, connection: mimiqlink.AbstractConnection):
+        """Initialize a remote connection using a specific connection type.
+
+        Args:
+            connection: A mimiqlink connection object (MimiqConnection or PlanqkConnection)
+        """
+        self.connection = connection
 
     def __get_timelimit(self):
         """Fetch the maximum time limit for execution from the server."""
-        limits = self.user_limits
-
-        if limits and limits.get("enabledMaxTimeout"):
-            return limits.get("maxTimeout", DEFAULT_TIME_LIMIT)
+        # For MimiqConnection, get from user_limits
+        if isinstance(self.connection, mimiqlink.MimiqConnection) and hasattr(
+            self.connection, "user_limits"
+        ):
+            limits = self.connection.user_limits
+            if limits and limits.get("enabledMaxTimeout"):
+                return limits.get("maxTimeout", DEFAULT_TIME_LIMIT)
 
         return DEFAULT_TIME_LIMIT
+
+    # Forward the attribute/method call to the connection object
+    def __getattr__(self, name):
+        original = getattr(self.connection, name)
+
+        # It it is not callable, jsut return it
+        if not callable(original):
+            return original
+
+        # If it is a method, we need to wrap the return value
+        def wrapped(*args, **kwargs):
+            result = original(*args, **kwargs)
+            if isinstance(result, type(self.connection)):
+                return self
+            return result
+
+        return wrapped
 
     def execute(
         self,
@@ -132,204 +201,6 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                         or if a circuit contains unevaluated symbolic parameters.
             FileNotFoundError: If a QASM file is not found.
             TypeError: If the circuits argument is not a Circuit object or a valid file path.
-
-        .. note::
-                You can also pass a single QASM file path as a string or a list of QASM file paths instead of Circuit objects.
-                This allows for executing circuits defined in the OpenQASM format directly.
-
-        Examples:
-            ...
-
-            **Connecting to server**
-
-            >>> from mimiqcircuits import *
-            >>> conn = MimiqConnection()
-            >>> conn.connect()
-            Connection:
-            ├── url: https://mimiq.qperfect.io/api
-            ├── Computing time: 597/10000 minutes
-            ├── Executions: 452/10000
-            ├── Max time limit per request: 180 minutes
-            └── status: open
-            <BLANKLINE>
-            >>> c = Circuit()
-            >>> c.push(GateH(), range(10))
-            10-qubit circuit with 10 instructions:
-            ├── H @ q[0]
-            ├── H @ q[1]
-            ├── H @ q[2]
-            ├── H @ q[3]
-            ├── H @ q[4]
-            ├── H @ q[5]
-            ├── H @ q[6]
-            ├── H @ q[7]
-            ├── H @ q[8]
-            └── H @ q[9]
-            <BLANKLINE>
-            >>> job = conn.execute(c, algorithm="auto")
-            >>> res = conn.get_results(job)
-            >>> res
-            [QCSResults:
-            ├── simulator: MIMIQ-StateVector 0.18.0
-            ├── timings:
-            │    ├── parse time: 7.3677e-05s
-            │    ├── apply time: 2.4677e-05s
-            │    ├── total time: 0.000306075s
-            │    ├── compression time: 8.103e-06s
-            │    └── sample time: 0.000141276s
-            ├── fidelity estimate: 1
-            ├── average multi-qubit gate error estimate: 0
-            ├── most sampled:
-            │    ├── bs"1100000001" => 7
-            │    ├── bs"1010110100" => 5
-            │    ├── bs"0010110110" => 4
-            │    ├── bs"1001010110" => 4
-            │    └── bs"1001100111" => 4
-            ├── 1 executions
-            ├── 0 amplitudes
-            └── 1000 samples]
-
-            **Prepare List of Circuits for execution (Batch-Mode)**
-
-            >>> c1 = Circuit()
-            >>> c1.push(Control(2, GateH()), 0, 1, 3)
-            4-qubit circuit with 1 instructions:
-            └── C₂H @ q[0,1], q[3]
-            <BLANKLINE>
-            >>> job = conn.execute([c,c1], algorithm="auto")
-
-            List of Results for all Circuits
-
-            >>> res = conn.get_results(job)
-            >>> res
-            [QCSResults:
-            ├── simulator: MIMIQ-StateVector 0.18.0
-            ├── timings:
-            │    ├── parse time: 0.00011103s
-            │    ├── apply time: 2.7497e-05s
-            │    ├── total time: 0.000326494s
-            │    ├── compression time: 8.657e-06s
-            │    └── sample time: 0.000110076s
-            ├── fidelity estimate: 1
-            ├── average multi-qubit gate error estimate: 0
-            ├── most sampled:
-            │    ├── bs"1011011100" => 6
-            │    ├── bs"0110001101" => 4
-            │    ├── bs"0001011001" => 4
-            │    ├── bs"1011010010" => 4
-            │    └── bs"1000000001" => 4
-            ├── 1 executions
-            ├── 0 amplitudes
-            └── 1000 samples, QCSResults:
-            ├── simulator: MIMIQ-StateVector 0.18.0
-            ├── timings:
-            │    ├── parse time: 0.081798891s
-            │    ├── apply time: 0.277081657s
-            │    ├── total time: 0.43127283099999997s
-            │    ├── amplitudes time: 1.08e-07s
-            │    ├── compression time: 0.072055493s
-            │    └── sample time: 5.2623e-05s
-            ├── fidelity estimate: 1
-            ├── average multi-qubit gate error estimate: 0
-            ├── most sampled:
-            │    └── bs"0000" => 1000
-            ├── 1 executions
-            ├── 0 amplitudes
-            └── 1000 samples]
-
-            Result of the first circuit
-
-            >>> res = conn.get_result(job)
-            Warning: Multiple results found. Returning the first one.
-            >>> res
-            QCSResults:
-            ├── simulator: MIMIQ-StateVector 0.18.0
-            ├── timings:
-            │    ├── parse time: 0.00011103s
-            │    ├── apply time: 2.7497e-05s
-            │    ├── total time: 0.000326494s
-            │    ├── compression time: 8.657e-06s
-            │    └── sample time: 0.000110076s
-            ├── fidelity estimate: 1
-            ├── average multi-qubit gate error estimate: 0
-            ├── most sampled:
-            │    ├── bs"1011011100" => 6
-            │    ├── bs"0110001101" => 4
-            │    ├── bs"0001011001" => 4
-            │    ├── bs"1011010010" => 4
-            │    └── bs"1000000001" => 4
-            ├── 1 executions
-            ├── 0 amplitudes
-            └── 1000 samples
-
-            Input parameters and List of the input Circuits
-
-            >>> circs, parameters = conn.get_inputs(job)
-            Downloaded files: ['circuit1.pb', 'circuit2.pb', 'circuits.json', 'request.json']
-            >>> circs
-            [10-qubit circuit with 10 instructions:
-            ├── H @ q[0]
-            ├── H @ q[1]
-            ├── H @ q[2]
-            ├── H @ q[3]
-            ├── H @ q[4]
-            ├── H @ q[5]
-            ├── H @ q[6]
-            ├── H @ q[7]
-            ├── H @ q[8]
-            └── H @ q[9]
-            , 4-qubit circuit with 1 instructions:
-            └── C₂H @ q[0,1], q[3]
-            ]
-            >>> parameters
-            {'algorithm': 'auto', 'bitstrings': [], 'samples': 1000, 'seed': 1550300089630762344, 'circuits': [{'file': 'circuit1.pb', 'type': 'proto'}, {'file': 'circuit2.pb', 'type': 'proto'}], 'bondDimension': 256, 'entDimension': 16}
-
-            Input parameters and first input Circuit
-
-            >>> circ, parameters = conn.get_input(job)
-            Downloaded files: ['circuit1.pb', 'circuit2.pb', 'circuits.json', 'request.json']
-            Warning: Multiple results found. Returning the first one.
-            >>> circ
-            10-qubit circuit with 10 instructions:
-            ├── H @ q[0]
-            ├── H @ q[1]
-            ├── H @ q[2]
-            ├── H @ q[3]
-            ├── H @ q[4]
-            ├── H @ q[5]
-            ├── H @ q[6]
-            ├── H @ q[7]
-            ├── H @ q[8]
-            └── H @ q[9]
-            <BLANKLINE>
-            >>> parameters
-            {'algorithm': 'auto', 'bitstrings': [], 'samples': 1000, 'seed': 1550300089630762344, 'circuits': [{'file': 'circuit1.pb', 'type': 'proto'}, {'file': 'circuit2.pb', 'type': 'proto'}], 'bondDimension': 256, 'entDimension': 16}
-
-
-        Connecting Using Credentials
-        ----------------------------
-
-        .. code-block:: python
-
-            conn = MimiqConnection(url="https://mimiq.qperfect.io/api")
-            conn.connect("Email_address", "Password")
-
-        Saving and Loading Tokens
-        -------------------------
-
-        .. code-block:: python
-
-            conn.savetoken("qperfect.json")
-            conn.loadtoken("qperfect.json")
-
-        Closing a Connection and Checking Connection Status
-        ---------------------------------------------------
-
-        .. code-block:: python
-
-            conn.close()
-
-            conn.isOpen()
         """
 
         if nsamples > MAX_SAMPLES:
@@ -432,25 +303,38 @@ class MimiqConnection(mimiqlink.MimiqConnection):
                     allfiles.append(circuit_filename)
                 elif isinstance(circuit, str):
                     if not os.path.isfile(circuit):
-                        raise FileNotFoundError(f"QASM file {circuit} not found.")
-                    circuit_filename = os.path.join(
-                        tmpdir, f"{CIRCUIT_FNAME}{i + 1}.{EXTENSION_QASM}"
-                    )
-                    shutil.copyfile(circuit, circuit_filename)
+                        raise FileNotFoundError(f"File {circuit} not found.")
 
-                    if qasmincludes is None:
-                        qasmincludes = []
-
-                    circuit_files.append(
-                        {
+                    # Case: QASM
+                    if _file_is_openqasm2(circuit):
+                        circuit_filename = os.path.join(tmpdir, f"{CIRCUIT_FNAME}{i+1}.{EXTENSION_QASM}")
+                        shutil.copyfile(circuit, circuit_filename)
+                        if qasmincludes is None:
+                            qasmincludes = []
+                        circuit_files.append({
                             "file": os.path.basename(circuit_filename),
-                            "type": TYPE_QASM,
-                        }
-                    )
-                    allfiles.append(circuit_filename)
+                            "type": TYPE_QASM
+                        })
+                        allfiles.append(circuit_filename)
+
+                    # Case: STIM
+                    elif _file_may_be_stim(circuit):
+                        circuit_filename = os.path.join(tmpdir, f"{CIRCUIT_FNAME}{i+1}.{EXTENSION_STIM}")
+                        shutil.copyfile(circuit, circuit_filename)
+                        circuit_files.append({
+                            "file": os.path.basename(circuit_filename),
+                            "type": TYPE_STIM
+                        })
+                        allfiles.append(circuit_filename)
+
+                    # Unknown type
+                    else:
+                        raise ValueError(
+                            f"File {circuit} is neither a valid OpenQASM 2.0 file nor a recognizable STIM file."
+                        )
                 else:
                     raise TypeError(
-                        "circuits must be Circuit objects or paths to QASM files"
+                        "circuits must be Circuit objects or paths to QASM or STIM files"
                     )
 
             jsonbitstrings = ["bs" + o.to01() for o in bitstrings]
@@ -500,7 +384,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             emutype = "CIRC"
 
             sleep(0.1)
-            return self.request(
+            return self.connection.request(
                 emutype,
                 algorithm,
                 label,
@@ -522,19 +406,19 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             RuntimeError: If the remote job encounters an error.
         """
         # Wait for the job to finish
-        while not self.isJobDone(execution):
+        while not self.connection.isJobDone(execution):
             sleep(interval)
 
-        infos = self.requestInfo(execution)
+        infos = self.connection.requestInfo(execution)
 
-        if infos["status"] == "ERROR":
+        if infos.status == "ERROR":
             error_message = infos.get("errorMessage", "Remote job errored.")
             raise RuntimeError(f"Remote job errored: {error_message}")
-        elif infos["status"] == "CANCELED":
+        elif infos.status == "CANCELED":
             raise RuntimeError("Remote job canceled.")
 
         with tempfile.TemporaryDirectory(prefix="mimiq_res_") as tmpdir:
-            names = self.downloadResults(execution, destdir=tmpdir)
+            names = self.connection.downloadResults(execution, destdir=tmpdir)
 
             results_file_path = os.path.join(tmpdir, "results.json")
 
@@ -589,7 +473,7 @@ class MimiqConnection(mimiqlink.MimiqConnection):
             RuntimeError: If required files are not found in the inputs.
         """
         with tempfile.TemporaryDirectory(prefix="mimiq_in_") as tmpdir:
-            names = self.downloadJobFiles(execution, destdir=tmpdir)
+            names = self.connection.downloadJobFiles(execution, destdir=tmpdir)
 
             # Print the downloaded files for debugging purposes
             print(f"Downloaded files: {names}")
@@ -643,5 +527,47 @@ class MimiqConnection(mimiqlink.MimiqConnection):
 
         return circuits[0], parameters
 
+    def __repr__(self):
+        """Return a string representation of the connection."""
+        return self.connection.__repr__()
 
-__all__ = ["MimiqConnection"]
+    def __str__(self):
+        """Return a string representation of the connection."""
+        return self.connection.__str__()
+
+
+class MimiqConnection(RemoteConnection):
+    """Represents a connection to the Mimiq Server via direct cloud connection.
+
+    This is a wrapper around mimiqlink.MimiqConnection to provide the circuit execution API.
+    """
+
+    def __init__(self, url=None):
+        """Initialize a MimiqConnection.
+
+        Args:
+            url (str, optional): The URL of the Mimiq server. Defaults to None (using default cloud URL).
+        """
+        connection = mimiqlink.MimiqConnection(url)
+        super().__init__(connection)
+
+
+class PlanqkConnection(RemoteConnection):
+    """Represents a connection to the Mimiq Server via PlanQK.
+
+    This is a wrapper around mimiqlink.PlanqkConnection to provide the circuit execution API.
+    """
+
+    def __init__(self, url=None, consumer_key=None, consumer_secret=None):
+        """Initialize a PlanqkConnection.
+
+        Args:
+            url (str, optional): The URL of the PlanQK API. Defaults to None (using default PlanQK URL).
+            consumer_key (str, optional): The consumer key for PlanQK authentication. Defaults to None.
+            consumer_secret (str, optional): The consumer secret for PlanQK authentication. Defaults to None.
+        """
+        connection = mimiqlink.PlanqkConnection(url, consumer_key, consumer_secret)
+        super().__init__(connection)
+
+
+__all__ = ["MimiqConnection", "PlanqkConnection", "RemoteConnection"]

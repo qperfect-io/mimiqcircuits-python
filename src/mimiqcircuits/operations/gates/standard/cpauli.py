@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from mimiqcircuits.operations.gates.standard.hadamard import GateH
 import mimiqcircuits as mc
 
 
-class GateCX(mctrl.Control):
+def GateCX():
     r"""Two qubit Controlled-X gate (or CNOT).
 
     By convention, the first qubit is the control and the second is
@@ -60,17 +60,17 @@ class GateCX(mctrl.Control):
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
-
-    def __init__(self):
-        super().__init__(1, GateX())
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        c, t = qubits
-        circ.push(mc.GateCX(), c, t)
-        return circ
+    return mc.Control(1, mc.GateX())
 
 
-class GateCY(mctrl.Control):
+@mc.register_control_decomposition(1, mc.GateX)
+def _decompose_gatecx(gate, circ, qubits, bits, zvars):
+    c, t = qubits
+    circ.push(gate, c, t)
+    return circ
+
+
+def GateCY():
     r"""Two qubit Controlled-Y gate.
 
     By convention, the first qubit is the control and the second is
@@ -110,19 +110,19 @@ class GateCY(mctrl.Control):
         └── S @ q[1]
         <BLANKLINE>
     """
-
-    def __init__(self):
-        super().__init__(1, GateY())
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        c, t = qubits
-        circ.push(GateSDG(), t)
-        circ.push(GateCX(), c, t)
-        circ.push(GateS(), t)
-        return circ
+    return mc.Control(1, GateY())
 
 
-class GateCZ(mctrl.Control):
+@mc.register_control_decomposition(1, mc.GateY)
+def _decompose_gatecy(gate, circ, qubits, bits, zvars):
+    c, t = qubits
+    circ.push(GateSDG(), t)
+    circ.push(GateCX(), c, t)
+    circ.push(GateS(), t)
+    return circ
+
+
+def GateCZ():
     r"""Two qubit Controlled-Z gate.
 
     By convention, the first qubit is the control and the second is
@@ -162,13 +162,13 @@ class GateCZ(mctrl.Control):
         └── H @ q[1]
         <BLANKLINE>
     """
+    return mc.Control(1, GateZ())
 
-    def __init__(self):
-        super().__init__(1, GateZ())
 
-    def _decompose(self, circ, qubits, bits, zvars):
-        c, t = qubits
-        circ.push(GateH(), t)
-        circ.push(GateCX(), c, t)
-        circ.push(GateH(), t)
-        return circ
+@mc.register_control_decomposition(1, mc.GateZ)
+def _decompose_gatecz(gate, circ, qubits, bits, zvars):
+    c, t = qubits
+    circ.push(GateH(), t)
+    circ.push(GateCX(), c, t)
+    circ.push(GateH(), t)
+    return circ

@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.operations.utils import control_one_defined
-import mimiqcircuits as mc
 from symengine import pi
 
+import mimiqcircuits as mc
 
-class GateSX(mc.Power):
+
+def GateSX():
     r"""Single qubit :math:`\sqrt{X}` gate.
 
     **Matrix representation:**
@@ -54,55 +54,23 @@ class GateSX(mc.Power):
         └── U(0, 0, 0, (1/4)*pi) @ q[0]
         <BLANKLINE>
     """
-
-    _name = "SX"
-
-    name = "SX"
-
-    def __init__(self):
-        super().__init__(mc.GateX(), 1 / 2)
-
-    def inverse(self):
-        return GateSXDG()
-
-    def isopalias(self):
-        return True
-
-    def _control(self, n):
-        return control_one_defined(n, self, mc.GateCSX())
-
-    def _power(self, p):
-        # SX * SX = X
-        if p % 4 == 2:
-            return mc.GateX()
-
-        # (SX * SX) * (SX * SX) = X * X = ID
-        if p % 4 == 0:
-            return mc.GateID()
-
-        # (SX * SX * SX) * SX = ID => SX * SX * SX = SX†
-        if p % 4 == 3:
-            return mc.GateSXDG()
-
-        # SX * SX * SX * SX = ID => SX^(n*4) * SX = ID * SX = SX
-        if p % 4 == 1:
-            return self
-
-        return mc.Power(self, p)
-
-    def __str__(self):
-        return f"{self.name}"
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        q = qubits[0]
-        circ.push(mc.GateSDG(), q)
-        circ.push(mc.GateH(), q)
-        circ.push(mc.GateSDG(), q)
-        circ.push(mc.GateU(0, 0, 0, pi / 4), q)
-        return circ
+    return mc.Power(mc.GateX(), 1 / 2)
 
 
-class GateSXDG(mc.Inverse):
+mc.register_power_alias(mc.GateX, 1 / 2, "SX")
+
+
+@mc.register_power_decomposition(mc.GateX, 1 / 2)
+def _decompose_gatesx(self, circ, qubits, bits, zvars):
+    q = qubits[0]
+    circ.push(mc.GateSDG(), q)
+    circ.push(mc.GateH(), q)
+    circ.push(mc.GateSDG(), q)
+    circ.push(mc.GateU(0, 0, 0, pi / 4), q)
+    return circ
+
+
+def GateSXDG():
     r"""Single qubit :math:`\sqrt{X}^\dagger` gate (conjugate transpose of the :math:`\sqrt{X}` gate).
 
     **Matrix representation:**
@@ -127,7 +95,7 @@ class GateSXDG(mc.Inverse):
         └── SX† @ q[0]
         <BLANKLINE>
         >>> GateSXDG().power(2), GateSXDG().inverse()
-        (SX†**2, SX)
+        ((SX†)**2, SX)
         >>> GateSXDG().decompose()
         1-qubit circuit with 4 instructions:
         ├── S @ q[0]
@@ -136,23 +104,14 @@ class GateSXDG(mc.Inverse):
         └── U(0, 0, 0, (-1/4)*pi) @ q[0]
         <BLANKLINE>
     """
+    return mc.Inverse(GateSX())
 
-    def __init__(self):
-        super().__init__(GateSX())
 
-    def inverse(self):
-        return GateSX()
-
-    def isopalias(self):
-        return True
-
-    def _control(self, n):
-        return control_one_defined(n, self, mc.GateCSXDG())
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        q = qubits[0]
-        circ.push(mc.GateS(), q)
-        circ.push(mc.GateH(), q)
-        circ.push(mc.GateS(), q)
-        circ.push(mc.GateU(0, 0, 0, -pi / 4), q)
-        return circ
+@mc.register_inverse_decomposition((mc.Power, mc.GateX, 1 / 2))
+def _decompose_gatesxdg(self, circ, qubits, bits, zvars):
+    q = qubits[0]
+    circ.push(mc.GateS(), q)
+    circ.push(mc.GateH(), q)
+    circ.push(mc.GateS(), q)
+    circ.push(mc.GateU(0, 0, 0, -pi / 4), q)
+    return circ

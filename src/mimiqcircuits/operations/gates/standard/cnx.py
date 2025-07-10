@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ from symengine import pi
 import mimiqcircuits as mc
 
 
-class GateCCX(mc.Control):
+def GateCCX():
     """Three qubit Controlled-Controlled-X gate.
 
     By convention, the first two qubits are the controls and the third is the
@@ -65,31 +65,31 @@ class GateCCX(mc.Control):
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
-
-    def __init__(self):
-        super().__init__(2, mc.GateX())
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        c1, c2, t = qubits
-        circ.push(mc.GateH(), t)
-        circ.push(mc.GateCX(), c2, t)
-        circ.push(mc.GateT().inverse(), t)
-        circ.push(mc.GateCX(), c1, t)
-        circ.push(mc.GateT(), t)
-        circ.push(mc.GateCX(), c2, t)
-        circ.push(mc.GateT().inverse(), t)
-        circ.push(mc.GateCX(), c1, t)
-        circ.push(mc.GateT(), c2)
-        circ.push(mc.GateT(), t)
-        circ.push(mc.GateH(), t)
-        circ.push(mc.GateCX(), c1, c2)
-        circ.push(mc.GateT(), c1)
-        circ.push(mc.GateT().inverse(), c2)
-        circ.push(mc.GateCX(), c1, c2)
-        return circ
+    return mc.Control(2, mc.GateX())
 
 
-class GateC3X(mc.Control):
+@mc.register_control_decomposition(2, mc.GateX)
+def _decompose_gateccx(self, circ, qubits, bits, zvars):
+    c1, c2, t = qubits
+    circ.push(mc.GateH(), t)
+    circ.push(mc.GateCX(), c2, t)
+    circ.push(mc.GateT().inverse(), t)
+    circ.push(mc.GateCX(), c1, t)
+    circ.push(mc.GateT(), t)
+    circ.push(mc.GateCX(), c2, t)
+    circ.push(mc.GateT().inverse(), t)
+    circ.push(mc.GateCX(), c1, t)
+    circ.push(mc.GateT(), c2)
+    circ.push(mc.GateT(), t)
+    circ.push(mc.GateH(), t)
+    circ.push(mc.GateCX(), c1, c2)
+    circ.push(mc.GateT(), c1)
+    circ.push(mc.GateT().inverse(), c2)
+    circ.push(mc.GateCX(), c1, c2)
+    return circ
+
+
+def GateC3X():
     r"""Four qubit Controlled-Controlled-Controlled-X gate.
 
     By convention, the first three qubits are the controls and the fourth is
@@ -149,38 +149,38 @@ class GateC3X(mc.Control):
         └── H @ q[3]
         <BLANKLINE>
     """
+    return mc.Control(3, mc.GateX())
 
-    def __init__(self):
-        super().__init__(3, mc.GateX())
 
-    def _decompose(self, circ, qubits, bits, zvars):
-        a, b, c, d = qubits
-        circ.push(mc.GateH(), d)
-        circ.push(mc.GateP(pi / 8), qubits)
-        circ.push(mc.GateCX(), a, b)
-        circ.push(mc.GateP(-pi / 8), b)
-        circ.push(mc.GateCX(), a, b)
-        circ.push(mc.GateCX(), b, c)
-        circ.push(mc.GateP(-pi / 8), c)
-        circ.push(mc.GateCX(), a, c)
-        circ.push(mc.GateP(pi / 8), c)
-        circ.push(mc.GateCX(), b, c)
-        circ.push(mc.GateP(-pi / 8), c)
-        circ.push(mc.GateCX(), a, c)
-        circ.push(mc.GateCX(), c, d)
-        circ.push(mc.GateP(-pi / 8), d)
-        circ.push(mc.GateCX(), b, d)
-        circ.push(mc.GateP(pi / 8), d)
-        circ.push(mc.GateCX(), c, d)
-        circ.push(mc.GateP(-pi / 8), d)
-        circ.push(mc.GateCX(), a, d)
-        circ.push(mc.GateP(pi / 8), d)
-        circ.push(mc.GateCX(), c, d)
-        circ.push(mc.GateP(-pi / 8), d)
-        circ.push(mc.GateCX(), b, d)
-        circ.push(mc.GateP(pi / 8), d)
-        circ.push(mc.GateCX(), c, d)
-        circ.push(mc.GateP(-pi / 8), d)
-        circ.push(mc.GateCX(), a, d)
-        circ.push(mc.GateH(), d)
-        return circ
+@mc.register_control_decomposition(3, mc.GateX)
+def _decompose_gatec3x(self, circ, qubits, bits, zvars):
+    a, b, c, d = qubits
+    circ.push(mc.GateH(), d)
+    circ.push(mc.GateP(pi / 8), qubits)
+    circ.push(mc.GateCX(), a, b)
+    circ.push(mc.GateP(-pi / 8), b)
+    circ.push(mc.GateCX(), a, b)
+    circ.push(mc.GateCX(), b, c)
+    circ.push(mc.GateP(-pi / 8), c)
+    circ.push(mc.GateCX(), a, c)
+    circ.push(mc.GateP(pi / 8), c)
+    circ.push(mc.GateCX(), b, c)
+    circ.push(mc.GateP(-pi / 8), c)
+    circ.push(mc.GateCX(), a, c)
+    circ.push(mc.GateCX(), c, d)
+    circ.push(mc.GateP(-pi / 8), d)
+    circ.push(mc.GateCX(), b, d)
+    circ.push(mc.GateP(pi / 8), d)
+    circ.push(mc.GateCX(), c, d)
+    circ.push(mc.GateP(-pi / 8), d)
+    circ.push(mc.GateCX(), a, d)
+    circ.push(mc.GateP(pi / 8), d)
+    circ.push(mc.GateCX(), c, d)
+    circ.push(mc.GateP(-pi / 8), d)
+    circ.push(mc.GateCX(), b, d)
+    circ.push(mc.GateP(pi / 8), d)
+    circ.push(mc.GateCX(), c, d)
+    circ.push(mc.GateP(-pi / 8), d)
+    circ.push(mc.GateCX(), a, d)
+    circ.push(mc.GateH(), d)
+    return circ

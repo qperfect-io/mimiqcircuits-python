@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,26 @@ import numpy as np
 import mimiqcircuits as mc
 from mimiqcircuits.operations.gates.gate import Gate
 
+_power_decomposition_registry = {}
+_power_aliases_registry = {}
+
+
+def register_power_alias(exponent, gate_type, name):
+    """Register an alias for a power gate definition"""
+    key = (exponent, gate_type)
+    _power_aliases_registry[key] = name
+
+
+def register_power_decomposition(exponent, gate_type):
+    """Decorator to register a decomposition function for a gate type"""
+
+    def decorator(decomp_func):
+        key = (exponent, gate_type)
+        _power_decomposition_registry[key] = decomp_func
+        return decomp_func
+
+    return decorator
+
 
 class Power(Gate):
     """Power operation.
@@ -42,8 +62,11 @@ class Power(Gate):
         └── X**5 @ q[1]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit circuit with 6 instructions:
-        ├── U(1.5707963267948966, -1.5707963267948966, 1.5707963267948961, 0.7853981633974482) @ q[1]
+        2-qubit circuit with 9 instructions:
+        ├── S† @ q[1]
+        ├── H @ q[1]
+        ├── S† @ q[1]
+        ├── U(0, 0, 0, (1/4)*pi) @ q[1]
         ├── X @ q[1]
         ├── X @ q[1]
         ├── X @ q[1]
@@ -148,9 +171,14 @@ class Power(Gate):
     def getparams(self):
         return self.op.getparams()
 
+    def isopalias(self):
+        key = self.gettypekey()[1:]
+        return key in _power_aliases_registry
+
     def __str__(self):
-        if self._op == mc.GateX() and self._exponent == 1 / 2:
-            return mc.GateSX().name
+        key = self.gettypekey()[1:]
+        if key in _power_aliases_registry:
+            return _power_aliases_registry[key]
 
         fraction = Fraction(self.exponent).limit_denominator(100)
 
@@ -188,7 +216,14 @@ class Power(Gate):
         exponent = self.exponent
         return self.op.evaluate(d).power(exponent)
 
+    def gettypekey(self):
+        return (Power, self.op.gettypekey(), self.exponent)
+
     def _decompose(self, circ, qubits, bits, zvars):
+        key = self.gettypekey()[1:]
+        if key in _power_decomposition_registry:
+            return _power_decomposition_registry[key](self, circ, qubits, bits, zvars)
+
         if isinstance(self.exponent, int) and self.exponent >= 1:
             for _ in range(self.exponent):
                 circ.push(self.op, *qubits)

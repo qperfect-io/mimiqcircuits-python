@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use thas file except in compliance with the License.
@@ -128,8 +128,7 @@ class Operation(ABC):
 
     def is_symbolic(self):
         return any(
-            isinstance(param, (se.Basic, sp.Basic)
-                       ) and not param.evalf().is_number
+            isinstance(param, (se.Basic, sp.Basic)) and not param.evalf().is_number
             for param in self.getparams()
         )
 
@@ -219,6 +218,13 @@ class Operation(ABC):
 
     def get_operation(self):
         return self
+
+    def listvars(self):
+        vars = set()
+        for param in self.getparams():
+            if isinstance(param, se.Basic):
+                vars.update(param.atoms(se.Symbol))
+        return list(vars)
 
 
 # export operations

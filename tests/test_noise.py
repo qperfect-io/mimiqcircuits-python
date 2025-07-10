@@ -94,12 +94,12 @@ def test_mixed_unitary():
     much4 = MixedUnitary(probs4.tolist(), Umats4)
 
     for i, Uk in enumerate(much2.unitarymatrices()):
-        if hasattr(Uk, 'matrix'):
+        if hasattr(Uk, "matrix"):
             Uk = np.array(Uk.matrix.tolist(), dtype=np.complex128)
         assert is_close(Uk, Umats2[i])
 
     for i, Uk in enumerate(much4.unitarymatrices()):
-        if hasattr(Uk, 'matrix'):
+        if hasattr(Uk, "matrix"):
             Uk = np.array(Uk.matrix.tolist(), dtype=np.complex128)
         assert is_close(Uk, Umats4[i])
 
@@ -272,13 +272,18 @@ def test_amplitude_damping():
     with pytest.raises(ValueError, match=r"Value of gamma must be between 0 and 1\."):
         AmplitudeDamping(-0.1)
 
+
 # Test Generalized Amplitude Damping channel
 def test_generalized_amplitude_damping():
     p = np.random.rand()
     gamma = np.random.rand()
     gad = GeneralizedAmplitudeDamping(p, gamma)
-    E1 = mc.DiagonalOp(float(np.sqrt(p)), float(np.sqrt(p) * np.sqrt(1 - gamma))).matrix()
-    E2 = mc.DiagonalOp(float(np.sqrt(1 - p) * np.sqrt(1 - gamma)), float(np.sqrt(1 - p))).matrix()
+    E1 = mc.DiagonalOp(
+        float(np.sqrt(p)), float(np.sqrt(p) * np.sqrt(1 - gamma))
+    ).matrix()
+    E2 = mc.DiagonalOp(
+        float(np.sqrt(1 - p) * np.sqrt(1 - gamma)), float(np.sqrt(1 - p))
+    ).matrix()
     E3 = mc.SigmaMinus(float(np.sqrt(p) * np.sqrt(gamma))).matrix()
     E4 = mc.SigmaPlus(float(np.sqrt(1 - p) * np.sqrt(gamma))).matrix()
 
@@ -305,6 +310,7 @@ def test_generalized_amplitude_damping():
 
     with pytest.raises(ValueError, match=r"Value of gamma must be between 0 and 1\."):
         GeneralizedAmplitudeDamping(p, -0.1)
+
 
 def test_phase_amplitude_damping():
     p = 0.5
@@ -346,6 +352,7 @@ def test_phase_amplitude_damping():
         PhaseAmplitudeDamping(p, gamma, 1.1)
     with pytest.raises(ValueError, match=r"Value of beta must be between 0 and 1\."):
         PhaseAmplitudeDamping(p, gamma, -0.1)
+
 
 def test_thermal_noise():
     T1 = 2.0

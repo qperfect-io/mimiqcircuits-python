@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,12 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.operations.power import Power
-from mimiqcircuits.operations.inverse import Inverse
-from mimiqcircuits.operations.gates.standard.s import GateS
-from mimiqcircuits.operations.gates.standard.u import GateU
 from symengine import pi
+
 import mimiqcircuits as mc
 
 
-class GateT(Power):
+def GateT():
     r""" Single qubit T gate.
 
     **Matrix representation:**
@@ -54,51 +51,20 @@ class GateT(Power):
         └── U(0, 0, (1/4)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-
-    _name = "T"
-
-    def __init__(self):
-        super().__init__(GateS(), 1 / 2)
-
-    def isopalias(self):
-        return True
-
-    def inverse(self):
-        return GateTDG()
-
-    def _power(self, p):
-        # T^2 * T^2 * T^2 * T^2 = S^2 * S^2 = Z * Z = ID
-        if p % 8 == 0:
-            return mc.GateID()
-
-        # T^(8n + 1) = T
-        if p % 8 == 1:
-            return GateT()
-
-        # T^(8n - 1) = T†
-        if p % 8 == 7:
-            return GateTDG()
-
-        # T^(4n) = Z^n
-        if p % 4 == 0:
-            return mc.GateZ().power(p / 4)
-
-        # T^(2n) = S^n
-        if p % 2 == 0:
-            return mc.GateS().power(p / 2)
-
-        return mc.Power(self, p)
-
-    def __str__(self):
-        return f"{self.name}"
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        q = qubits[0]
-        circ.push(GateU(0, 0, pi / 4), q)
-        return circ
+    return mc.Power(mc.GateS(), 1 / 2)
 
 
-class GateTDG(Inverse):
+mc.register_power_alias(mc.GateZ, 1 / 4, "T")
+
+
+@mc.register_power_decomposition(mc.GateZ, 1 / 4)
+def _decompose_gatet(self, circ, qubits, bits, zvars):
+    q = qubits[0]
+    circ.push(mc.GateU(0, 0, pi / 4), q)
+    return circ
+
+
+def GateTDG():
     r"""Single qubit T-dagger gate (conjugate transpose of the T gate).
 
     **Matrix representation:**
@@ -123,23 +89,17 @@ class GateTDG(Inverse):
         └── T† @ q[0]
         <BLANKLINE>
         >>> GateTDG().power(2), GateTDG().inverse()
-        (T†**2, T)
+        ((T†)**2, T)
         >>> GateTDG().decompose()
         1-qubit circuit with 1 instructions:
         └── U(0, 0, (-1/4)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
+    return mc.Inverse(GateT())
 
-    def __init__(self):
-        super().__init__(GateT())
 
-    def isopalias(self):
-        return True
-
-    def inverse(self):
-        return GateT()
-
-    def _decompose(self, circ, qubits, bits, zvars):
-        q = qubits[0]
-        circ.push(GateU(0, 0, -pi / 4), q)
-        return circ
+@mc.register_inverse_decomposition((mc.Power, mc.GateZ, 1 / 4))
+def _decompose_gatetdg(gate, circ, qubits, bits, zvars):
+    q = qubits[0]
+    circ.push(mc.GateU(0, 0, -pi / 4), q)
+    return circ

@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -128,7 +128,6 @@ class ProjectiveNoiseZ(krauschannel):
 
     def krausoperators(self):
         return [mc.Projector0(), mc.Projector1()]
-
 
 
 class ProjectiveNoise(krauschannel):

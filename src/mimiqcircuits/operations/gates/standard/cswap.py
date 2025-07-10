@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 # limitations under the License.
 #
 
-import mimiqcircuits.operations.control as mctrl
 from mimiqcircuits.operations.gates.standard.swap import GateSWAP
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.cnx import GateCCX
+import mimiqcircuits as mc
 
 
-class GateCSWAP(mctrl.Control):
+def GateCSWAP():
     r"""Three qubit Controlled-SWAP gate.
 
     By convention, the first qubit is the control and last two are the
@@ -58,13 +58,13 @@ class GateCSWAP(mctrl.Control):
         └── CX @ q[2], q[1]
         <BLANKLINE>
     """
+    return mc.Control(1, GateSWAP())
 
-    def __init__(self):
-        super().__init__(1, GateSWAP())
 
-    def _decompose(self, circ, qubits, bits, zvars):
-        c, t1, t2 = qubits
-        circ.push(GateCX(), t2, t1)
-        circ.push(GateCCX(), c, t1, t2)
-        circ.push(GateCX(), t2, t1)
-        return circ
+@mc.register_control_decomposition(1, mc.GateSWAP)
+def _decompose_gatecswap(gate, circ, qubits, bits, zvars):
+    c, t1, t2 = qubits
+    circ.push(GateCX(), t2, t1)
+    circ.push(GateCCX(), c, t1, t2)
+    circ.push(GateCX(), t2, t1)
+    return circ

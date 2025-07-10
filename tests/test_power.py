@@ -40,10 +40,10 @@ def test_matrix():
 def test_decompose():
     # Test decomposition of the Power operation into a circuit
     op = mc.GateX()
-    Power_op = mc.Power(op, 1 / 2)
+    Power_op = mc.Power(op, 1 / 8)
     circuit = Power_op.decompose()
     assert len(circuit) == 1
-    assert Power_op.exponent == 1 / 2
+    assert Power_op.exponent == 1 / 8
 
 
 def test_inverse():

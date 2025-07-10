@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ from mimiqcircuits.operations.operator import AbstractOperator
 import mimiqcircuits.lazy as lz
 
 import mimiqcircuits as mc
+from mimiqcircuits.operations.repeat import repeat
 
 
 class Gate(AbstractOperator):
@@ -80,6 +81,18 @@ class Gate(AbstractOperator):
         else:
             raise ValueError("Invalid number of arguments.")
 
+    def _repeat(self, num_repeats):
+        return mc.Repeat(num_repeats, self)
+
+    def repeat(self, *args):
+        if len(args) == 0:
+            return repeat(self)
+        elif len(args) == 1:
+            num_repeats = args[0]
+            return self._repeat(num_repeats)
+        else:
+            raise ValueError("Invalid number of arguments.")
+
     def __str__(self):
         pars = ""
         if len(self.parnames) != 0:
@@ -104,7 +117,10 @@ class Gate(AbstractOperator):
             params[i] = params[i].subs(d)
 
         return type(self)(*params)
-    
+
+    def gettypekey(self):
+        return type(self)
+
     @staticmethod
     def isunitary():
         return True

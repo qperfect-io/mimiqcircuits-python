@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2023 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -142,14 +142,14 @@ class AbstractOperator(Operation):
             if isinstance(value, sp.Basic) and not value.is_Number:
                 raise ValueError(f"Unexpected symbolic expression in {self}")
         return self.matrix()
-    
+
     def evaluate(self, d):
         """
         Substitute the symbolic parameters of the operator with numerical values.
 
-        This method evaluates the operator's symbolic parameters using the values 
-        provided in the dictionary `d`. If the operator has no parameters, it returns 
-        the same instance. Otherwise, it creates a new instance of the operator with 
+        This method evaluates the operator's symbolic parameters using the values
+        provided in the dictionary `d`. If the operator has no parameters, it returns
+        the same instance. Otherwise, it creates a new instance of the operator with
         updated numerical parameters.
 
         Parameters:

@@ -1,6 +1,6 @@
 #
 # Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
-# Copyright © 2032-2024 QPerfect. All Rights Reserved.
+# Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -105,12 +105,16 @@ class GateU(mcg.Gate):
         )
 
     def _power(self, p):
-        
+
         if self.is_symbolic():
             return mc.Power(self, p)
 
         def to_numeric(value):
-            if isinstance(value, (se.Basic,sp.Basic)) and value == se.pi or value == se.pi:
+            if (
+                isinstance(value, (se.Basic, sp.Basic))
+                and value == se.pi
+                or value == se.pi
+            ):
                 return float(value)
             return value
 
@@ -128,7 +132,7 @@ class GateU(mcg.Gate):
         pow_matrix = expm(p * logm(matrix_np))
 
         # Compute the angles based on the resulting matrix and prevent error raising becouse of division by zero.
-        with np.errstate(divide='ignore'):
+        with np.errstate(divide="ignore"):
             theta_p = 2 * np.arccos(np.abs(pow_matrix[0, 0]))
             gamma_p = np.angle(pow_matrix[0, 0])
             phi_p = np.angle(pow_matrix[1, 0] / np.sin(theta_p / 2)) - gamma_p
@@ -145,4 +149,7 @@ class GateU(mcg.Gate):
         """
         Convert a symbolic matrix to a numeric numpy array.
         """
-        return np.array([[complex(elem.evalf()) for elem in row] for row in matrix], dtype=np.complex128)
+        return np.array(
+            [[complex(elem.evalf()) for elem in row] for row in matrix],
+            dtype=np.complex128,
+        )
