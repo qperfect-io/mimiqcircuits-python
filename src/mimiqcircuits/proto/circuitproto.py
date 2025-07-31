@@ -313,12 +313,12 @@ def toproto_arg(param):
     # Special case for symengine.Basic
     if isinstance(param, se.Basic) and param == (se.I):
         return handle_complex(param)
-    
+
     if isinstance(param, se.Basic) and param.is_Number:
         try:
             return handle_numeric(float(param))
         except Exception:
-            pass 
+            pass
 
     # Handle the parameter using the appropriate handler
     handler = type_handlers.get(type(param))

@@ -245,10 +245,7 @@ class GateCall(mc.Gate):
         return f"{self._decl.name}"
 
     def evaluate(self, d):
-        new_args = [
-            arg.subs(d) if hasattr(arg, "subs") else arg
-            for arg in self._args
-        ]
+        new_args = [arg.subs(d) if hasattr(arg, "subs") else arg for arg in self._args]
         return type(self)(self._decl, tuple(new_args))
 
     def matrix(self):

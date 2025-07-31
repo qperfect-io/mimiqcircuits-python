@@ -21,6 +21,7 @@ from mimiqcircuits.matrices import kronecker
 from typing import Union
 import numpy as np
 
+
 class HamiltonianTerm:
     r"""Single term in a quantum Hamiltonian.
 
@@ -55,7 +56,7 @@ class HamiltonianTerm:
             raise ValueError(
                 f"Qubit indices must be ≥ 0. Invalid qubits: {invalid_qubits}"
             )
-            
+
         if len(set(qubits)) != len(qubits):
             raise ValueError(f"Duplicate qubits are not allowed: {qubits}")
 
@@ -196,7 +197,8 @@ class Hamiltonian:
             raise ValueError(
                 "Invalid file object. Should be a filename or a file-like object."
             )
-    @staticmethod     
+
+    @staticmethod
     def _pauli_matrix(p: str):
         if p == "I":
             return mc.GateID().matrix()
@@ -223,7 +225,7 @@ class Hamiltonian:
 
             ps = np.argsort(qubits)
             qubits = [qubits[i] for i in ps]
-            pstr = ''.join(pauli_str[i] for i in ps)
+            pstr = "".join(pauli_str[i] for i in ps)
 
             i = 0
             qidx = 0
@@ -232,7 +234,7 @@ class Hamiltonian:
                 qidx = 1
             else:
                 term_matrix = self._pauli_matrix("I")
-            
+
             i += 1
             while qidx < len(qubits):
                 while i < qubits[qidx]:

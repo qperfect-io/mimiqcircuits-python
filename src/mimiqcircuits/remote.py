@@ -77,16 +77,87 @@ def _file_is_openqasm2(file_path: str) -> bool:
 
 def _file_may_be_stim(filepath: str) -> bool:
     STIM_KEYWORDS = {
-        "I", "X", "Y", "Z", "C_XYZ", "C_ZYX", "H", "H_XY", "H_XZ", "H_YZ", "S",
-        "SQRT_X", "SQRT_X_DAG", "SQRT_Y", "SQRT_Y_DAG", "SQRT_Z", "SQRT_Z_DAG", "S_DAG",
-        "CNOT", "CX", "CXSWAP", "CY", "CZ", "CZSWAP", "ISWAP", "ISWAP_DAG",
-        "SQRT_XX", "SQRT_XX_DAG", "SQRT_YY", "SQRT_YY_DAG", "SQRT_ZZ", "SQRT_ZZ_DAG",
-        "SWAP", "SWAPCX", "SWAPCZ", "XCX", "XCY", "XCZ", "YCX", "YCY", "YCZ", "ZCX", "ZCY", "ZCZ",
-        "CORRELATED_ERROR", "DEPOLARIZE1", "DEPOLARIZE2", "E", "ELSE_CORRELATED_ERROR",
-        "HERALDED_ERASE", "HERALDED_PAULI_CHANNEL_1", "PAULI_CHANNEL_1", "PAULI_CHANNEL_2",
-        "X_ERROR", "Y_ERROR", "Z_ERROR", "M", "MR", "MRX", "MRY", "MRZ", "MX", "MY", "MZ",
-        "R", "RX", "RY", "RZ", "MXX", "MYY", "MZZ", "MPP", "SPP", "SPP_DAG",
-        "REPEAT", "DETECTOR", "MPAD", "OBSERVABLE_INCLUDE", "QUBIT_COORDS", "SHIFT_COORDS", "TICK"
+        "I",
+        "X",
+        "Y",
+        "Z",
+        "C_XYZ",
+        "C_ZYX",
+        "H",
+        "H_XY",
+        "H_XZ",
+        "H_YZ",
+        "S",
+        "SQRT_X",
+        "SQRT_X_DAG",
+        "SQRT_Y",
+        "SQRT_Y_DAG",
+        "SQRT_Z",
+        "SQRT_Z_DAG",
+        "S_DAG",
+        "CNOT",
+        "CX",
+        "CXSWAP",
+        "CY",
+        "CZ",
+        "CZSWAP",
+        "ISWAP",
+        "ISWAP_DAG",
+        "SQRT_XX",
+        "SQRT_XX_DAG",
+        "SQRT_YY",
+        "SQRT_YY_DAG",
+        "SQRT_ZZ",
+        "SQRT_ZZ_DAG",
+        "SWAP",
+        "SWAPCX",
+        "SWAPCZ",
+        "XCX",
+        "XCY",
+        "XCZ",
+        "YCX",
+        "YCY",
+        "YCZ",
+        "ZCX",
+        "ZCY",
+        "ZCZ",
+        "CORRELATED_ERROR",
+        "DEPOLARIZE1",
+        "DEPOLARIZE2",
+        "E",
+        "ELSE_CORRELATED_ERROR",
+        "HERALDED_ERASE",
+        "HERALDED_PAULI_CHANNEL_1",
+        "PAULI_CHANNEL_1",
+        "PAULI_CHANNEL_2",
+        "X_ERROR",
+        "Y_ERROR",
+        "Z_ERROR",
+        "M",
+        "MR",
+        "MRX",
+        "MRY",
+        "MRZ",
+        "MX",
+        "MY",
+        "MZ",
+        "R",
+        "RX",
+        "RY",
+        "RZ",
+        "MXX",
+        "MYY",
+        "MZZ",
+        "MPP",
+        "SPP",
+        "SPP_DAG",
+        "REPEAT",
+        "DETECTOR",
+        "MPAD",
+        "OBSERVABLE_INCLUDE",
+        "QUBIT_COORDS",
+        "SHIFT_COORDS",
+        "TICK",
     }
 
     try:
@@ -307,24 +378,32 @@ class RemoteConnection:
 
                     # Case: QASM
                     if _file_is_openqasm2(circuit):
-                        circuit_filename = os.path.join(tmpdir, f"{CIRCUIT_FNAME}{i+1}.{EXTENSION_QASM}")
+                        circuit_filename = os.path.join(
+                            tmpdir, f"{CIRCUIT_FNAME}{i+1}.{EXTENSION_QASM}"
+                        )
                         shutil.copyfile(circuit, circuit_filename)
                         if qasmincludes is None:
                             qasmincludes = []
-                        circuit_files.append({
-                            "file": os.path.basename(circuit_filename),
-                            "type": TYPE_QASM
-                        })
+                        circuit_files.append(
+                            {
+                                "file": os.path.basename(circuit_filename),
+                                "type": TYPE_QASM,
+                            }
+                        )
                         allfiles.append(circuit_filename)
 
                     # Case: STIM
                     elif _file_may_be_stim(circuit):
-                        circuit_filename = os.path.join(tmpdir, f"{CIRCUIT_FNAME}{i+1}.{EXTENSION_STIM}")
+                        circuit_filename = os.path.join(
+                            tmpdir, f"{CIRCUIT_FNAME}{i+1}.{EXTENSION_STIM}"
+                        )
                         shutil.copyfile(circuit, circuit_filename)
-                        circuit_files.append({
-                            "file": os.path.basename(circuit_filename),
-                            "type": TYPE_STIM
-                        })
+                        circuit_files.append(
+                            {
+                                "file": os.path.basename(circuit_filename),
+                                "type": TYPE_STIM,
+                            }
+                        )
                         allfiles.append(circuit_filename)
 
                     # Unknown type

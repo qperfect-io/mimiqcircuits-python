@@ -196,7 +196,7 @@ class Block(Operation):
 
     def __repr__(self):
         if not self.instructions:
-            return "empty circuit"
+            return "empty block"
         blockid = self.blockid()
         parts = []
         if self._nq > 0:

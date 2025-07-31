@@ -144,7 +144,6 @@ class RPauli(Gate):
         # Apply RNZ on active qubits
         circ.push(mc.GateRNZ(len(active_qubits), self.theta), *active_qubits)
 
-
         for p, q in reversed(active):
             if p == "X":
                 circ.push(mc.GateH(), q)
