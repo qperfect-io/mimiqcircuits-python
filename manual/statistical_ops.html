@@ -1,0 +1,804 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Statistical Operations &#8212; MIMIQ Circuits 0.18.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=29ae757a"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'manual/statistical_ops';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Special Operations" href="special_ops.html" />
+    <link rel="prev" title="Symbolic Operations in MIMIQ" href="symbolic_ops.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest 0.18.2 version.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>
+    <script>document.write(`<img src="../_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="circuits.html">Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="unitary_gates.html">Unitary Gates</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="non_unitary_ops.html">Non-unitary Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="noise.html">Noisy simulations on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Statistical Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_ops.html">Special Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulating Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="remote_execution.html">Execution on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="import_export.html">Import and export circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_topics.html">Special Topics</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="zops.html">Z-register Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hamiltonian.html">Hamiltonians and Time Evolution</a></li>
+
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Statistical...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="statistical-operations">
+<h1>Statistical Operations<a class="headerlink" href="#statistical-operations" title="Link to this heading">#</a></h1>
+<p>Statistical operations are simulator specific mathematical operations allowing you to compute properties of the simulated quantum state without making it collapse.
+All statistical operations will result in a real or complex number that will be stored in the Z-Register, and can be accessed from the results of the simulation through the <cite>zstates</cite> option, see <a class="reference internal" href="circuits.html"><span class="doc">Circuits</span></a> and <a class="reference internal" href="remote_execution.html"><span class="doc">cloud execution</span></a> page.</p>
+<p>On this page you will find all statistical operations available on MIMIQ with explanations and examples.</p>
+</section>
+<section id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h1>
+<nav class="contents local" id="id1">
+<ul class="simple">
+<li><p><a class="reference internal" href="#expectation-value" id="id8">Expectation value</a></p>
+<ul>
+<li><p><a class="reference internal" href="#mathematical-definition" id="id9">Mathematical definition</a></p></li>
+<li><p><a class="reference internal" href="#usage-on-mimiq" id="id10">Usage on MIMIQ</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#entanglement" id="id11">Entanglement</a></p>
+<ul>
+<li><p><a class="reference internal" href="#von-neumann-entropy" id="id12">Von Neumann Entropy</a></p></li>
+<li><p><a class="reference internal" href="#bond-dimension" id="id13">Bond Dimension</a></p></li>
+<li><p><a class="reference internal" href="#schmidt-rank" id="id14">Schmidt Rank</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#amplitude" id="id15">Amplitude</a></p></li>
+</ul>
+</nav>
+<section id="expectation-value">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Expectation value</a><a class="headerlink" href="#expectation-value" title="Link to this heading">#</a></h2>
+<section id="mathematical-definition">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Mathematical definition</a><a class="headerlink" href="#mathematical-definition" title="Link to this heading">#</a></h3>
+<p>An expectation value for a pure state <span class="math notranslate nohighlight">\(| \psi \rangle\)</span> is defined as</p>
+<div class="math notranslate nohighlight">
+\[\langle O \rangle = \langle \psi | O | \psi \rangle\]</div>
+<p>where <span class="math notranslate nohighlight">\(O\)</span> is an operator. With respect to a density matrix <span class="math notranslate nohighlight">\(\rho\)</span> it’s given by</p>
+<div class="math notranslate nohighlight">
+\[\langle O \rangle = \mathrm{Tr}(\rho O).\]</div>
+</section>
+<section id="usage-on-mimiq">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Usage on MIMIQ</a><a class="headerlink" href="#usage-on-mimiq" title="Link to this heading">#</a></h3>
+<p>First we need to define the operator <span class="math notranslate nohighlight">\(O\)</span> of which we will compute the expectation value</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">op</span> <span class="o">=</span> <span class="n">SigmaPlus</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.SigmaPlus" title="mimiqcircuits.SigmaPlus"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmaPlus</span></code></a> is only one of the many operators available. Of course, every gate can be used as an operator, for example <cite>op = GateZ()</cite>.
+However, MIMIQ also supports many non-unitary operators such as <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.SigmaPlus" title="mimiqcircuits.SigmaPlus"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmaPlus</span></code></a>, more about this on the <a class="reference internal" href="non_unitary_ops.html#operators"><span class="std std-ref">Operators</span></a> page.</p>
+<p>To ask MIMIQ to compute the expectation value for a circuit you can create an <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue" title="mimiqcircuits.ExpectationValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExpectationValue</span></code></a> object and <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push" title="mimiqcircuits.Circuit.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a> it to the circuit like this:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 1 instructions:</span>
+<span class="go">└── H @ q[0]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Ask to compute the expectation value</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ev</span> <span class="o">=</span> <span class="n">ExpectationValue</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 2 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── ⟨SigmaPlus(1)⟩ @ q[0], z[0]</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">As for all statistical operations, the arguments to give to the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push" title="mimiqcircuits.Circuit.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a> function always follow the order of quantum register index first, classical register second (none in this case), and Z-register index last.</div>
+<div class="line">In the example above, the first <code class="docutils literal notranslate"><span class="pre">0</span></code> is the index for the first qubit of the quantum register and the second <code class="docutils literal notranslate"><span class="pre">0</span></code> is the index of the Z-Register.</div>
+</div>
+<p>Notice that the expectation value will be computed with respect to the quantum state of the system at the point in the circuit where the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue" title="mimiqcircuits.ExpectationValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExpectationValue</span></code></a> is added.</p>
+</section>
+</section>
+<section id="entanglement">
+<h2><a class="toc-backref" href="#id11" role="doc-backlink">Entanglement</a><a class="headerlink" href="#entanglement" title="Link to this heading">#</a></h2>
+<p>MIMIQ supports statistical operations on entanglement for <strong>ordered bipartitions</strong>. For instance, for qubits <code class="docutils literal notranslate"><span class="pre">[1...N]</span></code> MIMIQ can compute the entanglement between the bipartitions <code class="docutils literal notranslate"><span class="pre">[1...k-1]</span></code> and <code class="docutils literal notranslate"><span class="pre">[k...N]</span></code>.</p>
+<p>For this reason when you <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push" title="mimiqcircuits.Circuit.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a> an entanglement operation to a circuit, you need to give it the qubit index <code class="docutils literal notranslate"><span class="pre">k</span></code> that separates the two bipartitions, as well as the Z-register to store the result.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The following functions can only be used with the MPS backend.</p>
+</div>
+<section id="von-neumann-entropy">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">Von Neumann Entropy</a><a class="headerlink" href="#von-neumann-entropy" title="Link to this heading">#</a></h3>
+<section id="id2">
+<h4>Mathematical definition<a class="headerlink" href="#id2" title="Link to this heading">#</a></h4>
+<p>The entanglement entropy for a bipartition into subsystems A and B is defined for a pure state <span class="math notranslate nohighlight">\(\rho = | \psi \rangle\langle \psi\)</span> | as</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{S}(\rho_A) = - \mathrm{Tr}(\rho_A \log_2 \rho_A)
+= - \mathrm{Tr}(\rho_B \log_2 \rho_B)
+= \mathcal{S}(\rho_B)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\rho_A = \mathrm{Tr}_B(\rho)\)</span> is the reduced density matrix. A product
+state has <span class="math notranslate nohighlight">\(\mathcal{S}(\rho_A)=0\)</span> and a maximally entangled state between A
+and B gives <span class="math notranslate nohighlight">\(\mathcal{S}(\rho_A)=1\)</span>.</p>
+<p>We only consider bipartitions where <span class="math notranslate nohighlight">\(A=\{1,\ldots,k-1\}\)</span> and <span class="math notranslate nohighlight">\(B=\{k,\ldots,N\}\)</span>,
+for some <code class="docutils literal notranslate"><span class="pre">k</span></code> and where <code class="docutils literal notranslate"><span class="pre">N</span></code> is the total number of qubits.</p>
+</section>
+<section id="id3">
+<h4>Usage on MIMIQ<a class="headerlink" href="#id3" title="Link to this heading">#</a></h4>
+<div class="line-block">
+<div class="line">The entanglement entropy for a bipartition into subsystems A and B can be obtained using the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.VonNeumannEntropy" title="mimiqcircuits.VonNeumannEntropy"><code class="xref py py-class docutils literal notranslate"><span class="pre">VonNeumannEntropy</span></code></a> function.</div>
+<div class="line">You do not need to provide any argument to <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.VonNeumannEntropy" title="mimiqcircuits.VonNeumannEntropy"><code class="xref py py-class docutils literal notranslate"><span class="pre">VonNeumannEntropy</span></code></a>. To indicate where to create the separation into two subsystems MIMIQ will use the first qubit index given to the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push" title="mimiqcircuits.Circuit.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a> function, here is an example:</div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Asking to compute the Von Neumann entropy between the two subsystems separated between qubit 1 and 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">VonNeumannEntropy</span><span class="p">(),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">3-qubit circuit with 1 instructions:</span>
+<span class="go">└── VonNeumannEntropy @ q[2], z[1]</span>
+</pre></div>
+</div>
+<p>Here we compute the Von neumann entropy between the two subsystems <code class="docutils literal notranslate"><span class="pre">[1,2]</span></code> and <code class="docutils literal notranslate"><span class="pre">[3...N]</span></code> and write the results into the index <code class="docutils literal notranslate"><span class="pre">0</span></code> of the Z-register.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">k=1</span></code>, A is empty and the Von Neumann entropy will always return 1.</p>
+</div>
+</section>
+</section>
+<section id="bond-dimension">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Bond Dimension</a><a class="headerlink" href="#bond-dimension" title="Link to this heading">#</a></h3>
+<section id="id4">
+<h4>Mathematical definition<a class="headerlink" href="#id4" title="Link to this heading">#</a></h4>
+<p>The bond dimension is only defined for a matrix-product state (MPS), which can be written as (with <span class="math notranslate nohighlight">\(i_1=i_{N+1}=1\)</span>)</p>
+<div class="math notranslate nohighlight">
+\[|\psi \rangle = \sum_{s_1,s_2,\ldots=1}^2
+\sum_{i_2}^{\chi_2} \sum_{i_3}^{\chi_3} \ldots \sum_{i_{N}}^{\chi_{N}}
+A^{(s_1)}_{i_1i_2} A^{(s_2)}_{i_2 i_3} A^{(s_3)}_{i_3 i_4} \ldots
+A^{(s_N)}_{i_{N}i_{N+1}} | s_1, s_2, s_3, \ldots, s_N \rangle .\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(\chi_k`\)</span> is the bond dimension, i.e. the dimension of the index <span class="math notranslate nohighlight">\(i_k\)</span>. The
+first and last bond dimensions are dummies, <span class="math notranslate nohighlight">\(chi_1=chi_{N+1}=1\)</span>. A bond dimension
+of 1 means there is no entanglement between the two halves of the system.</p>
+</section>
+<section id="id5">
+<h4>Usage on MIMIQ<a class="headerlink" href="#id5" title="Link to this heading">#</a></h4>
+<p>To compute the bond dimension between two halves of a system you can use the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.BondDim" title="mimiqcircuits.BondDim"><code class="xref py py-class docutils literal notranslate"><span class="pre">BondDim</span></code></a> operator and <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push" title="mimiqcircuits.Circuit.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a> to the circuit like any entanglement measure:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Asking to compute the BondDim between the second and third qubits</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">BondDim</span><span class="p">(),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">3-qubit circuit with 1 instructions:</span>
+<span class="go">└── BondDim @ q[2], z[0]</span>
+</pre></div>
+</div>
+<p>Here we compute the bond dimension between the two subsystems <code class="docutils literal notranslate"><span class="pre">[1,2]</span></code> and <code class="docutils literal notranslate"><span class="pre">[3...N]</span></code> and write the results into index <code class="docutils literal notranslate"><span class="pre">0</span></code> of the Z-Register.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">k=1</span></code> the bond dimension returned will always be 1.</p>
+</div>
+</section>
+</section>
+<section id="schmidt-rank">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Schmidt Rank</a><a class="headerlink" href="#schmidt-rank" title="Link to this heading">#</a></h3>
+<section id="id6">
+<h4>Mathematical definition<a class="headerlink" href="#id6" title="Link to this heading">#</a></h4>
+<p>A Schmidt decomposition for a bipartition into subsystems A and B is defined
+for a pure state as</p>
+<div class="math notranslate nohighlight">
+\[|\psi\rangle = \sum_{i=1}^{r} s_i |\alpha_i\rangle \otimes |\beta_i\rangle,\]</div>
+<p>where <span class="math notranslate nohighlight">\(|\alpha_i\rangle (|\beta_i\rangle)\)</span> are orthonormal states acting on A
+(B). The Schmidt rank is the number of terms <code class="docutils literal notranslate"><span class="pre">r</span></code> in the sum. A product state
+gives <code class="docutils literal notranslate"><span class="pre">r=1</span></code> and <code class="docutils literal notranslate"><span class="pre">r&gt;1</span></code> signals entanglement.</p>
+<p>We only consider bipartitions where <span class="math notranslate nohighlight">\(A=\{1,\ldots,k-1\}\)</span> and <span class="math notranslate nohighlight">\(B=\{k,\ldots,N\}\)</span>,
+for some <code class="docutils literal notranslate"><span class="pre">k</span></code> and where <code class="docutils literal notranslate"><span class="pre">N</span></code> is the total number of qubits.</p>
+</section>
+<section id="id7">
+<h4>Usage on MIMIQ<a class="headerlink" href="#id7" title="Link to this heading">#</a></h4>
+<p>To compute the Schmidt rank of a bipartition you can use the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.SchmidtRank" title="mimiqcircuits.SchmidtRank"><code class="xref py py-class docutils literal notranslate"><span class="pre">SchmidtRank</span></code></a> operator and <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push" title="mimiqcircuits.Circuit.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a> like all entanglement measures:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Asking to compute the Schmidt rank between the two subsystems separated between qubits 1 and 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">SchmidtRank</span><span class="p">(),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">3-qubit circuit with 1 instructions:</span>
+<span class="go">└── SchmidtRank @ q[2], z[0]</span>
+</pre></div>
+</div>
+<p>Here we compute the Schmidt rank between the two subsystems <code class="docutils literal notranslate"><span class="pre">[1,2]</span></code> and <code class="docutils literal notranslate"><span class="pre">[3...N]</span></code> and write the results into index <code class="docutils literal notranslate"><span class="pre">0</span></code> of the Z-Register.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For k=1, A is empty and the Schmidt rank will always
+return 1.</p>
+</div>
+</section>
+</section>
+</section>
+<section id="amplitude">
+<h2><a class="toc-backref" href="#id15" role="doc-backlink">Amplitude</a><a class="headerlink" href="#amplitude" title="Link to this heading">#</a></h2>
+<div class="line-block">
+<div class="line">With MIMIQ you can extract quantum state amplitudes in the computational basis at any point in the circuit using <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Amplitude" title="mimiqcircuits.Amplitude"><code class="xref py py-class docutils literal notranslate"><span class="pre">Amplitude</span></code></a>.</div>
+<div class="line">You will need to give the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Amplitude" title="mimiqcircuits.Amplitude"><code class="xref py py-class docutils literal notranslate"><span class="pre">Amplitude</span></code></a> function the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.BitString" title="mimiqcircuits.BitString"><code class="xref py py-class docutils literal notranslate"><span class="pre">BitString</span></code></a> matching the state for which you want the amplitude.</div>
+<div class="line">For more information on <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.BitString" title="mimiqcircuits.BitString"><code class="xref py py-class docutils literal notranslate"><span class="pre">BitString</span></code></a> check the <a class="reference internal" href="special_topics.html#id2"><span class="std std-ref">BitString</span></a> documentation page.</div>
+</div>
+<p>You can add the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Amplitude" title="mimiqcircuits.Amplitude"><code class="xref py py-class docutils literal notranslate"><span class="pre">Amplitude</span></code></a> object to the circuit exactly like any other gate:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mystery_circuit</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mystery_circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="go">3-qubit circuit with 3 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">└── H @ q[2]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Define the Amplitude operator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">amp</span> <span class="o">=</span> <span class="n">Amplitude</span><span class="p">(</span><span class="n">BitString</span><span class="p">(</span><span class="s2">&quot;101&quot;</span><span class="p">))</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Add the amplitude operator to the circuit and write the result in the first complex number of the Z-Register</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mystery_circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">amp</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">3-qubit circuit with 4 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── H @ q[2]</span>
+<span class="go">└── Amplitude(bs&quot;101&quot;) @ z[0]</span>
+</pre></div>
+</div>
+<p>This will extract the amplitude of the basis state <span class="math notranslate nohighlight">\(\ket{101}\)</span>. When adding the amplitude operation you do not need to give it any specific qubit target, the only index needed is for the Z-register to use for storing the result.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="symbolic_ops.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Symbolic Operations in MIMIQ</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="special_ops.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Special Operations</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Statistical Operations</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#expectation-value">Expectation value</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mathematical-definition">Mathematical definition</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-on-mimiq">Usage on MIMIQ</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#entanglement">Entanglement</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#von-neumann-entropy">Von Neumann Entropy</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Mathematical definition</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Usage on MIMIQ</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bond-dimension">Bond Dimension</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Mathematical definition</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Usage on MIMIQ</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#schmidt-rank">Schmidt Rank</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Mathematical definition</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Usage on MIMIQ</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#amplitude">Amplitude</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/manual/statistical_ops.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

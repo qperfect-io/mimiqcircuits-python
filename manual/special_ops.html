@@ -1,0 +1,1084 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Special Operations &#8212; MIMIQ Circuits 0.18.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=29ae757a"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'manual/special_ops';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Simulating Circuits" href="simulation.html" />
+    <link rel="prev" title="Statistical Operations" href="statistical_ops.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest 0.18.2 version.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>
+    <script>document.write(`<img src="../_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="circuits.html">Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="unitary_gates.html">Unitary Gates</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="non_unitary_ops.html">Non-unitary Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="noise.html">Noisy simulations on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="statistical_ops.html">Statistical Operations</a></li>
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Special Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulating Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="remote_execution.html">Execution on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="import_export.html">Import and export circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_topics.html">Special Topics</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="zops.html">Z-register Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hamiltonian.html">Hamiltonians and Time Evolution</a></li>
+
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Special Operations</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="special-operations">
+<h1>Special Operations<a class="headerlink" href="#special-operations" title="Link to this heading">#</a></h1>
+<p>MIMIQ offers further possibilities to create circuits, such as new gate declarations, or wrappers for common combinations of gates.</p>
+</section>
+<section id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h1>
+<nav class="contents local" id="id1">
+<ul class="simple">
+<li><p><a class="reference internal" href="#gate-declaration-gate-calls" id="id13">Gate Declaration &amp; Gate Calls</a></p></li>
+<li><p><a class="reference internal" href="#blocks-of-instructions" id="id14">Blocks of Instructions</a></p>
+<ul>
+<li><p><a class="reference internal" href="#example-error-correction-code-block" id="id15">Example: Error Correction Code Block</a></p></li>
+<li><p><a class="reference internal" href="#working-with-blocks" id="id16">Working with Blocks</a></p></li>
+<li><p><a class="reference internal" href="#when-to-use-blocks-vs-gate-declarations" id="id17">When to Use Blocks vs Gate Declarations</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#repeated-operations" id="id18">Repeated Operations</a></p>
+<ul>
+<li><p><a class="reference internal" href="#creating-repeated-operations" id="id19">Creating Repeated Operations</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#composite-gates" id="id20">Composite Gates</a></p></li>
+<li><p><a class="reference internal" href="#pauli-string" id="id21">Pauli String</a></p></li>
+<li><p><a class="reference internal" href="#quantum-fourier-transform" id="id22">Quantum Fourier Transform</a></p></li>
+<li><p><a class="reference internal" href="#phase-gradient" id="id23">Phase Gradient</a></p></li>
+<li><p><a class="reference internal" href="#polynomial-oracle" id="id24">Polynomial Oracle</a></p></li>
+<li><p><a class="reference internal" href="#diffusion" id="id25">Diffusion</a></p></li>
+<li><p><a class="reference internal" href="#more-about-composite-gates" id="id26">More about composite gates</a></p></li>
+<li><p><a class="reference internal" href="#barrier" id="id27">Barrier</a></p></li>
+</ul>
+</nav>
+<section id="gate-declaration-gate-calls">
+<h2><a class="toc-backref" href="#id13" role="doc-backlink">Gate Declaration &amp; Gate Calls</a><a class="headerlink" href="#gate-declaration-gate-calls" title="Link to this heading">#</a></h2>
+<p id="id2">Using MIMIQ you can define your own gates with a given name, arguments and instructions.
+For examples if you wish to apply an <cite>H</cite> gate followed by an <cite>RX</cite> gate with a specific argument for
+the rotation you can use <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.GateDecl" title="mimiqcircuits.gatedecl.GateDecl"><code class="xref py py-class docutils literal notranslate"><span class="pre">GateDecl</span></code></a> as follows:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rot</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@gatedecl</span><span class="p">(</span><span class="s2">&quot;ansatz&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">ansatz</span><span class="p">(</span><span class="n">rot</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateX</span><span class="p">(),</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateP</span><span class="p">(</span><span class="n">rot</span><span class="p">),</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">c</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ansatz</span><span class="p">(</span><span class="n">rot</span><span class="p">)</span>
+<span class="go">ansatz(x)</span>
+</pre></div>
+</div>
+<p>Here, <cite>ansatz</cite> is simply the name that will be shown when printing or drawing
+the circuit, <cite>(rot)</cite> defines the gate parameters.</p>
+<p>As you can see in the code above, to generate your own gate declaration you will need to
+instantiate <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit" title="mimiqcircuits.Circuit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Circuit</span></code></a>. A circuit is created by sequentially applying operations using <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push" title="mimiqcircuits.Circuit.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a>,
+where each operation is followed by its targets. The target order follows the standard convention quantum register -&gt; classical register -&gt; Z-register order.
+passed as an argument.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ansatz</span><span class="p">(</span><span class="n">rot</span><span class="p">)</span>
+<span class="go">ansatz(x)</span>
+</pre></div>
+</div>
+<p>You can check the instructions inside <cite>ansatz</cite> by using <cite>decompose</cite> method:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ansatz</span><span class="p">(</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">2-qubit circuit with 2 instructions:</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">└── P((1/2)*pi) @ q[1]</span>
+</pre></div>
+</div>
+<p>After declaration you can add it to your circuit using <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push" title="mimiqcircuits.Circuit.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a>.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">ansatz</span><span class="p">(</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mi">0</span> <span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit circuit with 1 instructions:</span>
+<span class="go">└── ansatz((1/2)*pi) @ q[0,1]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A gate declared with <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.GateDecl" title="mimiqcircuits.GateDecl"><code class="xref py py-class docutils literal notranslate"><span class="pre">GateDecl</span></code></a> must be unitary.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.gatedecl" title="mimiqcircuits.gatedecl"><code class="xref py py-func docutils literal notranslate"><span class="pre">gatedecl()</span></code></a> decorator transforms a function into one that produces
+<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.GateCall" title="mimiqcircuits.GateCall"><code class="xref py py-class docutils literal notranslate"><span class="pre">GateCall</span></code></a> objects based on the logic defined in a
+<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.GateDecl" title="mimiqcircuits.GateDecl"><code class="xref py py-class docutils literal notranslate"><span class="pre">GateDecl</span></code></a>. When you call <cite>ansatz(pi)</cite>, it creates an instance of
+<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.GateCall" title="mimiqcircuits.GateCall"><code class="xref py py-class docutils literal notranslate"><span class="pre">GateCall</span></code></a>, representing a specific instantiation of the unitary gates
+with the provided parameters.</p>
+</div>
+<p>Creating a gate declaration allows you to add easily the same sequence of gates in a very versatile way and manipulate your new gate
+like you would with any other gate. This means that you can combine it with other gates via <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Control" title="mimiqcircuits.Control"><code class="xref py py-class docutils literal notranslate"><span class="pre">Control</span></code></a>, add noise to
+the whole block in one call, use it as an operator for <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue" title="mimiqcircuits.ExpectationValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExpectationValue</span></code></a>, use it within an <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement" title="mimiqcircuits.IfStatement"><code class="xref py py-class docutils literal notranslate"><span class="pre">IfStatement</span></code></a> etc.
+See <a class="reference internal" href="non_unitary_ops.html"><span class="doc">non-unitary operations</span></a>, and <a class="reference internal" href="noise.html"><span class="doc">noise</span></a> pages.</p>
+<p>For example, here is how to add noise to the previous gate declaration:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_gate</span> <span class="o">=</span> <span class="n">ansatz</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">my_gate</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit circuit with 1 instructions:</span>
+<span class="go">└── ansatz(pi) @ q[0,1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">add_noise</span><span class="p">(</span><span class="n">my_gate</span><span class="p">,</span> <span class="n">Depolarizing2</span><span class="p">(</span><span class="mf">0.1</span><span class="p">))</span>
+<span class="go">2-qubit circuit with 2 instructions:</span>
+<span class="go">├── ansatz(pi) @ q[0,1]</span>
+<span class="go">└── Depolarizing(0.1) @ q[0,1]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="go">        ┌────────────┐  ┌───────────────────┐</span>
+<span class="go"> q[0]: ╶┤0           ├──┤0                  ├──────────────────────────────────╴</span>
+<span class="go">        │  ansatz(pi)│  │  Depolarizing(0.1)│</span>
+<span class="go"> q[1]: ╶┤1           ├──┤1                  ├──────────────────────────────────╴</span>
+<span class="go">        └────────────┘  └───────────────────┘</span>
+</pre></div>
+</div>
+<p>Gate declarations can be combined with other quantum operations like <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Control" title="mimiqcircuits.Control"><code class="xref py py-class docutils literal notranslate"><span class="pre">Control</span></code></a>, noise, or even conditional logic.
+Use it within an <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement" title="mimiqcircuits.IfStatement"><code class="xref py py-class docutils literal notranslate"><span class="pre">IfStatement</span></code></a>:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">IfStatement</span><span class="p">(</span><span class="n">my_gate</span><span class="p">,</span> <span class="n">BitString</span><span class="p">(</span><span class="s2">&quot;111&quot;</span><span class="p">))</span>
+<span class="go">IF (c==111) ansatz(pi)</span>
+</pre></div>
+</div>
+<p>Note that this type of combined operation does not work if we pass a circuit as an argument, instead of a declared gate
+(more precisely, a <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.GateCall" title="mimiqcircuits.GateCall"><code class="xref py py-class docutils literal notranslate"><span class="pre">GateCall</span></code></a>, see note above).</p>
+</section>
+<section id="blocks-of-instructions">
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Blocks of Instructions</a><a class="headerlink" href="#blocks-of-instructions" title="Link to this heading">#</a></h2>
+<p id="id3">Blocks in MIMIQ allow you to encapsulate a collection of quantum operations as a reusable unit.
+They’re particularly useful when you want to group instructions together that implement a specific algorithm or subroutine.</p>
+<p>Unlike gate declarations that create new gates, blocks simply group existing instructions without restriction on their nature or type.</p>
+<p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">Block`</span></code> can be created in several ways:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># From an existing circuit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circ</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 1 instructions:</span>
+<span class="go">└── H @ q[0]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateCX</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit circuit with 2 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── CX @ q[0], q[1]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span><span class="n">circ</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">block</span>
+<span class="go">2-qubit block ... with 2 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── CX @ q[0], q[1]</span>
+
+<span class="go"># From a list of instructions</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">Instruction</span><span class="p">(</span><span class="n">GateX</span><span class="p">(),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)),</span> <span class="n">Instruction</span><span class="p">(</span><span class="n">GateY</span><span class="p">(),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">block2</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">block2</span>
+<span class="go">2-qubit block ... with 2 instructions:</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">└── Y @ q[1]</span>
+
+<span class="go"># Empty block with specified dimensions</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">block3</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># 2 qubits, 1 classical bit, 0 z-variables</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">block3</span>
+<span class="go">empty circuit</span>
+</pre></div>
+</div>
+<section id="example-error-correction-code-block">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Example: Error Correction Code Block</a><a class="headerlink" href="#example-error-correction-code-block" title="Link to this heading">#</a></h3>
+<div class="highlight-pycon notranslate" id="error-correction-block"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">error_detection_block</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateCX</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateCX</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">MeasureZ</span><span class="p">(),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># Measure q[1] → c[0]</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">MeasureZ</span><span class="p">(),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Measure q[2] → c[1]</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">IfStatement</span><span class="p">(</span><span class="n">GateX</span><span class="p">(),</span> <span class="n">BitString</span><span class="p">(</span><span class="s2">&quot;01&quot;</span><span class="p">)),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Error correction</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">IfStatement</span><span class="p">(</span><span class="n">GateX</span><span class="p">(),</span> <span class="n">BitString</span><span class="p">(</span><span class="s2">&quot;10&quot;</span><span class="p">)),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Error correction</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">Block</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error_detection</span> <span class="o">=</span> <span class="n">error_detection_block</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error_detection</span>
+<span class="go">3-qubit, 2-bit block ... with 6 instructions:</span>
+<span class="go">├── CX @ q[0], q[1]</span>
+<span class="go">├── CX @ q[0], q[2]</span>
+<span class="go">├── M @ q[1], c[0]</span>
+<span class="go">├── M @ q[2], c[1]</span>
+<span class="go">├── IF (c==01) X @ q[0], c[0,1]</span>
+<span class="go">└── IF (c==10) X @ q[0], c[0,1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">main_circuit</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">main_circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">error_detection</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">3-qubit, 2-bit circuit with 1 instructions:</span>
+<span class="go">└── block ... @ q[0,1,2], c[0,1]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">main_circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">3-qubit, 2-bit circuit with 2 instructions:</span>
+<span class="go">├── block ... @ q[0,1,2], c[0,1]</span>
+<span class="go">└── H @ q[1]</span>
+
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">main_circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">error_detection</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">3-qubit, 2-bit circuit with 3 instructions:</span>
+<span class="go">├── block ... @ q[0,1,2], c[0,1]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">└── block ... @ q[0,1,2], c[0,1]</span>
+</pre></div>
+</div>
+</section>
+<section id="working-with-blocks">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Working with Blocks</a><a class="headerlink" href="#working-with-blocks" title="Link to this heading">#</a></h3>
+<div class="highlight-pycon notranslate" id="id4"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span>
+<span class="go">empty circuit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateX</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateCX</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Blocks can be iterated over, indexed, and have a length just like circuits:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+<span class="go">3</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">H @ q[0]</span>
+</pre></div>
+</div>
+<p>Trying to add operations that use more resources than the block dimensions will result in an error:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateZ</span><span class="p">(),</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="go">ValueError</span>
+</pre></div>
+</div>
+</section>
+<section id="when-to-use-blocks-vs-gate-declarations">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">When to Use Blocks vs Gate Declarations</a><a class="headerlink" href="#when-to-use-blocks-vs-gate-declarations" title="Link to this heading">#</a></h3>
+<p id="when-use-blocks-vs-gatedeclaration">Use <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Block" title="mimiqcircuits.Block"><code class="xref py py-class docutils literal notranslate"><span class="pre">Block</span></code></a> when you want to:</p>
+<ul class="simple">
+<li><p>Group a sequence of operations for organization</p></li>
+<li><p>Reuse a routine with control/measurement logic</p></li>
+<li><p>Include operations that are not unitary</p></li>
+</ul>
+<p>Use <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.GateDecl" title="mimiqcircuits.GateDecl"><code class="xref py py-class docutils literal notranslate"><span class="pre">GateDecl</span></code></a> when you want to:</p>
+<ul class="simple">
+<li><p>Define a new named unitary gate</p></li>
+<li><p>Create parameterized gates</p></li>
+<li><p>Use symbolic arguments and controlled gate behavior</p></li>
+</ul>
+</section>
+</section>
+<section id="repeated-operations">
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">Repeated Operations</a><a class="headerlink" href="#repeated-operations" title="Link to this heading">#</a></h2>
+<p id="reseated-operations">The <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Repeat" title="mimiqcircuits.Repeat"><code class="xref py py-class docutils literal notranslate"><span class="pre">Repeat</span></code></a> operation allows you to apply the same quantum instruction multiple times.
+operation allows you to apply the same quantum operation multiple times. This can be particularly useful for algorithms that
+require iterative application of the same operation, such as quantum walks or amplitude amplification.</p>
+<section id="creating-repeated-operations">
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">Creating Repeated Operations</a><a class="headerlink" href="#creating-repeated-operations" title="Link to this heading">#</a></h3>
+<p id="creating-reapeated-operations">There are two main ways to create repeated operations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Method 1: Using the Repeat constructor directly</span>
+<span class="n">Repeat</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">operation</span><span class="p">)</span>  <span class="c1"># Repeats the given operation `n` times</span>
+
+<span class="c1"># Method 2: Using the `repeat` helper function (recommended)</span>
+<span class="n">repeat</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">operation</span><span class="p">)</span>  <span class="c1"># Repeats the operation with optional simplification logic</span>
+
+<span class="c1"># Alternative: Using the `.repeat()` method on an operation instance</span>
+<span class="n">operation</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>   <span class="c1"># Shorthand for repeating an operation `n` times</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Repeat</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">GateX</span><span class="p">())</span>
+<span class="go">∏³ X</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">GateRX</span><span class="p">(</span><span class="n">Symbol</span><span class="p">(</span><span class="s2">&quot;theta&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">∏⁵ RX(theta)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repeat</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">GateRX</span><span class="p">(</span><span class="n">Symbol</span><span class="p">(</span><span class="s2">&quot;theta&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">evaluate</span><span class="p">({</span><span class="s2">&quot;theta&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="go">∏⁵ RX(1)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">repeat</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">GateH</span><span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 1 instructions:</span>
+<span class="go">└── ∏³ H @ q[0]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">repeat</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">GateRX</span><span class="p">(</span><span class="n">Symbol</span><span class="p">(</span><span class="s2">&quot;θ&quot;</span><span class="p">))),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit circuit with 2 instructions:</span>
+<span class="go">├── ∏³ H @ q[0]</span>
+<span class="go">└── ∏⁵ RX(θ) @ q[1]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">2-qubit circuit with 8 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── RX(θ) @ q[1]</span>
+<span class="go">├── RX(θ) @ q[1]</span>
+<span class="go">├── RX(θ) @ q[1]</span>
+<span class="go">├── RX(θ) @ q[1]</span>
+<span class="go">└── RX(θ) @ q[1]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="composite-gates">
+<h2><a class="toc-backref" href="#id20" role="doc-backlink">Composite Gates</a><a class="headerlink" href="#composite-gates" title="Link to this heading">#</a></h2>
+<p id="id5">MIMIQ provides several composite gates to facilitate circuit building. These gates simplify constructing complex operations.</p>
+</section>
+<section id="pauli-string">
+<h2><a class="toc-backref" href="#id21" role="doc-backlink">Pauli String</a><a class="headerlink" href="#pauli-string" title="Link to this heading">#</a></h2>
+<p id="id6">A <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PauliString" title="mimiqcircuits.PauliString"><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliString</span></code></a> is an <cite>N</cite>-qubit tensor product of Pauli operators of the form:</p>
+<div class="math notranslate nohighlight">
+\[P_1 \otimes P_2 \otimes P_3 \otimes \ldots \otimes P_N,\]</div>
+<p>where each <span class="math notranslate nohighlight">\(P_i \in \{ I, X, Y, Z \}\)</span> is a single-qubit Pauli operator, including the identity.</p>
+<p>To create an operator using <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PauliString" title="mimiqcircuits.PauliString"><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliString</span></code></a> we simply pass as argument the Pauli string written as a <cite>String</cite>:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">PauliString</span><span class="p">(</span><span class="s2">&quot;IXYZ&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">5-qubit circuit with 1 instructions:</span>
+<span class="go">└── IXYZ @ q[1,2,3,4]</span>
+</pre></div>
+</div>
+<p>You can specify any number of Pauli operators.</p>
+</section>
+<section id="quantum-fourier-transform">
+<h2><a class="toc-backref" href="#id22" role="doc-backlink">Quantum Fourier Transform</a><a class="headerlink" href="#quantum-fourier-transform" title="Link to this heading">#</a></h2>
+<p id="id7">The <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.QFT" title="mimiqcircuits.QFT"><code class="xref py py-class docutils literal notranslate"><span class="pre">QFT</span></code></a> gate implements the The <a class="reference external" href="https://en.wikipedia.org/wiki/Quantum_Fourier_transform">Quantum Fourier Transform</a> which is a
+circuit used to realize a linear transformation on qubits and is a building block of many larger circuits such as <a class="reference external" href="https://en.wikipedia.org/wiki/Shor%27s_algorithm">Shor’s Algorithm</a> or
+the <a class="reference external" href="https://en.wikipedia.org/wiki/Quantum_phase_estimation_algorithm">Quantum Phase Estimation</a>.</p>
+<p>The QFT maps an arbitrary quantum state <span class="math notranslate nohighlight">\(\ket{x} = \sum_{j=0}^{N-1} x_{j} \ket{j}\)</span>
+to a quantum state <span class="math notranslate nohighlight">\(\sum_{k=0}^{N-1} y_{k} \ket{k}\)</span> according to the formula:</p>
+<div class="math notranslate nohighlight">
+\[y_{k} = \frac{1}{\sqrt{N}} \sum_{j=0}^{N-1} x_{j}w_{N}^{-jk}\]</div>
+<p>where <span class="math notranslate nohighlight">\(w_N = e^{2\pi i / N}\)</span>.</p>
+<p>In MIMIQ, the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.QFT" title="mimiqcircuits.QFT"><code class="xref py py-class docutils literal notranslate"><span class="pre">QFT</span></code></a> gate allows you to quickly implement a QFT in your circuit on an arbitrary <code class="docutils literal notranslate"><span class="pre">N</span></code> number of qubits.
+You can instantiate the QFT gate by providing the number of qubits you want to use, <cite>QFT(N)</cite>, and add it like any other gate in the circuit.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">QFT</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="go">6-qubit circuit with 1 instructions:</span>
+<span class="go">└── QFT @ q[1,2,3,4,5]</span>
+</pre></div>
+</div>
+<p>This adds a 5-qubit QFT to the circuit.</p>
+</section>
+<section id="phase-gradient">
+<h2><a class="toc-backref" href="#id23" role="doc-backlink">Phase Gradient</a><a class="headerlink" href="#phase-gradient" title="Link to this heading">#</a></h2>
+<p id="id8">The <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PhaseGradient" title="mimiqcircuits.PhaseGradient"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhaseGradient</span></code></a> applies a phase shift to a quantum register of <code class="docutils literal notranslate"><span class="pre">N</span></code> qubits, where each computational basis state <span class="math notranslate nohighlight">\(\ket{k}\)</span>
+experiences a phase proportional to its integer value <code class="docutils literal notranslate"><span class="pre">k</span></code>:</p>
+<div class="math notranslate nohighlight">
+\[\operatorname{PhaseGradient} =
+\sum_{k=0}^{N-1} \mathrm{e}^{i \frac{2 \pi}{N} k} \ket{k}\bra{k}\]</div>
+<p>To use it, you can simply provide the number of qubit targets and add it to the circuit as shown in the following examples:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">PhaseGradient</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="go">6-qubit circuit with 1 instructions:</span>
+<span class="go">└── PhaseGradient @ q[1,2,3,4,5]</span>
+</pre></div>
+</div>
+<p>This will add a 5 qubits <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PhaseGradient" title="mimiqcircuits.PhaseGradient"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhaseGradient</span></code></a> to the first 5 qubits of the quantum register.</p>
+</section>
+<section id="polynomial-oracle">
+<h2><a class="toc-backref" href="#id24" role="doc-backlink">Polynomial Oracle</a><a class="headerlink" href="#polynomial-oracle" title="Link to this heading">#</a></h2>
+<div class="admonition warning" id="id9">
+<p class="admonition-title">Warning</p>
+<p>The <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PolynomialOracle" title="mimiqcircuits.PolynomialOracle"><code class="xref py py-class docutils literal notranslate"><span class="pre">PolynomialOracle</span></code></a> works only with the state vector simulator and not with MPS, because of
+ancillas qubit use.</p>
+</div>
+<p>The <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PolynomialOracle" title="mimiqcircuits.PolynomialOracle"><code class="xref py py-class docutils literal notranslate"><span class="pre">PolynomialOracle</span></code></a> is a quantum oracle for a polynomial function of two
+registers. It applies a <span class="math notranslate nohighlight">\(\pi\)</span> phase shift to any basis state that satisfies
+<span class="math notranslate nohighlight">\(a \cdot xy + b \cdot x + c \cdot y + d = 0\)</span>,
+where <span class="math notranslate nohighlight">\(\ket{x}\)</span> and <span class="math notranslate nohighlight">\(\ket{y}\)</span> are the states of the two registers.</p>
+<p>Here is how to use the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PolynomialOracle" title="mimiqcircuits.PolynomialOracle"><code class="xref py py-class docutils literal notranslate"><span class="pre">PolynomialOracle</span></code></a>:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">PolynomialOracle</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="go">10-qubit circuit with 1 instructions:</span>
+<span class="go">└── PolynomialOracle(1, 2, 3, 4) @ q[0,1,2,3,4], q[5,6,7,8,9]</span>
+</pre></div>
+</div>
+</section>
+<section id="diffusion">
+<h2><a class="toc-backref" href="#id25" role="doc-backlink">Diffusion</a><a class="headerlink" href="#diffusion" title="Link to this heading">#</a></h2>
+<p id="id10">The <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Diffusion" title="mimiqcircuits.Diffusion"><code class="xref py py-class docutils literal notranslate"><span class="pre">Diffusion</span></code></a> operator corresponds to <a class="reference external" href="https://en.wikipedia.org/wiki/Grover%27s_algorithm">Grover’s diffusion operator</a>.
+It implements the unitary transformation:</p>
+<div class="math notranslate nohighlight">
+\[H^{\otimes n} (1 - 2\ket{0^n} \bra{0^n}) H^{\otimes n}\]</div>
+<p>Here is how to use <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Diffusion" title="mimiqcircuits.Diffusion"><code class="xref py py-class docutils literal notranslate"><span class="pre">Diffusion</span></code></a>:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Diffusion</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="go">10-qubit circuit with 1 instructions:</span>
+<span class="go">└── Diffusion @ q[0,1,2,3,4,5,6,7,8,9]</span>
+</pre></div>
+</div>
+<p>You need to specify both the number of targets and their corresponding indices.</p>
+</section>
+<section id="more-about-composite-gates">
+<h2><a class="toc-backref" href="#id26" role="doc-backlink">More about composite gates</a><a class="headerlink" href="#more-about-composite-gates" title="Link to this heading">#</a></h2>
+<p id="id11">All composite gates can be decomposed using <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.decompose" title="mimiqcircuits.Circuit.decompose"><code class="xref py py-meth docutils literal notranslate"><span class="pre">decompose()</span></code></a> to
+extract their implementation, except for <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PolynomialOracle" title="mimiqcircuits.PolynomialOracle"><code class="xref py py-class docutils literal notranslate"><span class="pre">PolynomialOracle</span></code></a>.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">QFT</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">5-qubit circuit with 15 instructions:</span>
+<span class="go">├── H @ q[4]</span>
+<span class="go">├── CP(0.5*pi) @ q[3], q[4]</span>
+<span class="go">├── H @ q[3]</span>
+<span class="go">├── CP(0.25*pi) @ q[2], q[4]</span>
+<span class="go">├── CP(0.5*pi) @ q[2], q[3]</span>
+<span class="go">├── H @ q[2]</span>
+<span class="go">├── CP(0.125*pi) @ q[1], q[4]</span>
+<span class="go">├── CP(0.25*pi) @ q[1], q[3]</span>
+<span class="go">├── CP(0.5*pi) @ q[1], q[2]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── CP(0.0625*pi) @ q[0], q[4]</span>
+<span class="go">├── CP(0.125*pi) @ q[0], q[3]</span>
+<span class="go">├── CP(0.25*pi) @ q[0], q[2]</span>
+<span class="go">├── CP(0.5*pi) @ q[0], q[1]</span>
+<span class="go">└── H @ q[0]</span>
+</pre></div>
+</div>
+</section>
+<section id="barrier">
+<h2><a class="toc-backref" href="#id27" role="doc-backlink">Barrier</a><a class="headerlink" href="#barrier" title="Link to this heading">#</a></h2>
+<p id="id12">The <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Barrier" title="mimiqcircuits.Barrier"><code class="xref py py-class docutils literal notranslate"><span class="pre">Barrier</span></code></a> is a non-op operation that does not affect the quantum state but
+prevents compression or optimization across execution.
+As of now, <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Barrier" title="mimiqcircuits.Barrier"><code class="xref py py-class docutils literal notranslate"><span class="pre">Barrier</span></code></a> is only useful when combined with the MPS backend.</p>
+<p>To add barriers to the circuit, you can use the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Barrier" title="mimiqcircuits.Barrier"><code class="xref py py-class docutils literal notranslate"><span class="pre">Barrier</span></code></a> operation:</p>
+<p>Example usage:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># Add a Gate</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateX</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 1 instructions:</span>
+<span class="go">└── X @ q[0]</span>
+
+
+<span class="go"># Apply the Barrier on qubit 0.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Barrier</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 2 instructions:</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">└── Barrier @ q[0]</span>
+
+
+<span class="go"># Add a Gate between barriers</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateX</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 3 instructions:</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">├── Barrier @ q[0]</span>
+<span class="go">└── X @ q[0]</span>
+
+
+<span class="go"># Apply individual barriers on multiple qubits</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Barrier</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="go">3-qubit circuit with 6 instructions:</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">├── Barrier @ q[0]</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">├── Barrier @ q[0]</span>
+<span class="go">├── Barrier @ q[1]</span>
+<span class="go">└── Barrier @ q[2]</span>
+
+
+<span class="go"># Add gates on multiple qubits</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateX</span><span class="p">(),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="go">3-qubit circuit with 9 instructions:</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">├── Barrier @ q[0]</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">├── Barrier @ q[0]</span>
+<span class="go">├── Barrier @ q[1]</span>
+<span class="go">├── Barrier @ q[2]</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">├── X @ q[1]</span>
+<span class="go">└── X @ q[2]</span>
+
+
+<span class="go"># Apply one general Barrier on multiple qubits (effectively the same as above)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Barrier</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="go">3-qubit circuit with 10 instructions:</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">├── Barrier @ q[0]</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">├── Barrier @ q[0]</span>
+<span class="go">├── Barrier @ q[1]</span>
+<span class="go">├── Barrier @ q[2]</span>
+<span class="go">├── X @ q[0]</span>
+<span class="go">├── X @ q[1]</span>
+<span class="go">├── X @ q[2]</span>
+<span class="go">└── Barrier @ q[0,1,2]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="go">        ┌─┐ ┌─┐   ┌─┐</span>
+<span class="go"> q[0]: ╶┤X├░┤X├░──┤X├──────░───────────────────────────────────────────────────╴</span>
+<span class="go">        └─┘░└─┘░  └─┘┌─┐   ░</span>
+<span class="go"> q[1]: ╶────────░────┤X├───░───────────────────────────────────────────────────╴</span>
+<span class="go">                ░    └─┘┌─┐░</span>
+<span class="go"> q[2]: ╶─────────░──────┤X├░───────────────────────────────────────────────────╴</span>
+<span class="go">                 ░      └─┘░</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="statistical_ops.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Statistical Operations</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="simulation.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Simulating Circuits</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Special Operations</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gate-declaration-gate-calls">Gate Declaration &amp; Gate Calls</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blocks-of-instructions">Blocks of Instructions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-error-correction-code-block">Example: Error Correction Code Block</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-blocks">Working with Blocks</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-to-use-blocks-vs-gate-declarations">When to Use Blocks vs Gate Declarations</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#repeated-operations">Repeated Operations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-repeated-operations">Creating Repeated Operations</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#composite-gates">Composite Gates</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pauli-string">Pauli String</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quantum-fourier-transform">Quantum Fourier Transform</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-gradient">Phase Gradient</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#polynomial-oracle">Polynomial Oracle</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusion">Diffusion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#more-about-composite-gates">More about composite gates</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#barrier">Barrier</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/manual/special_ops.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

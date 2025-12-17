@@ -1,0 +1,2138 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mimiqcircuits.circuit &#8212; MIMIQ Circuits 0.18.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=29ae757a"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/tabs.js?v=3ee01567"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/mimiqcircuits/circuit';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest 0.18.2 version.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>
+    <script>document.write(`<img src="../../_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../manual/index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../manual/index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../mimiqcircuits.html" class="nav-link">mimiqcircuits</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">mimiqcircuit...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for mimiqcircuits.circuit</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.</span>
+<span class="c1"># Copyright © 2023-2025 QPerfect. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotations</span><span class="p">,</span>
+<span class="p">)</span>  <span class="c1"># Required for postponed evaluation of type hints in Python 3.7+</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.instruction</span><span class="w"> </span><span class="kn">import</span> <span class="n">Instruction</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">repeat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.push</span><span class="w"> </span><span class="kn">import</span> <span class="n">push_instruction_container</span>
+
+
+<div class="viewcode-block" id="Circuit">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Circuit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Representation of a quantum circuit.</span>
+
+<span class="sd">    Operation can be added one by one to a circuit with the</span>
+<span class="sd">    ``c.push(operation, targets...)`` function</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        instructions (list of Instruction): Instructiuons to add at</span>
+<span class="sd">            construction.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If initialization list contains non-Instruction objects.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from mimiqcircuits import *</span>
+<span class="sd">        &gt;&gt;&gt; from symengine import pi</span>
+
+<span class="sd">        Create a new circuit object</span>
+
+<span class="sd">        &gt;&gt;&gt; c = Circuit()</span>
+
+<span class="sd">        Add a GateX (Pauli-X) gate on qubit 0</span>
+
+<span class="sd">        &gt;&gt;&gt; c.push(GateX(), 0)</span>
+<span class="sd">        1-qubit circuit with 1 instructions:</span>
+<span class="sd">        └── X @ q[0]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Add a Controlled-NOT (CX) gate with control qubit 0 and target qubit 1</span>
+
+<span class="sd">        &gt;&gt;&gt; c.push(GateCX(), 0, 1)</span>
+<span class="sd">        2-qubit circuit with 2 instructions:</span>
+<span class="sd">        ├── X @ q[0]</span>
+<span class="sd">        └── CX @ q[0], q[1]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Add a Parametric GateRX gate with parameters pi/4</span>
+
+<span class="sd">        &gt;&gt;&gt; c.push(GateRX(pi / 4),0)</span>
+<span class="sd">        2-qubit circuit with 3 instructions:</span>
+<span class="sd">        ├── X @ q[0]</span>
+<span class="sd">        ├── CX @ q[0], q[1]</span>
+<span class="sd">        └── RX((1/4)*pi) @ q[0]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Add a Reset gate on qubit 0</span>
+
+<span class="sd">        &gt;&gt;&gt; c.push(Reset(), 0)</span>
+<span class="sd">        2-qubit circuit with 4 instructions:</span>
+<span class="sd">        ├── X @ q[0]</span>
+<span class="sd">        ├── CX @ q[0], q[1]</span>
+<span class="sd">        ├── RX((1/4)*pi) @ q[0]</span>
+<span class="sd">        └── Reset @ q[0]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Add a Barrier gate on qubits 0 and 1</span>
+
+<span class="sd">        &gt;&gt;&gt; c.push(Barrier(2), 0, 1)</span>
+<span class="sd">        2-qubit circuit with 5 instructions:</span>
+<span class="sd">        ├── X @ q[0]</span>
+<span class="sd">        ├── CX @ q[0], q[1]</span>
+<span class="sd">        ├── RX((1/4)*pi) @ q[0]</span>
+<span class="sd">        ├── Reset @ q[0]</span>
+<span class="sd">        └── Barrier @ q[0,1]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Add a Measurement gate on qubit 0, storing the result in bit 0.</span>
+
+<span class="sd">        &gt;&gt;&gt; c.push(Measure(), 0, 0)</span>
+<span class="sd">        2-qubit, 1-bit circuit with 6 instructions:</span>
+<span class="sd">        ├── X @ q[0]</span>
+<span class="sd">        ├── CX @ q[0], q[1]</span>
+<span class="sd">        ├── RX((1/4)*pi) @ q[0]</span>
+<span class="sd">        ├── Reset @ q[0]</span>
+<span class="sd">        ├── Barrier @ q[0,1]</span>
+<span class="sd">        └── M @ q[0], c[0]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Add a Control gate with GateX as the target gate. The first 3</span>
+<span class="sd">        qubits are the control qubits.</span>
+
+<span class="sd">        &gt;&gt;&gt; c.push(Control(3, GateX()), 0, 1, 2, 3)</span>
+<span class="sd">        4-qubit, 1-bit circuit with 7 instructions:</span>
+<span class="sd">        ├── X @ q[0]</span>
+<span class="sd">        ├── CX @ q[0], q[1]</span>
+<span class="sd">        ├── RX((1/4)*pi) @ q[0]</span>
+<span class="sd">        ├── Reset @ q[0]</span>
+<span class="sd">        ├── Barrier @ q[0,1]</span>
+<span class="sd">        ├── M @ q[0], c[0]</span>
+<span class="sd">        └── C₃X @ q[0,1,2], q[3]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Add a 3-qubit Parallel gate with GateX</span>
+
+<span class="sd">        &gt;&gt;&gt; c.push(Parallel(3,GateX()),0, 1, 2)</span>
+<span class="sd">        4-qubit, 1-bit circuit with 8 instructions:</span>
+<span class="sd">        ├── X @ q[0]</span>
+<span class="sd">        ├── CX @ q[0], q[1]</span>
+<span class="sd">        ├── RX((1/4)*pi) @ q[0]</span>
+<span class="sd">        ├── Reset @ q[0]</span>
+<span class="sd">        ├── Barrier @ q[0,1]</span>
+<span class="sd">        ├── M @ q[0], c[0]</span>
+<span class="sd">        ├── C₃X @ q[0,1,2], q[3]</span>
+<span class="sd">        └── ⨷ ³ X @ q[0], q[1], q[2]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        To add operations without constructing them first, use the</span>
+<span class="sd">        `c.emplace(...)` function.</span>
+
+<span class="sd">    Available operations</span>
+<span class="sd">    --------------------</span>
+
+<span class="sd">    **Gates**</span>
+
+<span class="sd">    **Single qubit gates**</span>
+<span class="sd">        :func:`GateX` :func:`GateY` :func:`GateZ` :func:`GateH`</span>
+<span class="sd">        :func:`GateS` :func:`GateSDG`</span>
+<span class="sd">        :func:`GateT` :func:`GateTDG`</span>
+<span class="sd">        :func:`GateSX` :func:`GateSXDG`</span>
+<span class="sd">        :func:`GateID`</span>
+
+<span class="sd">    **Single qubit gates (parametric)**</span>
+<span class="sd">        :func:`GateU` :func:`GateP`</span>
+<span class="sd">        :func:`GateRX` :func:`GateRY` :func:`GateRZ` :func:`GateP`</span>
+
+<span class="sd">    **Two qubit gates**</span>
+<span class="sd">        :func:`GateCX` :func:`GateCY` :func:`GateCZ`</span>
+<span class="sd">        :func:`GateCH`</span>
+<span class="sd">        :func:`GateSWAP` :func:`GateISWAP`</span>
+<span class="sd">        :func:`GateCS` :func:`GateCSX`</span>
+<span class="sd">        :func:`GateECR` :func:`GateDCX`</span>
+
+<span class="sd">    **Two qubit gates (parametric)**</span>
+<span class="sd">        :func:`GateCU`</span>
+<span class="sd">        :func:`GateCP`</span>
+<span class="sd">        :func:`GateCRX` :func:`GateCRY` :func:`GateCRZ`</span>
+<span class="sd">        :func:`GateRXX` :func:`GateRYY` :func:`GateRZZ`</span>
+<span class="sd">        :func:`GateXXplusYY` :func:`GateXXminusYY`</span>
+
+<span class="sd">    **Other**</span>
+<span class="sd">        :func:`GateCustom`</span>
+
+<span class="sd">    **No-ops**</span>
+<span class="sd">        :func:`Barrier`</span>
+
+<span class="sd">    **Non-unitary operations**</span>
+<span class="sd">        :func:`Measure` :func:`Reset`</span>
+
+<span class="sd">    **Composite operations**</span>
+<span class="sd">        :func:`Control` :func:`Parallel`</span>
+
+<span class="sd">    **Power &amp; Inverse operations**</span>
+<span class="sd">        :func:`Power`</span>
+<span class="sd">        :func:`Inverse`</span>
+
+<span class="sd">    **Generalized gates**</span>
+<span class="sd">        :func:`QFT` :func:`PhaseGradient`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">instructions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">instructions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instructions</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Circuit should be initialized with a list of Instruction&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">instruction</span> <span class="ow">in</span> <span class="n">instructions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="n">Instruction</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Non Gate object passed to constructor.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="o">=</span> <span class="n">instructions</span>
+
+<div class="viewcode-block" id="Circuit.num_qubits">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.num_qubits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_qubits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the number of qubits in the circuit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">instruction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="n">qubits</span> <span class="o">=</span> <span class="n">instruction</span><span class="o">.</span><span class="n">qubits</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">qubits</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">m</span>
+
+        <span class="k">return</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="Circuit.num_bits">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.num_bits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_bits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the number of bits in the circuit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">instruction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="n">bits</span> <span class="o">=</span> <span class="n">instruction</span><span class="o">.</span><span class="n">bits</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">bits</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">m</span>
+
+        <span class="k">return</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="Circuit.getparams">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.getparams">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getparams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="s2">&quot;getparams&quot;</span><span class="p">):</span>
+                <span class="n">params</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">getparams</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">params</span></div>
+
+
+<div class="viewcode-block" id="Circuit.listvars">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.listvars">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">listvars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">({</span><span class="n">v</span> <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inst</span><span class="o">.</span><span class="n">listvars</span><span class="p">()})</span></div>
+
+
+<div class="viewcode-block" id="Circuit.num_zvars">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.num_zvars">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_zvars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the number of z-variables in the circuit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">instruction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="n">zbits</span> <span class="o">=</span> <span class="n">instruction</span><span class="o">.</span><span class="n">zvars</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zbits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">zbits</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">m</span>
+
+        <span class="k">return</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="Circuit.empty">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.empty">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the circuit is empty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="Circuit.push">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operation</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds an Operation or an Instruction to the end of the circuit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            operation (Operation or Instruction): the quantum operation to add.</span>
+
+<span class="sd">            args (integers or iterables): Target qubits and bits for the operation</span>
+<span class="sd">                (not instruction), given as variable number of arguments.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: If operation is not an Operation object.</span>
+
+<span class="sd">            ValueError: If the number of arguments is incorrect or the</span>
+<span class="sd">                 target qubits specified are invalid.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Adding multiple operations to the Circuit (The args can be</span>
+<span class="sd">            integers or integer-valued iterables)</span>
+
+<span class="sd">            &gt;&gt;&gt; from mimiqcircuits import *</span>
+<span class="sd">            &gt;&gt;&gt; from symengine import pi</span>
+<span class="sd">            &gt;&gt;&gt; c = Circuit()</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateH(), 0)</span>
+<span class="sd">            1-qubit circuit with 1 instructions:</span>
+<span class="sd">            └── H @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateT(), 0)</span>
+<span class="sd">            1-qubit circuit with 2 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            └── T @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateH(), [0,2])</span>
+<span class="sd">            3-qubit circuit with 4 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── T @ q[0]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            └── H @ q[2]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateS(), 0)</span>
+<span class="sd">            3-qubit circuit with 5 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── T @ q[0]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            └── S @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateCX(), [2, 0], 1)</span>
+<span class="sd">            3-qubit circuit with 7 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── T @ q[0]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── S @ q[0]</span>
+<span class="sd">            ├── CX @ q[2], q[1]</span>
+<span class="sd">            └── CX @ q[0], q[1]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateH(), 0)</span>
+<span class="sd">            3-qubit circuit with 8 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── T @ q[0]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── S @ q[0]</span>
+<span class="sd">            ├── CX @ q[2], q[1]</span>
+<span class="sd">            ├── CX @ q[0], q[1]</span>
+<span class="sd">            └── H @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(Barrier(3), *range(3)) # equivalent to c.push(Barrier(3), 0, 1, 2)</span>
+<span class="sd">            3-qubit circuit with 9 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── T @ q[0]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── S @ q[0]</span>
+<span class="sd">            ├── CX @ q[2], q[1]</span>
+<span class="sd">            ├── CX @ q[0], q[1]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            └── Barrier @ q[0,1,2]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(Measure(), range(3), range(3))</span>
+<span class="sd">            3-qubit, 3-bit circuit with 12 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── T @ q[0]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── S @ q[0]</span>
+<span class="sd">            ├── CX @ q[2], q[1]</span>
+<span class="sd">            ├── CX @ q[0], q[1]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── Barrier @ q[0,1,2]</span>
+<span class="sd">            ├── M @ q[0], c[0]</span>
+<span class="sd">            ├── M @ q[1], c[1]</span>
+<span class="sd">            └── M @ q[2], c[2]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c</span>
+<span class="sd">            3-qubit, 3-bit circuit with 12 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── T @ q[0]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── S @ q[0]</span>
+<span class="sd">            ├── CX @ q[2], q[1]</span>
+<span class="sd">            ├── CX @ q[0], q[1]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── Barrier @ q[0,1,2]</span>
+<span class="sd">            ├── M @ q[0], c[0]</span>
+<span class="sd">            ├── M @ q[1], c[1]</span>
+<span class="sd">            └── M @ q[2], c[2]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">push_instruction_container</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operation</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">check_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_emplace_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">regs</span><span class="p">):</span>
+        <span class="n">lr</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">regs</span><span class="p">)</span>
+        <span class="n">lq</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">num_qregs</span>
+        <span class="n">lc</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">num_cregs</span>
+        <span class="n">lz</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">_num_zregs</span>
+
+        <span class="k">if</span> <span class="n">lr</span> <span class="o">!=</span> <span class="n">lq</span> <span class="o">+</span> <span class="n">lc</span> <span class="o">+</span> <span class="n">lz</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Wrong number of registers. Expected </span><span class="si">{</span><span class="n">lq</span><span class="si">}</span><span class="s2"> quantum + </span><span class="si">{</span><span class="n">lc</span><span class="si">}</span><span class="s2"> classical + </span><span class="si">{</span><span class="n">lz</span><span class="si">}</span><span class="s2"> z, got </span><span class="si">{</span><span class="n">lr</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">qr</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">qregsizes</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lq</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">regs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">!=</span> <span class="n">qr</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Wrong size for </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">th quantum register. Expected </span><span class="si">{</span><span class="n">qr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> but got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="n">cr</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">cregsizes</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lc</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">regs</span><span class="p">[</span><span class="n">lq</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span> <span class="o">!=</span> <span class="n">cr</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Wrong size for </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">th classical register. Expected </span><span class="si">{</span><span class="n">cr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> but got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regs</span><span class="p">[</span><span class="n">lq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="n">zr</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">zregsizes</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lz</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">regs</span><span class="p">[</span><span class="n">lq</span> <span class="o">+</span> <span class="n">lc</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span> <span class="o">!=</span> <span class="n">zr</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Wrong size for </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">th z-register. Expected </span><span class="si">{</span><span class="n">zr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> but got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regs</span><span class="p">[</span><span class="n">lq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">lc</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">reg</span> <span class="ow">in</span> <span class="n">regs</span><span class="p">:</span>
+            <span class="n">targets</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">reg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="o">*</span><span class="n">targets</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+<div class="viewcode-block" id="Circuit.emplace">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.emplace">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">emplace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="o">*</span><span class="n">regs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs and adds an Operation to the end of the circuit.</span>
+
+<span class="sd">        It is useful to add to the circuit operations that are dependent on the</span>
+<span class="sd">        number of qubits.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            operation (Type subclass of Operation): the type of operation to</span>
+<span class="sd">                add.</span>
+<span class="sd">            args (vararg of list): A variable number of arguments compriseing a</span>
+<span class="sd">                list of parameters (if the operation is parametric), one list</span>
+<span class="sd">                of qubits for each quantum register,  and one list of bits of</span>
+<span class="sd">                every classical register supported.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; from mimiqcircuits import *</span>
+<span class="sd">            &gt;&gt;&gt; c = Circuit()</span>
+<span class="sd">            &gt;&gt;&gt; c.emplace(GateX(), [0])</span>
+<span class="sd">            1-qubit circuit with 1 instructions:</span>
+<span class="sd">            └── X @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.emplace(GateRX(0.2), [0])</span>
+<span class="sd">            1-qubit circuit with 2 instructions:</span>
+<span class="sd">            ├── X @ q[0]</span>
+<span class="sd">            └── RX(0.2) @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.emplace(QFT(), range(10))</span>
+<span class="sd">            10-qubit circuit with 3 instructions:</span>
+<span class="sd">            ├── X @ q[0]</span>
+<span class="sd">            ├── RX(0.2) @ q[0]</span>
+<span class="sd">            └── QFT @ q[0,1,2,3,4,5,6,7,8,9]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">LazyExpr</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_emplace_operation</span><span class="p">(</span><span class="n">op</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">reg</span><span class="p">)</span> <span class="k">for</span> <span class="n">reg</span> <span class="ow">in</span> <span class="n">regs</span><span class="p">]),</span> <span class="n">regs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Parallel</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">((</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">reg</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">reg</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">reg</span> <span class="ow">in</span> <span class="n">regs</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Each iterable should contain exactly one qubit.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="o">*</span><span class="n">regs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Operation</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">AbstractOperator</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot emplace an abstract operator that is not a Gate into the circuit.&quot;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_emplace_operation</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">regs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Operation</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_emplace_operation</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">regs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Invalid type passed to emplace&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="Circuit.insert">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.insert">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">operation</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts an operation or another circuit at a specific index in the circuit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            index (int): The index at which the operation should be inserted.</span>
+
+<span class="sd">            operation (Operation or Instruction): the quantum operation to add.</span>
+
+<span class="sd">            args (integers or iterables): Target qubits and bits for the operation</span>
+<span class="sd">                (not instruction), given as variable number of arguments.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: If operation is not an Operation object.</span>
+
+<span class="sd">            ValueError: If the number of arguments is incorrect or the</span>
+<span class="sd">                 target qubits specified are invalid.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Inserting an operation to the specify index of the circuit</span>
+
+<span class="sd">            &gt;&gt;&gt; from mimiqcircuits import *</span>
+<span class="sd">            &gt;&gt;&gt; c= Circuit()</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateX(), 0)</span>
+<span class="sd">            1-qubit circuit with 1 instructions:</span>
+<span class="sd">            └── X @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateCX(),0,1)</span>
+<span class="sd">            2-qubit circuit with 2 instructions:</span>
+<span class="sd">            ├── X @ q[0]</span>
+<span class="sd">            └── CX @ q[0], q[1]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.insert(1, GateH(), 0)</span>
+<span class="sd">            2-qubit circuit with 3 instructions:</span>
+<span class="sd">            ├── X @ q[0]</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            └── CX @ q[0], q[1]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">Circuit</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">operation</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">inst</span><span class="p">)</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">M</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">Z</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">L</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">Instruction</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">L</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;No extra arguments allowed when inserting an instruction.&quot;</span>
+                    <span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">operation</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span>
+
+            <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="n">mc</span><span class="o">.</span><span class="n">Barrier</span><span class="p">:</span>
+                <span class="n">N</span> <span class="o">=</span> <span class="n">L</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Operation</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Non Operation object passed to push.&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Check if the operation is an abstract operator but not a gate</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">AbstractOperator</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Gate</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Cannot add an abstract operator that is not a Gate to the circuit.&quot;</span>
+                    <span class="p">)</span>
+
+                <span class="n">N</span> <span class="o">=</span> <span class="n">operation</span><span class="o">.</span><span class="n">num_qubits</span>
+                <span class="n">M</span> <span class="o">=</span> <span class="n">operation</span><span class="o">.</span><span class="n">num_bits</span>
+                <span class="n">Z</span> <span class="o">=</span> <span class="n">operation</span><span class="o">.</span><span class="n">num_zvars</span>
+
+            <span class="k">if</span> <span class="n">L</span> <span class="o">!=</span> <span class="n">N</span> <span class="o">+</span> <span class="n">M</span> <span class="o">+</span> <span class="n">Z</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Wrong number of target qubits and bits, given </span><span class="si">{</span><span class="n">L</span><span class="si">}</span><span class="s2"> for a </span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2"> qubits + </span><span class="si">{</span><span class="n">M</span><span class="si">}</span><span class="s2"> bits operation + </span><span class="si">{</span><span class="n">Z</span><span class="si">}</span><span class="s2"> Z-variables.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="n">mc</span><span class="o">.</span><span class="n">Barrier</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                    <span class="n">index</span><span class="p">,</span> <span class="n">Instruction</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Barrier</span><span class="p">(</span><span class="n">N</span><span class="p">),</span> <span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,),</span> <span class="p">())</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                    <span class="n">index</span><span class="p">,</span>
+                    <span class="n">Instruction</span><span class="p">(</span>
+                        <span class="n">operation</span><span class="p">,</span> <span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">[:</span><span class="n">N</span><span class="p">],),</span> <span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">[</span><span class="n">N</span> <span class="p">:</span> <span class="n">N</span> <span class="o">+</span> <span class="n">M</span><span class="p">],),</span> <span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">[</span><span class="n">N</span> <span class="o">+</span> <span class="n">M</span> <span class="p">:],)</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="Circuit.append">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.append">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends all the gates of the given circuit at the end of the current</span>
+<span class="sd">        circuit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (Circuit): the circuit to append.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">instructions</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Circuit</span><span class="p">):</span>
+            <span class="n">instructions</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">instructions</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">instructions</span> <span class="o">=</span> <span class="n">other</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Only allowed to append a circuit or a list of instructions&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">instructions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Circuit.remove">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.remove">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes an instruction at a specific index from the circuit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            index (int): The index of the gate to remove.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            IndexError: If index is out of range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="Circuit.inverse">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.inverse">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the inverse of the circuit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invgates</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">]</span>
+        <span class="n">invgates</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Circuit</span><span class="p">(</span><span class="n">invgates</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_decompose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">circ</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">instruction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="n">instruction</span><span class="o">.</span><span class="n">_decompose</span><span class="p">(</span><span class="n">circ</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">circ</span>
+
+<div class="viewcode-block" id="Circuit.decompose">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.decompose">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decompose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decompose all the gates in the circuit.</span>
+
+<span class="sd">        If applied multiple times, will reduce the circuit to a basis set of U</span>
+<span class="sd">        and CX gates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decompose</span><span class="p">(</span><span class="n">Circuit</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="Circuit.evaluate">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.evaluate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">c</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">slice</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Circuit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">get_terminal_size</span><span class="p">()</span><span class="o">.</span><span class="n">lines</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">compact</span> <span class="ow">and</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">nq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">()</span>
+            <span class="n">nb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_bits</span><span class="p">()</span>
+            <span class="n">nz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_zvars</span><span class="p">()</span>
+
+            <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">nq</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nq</span><span class="si">}</span><span class="s2">-qubit&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">nb</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nb</span><span class="si">}</span><span class="s2">-bit&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">nz</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nz</span><span class="si">}</span><span class="s2">-zvar&quot;</span><span class="p">)</span>
+
+            <span class="n">output</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span><span class="si">}</span><span class="s2"> circuit with </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> instructions:</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+            <span class="k">if</span> <span class="n">lines</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">+=</span> <span class="s2">&quot;└── ...</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">max_display</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">lines</span> <span class="o">-</span> <span class="mi">4</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[:</span> <span class="n">max_display</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">output</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;├── </span><span class="si">{</span><span class="n">g</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+                <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="n">max_display</span><span class="p">:</span>
+                    <span class="n">output</span> <span class="o">+=</span> <span class="s2">&quot;⋮   ⋮</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+                <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">output</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;└── </span><span class="si">{</span><span class="n">g</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">compact</span> <span class="ow">and</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">nq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">()</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nq</span><span class="si">}</span><span class="s2">-qubit circuit with </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> instructions:&quot;</span>
+
+            <span class="c1"># iterate from the second gate</span>
+            <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">output</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">├── </span><span class="si">{</span><span class="n">g</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">output</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">└── </span><span class="si">{</span><span class="n">g</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">+=</span> <span class="s2">&quot;empty circuit&quot;</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">(</span><span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Circuit</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">instructions</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__class__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Circuit</span>
+
+<div class="viewcode-block" id="Circuit.depth">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.depth">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">depth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the depth of the quantum circuit, including qubits, bits, and z-registers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="n">d</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_bits</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_zvars</span><span class="p">())]</span>
+
+        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Barrier</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">nq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">()</span>
+            <span class="n">nb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_bits</span><span class="p">()</span>
+            <span class="n">optargets</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">qubits</span>
+                <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">nq</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">bits</span><span class="p">))</span>
+                <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">nq</span> <span class="o">+</span> <span class="n">nb</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">zvars</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="n">dm</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">d</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">optargets</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">qubits</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">dm</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">bits</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="n">nq</span><span class="p">]</span> <span class="o">=</span> <span class="n">dm</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">zvars</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="n">nq</span> <span class="o">+</span> <span class="n">nb</span><span class="p">]</span> <span class="o">=</span> <span class="n">dm</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">d</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Circuit.copy">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.copy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a shallow copy of the circuit.</span>
+<span class="sd">            To create a full copy use deepcopy() instead.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Circuit: A new Circuit object containing references to the same attributes as the original circuit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Circuit.deepcopy">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.deepcopy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a copy of the object and for all its attributes</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Circuit: A new Circuit object fully identical the original circuit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Circuit.get_on_qubits">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.get_on_qubits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_on_qubits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_qubits</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get instructions that involve the specified target qubits.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            target_qubits (list or int): Qubits for which to retrieve instructions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Circuit: A new Circuit containing only the instructions that involve the specified qubits.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">target_qubits</span> <span class="o">=</span> <span class="p">[</span><span class="n">target_qubits</span><span class="p">]</span>
+
+        <span class="n">selected_instructions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">instruction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="n">instruction_qubits</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">instruction</span><span class="o">.</span><span class="n">qubits</span> <span class="o">+</span> <span class="n">instruction</span><span class="o">.</span><span class="n">bits</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">qubit</span> <span class="ow">in</span> <span class="n">instruction_qubits</span> <span class="k">for</span> <span class="n">qubit</span> <span class="ow">in</span> <span class="n">target_qubits</span><span class="p">):</span>
+                <span class="n">selected_instructions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instruction</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Circuit</span><span class="p">(</span><span class="n">instructions</span><span class="o">=</span><span class="n">selected_instructions</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Circuit.saveproto">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.saveproto">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">saveproto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the circuit as a protobuf (binary) file.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            filename (str): The name of the file to save the circuit to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The number of bytes written to the file.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; from mimiqcircuits import *</span>
+<span class="sd">            &gt;&gt;&gt; from symengine import *</span>
+<span class="sd">            &gt;&gt;&gt; import tempfile</span>
+<span class="sd">            &gt;&gt;&gt; x, y = symbols(&quot;x y&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; c = Circuit()</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateH(), 0)</span>
+<span class="sd">            1-qubit circuit with 1 instructions:</span>
+<span class="sd">            └── H @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateXXplusYY(x**2, y),0,1)</span>
+<span class="sd">            2-qubit circuit with 2 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            └── XXplusYY(x**2, y) @ q[0,1]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(Measure(),0,0)</span>
+<span class="sd">            2-qubit, 1-bit circuit with 3 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── XXplusYY(x**2, y) @ q[0,1]</span>
+<span class="sd">            └── M @ q[0], c[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; tmpfile = tempfile.NamedTemporaryFile(suffix=&quot;.pb&quot;, delete=True)</span>
+<span class="sd">            &gt;&gt;&gt; c.saveproto(tmpfile.name)</span>
+<span class="sd">            64</span>
+<span class="sd">            &gt;&gt;&gt; c.loadproto(tmpfile.name)</span>
+<span class="sd">            2-qubit, 1-bit circuit with 3 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            ├── XXplusYY(x**2, y) @ q[0,1]</span>
+<span class="sd">            └── M @ q[0], c[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+
+<span class="sd">            Note:</span>
+<span class="sd">                This example uses a temporary file to demonstrate the save and load functionality.</span>
+<span class="sd">                You can save your file with any name at any location using:</span>
+
+<span class="sd">                .. code-block:: python</span>
+
+<span class="sd">                    c.saveproto(&quot;example.pb&quot;)</span>
+<span class="sd">                    c.loadproto(&quot;example.pb&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.proto.circuitproto</span><span class="w"> </span><span class="kn">import</span> <span class="n">toproto_circuit</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;write&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">toproto_circuit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># try:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">toproto_circuit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span></div>
+
+        <span class="c1"># except TypeError:</span>
+        <span class="c1">#     raise ValueError(</span>
+        <span class="c1">#         &quot;Invalid file object. Sould be a filename of a file-like object&quot;</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># except Exception as e:</span>
+        <span class="c1">#     raise e</span>
+
+<div class="viewcode-block" id="Circuit.loadproto">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.loadproto">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">loadproto</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads a circuit from a protobuf (binary) file.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            filename (str): The name of the file to load the circuit from.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Circuit: The circuit loaded from the file.</span>
+
+<span class="sd">        Note:</span>
+
+<span class="sd">            Look for example in :func:`Circuit.saveproto`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.proto</span><span class="w"> </span><span class="kn">import</span> <span class="n">circuit_pb2</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.proto.circuitproto</span><span class="w"> </span><span class="kn">import</span> <span class="n">fromproto_circuit</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">circuit_proto</span> <span class="o">=</span> <span class="n">circuit_pb2</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span>
+                <span class="n">circuit_proto</span><span class="o">.</span><span class="n">ParseFromString</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+                <span class="k">return</span> <span class="n">fromproto_circuit</span><span class="p">(</span><span class="n">circuit_proto</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;read&quot;</span><span class="p">):</span>
+            <span class="n">circuit_proto</span> <span class="o">=</span> <span class="n">circuit_pb2</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span>
+            <span class="n">circuit_proto</span><span class="o">.</span><span class="n">ParseFromString</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">fromproto_circuit</span><span class="p">(</span><span class="n">circuit_proto</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Invalid file object. Sould be a filename of a file-like object&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Circuit.draw">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draws the entire quantum circuit on the ASCII canvas and handles the layout of various quantum operations.</span>
+
+<span class="sd">        This method iterates through all instructions in the circuit, determines the required width for each operation,</span>
+<span class="sd">        and delegates the drawing of each operation to the appropriate specialized method based on the operation type.</span>
+<span class="sd">        If an operation&#39;s width exceeds the available space in the current row of the canvas, the canvas is printed and</span>
+<span class="sd">        reset to continue drawing from a new starting point.</span>
+
+<span class="sd">        The method manages different operation types including control, measurement, reset, barrier, parallel, and</span>
+<span class="sd">        conditional (if) operations using specific drawing methods from the `AsciiCircuit` class.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: If any item in the circuit&#39;s instructions is not an instance of `Instruction`.</span>
+<span class="sd">            ValueError: If an operation cannot be drawn because it exceeds the available canvas width even after a reset.</span>
+
+<span class="sd">        Prints:</span>
+<span class="sd">            The current state of the ASCII canvas, either incrementally after each operation if space runs out, or</span>
+<span class="sd">            entirely at the end of processing all instructions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_qubits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">()</span>
+        <span class="n">num_bits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_bits</span><span class="p">()</span>
+        <span class="n">num_zvars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_zvars</span><span class="p">()</span>
+
+        <span class="n">canvas</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">AsciiCircuit</span><span class="p">()</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">draw_wires</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_bits</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_zvars</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">instruction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="n">Instruction</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Must be an Instruction&quot;</span><span class="p">)</span>
+
+            <span class="n">operation</span> <span class="o">=</span> <span class="n">instruction</span><span class="o">.</span><span class="n">get_operation</span><span class="p">()</span>
+            <span class="n">required_width</span> <span class="o">=</span> <span class="n">operation</span><span class="o">.</span><span class="n">asciiwidth</span><span class="p">(</span>
+                <span class="n">instruction</span><span class="o">.</span><span class="n">qubits</span><span class="p">,</span>
+                <span class="n">instruction</span><span class="o">.</span><span class="n">bits</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;bits&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                <span class="n">instruction</span><span class="o">.</span><span class="n">zvars</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;zvars&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">required_width</span> <span class="o">&gt;</span> <span class="n">canvas</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">get_cols</span><span class="p">()</span> <span class="o">-</span> <span class="n">canvas</span><span class="o">.</span><span class="n">get_current_col</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">canvas</span><span class="o">.</span><span class="n">canvas</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">draw_wires</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_bits</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_zvars</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">required_width</span> <span class="o">&gt;</span> <span class="n">canvas</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">get_cols</span><span class="p">()</span> <span class="o">-</span> <span class="n">canvas</span><span class="o">.</span><span class="n">get_current_col</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot draw instruction. Insufficient space on screen.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Handle drawing based on operation type</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Control</span><span class="p">):</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">draw_control</span><span class="p">(</span>
+                    <span class="n">operation</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">qubits</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">bits</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;bits&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                <span class="p">)</span>
+
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">PauliString</span><span class="p">):</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">draw_paulistring</span><span class="p">(</span>
+                    <span class="n">operation</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">qubits</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">bits</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;bits&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">zvars</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;zvars&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                <span class="p">)</span>
+
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Reset</span><span class="p">):</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">draw_reset</span><span class="p">(</span>
+                    <span class="n">operation</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">qubits</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">bits</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;bits&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">zvars</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;zvars&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                <span class="p">)</span>
+
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Barrier</span><span class="p">):</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">draw_barrier</span><span class="p">(</span>
+                    <span class="n">operation</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">qubits</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">bits</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;bits&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">zvars</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;zvars&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                <span class="p">)</span>
+
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Parallel</span><span class="p">):</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">draw_parallel</span><span class="p">(</span>
+                    <span class="n">operation</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">qubits</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">bits</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;bits&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">zvars</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;zvars&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                <span class="p">)</span>
+
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">IfStatement</span><span class="p">):</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">draw_ifstatement</span><span class="p">(</span>
+                    <span class="n">operation</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">qubits</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">bits</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;bits&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">zvars</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;zvars&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                <span class="p">)</span>
+
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Operation</span><span class="p">):</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">draw_operation</span><span class="p">(</span>
+                    <span class="n">operation</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">qubits</span><span class="p">,</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">bits</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;bits&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                    <span class="n">instruction</span><span class="o">.</span><span class="n">zvars</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instruction</span><span class="p">,</span> <span class="s2">&quot;zvars&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[],</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Default drawing method for general operations</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">draw_instruction</span><span class="p">(</span><span class="n">instruction</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">canvas</span><span class="o">.</span><span class="n">canvas</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Circuit.specify_operations">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.specify_operations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">specify_operations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Summarizes the types and numbers of operations in the circuit.</span>
+
+<span class="sd">        This function inspects each instruction in the circuit and categorizes it by</span>
+<span class="sd">        the number of qubits, bits, and z-variables involved in the operation. It</span>
+<span class="sd">        then prints a summary of the total number of operations in the circuit and</span>
+<span class="sd">        a breakdown of the number of operations grouped by their type.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; from mimiqcircuits import *</span>
+<span class="sd">            &gt;&gt;&gt; c = Circuit()</span>
+
+<span class="sd">            Add a Pauli-X (GateX) gate on qubit 0</span>
+
+<span class="sd">            &gt;&gt;&gt; c.push(GateX(), 0)</span>
+<span class="sd">            1-qubit circuit with 1 instructions:</span>
+<span class="sd">            └── X @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+
+<span class="sd">            Add a Controlled-NOT (CX) gate with control qubit 0 and target qubit 1</span>
+
+<span class="sd">            &gt;&gt;&gt; c.push(GateCX(), 0, 1)</span>
+<span class="sd">            2-qubit circuit with 2 instructions:</span>
+<span class="sd">            ├── X @ q[0]</span>
+<span class="sd">            └── CX @ q[0], q[1]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+
+<span class="sd">            Add a Measurement operation on qubit 0, storing the result in bit 0</span>
+
+<span class="sd">            &gt;&gt;&gt; c.push(Measure(), 0, 0)</span>
+<span class="sd">            2-qubit, 1-bit circuit with 3 instructions:</span>
+<span class="sd">            ├── X @ q[0]</span>
+<span class="sd">            ├── CX @ q[0], q[1]</span>
+<span class="sd">            └── M @ q[0], c[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+
+<span class="sd">            Add an ExpectationValue operation with GateX on qubit 1, storing the result in z-variable 2.</span>
+
+<span class="sd">            &gt;&gt;&gt; c.push(ExpectationValue(GateX()), 1, 2)</span>
+<span class="sd">            2-qubit, 1-bit, 3-zvar circuit with 4 instructions:</span>
+<span class="sd">            ├── X @ q[0]</span>
+<span class="sd">            ├── CX @ q[0], q[1]</span>
+<span class="sd">            ├── M @ q[0], c[0]</span>
+<span class="sd">            └── ⟨X⟩ @ q[1], z[2]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+
+<span class="sd">            Print a summary of the types and numbers of operations</span>
+
+<span class="sd">            &gt;&gt;&gt; c.specify_operations()</span>
+<span class="sd">            Total number of operations: 4</span>
+<span class="sd">            ├── 1 x 1_qubits</span>
+<span class="sd">            ├── 1 x 2_qubits</span>
+<span class="sd">            ├── 1 x 1_qubits &amp; 1_bits</span>
+<span class="sd">            └── 1 x 1_qubits &amp; 1_zvars</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="n">nq</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">_qubits</span><span class="p">)</span>
+            <span class="n">nb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">_bits</span><span class="p">)</span>
+            <span class="n">nz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">_zvars</span><span class="p">)</span>
+
+            <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+            <span class="k">if</span> <span class="n">nq</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nq</span><span class="si">}</span><span class="s2">_qubits&quot;</span>
+
+            <span class="k">if</span> <span class="n">nb</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
+                    <span class="n">key</span> <span class="o">+=</span> <span class="s2">&quot; &amp; &quot;</span>
+                <span class="n">key</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nb</span><span class="si">}</span><span class="s2">_bits&quot;</span>
+            <span class="k">if</span> <span class="n">nz</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
+                    <span class="n">key</span> <span class="o">+=</span> <span class="s2">&quot; &amp; &quot;</span>
+                <span class="n">key</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nz</span><span class="si">}</span><span class="s2">_zvars&quot;</span>
+
+            <span class="n">counts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">total_operations</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total number of operations: </span><span class="si">{</span><span class="n">total_operations</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">count_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">count_items</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">count_items</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;└── </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> x </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;├── </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> x </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Circuit.is_symbolic">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.is_symbolic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_symbolic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check whether the circuit contains any symbolic (unevaluated) parameters.</span>
+
+<span class="sd">        This method examines each instruction in the circuit to determine if any parameter remains</span>
+<span class="sd">        symbolic (i.e., unevaluated). It recursively checks through each instruction and its nested</span>
+<span class="sd">        operations, if any.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if any parameter is symbolic (unevaluated), False if all parameters are fully evaluated.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; from mimiqcircuits import *</span>
+<span class="sd">            &gt;&gt;&gt; from symengine import *</span>
+<span class="sd">            &gt;&gt;&gt; x, y = symbols(&quot;x y&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; c = Circuit()</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateH(), 0)</span>
+<span class="sd">            1-qubit circuit with 1 instructions:</span>
+<span class="sd">            └── H @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.is_symbolic()</span>
+<span class="sd">            False</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateP(x), 0)</span>
+<span class="sd">            1-qubit circuit with 2 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            └── P(x) @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.is_symbolic()</span>
+<span class="sd">            True</span>
+<span class="sd">            &gt;&gt;&gt; c = c.evaluate({x: 1, y: 2})</span>
+<span class="sd">            &gt;&gt;&gt; c</span>
+<span class="sd">            1-qubit circuit with 2 instructions:</span>
+<span class="sd">            ├── H @ q[0]</span>
+<span class="sd">            └── P(1) @ q[0]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.is_symbolic()</span>
+<span class="sd">            False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">instruction</span><span class="o">.</span><span class="n">operation</span><span class="o">.</span><span class="n">is_symbolic</span><span class="p">()</span> <span class="k">for</span> <span class="n">instruction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Circuit.add_noise_to_gate_single">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.add_noise_to_gate_single">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_noise_to_gate_single</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">kraus</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="p">],</span> <span class="n">before</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a noise operation `kraus` before or after every instance of a given operation `g`.</span>
+
+<span class="sd">        The noise operation `kraus` can be a Kraus channel or a gate and will act on the same qubits</span>
+<span class="sd">        as the operation `g` to which it is being added.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            g (Operation): The operation to which the noise will be added.</span>
+<span class="sd">            kraus (Operation): The noise operation to be added, which can be a Kraus channel or any valid gate.</span>
+<span class="sd">            before (bool, optional): If True, the noise is added before the operation `g`. Default is False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the noise operation is the same as the operation `g`, to avoid recursion.</span>
+
+<span class="sd">        See also:</span>
+<span class="sd">            :func:`add_noise`: Adds noise to multiple operations at once or in a parallel block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Operation</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">g</span><span class="si">}</span><span class="s2"> must be an Operation&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kraus</span><span class="p">,</span> <span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">kraus</span><span class="si">}</span><span class="s2"> is not of type </span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">g</span> <span class="o">==</span> <span class="n">kraus</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Noise can&#39;t be the same as gate, otherwise recursion problem.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">rel</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">before</span> <span class="k">else</span> <span class="mi">1</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">operation</span> <span class="o">==</span> <span class="n">g</span><span class="p">:</span>
+                <span class="n">qubits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">qubits</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">rel</span><span class="p">,</span> <span class="n">kraus</span><span class="p">,</span> <span class="o">*</span><span class="n">qubits</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="Circuit.add_noise_to_gate_parallel">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.add_noise_to_gate_parallel">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_noise_to_gate_parallel</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">kraus</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="p">],</span> <span class="n">before</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a block of noise operations `kraus` after/before every block of a given operation `g`.</span>
+
+<span class="sd">        The function identifies blocks of consecutive transversal operations of type `g` and</span>
+<span class="sd">        adds a block of transversal noise operations `kraus` after each such block. The noise operation</span>
+<span class="sd">        `kraus` can be a Kraus channel or a gate and will act on the same qubits as the operation `g` to which it is being added.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            g (Operation): The operation to which the noise will be added.</span>
+<span class="sd">            kraus (Operation): The noise operation to be added, which can be a Kraus channel or any valid gate.</span>
+<span class="sd">            before (bool, optional): If True, the noise is added before the operation `g`. Default is False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the noise operation is the same as the operation `g`, to avoid recursion.</span>
+
+<span class="sd">        See also:</span>
+<span class="sd">            :func:`add_noise`: Adds noise to multiple operations at once or in a parallel block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Operation</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">g</span><span class="si">}</span><span class="s2"> must be an Operation&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kraus</span><span class="p">,</span> <span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">kraus</span><span class="si">}</span><span class="s2"> is not of type </span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">g</span> <span class="o">==</span> <span class="n">kraus</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Noise can&#39;t be the same as gate, otherwise recursion problem.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">):</span>
+            <span class="n">inds</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">qubits</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">qubits</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">operation</span> <span class="o">==</span> <span class="n">g</span><span class="p">:</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">while</span> <span class="p">(</span>
+                    <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">operation</span> <span class="o">==</span> <span class="n">g</span>
+                    <span class="ow">and</span> <span class="ow">not</span> <span class="n">qubits</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">qubits</span><span class="p">))</span>
+                <span class="p">):</span>
+                    <span class="n">inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                    <span class="n">qubits</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">qubits</span><span class="p">)</span>
+                    <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="k">for</span> <span class="n">rel</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">inds</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">before</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">rel</span><span class="p">,</span> <span class="n">kraus</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">qubits</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                            <span class="n">inds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">rel</span><span class="p">,</span> <span class="n">kraus</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">qubits</span>
+                        <span class="p">)</span>
+
+                <span class="n">i</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">inds</span><span class="p">)</span>  <span class="c1"># Noise block shifting</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">inds</span><span class="p">)</span>  <span class="c1"># Gate shifting</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="Circuit.add_noise">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.add_noise">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_noise</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">g</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">mc</span><span class="o">.</span><span class="n">Operation</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">mc</span><span class="o">.</span><span class="n">Operation</span><span class="p">]],</span>
+        <span class="n">kraus</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="p">]],</span>
+        <span class="n">before</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">parallel</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a noise operation `kraus` to every instance of the operation `g` in the circuit.</span>
+
+<span class="sd">        The noise operation `kraus` can be a Kraus channel or a gate and will act on the same qubits</span>
+<span class="sd">        as the operation `g` to which it is being added.</span>
+
+<span class="sd">        The operations `g` and `kraus` must act on the same number of qubits.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            g (Operation or list of Operation): The operation(s) to which the noise will be added.</span>
+<span class="sd">            kraus (krauschannel or list of krauschannel): The noise operation(s) to be added.</span>
+<span class="sd">            before (bool or list of bool, optional): If True, the noise is added before the operation. Default is False.</span>
+<span class="sd">            parallel (bool or list of bool, optional): If True, noise is added as a block. Default is False.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If `g` and `kraus` are not of the same length, or if their number of qubits differ.</span>
+<span class="sd">            TypeError: If `before` or `parallel` are not a bool or a list of bool.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Circuit: The modified circuit with the noise added.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">        Adding noise sequentially (not parallel):</span>
+
+<span class="sd">        &gt;&gt;&gt; from mimiqcircuits import *</span>
+<span class="sd">        &gt;&gt;&gt; c = Circuit()</span>
+<span class="sd">        &gt;&gt;&gt; c.push(GateH(), [1,2,3])</span>
+<span class="sd">        4-qubit circuit with 3 instructions:</span>
+<span class="sd">        ├── H @ q[1]</span>
+<span class="sd">        ├── H @ q[2]</span>
+<span class="sd">        └── H @ q[3]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; c.add_noise(GateH(), AmplitudeDamping(0.2))</span>
+<span class="sd">        4-qubit circuit with 6 instructions:</span>
+<span class="sd">        ├── H @ q[1]</span>
+<span class="sd">        ├── AmplitudeDamping(0.2) @ q[1]</span>
+<span class="sd">        ├── H @ q[2]</span>
+<span class="sd">        ├── AmplitudeDamping(0.2) @ q[2]</span>
+<span class="sd">        ├── H @ q[3]</span>
+<span class="sd">        └── AmplitudeDamping(0.2) @ q[3]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Adding noise in parallel:</span>
+
+<span class="sd">        &gt;&gt;&gt; c = Circuit()</span>
+<span class="sd">        &gt;&gt;&gt; c.push(GateH(), [1, 2, 3])</span>
+<span class="sd">        4-qubit circuit with 3 instructions:</span>
+<span class="sd">        ├── H @ q[1]</span>
+<span class="sd">        ├── H @ q[2]</span>
+<span class="sd">        └── H @ q[3]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; c.add_noise(GateH(), AmplitudeDamping(0.2), parallel=True)</span>
+<span class="sd">        4-qubit circuit with 6 instructions:</span>
+<span class="sd">        ├── H @ q[1]</span>
+<span class="sd">        ├── H @ q[2]</span>
+<span class="sd">        ├── H @ q[3]</span>
+<span class="sd">        ├── AmplitudeDamping(0.2) @ q[1]</span>
+<span class="sd">        ├── AmplitudeDamping(0.2) @ q[2]</span>
+<span class="sd">        └── AmplitudeDamping(0.2) @ q[3]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Parallel will not work if gates aren&#39;t transversal.</span>
+
+<span class="sd">        &gt;&gt;&gt; c = Circuit()</span>
+<span class="sd">        &gt;&gt;&gt; c.push(GateCZ(), 1, range(2,5))</span>
+<span class="sd">        5-qubit circuit with 3 instructions:</span>
+<span class="sd">        ├── CZ @ q[1], q[2]</span>
+<span class="sd">        ├── CZ @ q[1], q[3]</span>
+<span class="sd">        └── CZ @ q[1], q[4]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; c.add_noise(GateCZ(), Depolarizing2(0.1), parallel=True)</span>
+<span class="sd">        5-qubit circuit with 6 instructions:</span>
+<span class="sd">        ├── CZ @ q[1], q[2]</span>
+<span class="sd">        ├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="sd">        ├── CZ @ q[1], q[3]</span>
+<span class="sd">        ├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="sd">        ├── CZ @ q[1], q[4]</span>
+<span class="sd">        └── Depolarizing(0.1) @ q[1,4]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Adding noise before measurement (The `before=True` option is mostly used for `Measure`):</span>
+
+<span class="sd">        &gt;&gt;&gt; c = Circuit()</span>
+<span class="sd">        &gt;&gt;&gt; c.push(Measure(), [1, 2, 3], [1, 2, 3])</span>
+<span class="sd">        4-qubit, 4-bit circuit with 3 instructions:</span>
+<span class="sd">        ├── M @ q[1], c[1]</span>
+<span class="sd">        ├── M @ q[2], c[2]</span>
+<span class="sd">        └── M @ q[3], c[3]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; c.add_noise(Measure(), PauliX(0.1), before=True)</span>
+<span class="sd">        4-qubit, 4-bit circuit with 6 instructions:</span>
+<span class="sd">        ├── PauliX(0.1) @ q[1]</span>
+<span class="sd">        ├── M @ q[1], c[1]</span>
+<span class="sd">        ├── PauliX(0.1) @ q[2]</span>
+<span class="sd">        ├── M @ q[2], c[2]</span>
+<span class="sd">        ├── PauliX(0.1) @ q[3]</span>
+<span class="sd">        └── M @ q[3], c[3]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        Adding unitary gates as noise in the same way:</span>
+
+<span class="sd">        &gt;&gt;&gt; c = Circuit()</span>
+<span class="sd">        &gt;&gt;&gt; c.push(GateH(), [1, 2, 3])</span>
+<span class="sd">        4-qubit circuit with 3 instructions:</span>
+<span class="sd">        ├── H @ q[1]</span>
+<span class="sd">        ├── H @ q[2]</span>
+<span class="sd">        └── H @ q[3]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; c.add_noise(GateH(), GateRX(0.01))</span>
+<span class="sd">        4-qubit circuit with 6 instructions:</span>
+<span class="sd">        ├── H @ q[1]</span>
+<span class="sd">        ├── RX(0.01) @ q[1]</span>
+<span class="sd">        ├── H @ q[2]</span>
+<span class="sd">        ├── RX(0.01) @ q[2]</span>
+<span class="sd">        ├── H @ q[3]</span>
+<span class="sd">        └── RX(0.01) @ q[3]</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Ensure g and kraus are treated as lists</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">g</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">g</span><span class="p">]</span>
+        <span class="n">kraus</span> <span class="o">=</span> <span class="n">kraus</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kraus</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">kraus</span><span class="p">]</span>
+
+        <span class="c1"># Check for length mismatch between g and kraus</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kraus</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Vectors of operations and noise channels must have the same length.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">nops</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+
+        <span class="c1"># Check types of &#39;before&#39; and &#39;parallel&#39; and ensure they are the correct length</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Parameter &#39;before&#39; has to be a bool or a list of bool.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">before</span><span class="p">)</span> <span class="o">!=</span> <span class="n">nops</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Vector &#39;before&#39; must have the same length as the vector of operations.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parallel</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Parameter &#39;parallel&#39; has to be a bool or a list of bool.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parallel</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">parallel</span><span class="p">)</span> <span class="o">!=</span> <span class="n">nops</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Vector &#39;parallel&#39; must have the same length as the vector of operations.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Vectorize optional parameters if they are not already lists</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="n">before</span> <span class="o">=</span> <span class="p">[</span><span class="n">before</span><span class="p">]</span> <span class="o">*</span> <span class="n">nops</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parallel</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="n">parallel</span> <span class="o">=</span> <span class="p">[</span><span class="n">parallel</span><span class="p">]</span> <span class="o">*</span> <span class="n">nops</span>
+
+        <span class="c1"># Validate each operation and noise channel pair</span>
+        <span class="k">for</span> <span class="n">operation</span><span class="p">,</span> <span class="n">noise</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">kraus</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Operation</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">operation</span><span class="si">}</span><span class="s2"> must be an instance of mc.Operation&quot;</span><span class="p">)</span>
+            <span class="c1"># Check for individual noise type in the list case</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">noise</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">noise</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="p">)):</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> is not of type </span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">noise</span><span class="p">,</span> <span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">noise</span><span class="si">}</span><span class="s2"> is not of type </span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">Gate</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">operation</span><span class="o">.</span><span class="n">num_qubits</span> <span class="o">!=</span> <span class="n">noise</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Noise channel and operation must have the same number of target qubits&quot;</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Apply noise for each pair</span>
+        <span class="k">for</span> <span class="n">operation</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">add_before</span><span class="p">,</span> <span class="n">add_parallel</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="n">g</span><span class="p">,</span> <span class="n">kraus</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">parallel</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">add_parallel</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_noise_to_gate_parallel</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="n">add_before</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_noise_to_gate_single</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="n">add_before</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="Circuit.sample_mixedunitaries">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.sample_mixedunitaries">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_mixedunitaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            sample_mixedunitaries(rng=None, ids=False)</span>
+
+<span class="sd">        Samples one unitary gate for each mixed unitary Kraus channel in the circuit.</span>
+
+<span class="sd">        This is possible because for mixed unitary noise channels, the probabilities of each</span>
+<span class="sd">        Kraus operator are fixed (state-independent).</span>
+
+<span class="sd">        Note: This function is internally called (before applying any gate) when executing</span>
+<span class="sd">        a circuit with noise using trajectories. It can also be used to generate samples</span>
+<span class="sd">        of circuits without running them.</span>
+
+<span class="sd">        See also:</span>
+<span class="sd">            - :func:`krauschannel.ismixedunitary`</span>
+<span class="sd">            - :class:`MixedUnitary`</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rng (optional): Random number generator. If not provided, Python&#39;s default</span>
+<span class="sd">                random number generator is used.</span>
+<span class="sd">            ids (optional): Boolean, default=False. Determines whether to include identity</span>
+<span class="sd">                Kraus operators in the sampled circuit. If True, identity gates are added</span>
+<span class="sd">                to the circuit; otherwise, they are omitted. Usually, most selected Kraus</span>
+<span class="sd">                operators will be identity gates.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Circuit: A copy of the circuit with every mixed unitary Kraus channel replaced</span>
+<span class="sd">            by one of the unitary gates of the channel. Identity gates are omitted unless</span>
+<span class="sd">            `ids=True`.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Gates and non-mixed-unitary Kraus channels remain unchanged:</span>
+
+<span class="sd">            &gt;&gt;&gt; from mimiqcircuits import *</span>
+<span class="sd">            &gt;&gt;&gt; c = Circuit()</span>
+<span class="sd">            &gt;&gt;&gt; c.push(GateH(), [1, 2, 3])</span>
+<span class="sd">            4-qubit circuit with 3 instructions:</span>
+<span class="sd">            ├── H @ q[1]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            └── H @ q[3]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(Depolarizing1(0.5), [1, 2, 3])</span>
+<span class="sd">            4-qubit circuit with 6 instructions:</span>
+<span class="sd">            ├── H @ q[1]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── H @ q[3]</span>
+<span class="sd">            ├── Depolarizing(0.5) @ q[1]</span>
+<span class="sd">            ├── Depolarizing(0.5) @ q[2]</span>
+<span class="sd">            └── Depolarizing(0.5) @ q[3]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+<span class="sd">            &gt;&gt;&gt; c.push(AmplitudeDamping(0.5), [1, 2, 3])</span>
+<span class="sd">            4-qubit circuit with 9 instructions:</span>
+<span class="sd">            ├── H @ q[1]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── H @ q[3]</span>
+<span class="sd">            ├── Depolarizing(0.5) @ q[1]</span>
+<span class="sd">            ├── Depolarizing(0.5) @ q[2]</span>
+<span class="sd">            ├── Depolarizing(0.5) @ q[3]</span>
+<span class="sd">            ├── AmplitudeDamping(0.5) @ q[1]</span>
+<span class="sd">            ├── AmplitudeDamping(0.5) @ q[2]</span>
+<span class="sd">            └── AmplitudeDamping(0.5) @ q[3]</span>
+<span class="sd">            &lt;BLANKLINE&gt;</span>
+
+<span class="sd">            &gt;&gt;&gt; rng = random.Random(42)</span>
+
+<span class="sd">            &gt;&gt;&gt; new_circuit = c.sample_mixedunitaries(rng=rng, ids=True)</span>
+<span class="sd">            &gt;&gt;&gt; print(new_circuit)</span>
+<span class="sd">            4-qubit circuit with 9 instructions:</span>
+<span class="sd">            ├── H @ q[1]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── H @ q[3]</span>
+<span class="sd">            ├── X @ q[1]</span>
+<span class="sd">            ├── I @ q[2]</span>
+<span class="sd">            ├── I @ q[3]</span>
+<span class="sd">            ├── AmplitudeDamping(0.5) @ q[1]</span>
+<span class="sd">            ├── AmplitudeDamping(0.5) @ q[2]</span>
+<span class="sd">            └── AmplitudeDamping(0.5) @ q[3]</span>
+
+<span class="sd">            By default, identities are not included:</span>
+
+<span class="sd">            &gt;&gt;&gt; new_circuit = c.sample_mixedunitaries(rng=rng)</span>
+<span class="sd">            &gt;&gt;&gt; print(new_circuit)</span>
+<span class="sd">            4-qubit circuit with 8 instructions:</span>
+<span class="sd">            ├── H @ q[1]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── H @ q[3]</span>
+<span class="sd">            ├── Y @ q[2]</span>
+<span class="sd">            ├── Y @ q[3]</span>
+<span class="sd">            ├── AmplitudeDamping(0.5) @ q[1]</span>
+<span class="sd">            ├── AmplitudeDamping(0.5) @ q[2]</span>
+<span class="sd">            └── AmplitudeDamping(0.5) @ q[3]</span>
+
+<span class="sd">            Different calls to the function generate different results:</span>
+
+<span class="sd">            &gt;&gt;&gt; new_circuit = c.sample_mixedunitaries(rng=rng)</span>
+<span class="sd">            &gt;&gt;&gt; print(new_circuit)</span>
+<span class="sd">            4-qubit circuit with 7 instructions:</span>
+<span class="sd">            ├── H @ q[1]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── H @ q[3]</span>
+<span class="sd">            ├── Z @ q[1]</span>
+<span class="sd">            ├── AmplitudeDamping(0.5) @ q[1]</span>
+<span class="sd">            ├── AmplitudeDamping(0.5) @ q[2]</span>
+<span class="sd">            └── AmplitudeDamping(0.5) @ q[3]</span>
+
+<span class="sd">            &gt;&gt;&gt; new_circuit = c.sample_mixedunitaries(rng=rng)</span>
+<span class="sd">            &gt;&gt;&gt; print(new_circuit)</span>
+<span class="sd">            4-qubit circuit with 7 instructions:</span>
+<span class="sd">            ├── H @ q[1]</span>
+<span class="sd">            ├── H @ q[2]</span>
+<span class="sd">            ├── H @ q[3]</span>
+<span class="sd">            ├── X @ q[3]</span>
+<span class="sd">            ├── AmplitudeDamping(0.5) @ q[1]</span>
+<span class="sd">            ├── AmplitudeDamping(0.5) @ q[2]</span>
+<span class="sd">            └── AmplitudeDamping(0.5) @ q[3]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">random</span><span class="p">()</span>
+
+        <span class="n">scirc</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="n">op</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">get_operation</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">krauschannel</span><span class="p">)</span> <span class="ow">and</span> <span class="n">op</span><span class="o">.</span><span class="n">ismixedunitary</span><span class="p">():</span>
+                <span class="n">cumulative_probs</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">unwrappedcumprobabilities</span><span class="p">()</span>
+
+                <span class="n">r</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+
+                <span class="c1"># Use `next` to find the index of the first cumulative probability greater than `r`</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cumulative_probs</span><span class="p">)</span> <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="n">r</span><span class="p">)</span>
+
+                <span class="n">gate</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">unitarygates</span><span class="p">()[</span><span class="n">index</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="n">ids</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">gate</span><span class="o">.</span><span class="n">isidentity</span><span class="p">():</span>
+                    <span class="n">scirc</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="o">*</span><span class="n">inst</span><span class="o">.</span><span class="n">qubits</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scirc</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">scirc</span></div>
+</div>
+
+
+
+<span class="c1"># export the cirucit classes</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Circuit&quot;</span><span class="p">]</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,1095 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Execution on MIMIQ &#8212; MIMIQ Circuits 0.18.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=29ae757a"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'manual/remote_execution';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Import and export circuits" href="import_export.html" />
+    <link rel="prev" title="Simulating Circuits" href="simulation.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest 0.18.2 version.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>
+    <script>document.write(`<img src="../_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="circuits.html">Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="unitary_gates.html">Unitary Gates</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="non_unitary_ops.html">Non-unitary Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="noise.html">Noisy simulations on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="statistical_ops.html">Statistical Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_ops.html">Special Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulating Circuits</a></li>
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Execution on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="import_export.html">Import and export circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_topics.html">Special Topics</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="zops.html">Z-register Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hamiltonian.html">Hamiltonians and Time Evolution</a></li>
+
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Execution on MIMIQ</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="execution-on-mimiq">
+<h1>Execution on MIMIQ<a class="headerlink" href="#execution-on-mimiq" title="Link to this heading">#</a></h1>
+<p>This page provides detailed information on how to execute quantum circuits on MIMIQ’s remote services.</p>
+</section>
+<section id="contents">
+<h1>contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h1>
+<nav class="contents local" id="id1">
+<ul class="simple">
+<li><p><a class="reference internal" href="#cloud-service" id="id18">Cloud Service</a></p>
+<ul>
+<li><p><a class="reference internal" href="#overview" id="id19">Overview</a></p></li>
+<li><p><a class="reference internal" href="#job-management" id="id20">Job Management</a></p></li>
+<li><p><a class="reference internal" href="#terms-of-service" id="id21">Terms of Service</a></p></li>
+<li><p><a class="reference internal" href="#user-management" id="id22">User Management</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#connecting-to-server-for-sending-jobs" id="id23">Connecting to server for sending jobs</a></p>
+<ul>
+<li><p><a class="reference internal" href="#credentials" id="id24">Credentials</a></p></li>
+<li><p><a class="reference internal" href="#tokens" id="id25">Tokens</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#execution" id="id26">Execution</a></p></li>
+<li><p><a class="reference internal" href="#results" id="id27">Results</a></p>
+<ul>
+<li><p><a class="reference internal" href="#getting-results-cloud-server" id="id28">Getting results (Cloud server)</a></p></li>
+<li><p><a class="reference internal" href="#getting-results-python-session" id="id29">Getting results (Python session)</a></p></li>
+<li><p><a class="reference internal" href="#format-of-results" id="id30">Format of Results</a></p></li>
+<li><p><a class="reference internal" href="#plotting-results" id="id31">Plotting results</a></p></li>
+<li><p><a class="reference internal" href="#saving-and-loading-results" id="id32">Saving and loading results</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#useful-job-management-features" id="id33">Useful Job Management Features</a></p>
+<ul>
+<li><p><a class="reference internal" href="#check-job-status" id="id34">Check job status</a></p></li>
+<li><p><a class="reference internal" href="#list-all-jobs" id="id35">List all jobs</a></p></li>
+<li><p><a class="reference internal" href="#get-inputs" id="id36">Get inputs</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="cloud-service">
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">Cloud Service</a><a class="headerlink" href="#cloud-service" title="Link to this heading">#</a></h2>
+<p id="id2">MIMIQ provides remote execution of quantum circuits via its cloud services, allowing users to run quantum
+jobs on high-performance infrastructure. You can connect to the cloud server by providing your credentials and accessing the MIMIQ cloud
+URL at [<a class="reference external" href="https://mimiq.qperfect.io/sign-in">https://mimiq.qperfect.io/sign-in</a>].</p>
+<section id="overview">
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading">#</a></h3>
+<p id="id3">The MIMIQ Cloud Service offers multiple features for managing job executions,
+user roles, and organizational access. Below is a screenshot of the <strong>Cloud Dashboard</strong> that you will find in the server website.</p>
+<img alt="../_images/cloud_dashboard.png" src="../_images/cloud_dashboard.png" />
+</section>
+<section id="job-management">
+<h3><a class="toc-backref" href="#id20" role="doc-backlink">Job Management</a><a class="headerlink" href="#job-management" title="Link to this heading">#</a></h3>
+<p id="id4">The Job Management or Executions section provides a comprehensive view of all
+quantum jobs submitted. Users can track the status of their jobs, cancel jobs, retrieve results and view detailed information, including start time, completion time, and current status. For <strong>Organization Managers</strong>, additional features are available:</p>
+<ul class="simple">
+<li><p>View Other Users’ Jobs: Organization managers can view jobs submitted by all users in their organization, allowing them to monitor the workload.</p></li>
+<li><p>Cancel Jobs: Managers also have the ability to cancel any job within their organization if necessary, providing greater control over resource management.</p></li>
+</ul>
+<p>This section is essential for both tracking the progress of jobs and managing computational resources effectively.</p>
+<p><strong>Job status</strong></p>
+<p>The Status tab allows you to filter jobs based on their status. By clicking on the tab, you can select a specific status (e.g., NEW), and then click on the Search button to view all jobs that match the selected status.</p>
+<p>When a job is submitted to the MIMIQ cloud services, it goes through various status stages:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>NEW</cite>: When a job is initially submitted, its status is marked as NEW, indicating that it has entered the queue but has not started executing yet. In this stage, the job is waiting for previous jobs in the queue to complete, whether they finish successfully or encounter errors.</p></li>
+<li><p><cite>RUNNING</cite>: Once all prior jobs are completed, your job will begin execution, and its status will change to RUNNING. At this point, the job is actively being processed by the MIMIQ engine, either by the statevector simulator or MPS algorithm, depending on the job configuration.</p></li>
+<li><p><cite>DONE</cite>: Upon successful completion, the job status changes to DONE, indicating that the quantum circuit has finished executing and the results are available for retrieval.</p></li>
+<li><p><cite>ERROR</cite>: If the job encounters an issue during execution, such as exceeding the time limit or encountering hardware or software errors, its status will change to ERROR. Users can then review the error logs to diagnose the problem. You can also hover your mouse over the word <cite>ERROR</cite> and a short error message will appear.</p></li>
+</ul>
+</div></blockquote>
+<p><strong>ID</strong></p>
+<p>The ID tab shows a unique identifier for each job. This identifier can be used to retrieve results using [<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_results()</span></code>], See <a class="reference internal" href="#id10"><span class="std std-ref">Results</span></a> section for more details.</p>
+</section>
+<section id="terms-of-service">
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">Terms of Service</a><a class="headerlink" href="#terms-of-service" title="Link to this heading">#</a></h3>
+<p id="id5">When an Organization Manager first connects to the server they need to accept the <cite>Terms of Service</cite> in order to activate the cloud subscription. The organization users will then be able to send jobs. The Terms of Service is also available for the users to read it.</p>
+</section>
+<section id="user-management">
+<h3><a class="toc-backref" href="#id22" role="doc-backlink">User Management</a><a class="headerlink" href="#user-management" title="Link to this heading">#</a></h3>
+<p id="id6">The User Management section is available exclusively to users with the Organization Manager role.</p>
+<p>Key features of user management include:</p>
+<ul class="simple">
+<li><p>Adding New Users: Organization managers can invite new users to join their organization, enabling them to submit jobs. However, there is a limit to how many users can be added based on the organization’s plan.</p></li>
+<li><p>Role Management: Organization managers can assign roles and manage permissions within their team, ensuring that the right users have the necessary access to cloud resources.</p></li>
+</ul>
+</section>
+</section>
+<section id="connecting-to-server-for-sending-jobs">
+<h2><a class="toc-backref" href="#id23" role="doc-backlink">Connecting to server for sending jobs</a><a class="headerlink" href="#connecting-to-server-for-sending-jobs" title="Link to this heading">#</a></h2>
+<p id="connecting-to-server">In order to execute a circuit in the remote, you first need to connect to it, see also <a class="reference internal" href="../quick_start.html"><span class="doc">quickstart</span></a> page.</p>
+<section id="credentials">
+<h3><a class="toc-backref" href="#id24" role="doc-backlink">Credentials</a><a class="headerlink" href="#credentials" title="Link to this heading">#</a></h3>
+<p id="id7">You can connect to the MIMIQ server using the [<code class="xref py py-meth docutils literal notranslate"><span class="pre">connect()</span></code>] method and providing your credentials (username and password). If you do not supply your credentials directly in the function call, you will be redirected to a localhost page where you can securely enter your credentials. This method is preferred for better security, as it avoids storing your username and password in the script.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">conn</span> <span class="o">=</span> <span class="n">MimiqConnection</span><span class="p">(</span><span class="n">url</span> <span class="o">=</span> <span class="n">QPERFECT_CLOUD</span><span class="p">)</span>
+
+<span class="n">conn</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="tokens">
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">Tokens</a><a class="headerlink" href="#tokens" title="Link to this heading">#</a></h3>
+<p id="id8">Instead of using your credentials every time you connect to the MIMIQ services, you can authenticate once and save a token. This token can be saved to a JSON file and reused across different sessions, making it a secure and efficient way to manage authentication.</p>
+<p><strong>How Token Authentication Works</strong>:</p>
+<ul class="simple">
+<li><p>First Authentication: You log in once using your credentials (via browser or directly), and the token is generated.</p></li>
+<li><p>Saving the Token: You can save this token in a JSON file using the savetoken method.</p></li>
+<li><p>Loading the Token: Later, you can load the saved token with the loadtoken method to reconnect without providing your credentials again.</p></li>
+</ul>
+<p>This is a safer method, as it avoids hardcoding sensitive information like passwords in your scripts.</p>
+<p>After authentication, this is how it looks:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save the token to a file (example_token.json)</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">savetoken</span><span class="p">(</span><span class="s2">&quot;example_token.json&quot;</span><span class="p">)</span>
+
+<span class="c1"># Load the token from a saved file to reconnect</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">loadtoken</span><span class="p">(</span><span class="s2">&quot;example_token.json&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also accomplish all at once (connecting through a token if possible, otherwise connecting via the browser and then saving the token) using this code block:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">conn</span> <span class="o">=</span> <span class="n">MimiqConnection</span><span class="p">(</span><span class="n">QPERFECT_CLOUD</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">loadtoken</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">savetoken</span><span class="p">()</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">loadtoken</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Tokens stay valid only for one day.</p>
+</div>
+</section>
+</section>
+<section id="execution">
+<h2><a class="toc-backref" href="#id26" role="doc-backlink">Execution</a><a class="headerlink" href="#execution" title="Link to this heading">#</a></h2>
+<p id="id9">MIMIQ supports sending quantum circuits to its remote services for execution, either as a <strong>single circuit</strong> or in <strong>batch mode</strong> (i.e., multiple circuits at once). In both cases, circuits are initialized in the zero state, and results are obtained by running the circuit and sampling.</p>
+<p>You can submit one or multiple circuits for execution using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code> method. This unified interface simplifies quantum job management, whether you’re running a single job or a batch of jobs.</p>
+<p><strong>Parameters</strong>:</p>
+<ul>
+<li><p><strong>circuits</strong>: A single quantum circuit or a list of circuits. These can be provided as MIMIQ <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit" title="mimiqcircuits.Circuit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Circuit</span></code></a> objects or as paths to valid <cite>.pb</cite>, <cite>.qasm</cite>, or <cite>.stim</cite> files. See the <a class="reference internal" href="import_export.html"><span class="doc">Import and Export</span></a> and <a class="reference internal" href="circuits.html"><span class="doc">Circuits</span></a> pages for more details.</p></li>
+<li><p><strong>kwargs…</strong>: Additional options to customize execution:</p>
+<ul class="simple">
+<li><p><strong>label</strong>: A descriptive name for the simulation or batch (default: <cite>“pyapi_v&lt;version&gt;”</cite>).</p></li>
+<li><p><strong>algorithm</strong>: The backend method to perform the simulation. Options are <cite>“auto”</cite>, <cite>“statevector”</cite>, or <cite>“mps”</cite>. The default is <cite>“auto”</cite>, which selects the most appropriate method based on the circuit. See the <a class="reference internal" href="simulation.html"><span class="doc">Simulation</span></a> page for more information.</p></li>
+<li><p><strong>nsamples</strong>: Number of measurement samples to generate (default: 1000, maximum: 65536). See <a class="reference internal" href="simulation.html"><span class="doc">Simulation</span></a> for details on sampling.</p></li>
+<li><p><strong>bitstrings</strong>: A list of bitstrings to compute amplitudes for. This is equivalent to adding an <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Amplitude" title="mimiqcircuits.Amplitude"><code class="xref py py-class docutils literal notranslate"><span class="pre">Amplitude</span></code></a> operation at the end of the circuit. Results will be stored in the Z-register. See the <a class="reference internal" href="statistical_ops.html"><span class="doc">Amplitudes</span></a> section for more details.</p></li>
+<li><p><strong>timelimit</strong>: Maximum execution time in minutes (default: 30).</p></li>
+<li><p><strong>bonddim</strong>: Bond dimension for MPS simulations (default: 256). See the <a class="reference internal" href="simulation.html"><span class="doc">Simulation</span></a> page.</p></li>
+<li><p><strong>entdim</strong>: Entangling dimension for MPS simulations (default: 16). See the <a class="reference internal" href="simulation.html"><span class="doc">Simulation</span></a> page.</p></li>
+<li><p><strong>seed</strong>: Seed for the random number generator.</p></li>
+</ul>
+<p><strong>Return type: Jobs</strong>:</p>
+</li>
+</ul>
+<p>It is important to note that the <code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code> method.
+returns an <cite>execution ID</cite> (a unique string).
+This ID represents the submitted job and can be used in subsequent calls to
+retrieve results or check the job status. For example,
+you can use the <cite>execution_ID</cite> with methods
+like <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_results()</span></code>
+or <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_result()</span></code>
+to retrieve the results of your quantum job or status updates
+(see <a class="reference internal" href="#id10"><span class="std std-ref">Results</span></a> and <a class="reference internal" href="#id4"><span class="std std-ref">Job-Management</span></a> sections).
+However, if for some reason you lose access to
+this object or want to connect to the same job in a different session,
+you can do so using its job ID:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">job</span> <span class="o">=</span> <span class="s2">&quot;job-id&quot;</span>
+</pre></div>
+</div>
+<p>Here, <cite>“job-id”</cite> is the unique identifier of the job, which you can find in the dashboard of the web interface (see <a class="reference internal" href="#id2"><span class="std std-ref">cloud-service</span></a> section).</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># Prepare circuits</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c2</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+
+<span class="go"># Add gates to the circuits</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateX</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit circuit with 1 instructions:</span>
+<span class="go">└── X @ q[1]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c2</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">3-qubit circuit with 1 instructions:</span>
+<span class="go">└── H @ q[2]</span>
+
+
+<span class="go"># Execute Single circuit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job_single</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">nsamples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Single_run&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job_single</span>
+<span class="go">&#39;673900451aa1b0ea6ef1fd66&#39;</span>
+
+<span class="go"># Execute circuits in batch mode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job_batch</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">([</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">],</span> <span class="n">nsamples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;batch_run&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job_batch</span>
+<span class="go">&#39;673900471aa1b0ea6ef1fd82&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="results">
+<h2><a class="toc-backref" href="#id27" role="doc-backlink">Results</a><a class="headerlink" href="#results" title="Link to this heading">#</a></h2>
+<p id="id10">After submitting executions, you can retrieve your simulation
+results in two different ways: through the cloud server,
+or from your Python session.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The job results will be deleted from the remote server after some time,
+so make sure to retrieve them in time. Contact your organization manager
+to understand how long results will be stored in the server. Note also that
+results will be deleted after a
+shorter period of time once the user has downloaded them at least once.</p>
+</div>
+<section id="getting-results-cloud-server">
+<h3><a class="toc-backref" href="#id28" role="doc-backlink">Getting results (Cloud server)</a><a class="headerlink" href="#getting-results-cloud-server" title="Link to this heading">#</a></h3>
+<p id="getting-results-cloud">You can download results directly from the cloud server web interface by clicking the box
+under the <em>Resulted files</em> tab, see <a class="reference internal" href="#id2"><span class="std std-ref">cloud server</span></a> section.
+This will download a Protobuf file (<cite>.pb</cite>) and save it locally.
+The results can then be loaded to your Python session using
+the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.loadproto" title="mimiqcircuits.QCSResults.loadproto"><code class="xref py py-meth docutils literal notranslate"><span class="pre">loadproto()</span></code></a> function.</p>
+<p>To learn more about Protobuf and how to save/load results,
+check out the <a class="reference internal" href="import_export.html"><span class="doc">import &amp; export</span></a> page,
+and the <a class="reference internal" href="#id13"><span class="std std-ref">saving and loading results</span></a> section.</p>
+</section>
+<section id="getting-results-python-session">
+<h3><a class="toc-backref" href="#id29" role="doc-backlink">Getting results (Python session)</a><a class="headerlink" href="#getting-results-python-session" title="Link to this heading">#</a></h3>
+<p id="getting-results-puthon">You can download results from your Python session by calling these two methods <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_results()</span></code> and
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_result()</span></code> which like <cite>~mimiqcircuits.MimiqConnection.execute</cite> method belong to the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.MimiqConnection" title="mimiqcircuits.MimiqConnection"><code class="xref py py-class docutils literal notranslate"><span class="pre">MimiqConnection</span></code></a> class.</p>
+<p>The only difference between the two is that <cite>get_results</cite> retrieves the
+results of <em>all</em> the circuits sent in a job, whereas <cite>get_result</cite>
+only returns the result of the first circuit making it a more lightweight version.
+This is useful if you want to peek at the results before all circuits of a given job have finished.
+(If only one circuit was sent then there’s no difference.)</p>
+<p>They are both called in a similar way as <cite>connection.get_results(execution_id, **kwargs)</cite>.</p>
+<p><strong>Parameters:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>execution (Execution)</cite>: The execution object representing the job whose results are to be fetched, see <a class="reference internal" href="#id9"><span class="std std-ref">execution</span></a> section. If you saved the output of <cite>execute</cite> then you can pass it to <cite>get_results</cite> (see example below). If you didn’t save it, then you can copy the job ID from the Cloud server (see <a class="reference internal" href="#id2"><span class="std std-ref">cloud-service</span></a> section) and pass it to <cite>get_results</cite> as <cite>“job-id”</cite>.</p></li>
+<li><p><cite>interval (Int)</cite>: Time interval in seconds between calls to the remote to check for job completion (default: 1 second). A shorter interval results in more frequent checks, while a longer interval reduces the frequency of status checks, saving computational resources.</p></li>
+</ul>
+</div></blockquote>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Both <cite>get_results</cite> and <cite>get_result</cite> block further code execution until the job
+requested has finished. If you want to check the status of the job before attempting to retrieve results,
+we recommend using [<code class="xref py py-meth docutils literal notranslate"><span class="pre">isJobDone()</span></code>], see <a class="reference internal" href="#id14"><span class="std std-ref">job management</span></a> section.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><cite>get_result</cite> internally calls <cite>get_results</cite> but only returns the first result if multiple results are retrieved.</p>
+</div>
+<p><strong>Example</strong>:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># Getting the Results</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res_single</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_result</span><span class="p">(</span><span class="n">job_single</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res_single</span>
+<span class="go">QCSResults:</span>
+<span class="go">├── simulator: MIMIQ-StateVector 0.18.0</span>
+<span class="go">├── timings:</span>
+<span class="go">│    ├── parse time: 5.3745e-05s</span>
+<span class="go">│    ├── apply time: 1.6822e-05s</span>
+<span class="go">│    ├── total time: 0.000170674s</span>
+<span class="go">│    ├── compression time: 3.539e-06s</span>
+<span class="go">│    └── sample time: 4.2118e-05s</span>
+<span class="go">├── fidelity estimate: 1</span>
+<span class="go">├── average multi-qubit gate error estimate: 0</span>
+<span class="go">├── most sampled:</span>
+<span class="go">│    └── bs&quot;01&quot; =&gt; 1000</span>
+<span class="go">├── 1 executions</span>
+<span class="go">├── 0 amplitudes</span>
+<span class="go">└── 1000 samples</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res_batch</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">job_batch</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res_batch</span>
+<span class="go">[QCSResults:</span>
+<span class="go">├── simulator: MIMIQ-StateVector 0.18.0</span>
+<span class="go">├── timings:</span>
+<span class="go">│    ├── parse time: 0.000111029s</span>
+<span class="go">│    ├── apply time: 3.3254e-05s</span>
+<span class="go">│    ├── total time: 0.000376924s</span>
+<span class="go">│    ├── amplitudes time: 1.42e-07s</span>
+<span class="go">│    ├── compression time: 6.48e-06s</span>
+<span class="go">│    └── sample time: 0.000115204s</span>
+<span class="go">├── fidelity estimate: 1</span>
+<span class="go">├── average multi-qubit gate error estimate: 0</span>
+<span class="go">├── most sampled:</span>
+<span class="go">│    └── bs&quot;01&quot; =&gt; 1000</span>
+<span class="go">├── 1 executions</span>
+<span class="go">├── 0 amplitudes</span>
+<span class="go">└── 1000 samples, QCSResults:</span>
+<span class="go">├── simulator: MIMIQ-StateVector 0.18.0</span>
+<span class="go">├── timings:</span>
+<span class="go">│    ├── parse time: 6.7155e-05s</span>
+<span class="go">│    ├── apply time: 2.2546e-05s</span>
+<span class="go">│    ├── total time: 0.000307035s</span>
+<span class="go">│    ├── amplitudes time: 1.03e-07s</span>
+<span class="go">│    ├── compression time: 5.19e-06s</span>
+<span class="go">│    └── sample time: 0.000127987s</span>
+<span class="go">├── fidelity estimate: 1</span>
+<span class="go">├── average multi-qubit gate error estimate: 0</span>
+<span class="go">├── most sampled:</span>
+<span class="go">│    ├── bs&quot;000&quot; =&gt; 520</span>
+<span class="go">│    └── bs&quot;001&quot; =&gt; 480</span>
+<span class="go">├── 1 executions</span>
+<span class="go">├── 0 amplitudes</span>
+<span class="go">└── 1000 samples]</span>
+</pre></div>
+</div>
+</section>
+<section id="format-of-results">
+<h3><a class="toc-backref" href="#id30" role="doc-backlink">Format of Results</a><a class="headerlink" href="#format-of-results" title="Link to this heading">#</a></h3>
+<p id="id11">When you retrieve jobs results, you will get back
+a [<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults" title="mimiqcircuits.QCSResults"><code class="xref py py-class docutils literal notranslate"><span class="pre">QCSResults</span></code></a>] object (when using <cite>get_result</cite>) or
+a <cite>Vector{QCSResults}</cite> (when using <cite>get_results</cite>). Each <cite>QCSResults</cite>
+object contains information about job executed.
+You can get an overview by printing it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>QCSResults:
+├── simulator: MIMIQ-StateVector 0.18.0
+├── timings:
+│    ├── parse time: 5.1514e-05s
+│    ├── apply time: 1.8876e-05s
+│    ├── total time: 0.00019858s
+│    ├── amplitudes time: 1.05e-07s
+│    ├── compression time: 4.5e-06s
+│    └── sample time: 5.9246e-05s
+├── fidelity estimate: 1
+├── average multi-qubit gate error estimate: 0
+├── most sampled:
+│    └── bs&quot;01&quot; =&gt; 1000
+├── 1 executions
+├── 0 amplitudes
+└── 1000 samples
+</pre></div>
+</div>
+<p>The [<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults" title="mimiqcircuits.QCSResults"><code class="xref py py-class docutils literal notranslate"><span class="pre">QCSResults</span></code></a>] object has different fields that you can access:</p>
+<p><strong>Key fields:</strong></p>
+<ul class="simple">
+<li><p><strong>simulator</strong> (<cite>String</cite>): Name of the simulator used, e.g., <cite>MIMIQ-StateVector</cite>.</p></li>
+<li><p><strong>version</strong> (<cite>String</cite>): Version of the simulator used, e.g. <cite>0.14.1</cite>.</p></li>
+<li><p><strong>fidelities</strong> (<cite>Vector{Float64}</cite>): Fidelity estimates for each of the circuits executed (between 0 and 1).</p></li>
+<li><p><strong>avggateerrors</strong> (<cite>Vector{Float64}</cite>): Average multiqubit gate errors. This value represents the average fidelity that multi-qubit gates would need to have in a real quantum computer in order to yield the same fidelity as the MIMIQ simulation.</p></li>
+<li><p><strong>cstates</strong> (<cite>Vector{BitString}</cite>): Vector with the sampled values of the classical registers, i.e. of measurements. See [<a class="reference internal" href="circuits.html"><span class="doc">circuits</span></a>] and [<a class="reference internal" href="non_unitary_ops.html"><span class="doc">non-unitary operations</span></a>] pages.</p></li>
+<li><p><strong>zstates</strong> (<cite>Vector{ComplexF64}</cite>): Vector with the values of the Z-registers, i.e. of expectation values, entanglement measures, etc. See [circuit](circuits.md) and [statistical operations](statistical_ops.md) pages.</p></li>
+<li><p><strong>amplitudes</strong> (<cite>Dict{BitString, ComplexF64}</cite>): Number of amplitudes retrieved.</p></li>
+<li><p><strong>timings</strong> (<cite>Dict{String, Float64}</cite>): Time taken for different stages of the execution. You can access:</p>
+<ul>
+<li><p><strong>“total”</strong> (<cite>Float64</cite>): The entire time elapsed during execution.</p></li>
+<li><p><strong>“parse”</strong> (<cite>Float64</cite>): Time taken to parse the circuit.</p></li>
+<li><p><strong>“compression”</strong> (<cite>Float64</cite>): Time to convert the circuit to an efficient execution format.</p></li>
+<li><p><strong>“apply”</strong> (<cite>Float64</cite>): Time to apply all operations. It also includes the time to allocate the initial state.</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To understand how MIMIQ samples measurements into the classical register, check the [<a class="reference internal" href="simulation.html"><span class="doc">simulation</span></a>] page.</p>
+</div>
+<p>Here’s an example of how to access different fields:</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># Get fidelity</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fids</span> <span class="o">=</span> <span class="n">res_single</span><span class="o">.</span><span class="n">fidelities</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fids</span><span class="p">)</span>
+<span class="go">[1.0]</span>
+
+<span class="go"># Get total execution time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tot</span> <span class="o">=</span> <span class="n">res_single</span><span class="o">.</span><span class="n">timings</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">tot</span><span class="p">)</span>
+<span class="go">0.000170674</span>
+
+<span class="go"># Get classical registers of the first 10 samples</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">first_samples</span> <span class="o">=</span> <span class="n">res_single</span><span class="o">.</span><span class="n">cstates</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">first_samples</span><span class="p">)</span>
+<span class="go">[frozenbitarray(&#39;01&#39;), frozenbitarray(&#39;01&#39;), frozenbitarray(&#39;01&#39;), frozenbitarray(&#39;01&#39;), frozenbitarray(&#39;01&#39;), frozenbitarray(&#39;01&#39;), frozenbitarray(&#39;01&#39;), frozenbitarray(&#39;01&#39;), frozenbitarray(&#39;01&#39;), frozenbitarray(&#39;01&#39;)]</span>
+</pre></div>
+</div>
+<p>With the output of [<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_results()</span></code>]it works the same way,
+except you have to access one of the circuit results, i.e. <cite>res_batch[index]</cite>
+instead of <cite>res_single</cite>.</p>
+</section>
+<section id="plotting-results">
+<h3><a class="toc-backref" href="#id31" role="doc-backlink">Plotting results</a><a class="headerlink" href="#plotting-results" title="Link to this heading">#</a></h3>
+<p id="id12">You can visualize the results of your circuit execution by importing the <code class="xref py py-meth docutils literal notranslate"><span class="pre">plothistogram()</span></code> method.
+The example below shows how to plot the results from executing a single circuit.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">plothistogram</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plothistogram</span><span class="p">(</span><span class="n">res_single</span><span class="p">)</span>
+<span class="go">&lt;Figure size 960x720 with 1 Axes&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="saving-and-loading-results">
+<h3><a class="toc-backref" href="#id32" role="doc-backlink">Saving and loading results</a><a class="headerlink" href="#saving-and-loading-results" title="Link to this heading">#</a></h3>
+<p id="id13">After retrieval, if you want to save the results locally, you can save them as a
+Protobuf file (<cite>.pb</cite>) using the [<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.saveproto" title="mimiqcircuits.QCSResults.saveproto"><code class="xref py py-meth docutils literal notranslate"><span class="pre">saveproto()</span></code></a>] method. You can load back the results
+using [<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.saveproto" title="mimiqcircuits.QCSResults.saveproto"><code class="xref py py-meth docutils literal notranslate"><span class="pre">saveproto()</span></code></a>]. This format ensures minimal file size while maintaining all the necessary data.</p>
+<p>To learn more about Protobuf and how to save/load results, check out the [<a class="reference internal" href="import_export.html"><span class="doc">import &amp; export</span></a>] page.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Results from batch simulations need to be saved one by one.</p>
+</div>
+<p>Here is an example:</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># Saving Single Result</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res_single</span><span class="o">.</span><span class="n">saveproto</span><span class="p">(</span><span class="s2">&quot;res_single.pb&quot;</span><span class="p">)</span>
+<span class="go">7169</span>
+
+<span class="go"># Saving Batch Result (Should be saved one by one)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res_batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">saveproto</span><span class="p">(</span><span class="s2">&quot;res_batch_1.pb&quot;</span><span class="p">)</span>
+<span class="go">7169</span>
+
+<span class="go"># Loading Results</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">QCSResults</span><span class="o">.</span><span class="n">loadproto</span><span class="p">(</span><span class="s2">&quot;res_single.pb&quot;</span><span class="p">)</span>
+<span class="go">QCSResults:</span>
+<span class="go">├── simulator: MIMIQ-StateVector 0.18.0</span>
+<span class="go">├── timings:</span>
+<span class="go">│    ├── parse time: 5.3745e-05s</span>
+<span class="go">│    ├── apply time: 1.6822e-05s</span>
+<span class="go">│    ├── total time: 0.000170674s</span>
+<span class="go">│    ├── compression time: 3.539e-06s</span>
+<span class="go">│    └── sample time: 4.2118e-05s</span>
+<span class="go">├── fidelity estimate: 1</span>
+<span class="go">├── average multi-qubit gate error estimate: 0</span>
+<span class="go">├── most sampled:</span>
+<span class="go">│    └── bs&quot;01&quot; =&gt; 1000</span>
+<span class="go">├── 1 executions</span>
+<span class="go">├── 0 amplitudes</span>
+<span class="go">└── 1000 samples</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">QCSResults</span><span class="o">.</span><span class="n">loadproto</span><span class="p">(</span><span class="s2">&quot;res_batch_1.pb&quot;</span><span class="p">)</span>
+<span class="go">QCSResults:</span>
+<span class="go">├── simulator: MIMIQ-StateVector 0.18.0</span>
+<span class="go">├── timings:</span>
+<span class="go">│    ├── parse time: 0.000111029s</span>
+<span class="go">│    ├── apply time: 3.3254e-05s</span>
+<span class="go">│    ├── total time: 0.000376924s</span>
+<span class="go">│    ├── compression time: 6.48e-06s</span>
+<span class="go">│    ├── amplitudes time: 1.42e-07s</span>
+<span class="go">│    └── sample time: 0.000115204s</span>
+<span class="go">├── fidelity estimate: 1</span>
+<span class="go">├── average multi-qubit gate error estimate: 0</span>
+<span class="go">├── most sampled:</span>
+<span class="go">│    └── bs&quot;01&quot; =&gt; 1000</span>
+<span class="go">├── 1 executions</span>
+<span class="go">├── 0 amplitudes</span>
+<span class="go">└── 1000 samples</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="useful-job-management-features">
+<h2><a class="toc-backref" href="#id33" role="doc-backlink">Useful Job Management Features</a><a class="headerlink" href="#useful-job-management-features" title="Link to this heading">#</a></h2>
+<p id="id14">MIMIQ provides several functions to facilitate job management.
+For this you need to have a connection established, and possibly a job id or object
+(see [<a class="reference internal" href="#connecting-to-server"><span class="std std-ref">connection</span></a>] and [<a class="reference internal" href="#id9"><span class="std std-ref">execution</span></a>] sections).</p>
+<section id="check-job-status">
+<h3><a class="toc-backref" href="#id34" role="doc-backlink">Check job status</a><a class="headerlink" href="#check-job-status" title="Link to this heading">#</a></h3>
+<p id="id15">You can check the status of jobs using
+[<code class="xref py py-meth docutils literal notranslate"><span class="pre">isJobDone()</span></code>], [<code class="xref py py-meth docutils literal notranslate"><span class="pre">isJobFailed()</span></code>,] [<code class="xref py py-meth docutils literal notranslate"><span class="pre">isJobCanceled()</span></code>], [<code class="xref py py-meth docutils literal notranslate"><span class="pre">isJobStarted()</span></code>]. These functions check whether the job’s status is <cite>DONE</cite>, <cite>ERROR</cite>, <cite>CANCELED</cite> or <cite>RUNNING</cite>, respectively, and return a boolean.</p>
+<p>You can find this information also in the cloud server, but doing it from within the
+Python session allows you to perform different actions depending on job status.
+It is particularly useful to avoid a call to <cite>get_results</cite> to take too
+long because a job has not finished yet (check [<a class="reference internal" href="#id10"><span class="std std-ref">results</span></a>] section).</p>
+<p>To call them, we simply do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">isJobDone</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">isJobFailed</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">isJobCanceled</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">isJobStarted</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="list-all-jobs">
+<h3><a class="toc-backref" href="#id35" role="doc-backlink">List all jobs</a><a class="headerlink" href="#list-all-jobs" title="Link to this heading">#</a></h3>
+<p id="id16">You can get a list of all job requests sent to MIMIQ’s cloud
+server using [<code class="xref py py-meth docutils literal notranslate"><span class="pre">requests()</span></code>]. This can be useful for monitoring job history and active requests.</p>
+<p>This function accepts several options, which you can use to filter
+by <cite>status</cite> (i.e. <cite>“NEW”</cite>, <cite>“RUNNING”</cite>, <cite>“ERROR”</cite>, <cite>“CANCELED”</cite>, <cite>“DONE”</cite>) or by <cite>Email</cite>.
+You can also change the limit for the amount of requests retrieved using <cite>limit</cite>.</p>
+<p>Here’s an example to get the last 100 new jobs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">requests</span><span class="p">(</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;NEW&quot;</span><span class="p">,</span> <span class="n">limit</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">requests</span><span class="p">(</span><span class="n">Email</span> <span class="o">=</span> <span class="s2">&quot;useremail&quot;</span><span class="p">,</span> <span class="n">limit</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="get-inputs">
+<h3><a class="toc-backref" href="#id36" role="doc-backlink">Get inputs</a><a class="headerlink" href="#get-inputs" title="Link to this heading">#</a></h3>
+<p id="id17">every job using [<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_input()</span></code>] or [<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_inputs()</span></code>].
+The former fetches the data of the first circuit in the job, whereas the latter retrieves all inputs
+from all circuits in the job (useful in batch mode). This is similar to <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_result()</span></code> vs <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_results()</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">circuits</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_inputs</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="simulation.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Simulating Circuits</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="import_export.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Import and export circuits</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Execution on MIMIQ</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cloud-service">Cloud Service</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#job-management">Job Management</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#terms-of-service">Terms of Service</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#user-management">User Management</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#connecting-to-server-for-sending-jobs">Connecting to server for sending jobs</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#credentials">Credentials</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tokens">Tokens</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#execution">Execution</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-results-cloud-server">Getting results (Cloud server)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-results-python-session">Getting results (Python session)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#format-of-results">Format of Results</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-results">Plotting results</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-loading-results">Saving and loading results</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-job-management-features">Useful Job Management Features</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#check-job-status">Check job status</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#list-all-jobs">List all jobs</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#get-inputs">Get inputs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/manual/remote_execution.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

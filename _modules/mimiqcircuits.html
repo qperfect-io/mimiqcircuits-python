@@ -1,0 +1,969 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mimiqcircuits &#8212; MIMIQ Circuits 0.18.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=29ae757a"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/mimiqcircuits';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest 0.18.2 version.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>
+    <script>document.write(`<img src="../_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../manual/index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../manual/index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">mimiqcircuits</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for mimiqcircuits</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.</span>
+<span class="c1"># Copyright © 2023-2025 QPerfect. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.__version__</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span>  <span class="c1"># noqa: F401</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.circuit</span><span class="w"> </span><span class="kn">import</span> <span class="n">Circuit</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.bitstrings</span><span class="w"> </span><span class="kn">import</span> <span class="n">BitString</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.operation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Operation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractOperator</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.control</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Control</span><span class="p">,</span>
+    <span class="n">register_control_decomposition</span><span class="p">,</span>
+<span class="p">)</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.inverse</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Inverse</span><span class="p">,</span>
+    <span class="n">register_inverse_decomposition</span><span class="p">,</span>  <span class="c1"># noqa: F401</span>
+    <span class="n">register_inverse_alias</span><span class="p">,</span>  <span class="c1"># noqa: F401</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.power</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Power</span><span class="p">,</span>
+    <span class="n">register_power_decomposition</span><span class="p">,</span>  <span class="c1"># noqa: F401</span>
+    <span class="n">register_power_alias</span><span class="p">,</span>  <span class="c1"># noqa: F401</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.barrier</span><span class="w"> </span><span class="kn">import</span> <span class="n">Barrier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.ifstatement</span><span class="w"> </span><span class="kn">import</span> <span class="n">IfStatement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.measure</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractMeasurement</span><span class="p">,</span>
+    <span class="n">Measure</span><span class="p">,</span>
+    <span class="n">MeasureX</span><span class="p">,</span>
+    <span class="n">MeasureY</span><span class="p">,</span>
+    <span class="n">MeasureZ</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.reset</span><span class="w"> </span><span class="kn">import</span> <span class="n">Reset</span><span class="p">,</span> <span class="n">ResetX</span><span class="p">,</span> <span class="n">ResetY</span><span class="p">,</span> <span class="n">ResetZ</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.gate</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gate</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.custom</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCustom</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.u</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateU</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.id</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateID</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.pauli</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateX</span><span class="p">,</span> <span class="n">GateY</span><span class="p">,</span> <span class="n">GateZ</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.hadamard</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GateH</span><span class="p">,</span>
+    <span class="n">GateHXY</span><span class="p">,</span>
+    <span class="n">GateHXZ</span><span class="p">,</span>
+    <span class="n">GateHYZ</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.s</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateS</span><span class="p">,</span> <span class="n">GateSDG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.t</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateT</span><span class="p">,</span> <span class="n">GateTDG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.sx</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateSX</span><span class="p">,</span> <span class="n">GateSXDG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.sy</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateSY</span><span class="p">,</span> <span class="n">GateSYDG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.rotations</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GateRX</span><span class="p">,</span>
+    <span class="n">GateRY</span><span class="p">,</span>
+    <span class="n">GateRZ</span><span class="p">,</span>
+    <span class="n">GateR</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.deprecated</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateU1</span><span class="p">,</span> <span class="n">GateU2</span><span class="p">,</span> <span class="n">GateU3</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.cpauli</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCX</span><span class="p">,</span> <span class="n">GateCY</span><span class="p">,</span> <span class="n">GateCZ</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.chadamard</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCH</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.phase</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.swap</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateSWAP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.iswap</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateISWAP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.cs</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCS</span><span class="p">,</span> <span class="n">GateCSDG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.csx</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCSX</span><span class="p">,</span> <span class="n">GateCSXDG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.ecr</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateECR</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.dcx</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateDCX</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.cphase</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.cu</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCU</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.crotations</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCRX</span><span class="p">,</span> <span class="n">GateCRY</span><span class="p">,</span> <span class="n">GateCRZ</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.interactions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GateRXX</span><span class="p">,</span>
+    <span class="n">GateRYY</span><span class="p">,</span>
+    <span class="n">GateRZZ</span><span class="p">,</span>
+    <span class="n">GateRZX</span><span class="p">,</span>
+    <span class="n">GateXXplusYY</span><span class="p">,</span>
+    <span class="n">GateXXminusYY</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.cnx</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCCX</span><span class="p">,</span> <span class="n">GateC3X</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.cnp</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCCP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.standard.cswap</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCSWAP</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.generalized.qft</span><span class="w"> </span><span class="kn">import</span> <span class="n">QFT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.generalized.phasegradient</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhaseGradient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.generalized.rnz</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateRNZ</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.instruction</span><span class="w"> </span><span class="kn">import</span> <span class="n">Instruction</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.remote</span><span class="w"> </span><span class="kn">import</span> <span class="n">MimiqConnection</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.gatedecl</span><span class="w"> </span><span class="kn">import</span> <span class="n">GateCall</span><span class="p">,</span> <span class="n">GateDecl</span><span class="p">,</span> <span class="n">gatedecl</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.lazy</span><span class="w"> </span><span class="kn">import</span> <span class="n">control</span><span class="p">,</span> <span class="n">parallel</span><span class="p">,</span> <span class="n">inverse</span><span class="p">,</span> <span class="n">power</span><span class="p">,</span> <span class="n">LazyArg</span><span class="p">,</span> <span class="n">LazyExpr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.generalized.diffusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">Diffusion</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.generalized.polynomialoracle</span><span class="w"> </span><span class="kn">import</span> <span class="n">PolynomialOracle</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.qcsresults</span><span class="w"> </span><span class="kn">import</span> <span class="n">QCSResults</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.canvas</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsciiCanvas</span><span class="p">,</span> <span class="n">AsciiCircuit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.generalized.paulistring</span><span class="w"> </span><span class="kn">import</span> <span class="n">PauliString</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.noisechannel.standards.ampdamping</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AmplitudeDamping</span><span class="p">,</span>
+    <span class="n">GeneralizedAmplitudeDamping</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.operators.sigmas</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SigmaMinus</span><span class="p">,</span>
+    <span class="n">SigmaPlus</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.operators.diagonals</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiagonalOp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.operators.projectors</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Projector0</span><span class="p">,</span>
+    <span class="n">Projector00</span><span class="p">,</span>
+    <span class="n">Projector01</span><span class="p">,</span>
+    <span class="n">Projector1</span><span class="p">,</span>
+    <span class="n">Projector10</span><span class="p">,</span>
+    <span class="n">Projector11</span><span class="p">,</span>
+    <span class="n">ProjectorX0</span><span class="p">,</span>
+    <span class="n">ProjectorX1</span><span class="p">,</span>
+    <span class="n">ProjectorY0</span><span class="p">,</span>
+    <span class="n">ProjectorY1</span><span class="p">,</span>
+    <span class="n">ProjectorZ0</span><span class="p">,</span>
+    <span class="n">ProjectorZ1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.noisechannel.standards.depolarizing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Depolarizing</span><span class="p">,</span>
+    <span class="n">Depolarizing1</span><span class="p">,</span>
+    <span class="n">Depolarizing2</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.operators.custom</span><span class="w"> </span><span class="kn">import</span> <span class="n">Operator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PhaseAmplitudeDamping</span><span class="p">,</span>
+    <span class="n">ThermalNoise</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.noisechannel.kraus</span><span class="w"> </span><span class="kn">import</span> <span class="n">Kraus</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.noisechannel.mixedunitary</span><span class="w"> </span><span class="kn">import</span> <span class="n">MixedUnitary</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.krauschannel</span><span class="w"> </span><span class="kn">import</span> <span class="n">krauschannel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.noisechannel.standards.pauli</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PauliNoise</span><span class="p">,</span>
+    <span class="n">PauliX</span><span class="p">,</span>
+    <span class="n">PauliY</span><span class="p">,</span>
+    <span class="n">PauliZ</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.amplitude</span><span class="w"> </span><span class="kn">import</span> <span class="n">Amplitude</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.expectationvalue</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExpectationValue</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.entanglement</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SchmidtRank</span><span class="p">,</span>
+    <span class="n">VonNeumannEntropy</span><span class="p">,</span>
+    <span class="n">BondDim</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.measurereset</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MeasureReset</span><span class="p">,</span>
+    <span class="n">MeasureResetX</span><span class="p">,</span>
+    <span class="n">MeasureResetY</span><span class="p">,</span>
+    <span class="n">MeasureResetZ</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.delay</span><span class="w"> </span><span class="kn">import</span> <span class="n">Delay</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.noisechannel.standards.projectivenoise</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ProjectiveNoise</span><span class="p">,</span>
+    <span class="n">ProjectiveNoiseX</span><span class="p">,</span>
+    <span class="n">ProjectiveNoiseY</span><span class="p">,</span>
+    <span class="n">ProjectiveNoiseZ</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.pairmeasure</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeasureXX</span><span class="p">,</span> <span class="n">MeasureYY</span><span class="p">,</span> <span class="n">MeasureZZ</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.rescaledgates</span><span class="w"> </span><span class="kn">import</span> <span class="n">RescaledGate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.annotations</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractAnnotation</span><span class="p">,</span>
+    <span class="n">Detector</span><span class="p">,</span>
+    <span class="n">QubitCoordinates</span><span class="p">,</span>
+    <span class="n">ShiftCoordinates</span><span class="p">,</span>
+    <span class="n">ObservableInclude</span><span class="p">,</span>
+    <span class="n">Tick</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.classical.classical_not</span><span class="w"> </span><span class="kn">import</span> <span class="n">Not</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.complex</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pow</span><span class="p">,</span> <span class="n">Add</span><span class="p">,</span> <span class="n">Multiply</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.block</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.repeat</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repeat</span><span class="p">,</span> <span class="n">repeat</span>
+
+<span class="c1"># needed to initialize the registers</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits.proto.circuitproto</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqlink</span><span class="w"> </span><span class="kn">import</span> <span class="n">QPERFECT_CLOUD</span><span class="p">,</span> <span class="n">QPERFECT_DEV</span><span class="p">,</span> <span class="n">PLANQK_API</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Hamiltonian</span><span class="p">,</span>
+    <span class="n">HamiltonianTerm</span><span class="p">,</span>
+    <span class="n">push_expval</span><span class="p">,</span>
+    <span class="n">push_suzukitrotter</span><span class="p">,</span>
+    <span class="n">push_lietrotter</span><span class="p">,</span>
+    <span class="n">push_yoshidatrotter</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.operations.gates.generalized.rpauli</span><span class="w"> </span><span class="kn">import</span> <span class="n">RPauli</span>
+
+
+<div class="viewcode-block" id="GATES">
+<a class="viewcode-back" href="../apidocs/mimiqcircuits.html#mimiqcircuits.GATES">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GATES</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper class to list gates.</span>
+
+<span class="sd">    **NOTE**: Cannot instantiated called directly. Use `GATES.list()` for a list</span>
+<span class="sd">    of gate types, and `help(GATES)` for the .</span>
+
+
+<span class="sd">    **Single qubit gates**</span>
+<span class="sd">        :func:`GateX` :func:`GateY` :func:`GateZ` :func:`GateH`</span>
+<span class="sd">        :func:`GateS` :func:`GateSDG`</span>
+<span class="sd">        :func:`GateT` :func:`GateTDG`</span>
+<span class="sd">        :func:`GateSX` :func:`GateSXDG`</span>
+<span class="sd">        :func:`GateID`</span>
+
+<span class="sd">    **Single qubit gates (parametric)**</span>
+<span class="sd">        :func:`GateU` :func:`GateP`</span>
+<span class="sd">        :func:`GateRX` :func:`GateRY` :func:`GateRZ` :func:`GateP`</span>
+
+<span class="sd">    **Two qubit gates**</span>
+<span class="sd">        :func:`GateCX` :func:`GateCY` :func:`GateCZ`</span>
+<span class="sd">        :func:`GateCH`</span>
+<span class="sd">        :func:`GateSWAP` :func:`GateISWAP`</span>
+<span class="sd">        :func:`GateCS` :func:`GateCSX`</span>
+<span class="sd">        :func:`GateECR` :func:`GateDCX`</span>
+
+<span class="sd">    **Two qubit gates (parametric)**</span>
+<span class="sd">        :func:`GateCU`</span>
+<span class="sd">        :func:`GateCP`</span>
+<span class="sd">        :func:`GateCRX` :func:`GateCRY` :func:`GateCRZ`</span>
+<span class="sd">        :func:`GateRXX` :func:`GateRYY` :func:`GateRZZ`</span>
+<span class="sd">        :func:`GateXXplusYY` :func:`GateXXminusYY`</span>
+
+<span class="sd">    **Other**</span>
+<span class="sd">        :func:`GateCustom`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<div class="viewcode-block" id="GATES.list">
+<a class="viewcode-back" href="../apidocs/mimiqcircuits.html#mimiqcircuits.GATES.list">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">GateCustom</span><span class="p">,</span>
+            <span class="n">GateU</span><span class="p">,</span>
+            <span class="n">GateID</span><span class="p">,</span>
+            <span class="n">GateX</span><span class="p">,</span>
+            <span class="n">GateY</span><span class="p">,</span>
+            <span class="n">GateZ</span><span class="p">,</span>
+            <span class="n">GateH</span><span class="p">,</span>
+            <span class="n">GateHXY</span><span class="p">,</span>
+            <span class="n">GateHXZ</span><span class="p">,</span>
+            <span class="n">GateHYZ</span><span class="p">,</span>
+            <span class="n">GateS</span><span class="p">,</span>
+            <span class="n">GateSDG</span><span class="p">,</span>
+            <span class="n">GateT</span><span class="p">,</span>
+            <span class="n">GateTDG</span><span class="p">,</span>
+            <span class="n">GateSX</span><span class="p">,</span>
+            <span class="n">GateSXDG</span><span class="p">,</span>
+            <span class="n">GateSY</span><span class="p">,</span>
+            <span class="n">GateSYDG</span><span class="p">,</span>
+            <span class="n">GateRX</span><span class="p">,</span>
+            <span class="n">GateRY</span><span class="p">,</span>
+            <span class="n">GateRZ</span><span class="p">,</span>
+            <span class="n">GateR</span><span class="p">,</span>
+            <span class="n">GateU1</span><span class="p">,</span>
+            <span class="n">GateU2</span><span class="p">,</span>
+            <span class="n">GateU3</span><span class="p">,</span>
+            <span class="n">GateCX</span><span class="p">,</span>
+            <span class="n">GateCY</span><span class="p">,</span>
+            <span class="n">GateCZ</span><span class="p">,</span>
+            <span class="n">GateCH</span><span class="p">,</span>
+            <span class="n">GateSWAP</span><span class="p">,</span>
+            <span class="n">GateISWAP</span><span class="p">,</span>
+            <span class="n">GateCS</span><span class="p">,</span>
+            <span class="n">GateCSDG</span><span class="p">,</span>
+            <span class="n">GateCSX</span><span class="p">,</span>
+            <span class="n">GateCSXDG</span><span class="p">,</span>
+            <span class="n">GateECR</span><span class="p">,</span>
+            <span class="n">GateDCX</span><span class="p">,</span>
+            <span class="n">GateCP</span><span class="p">,</span>
+            <span class="n">GateCU</span><span class="p">,</span>
+            <span class="n">GateCRX</span><span class="p">,</span>
+            <span class="n">GateCRY</span><span class="p">,</span>
+            <span class="n">GateCRZ</span><span class="p">,</span>
+            <span class="n">GateRXX</span><span class="p">,</span>
+            <span class="n">GateRYY</span><span class="p">,</span>
+            <span class="n">GateRZZ</span><span class="p">,</span>
+            <span class="n">GateRZX</span><span class="p">,</span>
+            <span class="n">GateXXplusYY</span><span class="p">,</span>
+            <span class="n">GateXXminusYY</span><span class="p">,</span>
+            <span class="n">GateCCX</span><span class="p">,</span>
+            <span class="n">GateC3X</span><span class="p">,</span>
+            <span class="n">GateCCP</span><span class="p">,</span>
+            <span class="n">GateCSWAP</span><span class="p">,</span>
+            <span class="n">GateP</span><span class="p">,</span>
+        <span class="p">]</span></div>
+</div>
+
+
+
+<span class="c1"># Export specific classes, and functions.</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Circuit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BitString&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Operation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Control&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Parallel&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Inverse&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Power&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Barrier&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IfStatement&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AbstractMeasurement&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Measure&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeasureX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeasureY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeasureZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Reset&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ResetX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ResetY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ResetZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeasureReset&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeasureResetX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeasureResetY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeasureResetZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Gate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCustom&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateU&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateID&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateHXY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateHXZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateHYZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateSDG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateTDG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateSX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateSXDG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateSY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateSYDG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateRX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateRY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateRZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateU1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateU2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateU3&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCH&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateSWAP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateISWAP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCSDG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCSX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCSXDG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateECR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateDCX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCU&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCRX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCRY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCRZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateRXX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateRYY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateRZZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateRZX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateXXplusYY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateXXminusYY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCCX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateC3X&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCCP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCSWAP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;QFT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PhaseGradient&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Instruction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MimiqConnection&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateCall&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateDecl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;gatedecl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;control&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parallel&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;inverse&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;power&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LazyArg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LazyExpr&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Diffusion&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PolynomialOracle&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;QCSResults&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AsciiCanvas&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AsciiCircuit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AbstractOperator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PauliString&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AmplitudeDamping&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GeneralizedAmplitudeDamping&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SigmaMinus&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SigmaPlus&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DiagonalOp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Projector0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Projector00&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Projector01&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Projector1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Projector10&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Projector11&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Depolarizing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Depolarizing1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Depolarizing2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProjectorX0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProjectorX1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProjectorY0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProjectorY1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProjectorZ0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProjectorZ1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Operator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PauliNoise&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;krauschannel&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PauliX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PauliY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PauliZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ThermalNoise&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PhaseAmplitudeDamping&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Kraus&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MixedUnitary&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;QPERFECT_CLOUD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;QPERFECT_DEV&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PLANQK_API&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Amplitude&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ExpectationValue&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BondDim&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VonNeumannEntropy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SchmidtRank&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Delay&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProjectiveNoise&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProjectiveNoiseX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProjectiveNoiseY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProjectiveNoiseZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeasureZZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeasureXX&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeasureYY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RescaledGate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AbstractAnnotation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Detector&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;QubitCoordinates&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ShiftCoordinates&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ObservableInclude&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Tick&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Not&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Pow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Add&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Multiply&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GATES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Hamiltonian&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HamiltonianTerm&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;push_expval&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;push_suzukitrotter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;push_lietrotter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RPauli&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GateRNZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;push_yoshidatrotter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Block&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Repeat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repeat&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,2289 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; MIMIQ Circuits 0.18.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=29ae757a"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/tabs.js?v=3ee01567"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest 0.18.2 version.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>
+    <script>document.write(`<img src="_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="manual/index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="manual/index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
+ 
+</div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractAnnotation">AbstractAnnotation (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractMeasurement">AbstractMeasurement (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractOperator">AbstractOperator (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Add">Add (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.add_noise">add_noise() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.add_noise_to_gate_parallel">add_noise_to_gate_parallel() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.add_noise_to_gate_single">add_noise_to_gate_single() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Hamiltonian.add_terms">add_terms() (mimiqcircuits.Hamiltonian method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Amplitude">Amplitude (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AmplitudeDamping">AmplitudeDamping (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.append">append() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas">AsciiCanvas (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit">AsciiCircuit (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.asciiwidth">asciiwidth() (mimiqcircuits.Barrier method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.asciiwidth">(mimiqcircuits.ExpectationValue method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.asciiwidth">(mimiqcircuits.IfStatement method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.asciiwidth">(mimiqcircuits.Instruction method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.asciiwidth">(mimiqcircuits.Operation method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliString.asciiwidth">(mimiqcircuits.PauliString method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.asciiwidth">(mimiqcircuits.Reset method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier">Barrier (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.bits">bits (mimiqcircuits.BitString property)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.bits">(mimiqcircuits.Instruction property)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString">BitString (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.bitstring">bitstring (mimiqcircuits.IfStatement property)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Block">Block (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Block.blockid">blockid() (mimiqcircuits.Block method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BondDim">BondDim (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit">Circuit (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control">Control (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.control">control() (in module mimiqcircuits)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.control">(mimiqcircuits.Barrier method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BondDim.control">(mimiqcircuits.BondDim method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.control">(mimiqcircuits.Control method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.control">(mimiqcircuits.Gate method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.control">(mimiqcircuits.IfStatement method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.control">(mimiqcircuits.Inverse method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyExpr.control">(mimiqcircuits.LazyExpr method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.control">(mimiqcircuits.Measure method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.control">(mimiqcircuits.MeasureReset method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetX.control">(mimiqcircuits.MeasureResetX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetY.control">(mimiqcircuits.MeasureResetY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureX.control">(mimiqcircuits.MeasureX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureXX.control">(mimiqcircuits.MeasureXX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureY.control">(mimiqcircuits.MeasureY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureYY.control">(mimiqcircuits.MeasureYY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureZZ.control">(mimiqcircuits.MeasureZZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.control">(mimiqcircuits.Parallel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.control">(mimiqcircuits.Power method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.control">(mimiqcircuits.Repeat method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.control">(mimiqcircuits.Reset method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetX.control">(mimiqcircuits.ResetX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetY.control">(mimiqcircuits.ResetY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SchmidtRank.control">(mimiqcircuits.SchmidtRank method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.VonNeumannEntropy.control">(mimiqcircuits.VonNeumannEntropy method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU.convert_to_numeric">convert_to_numeric() (mimiqcircuits.GateU method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.copy">copy() (mimiqcircuits.Circuit method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.copy">(mimiqcircuits.Instruction method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.copy">(mimiqcircuits.Operation method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.copy">(mimiqcircuits.Repeat method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.cregsizes">cregsizes (mimiqcircuits.ExpectationValue property)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.cregsizes">(mimiqcircuits.Operation property)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.cumprobabilities">cumprobabilities() (mimiqcircuits.krauschannel method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.decompose">decompose() (mimiqcircuits.Circuit method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCall.decompose">(mimiqcircuits.GateCall method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.decompose">(mimiqcircuits.Instruction method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.decompose">(mimiqcircuits.Operation method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.decompose">(mimiqcircuits.Power method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.deepcopy">deepcopy() (mimiqcircuits.Circuit method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.deepcopy">(mimiqcircuits.Instruction method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.deepcopy">(mimiqcircuits.Operation method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.deepcopy">(mimiqcircuits.Repeat method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Delay">Delay (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing">Depolarizing (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing1">Depolarizing1 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing2">Depolarizing2 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.depth">depth() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Detector">Detector (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.DiagonalOp">DiagonalOp (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Diffusion">Diffusion (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.draw">draw() (mimiqcircuits.Circuit method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_barrier">draw_barrier() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_box">draw_box() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_control">draw_control() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_double_hline">draw_double_hline() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_double_vline">draw_double_vline() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_empty">draw_empty() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_fill">draw_fill() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_hline">draw_hline() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_ifstatement">draw_ifstatement() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_instruction">draw_instruction() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_operation">draw_operation() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_parallel">draw_parallel() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_paulistring">draw_paulistring() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_reset">draw_reset() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_text">draw_text() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_vline">draw_vline() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.draw_vtext">draw_vtext() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.draw_wires">draw_wires() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.emplace">emplace() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.empty">empty() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractOperator.evaluate">evaluate() (mimiqcircuits.AbstractOperator method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AmplitudeDamping.evaluate">(mimiqcircuits.AmplitudeDamping method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.evaluate">(mimiqcircuits.Circuit method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.evaluate">(mimiqcircuits.Control method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing.evaluate">(mimiqcircuits.Depolarizing method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.evaluate">(mimiqcircuits.ExpectationValue method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.evaluate">(mimiqcircuits.Gate method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCall.evaluate">(mimiqcircuits.GateCall method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom.evaluate">(mimiqcircuits.GateCustom method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRNZ.evaluate">(mimiqcircuits.GateRNZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GeneralizedAmplitudeDamping.evaluate">(mimiqcircuits.GeneralizedAmplitudeDamping method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Hamiltonian.evaluate">(mimiqcircuits.Hamiltonian method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.evaluate">(mimiqcircuits.IfStatement method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.evaluate">(mimiqcircuits.Instruction method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.evaluate">(mimiqcircuits.Inverse method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Kraus.evaluate">(mimiqcircuits.Kraus method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MixedUnitary.evaluate">(mimiqcircuits.MixedUnitary method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.evaluate">(mimiqcircuits.Operation method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.evaluate">(mimiqcircuits.Parallel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.evaluate">(mimiqcircuits.PauliNoise method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliString.evaluate">(mimiqcircuits.PauliString method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliX.evaluate">(mimiqcircuits.PauliX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliY.evaluate">(mimiqcircuits.PauliY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliZ.evaluate">(mimiqcircuits.PauliZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseAmplitudeDamping.evaluate">(mimiqcircuits.PhaseAmplitudeDamping method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.evaluate">(mimiqcircuits.Power method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.evaluate">(mimiqcircuits.Repeat method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RescaledGate.evaluate">(mimiqcircuits.RescaledGate method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RPauli.evaluate">(mimiqcircuits.RPauli method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ThermalNoise.evaluate">(mimiqcircuits.ThermalNoise method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue">ExpectationValue (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.exponent">exponent (mimiqcircuits.Power property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Add.format_with_targets">format_with_targets() (mimiqcircuits.Add method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Block.format_with_targets">(mimiqcircuits.Block method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Multiply.format_with_targets">(mimiqcircuits.Multiply method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Pow.format_with_targets">(mimiqcircuits.Pow method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.format_with_targets">(mimiqcircuits.Repeat method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliString.from_string">from_string() (mimiqcircuits.PauliString class method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.fromfunction">fromfunction() (mimiqcircuits.BitString static method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.fromint">fromint() (mimiqcircuits.BitString static method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.fromnonzeros">fromnonzeros() (mimiqcircuits.BitString static method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.fromstring">fromstring() (mimiqcircuits.BitString static method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate">Gate (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateC3X">GateC3X() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCall">GateCall (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCCP">GateCCP() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCCX">GateCCX() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCH">GateCH() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCP">GateCP() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCRX">GateCRX() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCRY">GateCRY() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCRZ">GateCRZ() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCS">GateCS() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCSDG">GateCSDG() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCSWAP">GateCSWAP() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCSX">GateCSX() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCSXDG">GateCSXDG() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCU">GateCU() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom">GateCustom (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCX">GateCX() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCY">GateCY() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCZ">GateCZ() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateDCX">GateDCX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateDecl">GateDecl (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.gatedecl">gatedecl() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateECR">GateECR (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateH">GateH (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateHXY">GateHXY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateHXZ">GateHXZ (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateHYZ">GateHYZ (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateID">GateID (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateISWAP">GateISWAP (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateP">GateP (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateR">GateR (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRNZ">GateRNZ (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRX">GateRX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRXX">GateRXX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRY">GateRY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRYY">GateRYY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZ">GateRZ (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZX">GateRZX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZZ">GateRZZ (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GATES">GATES (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateS">GateS() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSDG">GateSDG() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSWAP">GateSWAP (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSX">GateSX() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSXDG">GateSXDG() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSY">GateSY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSYDG">GateSYDG (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateT">GateT() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateTDG">GateTDG() (in module mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU">GateU (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU1">GateU1 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU2">GateU2 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU3">GateU3 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateX">GateX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateXXminusYY">GateXXminusYY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateXXplusYY">GateXXplusYY (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateY">GateY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateZ">GateZ (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GeneralizedAmplitudeDamping">GeneralizedAmplitudeDamping (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.get_bit_row">get_bit_row() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.get_bits">get_bits() (mimiqcircuits.Instruction method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.get_bitstring">get_bitstring() (mimiqcircuits.IfStatement method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.HamiltonianTerm.get_coefficient">get_coefficient() (mimiqcircuits.HamiltonianTerm method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.get_cols">get_cols() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.get_current_col">get_current_col() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Detector.get_notes">get_notes() (mimiqcircuits.Detector method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ObservableInclude.get_notes">(mimiqcircuits.ObservableInclude method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QubitCoordinates.get_notes">(mimiqcircuits.QubitCoordinates method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ShiftCoordinates.get_notes">(mimiqcircuits.ShiftCoordinates method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Tick.get_notes">(mimiqcircuits.Tick method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.get_on_qubits">get_on_qubits() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.get_operation">get_operation() (mimiqcircuits.Control method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.get_operation">(mimiqcircuits.ExpectationValue method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.HamiltonianTerm.get_operation">(mimiqcircuits.HamiltonianTerm method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.get_operation">(mimiqcircuits.IfStatement method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.get_operation">(mimiqcircuits.Instruction method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.get_operation">(mimiqcircuits.Measure method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.get_operation">(mimiqcircuits.MeasureReset method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetX.get_operation">(mimiqcircuits.MeasureResetX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetY.get_operation">(mimiqcircuits.MeasureResetY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureX.get_operation">(mimiqcircuits.MeasureX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureXX.get_operation">(mimiqcircuits.MeasureXX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureY.get_operation">(mimiqcircuits.MeasureY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureYY.get_operation">(mimiqcircuits.MeasureYY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureZZ.get_operation">(mimiqcircuits.MeasureZZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Not.get_operation">(mimiqcircuits.Not method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.get_operation">(mimiqcircuits.Operation method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.get_operation">(mimiqcircuits.Parallel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.get_operation">(mimiqcircuits.Repeat method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RescaledGate.get_operation">(mimiqcircuits.RescaledGate method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RescaledGate.get_param">get_param() (mimiqcircuits.RescaledGate method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.get_qubit_row">get_qubit_row() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.HamiltonianTerm.get_qubits">get_qubits() (mimiqcircuits.HamiltonianTerm method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.get_qubits">(mimiqcircuits.Instruction method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.get_rows">get_rows() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RescaledGate.get_scale">get_scale() (mimiqcircuits.RescaledGate method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.get_zvars">get_zvars() (mimiqcircuits.Instruction method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.get_zvars_row">get_zvars_row() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.getparam">getparam() (mimiqcircuits.Operation method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.getparam">(mimiqcircuits.Repeat method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.getparams">getparams() (mimiqcircuits.Circuit method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.getparams">(mimiqcircuits.Control method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.getparams">(mimiqcircuits.ExpectationValue method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.getparams">(mimiqcircuits.IfStatement method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.getparams">(mimiqcircuits.Instruction method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.getparams">(mimiqcircuits.Inverse method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.getparams">(mimiqcircuits.Operation method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.getparams">(mimiqcircuits.Power method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.getparams">(mimiqcircuits.Repeat method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.gettypekey">gettypekey() (mimiqcircuits.Control method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.gettypekey">(mimiqcircuits.Gate method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.gettypekey">(mimiqcircuits.Inverse method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.gettypekey">(mimiqcircuits.Parallel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.gettypekey">(mimiqcircuits.Power method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Hamiltonian">Hamiltonian (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.HamiltonianTerm">HamiltonianTerm (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.histogram">histogram() (mimiqcircuits.QCSResults method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.histzvars">histzvars() (mimiqcircuits.QCSResults method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement">IfStatement (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.insert">insert() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction">Instruction (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse">Inverse (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.inverse">inverse() (in module mimiqcircuits)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractOperator.inverse">(mimiqcircuits.AbstractOperator method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Amplitude.inverse">(mimiqcircuits.Amplitude method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.inverse">(mimiqcircuits.Barrier method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BondDim.inverse">(mimiqcircuits.BondDim method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.inverse">(mimiqcircuits.Circuit method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.inverse">(mimiqcircuits.Control method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Delay.inverse">(mimiqcircuits.Delay method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.inverse">(mimiqcircuits.ExpectationValue method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.inverse">(mimiqcircuits.Gate method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom.inverse">(mimiqcircuits.GateCustom method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateECR.inverse">(mimiqcircuits.GateECR method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateH.inverse">(mimiqcircuits.GateH method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateHXY.inverse">(mimiqcircuits.GateHXY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateHYZ.inverse">(mimiqcircuits.GateHYZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateID.inverse">(mimiqcircuits.GateID method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateP.inverse">(mimiqcircuits.GateP method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateR.inverse">(mimiqcircuits.GateR method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRNZ.inverse">(mimiqcircuits.GateRNZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRX.inverse">(mimiqcircuits.GateRX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRXX.inverse">(mimiqcircuits.GateRXX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRY.inverse">(mimiqcircuits.GateRY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRYY.inverse">(mimiqcircuits.GateRYY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZ.inverse">(mimiqcircuits.GateRZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZX.inverse">(mimiqcircuits.GateRZX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZZ.inverse">(mimiqcircuits.GateRZZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSWAP.inverse">(mimiqcircuits.GateSWAP method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSY.inverse">(mimiqcircuits.GateSY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSYDG.inverse">(mimiqcircuits.GateSYDG method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU.inverse">(mimiqcircuits.GateU method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU1.inverse">(mimiqcircuits.GateU1 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU2.inverse">(mimiqcircuits.GateU2 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateU3.inverse">(mimiqcircuits.GateU3 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateX.inverse">(mimiqcircuits.GateX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateXXminusYY.inverse">(mimiqcircuits.GateXXminusYY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateXXplusYY.inverse">(mimiqcircuits.GateXXplusYY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateY.inverse">(mimiqcircuits.GateY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateZ.inverse">(mimiqcircuits.GateZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.inverse">(mimiqcircuits.IfStatement method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.inverse">(mimiqcircuits.Instruction method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.inverse">(mimiqcircuits.Inverse method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.inverse">(mimiqcircuits.krauschannel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyExpr.inverse">(mimiqcircuits.LazyExpr method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.inverse">(mimiqcircuits.Measure method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.inverse">(mimiqcircuits.MeasureReset method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetX.inverse">(mimiqcircuits.MeasureResetX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetY.inverse">(mimiqcircuits.MeasureResetY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureX.inverse">(mimiqcircuits.MeasureX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureXX.inverse">(mimiqcircuits.MeasureXX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureY.inverse">(mimiqcircuits.MeasureY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureYY.inverse">(mimiqcircuits.MeasureYY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureZZ.inverse">(mimiqcircuits.MeasureZZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Not.inverse">(mimiqcircuits.Not method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.inverse">(mimiqcircuits.Parallel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliString.inverse">(mimiqcircuits.PauliString method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PolynomialOracle.inverse">(mimiqcircuits.PolynomialOracle method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Pow.inverse">(mimiqcircuits.Pow method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.inverse">(mimiqcircuits.Power method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.inverse">(mimiqcircuits.Repeat method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.inverse">(mimiqcircuits.Reset method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetX.inverse">(mimiqcircuits.ResetX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetY.inverse">(mimiqcircuits.ResetY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SchmidtRank.inverse">(mimiqcircuits.SchmidtRank method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.VonNeumannEntropy.inverse">(mimiqcircuits.VonNeumannEntropy method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliString.is_identity">is_identity() (mimiqcircuits.PauliString method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.is_symbolic">is_symbolic() (mimiqcircuits.Circuit method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.is_symbolic">(mimiqcircuits.Operation method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom.is_unitary">is_unitary() (mimiqcircuits.GateCustom static method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operator.is_valid_power_of_2">is_valid_power_of_2() (mimiqcircuits.Operator static method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.isCPTP">isCPTP() (mimiqcircuits.krauschannel class method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateID.isidentity">isidentity() (mimiqcircuits.GateID method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRX.isidentity">(mimiqcircuits.GateRX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRY.isidentity">(mimiqcircuits.GateRY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRZ.isidentity">(mimiqcircuits.GateRZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.isidentity">(mimiqcircuits.Operation method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliString.isidentity">(mimiqcircuits.PauliString method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RPauli.isidentity">(mimiqcircuits.RPauli method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing.ismixedunitary">ismixedunitary() (mimiqcircuits.Depolarizing class method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.ismixedunitary">(mimiqcircuits.krauschannel class method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MixedUnitary.ismixedunitary">(mimiqcircuits.MixedUnitary class method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.ismixedunitary">(mimiqcircuits.PauliNoise class method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliX.ismixedunitary">(mimiqcircuits.PauliX static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliY.ismixedunitary">(mimiqcircuits.PauliY static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliZ.ismixedunitary">(mimiqcircuits.PauliZ static method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSY.isopalias">isopalias() (mimiqcircuits.GateSY method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateSYDG.isopalias">(mimiqcircuits.GateSYDG method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.isopalias">(mimiqcircuits.Inverse method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.isopalias">(mimiqcircuits.Operation method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.isopalias">(mimiqcircuits.Power method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractOperator.isunitary">isunitary() (mimiqcircuits.AbstractOperator static method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Amplitude.isunitary">(mimiqcircuits.Amplitude static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.isunitary">(mimiqcircuits.Barrier static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BondDim.isunitary">(mimiqcircuits.BondDim static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.isunitary">(mimiqcircuits.ExpectationValue static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.isunitary">(mimiqcircuits.Gate static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.isunitary">(mimiqcircuits.Operation class method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RPauli.isunitary">(mimiqcircuits.RPauli method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SchmidtRank.isunitary">(mimiqcircuits.SchmidtRank static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.VonNeumannEntropy.isunitary">(mimiqcircuits.VonNeumannEntropy static method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractMeasurement.iswrapper">iswrapper() (mimiqcircuits.AbstractMeasurement method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractOperator.iswrapper">(mimiqcircuits.AbstractOperator method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Add.iswrapper">(mimiqcircuits.Add method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Amplitude.iswrapper">(mimiqcircuits.Amplitude method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AmplitudeDamping.iswrapper">(mimiqcircuits.AmplitudeDamping method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.iswrapper">(mimiqcircuits.Barrier method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Block.iswrapper">(mimiqcircuits.Block method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BondDim.iswrapper">(mimiqcircuits.BondDim method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.iswrapper">(mimiqcircuits.Control method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing.iswrapper">(mimiqcircuits.Depolarizing method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Detector.iswrapper">(mimiqcircuits.Detector method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.iswrapper">(mimiqcircuits.ExpectationValue method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.iswrapper">(mimiqcircuits.Gate method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GeneralizedAmplitudeDamping.iswrapper">(mimiqcircuits.GeneralizedAmplitudeDamping method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.iswrapper">(mimiqcircuits.IfStatement method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.iswrapper">(mimiqcircuits.Inverse method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.iswrapper">(mimiqcircuits.krauschannel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.iswrapper">(mimiqcircuits.Measure method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.iswrapper">(mimiqcircuits.MeasureReset method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetX.iswrapper">(mimiqcircuits.MeasureResetX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetY.iswrapper">(mimiqcircuits.MeasureResetY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureX.iswrapper">(mimiqcircuits.MeasureX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureXX.iswrapper">(mimiqcircuits.MeasureXX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureY.iswrapper">(mimiqcircuits.MeasureY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureYY.iswrapper">(mimiqcircuits.MeasureYY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureZZ.iswrapper">(mimiqcircuits.MeasureZZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Multiply.iswrapper">(mimiqcircuits.Multiply method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Not.iswrapper">(mimiqcircuits.Not method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ObservableInclude.iswrapper">(mimiqcircuits.ObservableInclude method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.iswrapper">(mimiqcircuits.Operation method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operator.iswrapper">(mimiqcircuits.Operator method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.iswrapper">(mimiqcircuits.Parallel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.iswrapper">(mimiqcircuits.PauliNoise method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Pow.iswrapper">(mimiqcircuits.Pow method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.iswrapper">(mimiqcircuits.Power method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QubitCoordinates.iswrapper">(mimiqcircuits.QubitCoordinates method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.iswrapper">(mimiqcircuits.Repeat method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.iswrapper">(mimiqcircuits.Reset method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetX.iswrapper">(mimiqcircuits.ResetX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetY.iswrapper">(mimiqcircuits.ResetY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RPauli.iswrapper">(mimiqcircuits.RPauli method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SchmidtRank.iswrapper">(mimiqcircuits.SchmidtRank method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ShiftCoordinates.iswrapper">(mimiqcircuits.ShiftCoordinates method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Tick.iswrapper">(mimiqcircuits.Tick method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.VonNeumannEntropy.iswrapper">(mimiqcircuits.VonNeumannEntropy method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Kraus">Kraus (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel">krauschannel (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AmplitudeDamping.krausmatrices">krausmatrices() (mimiqcircuits.AmplitudeDamping method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing.krausmatrices">(mimiqcircuits.Depolarizing method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GeneralizedAmplitudeDamping.krausmatrices">(mimiqcircuits.GeneralizedAmplitudeDamping method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.krausmatrices">(mimiqcircuits.krauschannel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MixedUnitary.krausmatrices">(mimiqcircuits.MixedUnitary method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.krausmatrices">(mimiqcircuits.PauliNoise method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliX.krausmatrices">(mimiqcircuits.PauliX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliY.krausmatrices">(mimiqcircuits.PauliY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliZ.krausmatrices">(mimiqcircuits.PauliZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseAmplitudeDamping.krausmatrices">(mimiqcircuits.PhaseAmplitudeDamping method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoise.krausmatrices">(mimiqcircuits.ProjectiveNoise method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ThermalNoise.krausmatrices">(mimiqcircuits.ThermalNoise method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AmplitudeDamping.krausoperators">krausoperators() (mimiqcircuits.AmplitudeDamping method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing.krausoperators">(mimiqcircuits.Depolarizing method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GeneralizedAmplitudeDamping.krausoperators">(mimiqcircuits.GeneralizedAmplitudeDamping method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Kraus.krausoperators">(mimiqcircuits.Kraus method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.krausoperators">(mimiqcircuits.krauschannel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MixedUnitary.krausoperators">(mimiqcircuits.MixedUnitary method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.krausoperators">(mimiqcircuits.PauliNoise method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliX.krausoperators">(mimiqcircuits.PauliX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliY.krausoperators">(mimiqcircuits.PauliY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliZ.krausoperators">(mimiqcircuits.PauliZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseAmplitudeDamping.krausoperators">(mimiqcircuits.PhaseAmplitudeDamping method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoiseX.krausoperators">(mimiqcircuits.ProjectiveNoiseX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoiseY.krausoperators">(mimiqcircuits.ProjectiveNoiseY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoiseZ.krausoperators">(mimiqcircuits.ProjectiveNoiseZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.krausoperators">(mimiqcircuits.Reset method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ThermalNoise.krausoperators">(mimiqcircuits.ThermalNoise method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyArg">LazyArg (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyExpr">LazyExpr (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GATES.list">list() (mimiqcircuits.GATES static method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.listvars">listvars() (mimiqcircuits.Circuit method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.listvars">(mimiqcircuits.Instruction method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.listvars">(mimiqcircuits.Operation method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.loadproto">loadproto() (mimiqcircuits.Circuit static method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Hamiltonian.loadproto">(mimiqcircuits.Hamiltonian static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.loadproto">(mimiqcircuits.QCSResults static method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractOperator.matrix">matrix() (mimiqcircuits.AbstractOperator method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCall.matrix">(mimiqcircuits.GateCall method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRNZ.matrix">(mimiqcircuits.GateRNZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Hamiltonian.matrix">(mimiqcircuits.Hamiltonian method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.matrix">(mimiqcircuits.Instruction method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RPauli.matrix">(mimiqcircuits.RPauli method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ThermalNoise.matrix">(mimiqcircuits.ThermalNoise static method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure">Measure (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset">MeasureReset (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetX">MeasureResetX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetY">MeasureResetY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetZ">MeasureResetZ (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureX">MeasureX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureXX">MeasureXX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureY">MeasureY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureYY">MeasureYY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureZ">MeasureZ (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureZZ">MeasureZZ (class in mimiqcircuits)</a>
+</li>
+      <li>
+    mimiqcircuits
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#module-mimiqcircuits">module</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MimiqConnection">MimiqConnection (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MixedUnitary">MixedUnitary (class in mimiqcircuits)</a>
+</li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#module-mimiqcircuits">mimiqcircuits</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Multiply">Multiply (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.name">name (mimiqcircuits.Operation property)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseGradient.name">(mimiqcircuits.PhaseGradient attribute)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QFT.name">(mimiqcircuits.QFT attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.nonzeros">nonzeros() (mimiqcircuits.BitString method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Not">Not (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateDecl.num_bits">num_bits (mimiqcircuits.GateDecl property)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.num_bits">(mimiqcircuits.Operation property)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.num_bits">num_bits() (mimiqcircuits.Circuit method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.num_bits">(mimiqcircuits.Instruction method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.num_controls">num_controls (mimiqcircuits.Control attribute)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#id0">(mimiqcircuits.Control property)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.num_cregs">num_cregs (mimiqcircuits.Operation property)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.num_qregs">num_qregs (mimiqcircuits.Operation property)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BondDim.num_qubits">num_qubits (mimiqcircuits.BondDim property)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing.num_qubits">(mimiqcircuits.Depolarizing property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Diffusion.num_qubits">(mimiqcircuits.Diffusion attribute)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom.num_qubits">(mimiqcircuits.GateCustom property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateDecl.num_qubits">(mimiqcircuits.GateDecl property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GeneralizedAmplitudeDamping.num_qubits">(mimiqcircuits.GeneralizedAmplitudeDamping property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.num_qubits">(mimiqcircuits.Operation property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.num_qubits">(mimiqcircuits.PauliNoise property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliString.num_qubits">(mimiqcircuits.PauliString property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseGradient.num_qubits">(mimiqcircuits.PhaseGradient attribute)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QFT.num_qubits">(mimiqcircuits.QFT attribute)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SchmidtRank.num_qubits">(mimiqcircuits.SchmidtRank property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaMinus.num_qubits">(mimiqcircuits.SigmaMinus property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaPlus.num_qubits">(mimiqcircuits.SigmaPlus property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.VonNeumannEntropy.num_qubits">(mimiqcircuits.VonNeumannEntropy property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.num_qubits">num_qubits() (mimiqcircuits.BitString method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.num_qubits">(mimiqcircuits.Circuit method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Hamiltonian.num_qubits">(mimiqcircuits.Hamiltonian method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.num_qubits">(mimiqcircuits.Instruction method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.num_repeats">num_repeats (mimiqcircuits.Parallel property)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.num_targets">num_targets (mimiqcircuits.Control property)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Hamiltonian.num_terms">num_terms() (mimiqcircuits.Hamiltonian method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateDecl.num_zvars">num_zvars (mimiqcircuits.GateDecl property)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.num_zvars">(mimiqcircuits.Operation property)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.num_zvars">num_zvars() (mimiqcircuits.Circuit method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.num_zvars">(mimiqcircuits.Instruction method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.numparams">numparams() (mimiqcircuits.krauschannel method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.numparams">(mimiqcircuits.Operation method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ObservableInclude">ObservableInclude (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.op">op (mimiqcircuits.Control attribute)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#id1">(mimiqcircuits.Control property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.op">(mimiqcircuits.IfStatement property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.op">(mimiqcircuits.Parallel property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.op">(mimiqcircuits.Power property)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation">Operation (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.operation">operation (mimiqcircuits.Instruction property)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operator">Operator (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AmplitudeDamping.opname">opname (mimiqcircuits.AmplitudeDamping property)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractOperator.opname">opname() (mimiqcircuits.AbstractOperator method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Detector.opname">(mimiqcircuits.Detector static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.opname">(mimiqcircuits.ExpectationValue method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ObservableInclude.opname">(mimiqcircuits.ObservableInclude static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operator.opname">(mimiqcircuits.Operator method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoiseX.opname">(mimiqcircuits.ProjectiveNoiseX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoiseY.opname">(mimiqcircuits.ProjectiveNoiseY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoiseZ.opname">(mimiqcircuits.ProjectiveNoiseZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QubitCoordinates.opname">(mimiqcircuits.QubitCoordinates static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ShiftCoordinates.opname">(mimiqcircuits.ShiftCoordinates static method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Tick.opname">(mimiqcircuits.Tick static method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.DiagonalOp.opsquared">opsquared() (mimiqcircuits.DiagonalOp method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operator.opsquared">(mimiqcircuits.Operator method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector0.opsquared">(mimiqcircuits.Projector0 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector00.opsquared">(mimiqcircuits.Projector00 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector01.opsquared">(mimiqcircuits.Projector01 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector1.opsquared">(mimiqcircuits.Projector1 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector10.opsquared">(mimiqcircuits.Projector10 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector11.opsquared">(mimiqcircuits.Projector11 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorX0.opsquared">(mimiqcircuits.ProjectorX0 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorX1.opsquared">(mimiqcircuits.ProjectorX1 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorY0.opsquared">(mimiqcircuits.ProjectorY0 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorY1.opsquared">(mimiqcircuits.ProjectorY1 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaMinus.opsquared">(mimiqcircuits.SigmaMinus method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaPlus.opsquared">(mimiqcircuits.SigmaPlus method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel">Parallel (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.parallel">parallel() (in module mimiqcircuits)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.parallel">(mimiqcircuits.Control method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.parallel">(mimiqcircuits.Gate method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.parallel">(mimiqcircuits.Inverse method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyExpr.parallel">(mimiqcircuits.LazyExpr method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.parallel">(mimiqcircuits.Parallel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.parallel">(mimiqcircuits.Power method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.parallel">(mimiqcircuits.Repeat method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AmplitudeDamping.parnames">parnames (mimiqcircuits.AmplitudeDamping property)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BondDim.parnames">(mimiqcircuits.BondDim property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing.parnames">(mimiqcircuits.Depolarizing property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.DiagonalOp.parnames">(mimiqcircuits.DiagonalOp property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GeneralizedAmplitudeDamping.parnames">(mimiqcircuits.GeneralizedAmplitudeDamping property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.parnames">(mimiqcircuits.Operation property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operator.parnames">(mimiqcircuits.Operator property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.parnames">(mimiqcircuits.PauliNoise property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliString.parnames">(mimiqcircuits.PauliString property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseAmplitudeDamping.parnames">(mimiqcircuits.PhaseAmplitudeDamping property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector0.parnames">(mimiqcircuits.Projector0 property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector00.parnames">(mimiqcircuits.Projector00 property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector01.parnames">(mimiqcircuits.Projector01 property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector1.parnames">(mimiqcircuits.Projector1 property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector10.parnames">(mimiqcircuits.Projector10 property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector11.parnames">(mimiqcircuits.Projector11 property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorX0.parnames">(mimiqcircuits.ProjectorX0 property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorX1.parnames">(mimiqcircuits.ProjectorX1 property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorY0.parnames">(mimiqcircuits.ProjectorY0 property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorY1.parnames">(mimiqcircuits.ProjectorY1 property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SchmidtRank.parnames">(mimiqcircuits.SchmidtRank property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaMinus.parnames">(mimiqcircuits.SigmaMinus property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaPlus.parnames">(mimiqcircuits.SigmaPlus property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ThermalNoise.parnames">(mimiqcircuits.ThermalNoise property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.VonNeumannEntropy.parnames">(mimiqcircuits.VonNeumannEntropy property)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise">PauliNoise (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliString">PauliString (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliX">PauliX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliY">PauliY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliZ">PauliZ (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseAmplitudeDamping">PhaseAmplitudeDamping (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseGradient">PhaseGradient (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PolynomialOracle">PolynomialOracle (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Pow">Pow (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power">Power (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.power">power() (in module mimiqcircuits)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractOperator.power">(mimiqcircuits.AbstractOperator method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Barrier.power">(mimiqcircuits.Barrier method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BondDim.power">(mimiqcircuits.BondDim method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Control.power">(mimiqcircuits.Control method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Delay.power">(mimiqcircuits.Delay method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.power">(mimiqcircuits.ExpectationValue method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.power">(mimiqcircuits.Gate method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateRNZ.power">(mimiqcircuits.GateRNZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.IfStatement.power">(mimiqcircuits.IfStatement method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Inverse.power">(mimiqcircuits.Inverse method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.power">(mimiqcircuits.krauschannel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.LazyExpr.power">(mimiqcircuits.LazyExpr method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Measure.power">(mimiqcircuits.Measure method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureReset.power">(mimiqcircuits.MeasureReset method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetX.power">(mimiqcircuits.MeasureResetX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureResetY.power">(mimiqcircuits.MeasureResetY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureX.power">(mimiqcircuits.MeasureX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureXX.power">(mimiqcircuits.MeasureXX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureY.power">(mimiqcircuits.MeasureY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureYY.power">(mimiqcircuits.MeasureYY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MeasureZZ.power">(mimiqcircuits.MeasureZZ method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Parallel.power">(mimiqcircuits.Parallel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Power.power">(mimiqcircuits.Power method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat.power">(mimiqcircuits.Repeat method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset.power">(mimiqcircuits.Reset method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetX.power">(mimiqcircuits.ResetX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetY.power">(mimiqcircuits.ResetY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SchmidtRank.power">(mimiqcircuits.SchmidtRank method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.VonNeumannEntropy.power">(mimiqcircuits.VonNeumannEntropy method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.GateCustom.pretty_print">pretty_print() (mimiqcircuits.GateCustom method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operator.pretty_print">(mimiqcircuits.Operator method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing.probabilities">probabilities() (mimiqcircuits.Depolarizing method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.probabilities">(mimiqcircuits.krauschannel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MixedUnitary.probabilities">(mimiqcircuits.MixedUnitary method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.probabilities">(mimiqcircuits.PauliNoise method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliX.probabilities">(mimiqcircuits.PauliX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliY.probabilities">(mimiqcircuits.PauliY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliZ.probabilities">(mimiqcircuits.PauliZ method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoise">ProjectiveNoise (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoiseX">ProjectiveNoiseX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoiseY">ProjectiveNoiseY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoiseZ">ProjectiveNoiseZ (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector0">Projector0 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector00">Projector00 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector01">Projector01 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector1">Projector1 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector10">Projector10 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector11">Projector11 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorX0">ProjectorX0 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorX1">ProjectorX1 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorY0">ProjectorY0 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorY1">ProjectorY1 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorZ0">ProjectorZ0 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorZ1">ProjectorZ1 (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Block.push">push() (mimiqcircuits.Block method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push">(mimiqcircuits.Circuit method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Hamiltonian.push">(mimiqcircuits.Hamiltonian method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.push_expval">push_expval() (in module mimiqcircuits)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push_expval">(mimiqcircuits.Circuit method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.push_lietrotter">push_lietrotter() (in module mimiqcircuits)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push_lietrotter">(mimiqcircuits.Circuit method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.push_line">push_line() (mimiqcircuits.AsciiCanvas method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.push_suzukitrotter">push_suzukitrotter() (in module mimiqcircuits)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push_suzukitrotter">(mimiqcircuits.Circuit method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.push_yoshidatrotter">push_yoshidatrotter() (in module mimiqcircuits)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push_yoshidatrotter">(mimiqcircuits.Circuit method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults">QCSResults (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QFT">QFT (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.qregsizes">qregsizes (mimiqcircuits.ExpectationValue property)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.qregsizes">(mimiqcircuits.Operation property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PhaseGradient.qregsizes">(mimiqcircuits.PhaseGradient attribute)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QFT.qregsizes">(mimiqcircuits.QFT attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QubitCoordinates">QubitCoordinates (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.qubits">qubits (mimiqcircuits.Instruction property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.remove">remove() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Repeat">Repeat (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.repeat">repeat() (in module mimiqcircuits)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Gate.repeat">(mimiqcircuits.Gate method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.DiagonalOp.rescale">rescale() (mimiqcircuits.DiagonalOp method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operator.rescale">(mimiqcircuits.Operator method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector0.rescale">(mimiqcircuits.Projector0 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector00.rescale">(mimiqcircuits.Projector00 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector01.rescale">(mimiqcircuits.Projector01 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector1.rescale">(mimiqcircuits.Projector1 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector10.rescale">(mimiqcircuits.Projector10 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector11.rescale">(mimiqcircuits.Projector11 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorX0.rescale">(mimiqcircuits.ProjectorX0 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorX1.rescale">(mimiqcircuits.ProjectorX1 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorY0.rescale">(mimiqcircuits.ProjectorY0 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorY1.rescale">(mimiqcircuits.ProjectorY1 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RescaledGate.rescale">(mimiqcircuits.RescaledGate method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaMinus.rescale">(mimiqcircuits.SigmaMinus method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaPlus.rescale">(mimiqcircuits.SigmaPlus method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RescaledGate.rescale_in_place">rescale_in_place() (mimiqcircuits.RescaledGate method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.DiagonalOp.rescale_inplace">rescale_inplace() (mimiqcircuits.DiagonalOp method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operator.rescale_inplace">(mimiqcircuits.Operator method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector0.rescale_inplace">(mimiqcircuits.Projector0 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector00.rescale_inplace">(mimiqcircuits.Projector00 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector01.rescale_inplace">(mimiqcircuits.Projector01 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector1.rescale_inplace">(mimiqcircuits.Projector1 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector10.rescale_inplace">(mimiqcircuits.Projector10 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Projector11.rescale_inplace">(mimiqcircuits.Projector11 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorX0.rescale_inplace">(mimiqcircuits.ProjectorX0 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorX1.rescale_inplace">(mimiqcircuits.ProjectorX1 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorY0.rescale_inplace">(mimiqcircuits.ProjectorY0 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ProjectorY1.rescale_inplace">(mimiqcircuits.ProjectorY1 method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaMinus.rescale_inplace">(mimiqcircuits.SigmaMinus method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RescaledGate">RescaledGate (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Reset">Reset (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCanvas.reset">reset() (mimiqcircuits.AsciiCanvas method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.reset">(mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetX">ResetX (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetY">ResetY (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ResetZ">ResetZ (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.RPauli">RPauli (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.sample_mixedunitaries">sample_mixedunitaries() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.saveproto">saveproto() (mimiqcircuits.Circuit method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Hamiltonian.saveproto">(mimiqcircuits.Hamiltonian method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.saveproto">(mimiqcircuits.QCSResults method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SchmidtRank">SchmidtRank (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AsciiCircuit.set_current_col">set_current_col() (mimiqcircuits.AsciiCircuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ShiftCoordinates">ShiftCoordinates (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaMinus">SigmaMinus (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.SigmaPlus">SigmaPlus (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.specify_operations">specify_operations() (mimiqcircuits.Circuit method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.squaredkrausoperators">squaredkrausoperators() (mimiqcircuits.krauschannel method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ThermalNoise">ThermalNoise (class in mimiqcircuits)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Tick">Tick (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.to01">to01() (mimiqcircuits.BitString method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.toindex">toindex() (mimiqcircuits.BitString method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.tointeger">tointeger() (mimiqcircuits.BitString method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing.unitarygates">unitarygates() (mimiqcircuits.Depolarizing method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.unitarygates">(mimiqcircuits.krauschannel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MixedUnitary.unitarygates">(mimiqcircuits.MixedUnitary method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.unitarygates">(mimiqcircuits.PauliNoise method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliX.unitarygates">(mimiqcircuits.PauliX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliY.unitarygates">(mimiqcircuits.PauliY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliZ.unitarygates">(mimiqcircuits.PauliZ method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing.unitarymatrices">unitarymatrices() (mimiqcircuits.Depolarizing method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.unitarymatrices">(mimiqcircuits.krauschannel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MixedUnitary.unitarymatrices">(mimiqcircuits.MixedUnitary method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.unitarymatrices">(mimiqcircuits.PauliNoise method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliX.unitarymatrices">(mimiqcircuits.PauliX method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliY.unitarymatrices">(mimiqcircuits.PauliY method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliZ.unitarymatrices">(mimiqcircuits.PauliZ method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliString.unwrapped_matrix">unwrapped_matrix() (mimiqcircuits.PauliString method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.unwrappedcumprobabilities">unwrappedcumprobabilities() (mimiqcircuits.krauschannel method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Kraus.unwrappedkrausmatrices">unwrappedkrausmatrices() (mimiqcircuits.Kraus method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.unwrappedkrausmatrices">(mimiqcircuits.krauschannel method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.MixedUnitary.unwrappedkrausmatrices">(mimiqcircuits.MixedUnitary method)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.unwrappedkrausmatrices">(mimiqcircuits.PauliNoise method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.AbstractOperator.unwrappedmatrix">unwrappedmatrix() (mimiqcircuits.AbstractOperator method)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operator.unwrappedmatrix">(mimiqcircuits.Operator method)</a>
+</li>
+      </ul></li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.unwrappedunitarymatrices">unwrappedunitarymatrices() (mimiqcircuits.krauschannel method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.VonNeumannEntropy">VonNeumannEntropy (class in mimiqcircuits)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.BitString.zeros">zeros() (mimiqcircuits.BitString method)</a>
+</li>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Amplitude.zregsizes">zregsizes (mimiqcircuits.Amplitude property)</a>
+
+      <ul>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.ExpectationValue.zregsizes">(mimiqcircuits.ExpectationValue property)</a>
+</li>
+        <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Operation.zregsizes">(mimiqcircuits.Operation property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apidocs/mimiqcircuits.html#mimiqcircuits.Instruction.zvars">zvars (mimiqcircuits.Instruction property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

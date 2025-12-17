@@ -1,0 +1,1016 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Noisy simulations on MIMIQ &#8212; MIMIQ Circuits 0.18.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=29ae757a"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'manual/noise';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Symbolic Operations in MIMIQ" href="symbolic_ops.html" />
+    <link rel="prev" title="Non-unitary Operations" href="non_unitary_ops.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest 0.18.2 version.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>
+    <script>document.write(`<img src="../_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="circuits.html">Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="unitary_gates.html">Unitary Gates</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="non_unitary_ops.html">Non-unitary Operations</a></li>
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Noisy simulations on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="statistical_ops.html">Statistical Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_ops.html">Special Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulating Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="remote_execution.html">Execution on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="import_export.html">Import and export circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_topics.html">Special Topics</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="zops.html">Z-register Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hamiltonian.html">Hamiltonians and Time Evolution</a></li>
+
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Noisy...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="noisy-simulations-on-mimiq">
+<h1>Noisy simulations on MIMIQ<a class="headerlink" href="#noisy-simulations-on-mimiq" title="Link to this heading">#</a></h1>
+<p>This page provides detailed information on simulating noise in quantum circuits using MIMIQ.</p>
+</section>
+<section id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h1>
+<nav class="contents local" id="id1">
+<ul class="simple">
+<li><p><a class="reference internal" href="#summary-of-noise-functionality" id="id7">Summary of noise functionality</a></p></li>
+<li><p><a class="reference internal" href="#mathematical-background" id="id8">Mathematical background</a></p>
+<ul>
+<li><p><a class="reference internal" href="#kraus-operators" id="id9">Kraus operators</a></p></li>
+<li><p><a class="reference internal" href="#evolution-with-noise" id="id10">Evolution with noise</a></p></li>
+<li><p><a class="reference internal" href="#building-noise-channels" id="id11">Building noise channels</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#how-to-add-noise" id="id12">How to add noise</a></p>
+<ul>
+<li><p><a class="reference internal" href="#adding-noise-one-by-one" id="id13">Adding noise one by one</a></p></li>
+<li><p><a class="reference internal" href="#adding-noise-to-all-gates-of-the-same-type" id="id14">Adding noise to all gates of the same type</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#running-a-noisy-circuit" id="id15">Running a noisy circuit</a></p></li>
+</ul>
+</nav>
+<section id="summary-of-noise-functionality">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Summary of noise functionality</a><a class="headerlink" href="#summary-of-noise-functionality" title="Link to this heading">#</a></h2>
+<p id="id2">Custom noise channels:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Kraus" title="mimiqcircuits.Kraus"><code class="xref py py-class docutils literal notranslate"><span class="pre">Kraus</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.MixedUnitary" title="mimiqcircuits.MixedUnitary"><code class="xref py py-class docutils literal notranslate"><span class="pre">MixedUnitary</span></code></a></p></li>
+</ul>
+<p>Specialized noise channels:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing" title="mimiqcircuits.Depolarizing"><code class="xref py py-class docutils literal notranslate"><span class="pre">Depolarizing</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing1" title="mimiqcircuits.Depolarizing1"><code class="xref py py-class docutils literal notranslate"><span class="pre">Depolarizing1</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Depolarizing2" title="mimiqcircuits.Depolarizing2"><code class="xref py py-class docutils literal notranslate"><span class="pre">Depolarizing2</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise" title="mimiqcircuits.PauliNoise"><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliNoise</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PauliX" title="mimiqcircuits.PauliX"><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliX</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PauliY" title="mimiqcircuits.PauliY"><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliY</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PauliZ" title="mimiqcircuits.PauliZ"><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliZ</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.AmplitudeDamping" title="mimiqcircuits.AmplitudeDamping"><code class="xref py py-class docutils literal notranslate"><span class="pre">AmplitudeDamping</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.GeneralizedAmplitudeDamping" title="mimiqcircuits.GeneralizedAmplitudeDamping"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedAmplitudeDamping</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PhaseAmplitudeDamping" title="mimiqcircuits.PhaseAmplitudeDamping"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhaseAmplitudeDamping</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.ThermalNoise" title="mimiqcircuits.ThermalNoise"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermalNoise</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.ProjectiveNoise" title="mimiqcircuits.ProjectiveNoise"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectiveNoise</span></code></a></p></li>
+</ul>
+<p>Note that the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Reset" title="mimiqcircuits.Reset"><code class="xref py py-class docutils literal notranslate"><span class="pre">Reset</span></code></a> type operations can also be thought of as noisy operations.
+Coherent noise can be added by using any of the supported gates (e.g., <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Gate" title="mimiqcircuits.Gate"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gate</span></code></a>).</p>
+<p>Noise channels come with the following methods:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.krausmatrices" title="mimiqcircuits.krauschannel.krausmatrices"><code class="xref py py-func docutils literal notranslate"><span class="pre">krausmatrices()</span></code></a> and <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.krausoperators" title="mimiqcircuits.krauschannel.krausoperators"><code class="xref py py-func docutils literal notranslate"><span class="pre">krausoperators()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.unitarymatrices" title="mimiqcircuits.krauschannel.unitarymatrices"><code class="xref py py-func docutils literal notranslate"><span class="pre">unitarymatrices()</span></code></a> and <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PauliNoise.unitarygates" title="mimiqcircuits.PauliNoise.unitarygates"><code class="xref py py-func docutils literal notranslate"><span class="pre">unitarygates()</span></code></a> (only for mixed-unitary)</p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.probabilities" title="mimiqcircuits.krauschannel.probabilities"><code class="xref py py-func docutils literal notranslate"><span class="pre">probabilities()</span></code></a> (only for mixed-unitary)</p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.ismixedunitary" title="mimiqcircuits.krauschannel.ismixedunitary"><code class="xref py py-func docutils literal notranslate"><span class="pre">ismixedunitary()</span></code></a></p></li>
+</ul>
+<p>To add noise channels to a circuit, you can use:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push" title="mimiqcircuits.Circuit.push"><code class="xref py py-func docutils literal notranslate"><span class="pre">push()</span></code></a> (like gates)</p></li>
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.add_noise" title="mimiqcircuits.Circuit.add_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_noise()</span></code></a> (to add noise to every instance of a gate)</p></li>
+</ul>
+<p>To generate one sample of a circuit with mixed unitaries, use:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.sample_mixedunitaries" title="mimiqcircuits.Circuit.sample_mixedunitaries"><code class="xref py py-func docutils literal notranslate"><span class="pre">sample_mixedunitaries()</span></code></a></p></li>
+</ul>
+<p>See below for further information. You can also run help(Circuit().sample_mixedunitaries).</p>
+</section>
+<section id="mathematical-background">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Mathematical background</a><a class="headerlink" href="#mathematical-background" title="Link to this heading">#</a></h2>
+<section id="kraus-operators">
+<span id="id3"></span><h3><a class="toc-backref" href="#id9" role="doc-backlink">Kraus operators</a><a class="headerlink" href="#kraus-operators" title="Link to this heading">#</a></h3>
+<p>Noise in a quantum circuit refers to any kind of unwanted interaction of the qubits with the
+environment (or with itself). Mathematically, this puts us in the framework of open systems
+and the state of the qubits now needs to be described in terms of a density matrix <span class="math notranslate nohighlight">\(\rho\)</span>,
+which fulfills <span class="math notranslate nohighlight">\(\rho = \rho^\dagger\)</span> and <span class="math notranslate nohighlight">\(\mathrm{Tr} (\rho) = 1\)</span>.</p>
+<p>A quantum operation such as noise can then be described using the Kraus operator representation as:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k E_k \rho E_k^\dagger.\]</div>
+<p>We consider only completely positive and trace-preserving (CPTP) operations.
+In this case, the Kraus operators <span class="math notranslate nohighlight">\(E_k\)</span> can be any matrix as long as they fulfill the completeness relation:</p>
+<div class="math notranslate nohighlight">
+\[\sum_k E_k^\dagger E_k = I.\]</div>
+<p>Note that unitary gates <span class="math notranslate nohighlight">\(U\)</span> just correspond to a single Kraus operator, <span class="math notranslate nohighlight">\(E_1 = U\)</span>.</p>
+<p>When all Kraus operators are proportional to a unitary matrix, <span class="math notranslate nohighlight">\(E_k = \alpha_k U_k\)</span>, this is called a mixed-unitary quantum operation and can be written as:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger,\]</div>
+<p>where <span class="math notranslate nohighlight">\(p_k = |\alpha_k|^2\)</span>.</p>
+<p>Such operations are easier to implement as we’ll see below.</p>
+<p><strong>Remarks</strong>:</p>
+<ul class="simple">
+<li><p>Unitary gates <span class="math notranslate nohighlight">\(U\)</span> correspond to a single Kraus operator, <span class="math notranslate nohighlight">\(E_1 = U\)</span>.</p></li>
+<li><p>The number of Kraus operators depends on the noise considered.</p></li>
+<li><p>For a given quantum operation <span class="math notranslate nohighlight">\(\mathcal{E}\)</span>, the Kraus operator representation is not unique. One can change the basis of Kraus operators using a unitary matrix <span class="math notranslate nohighlight">\(U\)</span> as <span class="math notranslate nohighlight">\(\tilde{E}_i = \sum_j U_{ij} E_j\)</span>.</p></li>
+</ul>
+<p>We define a noise channel (or Kraus channel)
+as a quantum operation <span class="math notranslate nohighlight">\(\mathcal{E}\)</span> described by a set of Kraus operators as given above.
+A common way of modeling noisy quantum computers is by considering each operation <span class="math notranslate nohighlight">\(O\)</span>
+in the circuit as a noisy quantum operation <span class="math notranslate nohighlight">\(\mathcal{E}_O\)</span>.</p>
+</section>
+<section id="evolution-with-noise">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Evolution with noise</a><a class="headerlink" href="#evolution-with-noise" title="Link to this heading">#</a></h3>
+<p>There are two common ways to evolve the state of the system when acting with Kraus channels:</p>
+<ol class="arabic">
+<li><p><strong>Density matrix</strong>: If we use a density matrix to describe the qubits, then a Kraus channel can simply be applied by directly performing the matrix multiplications as:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k E_k \rho E_k^\dagger.\]</div>
+<p>The advantage of this approach is that the density matrix contains the full information of the system and we only need to run the circuit once. The disadvantage is that <span class="math notranslate nohighlight">\(\rho\)</span> requires more memory to be stored (<span class="math notranslate nohighlight">\(2^{2N}\)</span> as opposed to <span class="math notranslate nohighlight">\(2^N\)</span> for a state vector), so we can simulate fewer qubits.</p>
+</li>
+<li><p><strong>Quantum trajectories</strong>: This method consists in simulating the evolution of the state vector <span class="math notranslate nohighlight">\(|\psi_\alpha \rangle\)</span> for a set of iterations <span class="math notranslate nohighlight">\(\alpha = 1, \ldots, n\)</span>. In each iteration, a noise channel is applied by randomly selecting one of the Kraus operators according to some probabilities (see below) and applying that Kraus operator to the state vector. The advantage of this approach is that we need less memory since we work with a state vector. The disadvantage is that we need to run the circuit many times to collect samples (one sample per run).</p></li>
+</ol>
+<p>Currently, MIMIQ only implements the quantum trajectories method.</p>
+<p>The basis for quantum trajectories is that a Kraus channel can be rewritten as:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k p_k \tilde{E}_k \rho \tilde{E}_k^\dagger,\]</div>
+<p>where <span class="math notranslate nohighlight">\(p_k = \mathrm{Tr}(E_k \rho E_k^\dagger)\)</span> and <span class="math notranslate nohighlight">\(\tilde{E}_k = E_k / \sqrt{p_k}\)</span>.</p>
+<p>The parameters <span class="math notranslate nohighlight">\(p_k\)</span> can be interpreted as probabilities since they fulfill <span class="math notranslate nohighlight">\(0 \leq p_k \leq 1\)</span> and <span class="math notranslate nohighlight">\(\sum_k p_k = 1\)</span>. In this way, the Kraus channel can be viewed as a linear combination of operations with different Kraus operators weighted by the probabilities <span class="math notranslate nohighlight">\(p_k\)</span>.</p>
+<p>Note that the probabilities <span class="math notranslate nohighlight">\(p_k\)</span> generally depend on the state, so they need to be computed at runtime. The exception is mixed-unitary channels, for which the probabilities are fixed (state-independent).</p>
+</section>
+<section id="building-noise-channels">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Building noise channels</a><a class="headerlink" href="#building-noise-channels" title="Link to this heading">#</a></h3>
+<p id="id4">You can create noise channels using one of the many functions available. Most noise channels take one or more parameters, and custom channels require passing the Kraus matrices and/or probabilities. Here are some examples of how to build noise channels:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="mf">0.1</span>    <span class="c1"># probability</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">PauliX</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="go">PauliX(0.1)</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span>    <span class="c1"># parameters</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">GeneralizedAmplitudeDamping</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+<span class="go">GeneralizedAmplitudeDamping((0.1, 0.2))</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ps</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>    <span class="c1"># probabilities</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">paulis</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;II&quot;</span><span class="p">,</span> <span class="s2">&quot;XX&quot;</span><span class="p">,</span> <span class="s2">&quot;YY&quot;</span><span class="p">]</span>    <span class="c1"># Pauli strings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">PauliNoise</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="n">paulis</span><span class="p">)</span>
+<span class="go">PauliNoise((0.8, pauli&quot;II&quot;), (0.1, pauli&quot;XX&quot;), (0.1, pauli&quot;YY&quot;))</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ps</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>    <span class="c1"># probabilities</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unitaries</span> <span class="o">=</span> <span class="p">[</span><span class="n">Matrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span> <span class="n">Matrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]])]</span>    <span class="c1"># unitary matrices</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MixedUnitary</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="n">unitaries</span><span class="p">)</span>
+<span class="go">MixedUnitary((0.9, &quot;Custom([1 0; 0 1])&quot;), (0.1, &quot;Custom([1 0; 0 -1])&quot;))</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kmatrices</span> <span class="o">=</span> <span class="p">[</span><span class="n">Matrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.9</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]]),</span> <span class="n">Matrix</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])]</span>    <span class="c1"># Kraus matrices</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Kraus</span><span class="p">(</span><span class="n">kmatrices</span><span class="p">)</span>
+<span class="go">Kraus(Operator([[1, 0], [0, 0.948683298050514]]), Operator([[0, 0.316227766016838], [0, 0]]))</span>
+</pre></div>
+</div>
+<p>Check the documentation for each noise channel to understand the conditions that each parameter needs to fulfill for the noise channel to be valid.</p>
+<p>In MIMIQ, the most important distinction between noise channels is whether they are mixed-unitary or general Kraus channels. You can use <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.ismixedunitary" title="mimiqcircuits.krauschannel.ismixedunitary"><code class="xref py py-func docutils literal notranslate"><span class="pre">ismixedunitary()</span></code></a> to check if a channel is mixed unitary:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">ismixedunitary</span><span class="p">()</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">ismixedunitary</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>You can retrieve the Kraus matrices/operators used to define a given channel using <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.krausmatrices" title="mimiqcircuits.krauschannel.krausmatrices"><code class="xref py py-func docutils literal notranslate"><span class="pre">krausmatrices()</span></code></a> or <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.krausoperators" title="mimiqcircuits.krauschannel.krausoperators"><code class="xref py py-func docutils literal notranslate"><span class="pre">krausoperators()</span></code></a>. For example:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ProjectiveNoise</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">krausmatrices</span><span class="p">()</span>
+<span class="go">[[1.0, 0]</span>
+<span class="go">[0, 0]</span>
+<span class="go">, [0, 0]</span>
+<span class="go">[0, 1.0]</span>
+<span class="go">]</span>
+</pre></div>
+</div>
+<p>For mixed unitary channels, you can obtain the list of probabilities and the list of unitary gates/matrices separately using <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.probabilities" title="mimiqcircuits.krauschannel.probabilities"><code class="xref py py-func docutils literal notranslate"><span class="pre">probabilities()</span></code></a>, <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.unitarymatrices" title="mimiqcircuits.krauschannel.unitarymatrices"><code class="xref py py-func docutils literal notranslate"><span class="pre">unitarymatrices()</span></code></a>, or <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.krauschannel.unitarygates" title="mimiqcircuits.krauschannel.unitarygates"><code class="xref py py-func docutils literal notranslate"><span class="pre">unitarygates()</span></code></a>, respectively:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PauliZ</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">unitarymatrices</span><span class="p">()</span>
+<span class="go">[[1.0, 0]</span>
+<span class="go">[0, 1.0]</span>
+<span class="go">, [1.0, 0]</span>
+<span class="go">[0, -1.0]</span>
+<span class="go">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Depolarizing1</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">unitarygates</span><span class="p">()</span>
+<span class="go">[I, X, Y, Z]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">PauliNoise</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;II&quot;</span><span class="p">,</span> <span class="s2">&quot;ZZ&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">probabilities</span><span class="p">()</span>
+<span class="go">[0.1, 0.9]</span>
+</pre></div>
+</div>
+<p>In MIMIQ, noise channels can be added at any point in a circuit to make any operation noisy. For noisy gates, one would normally add a noise channel after an ideal gate. To model measurement, preparation, and reset errors, noise channels can be added before and/or after the corresponding operation. More information can be found in the next section.</p>
+</section>
+</section>
+<section id="how-to-add-noise">
+<h2><a class="toc-backref" href="#id12" role="doc-backlink">How to add noise</a><a class="headerlink" href="#how-to-add-noise" title="Link to this heading">#</a></h2>
+<section id="adding-noise-one-by-one">
+<span id="id5"></span><h3><a class="toc-backref" href="#id13" role="doc-backlink">Adding noise one by one</a><a class="headerlink" href="#adding-noise-one-by-one" title="Link to this heading">#</a></h3>
+<p>The simplest and most flexible way to add noise to a circuit is by using the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push" title="mimiqcircuits.Circuit.push"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code></a> method, similar to how gates are added. Here’s an example of how to create a noisy 5-qubit GHZ circuit:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>    <span class="c1"># preparation/reset error since all qubits start in 0</span>
+<span class="go">6-qubit circuit with 5 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">└── PauliX(0.1) @ q[5]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">6-qubit circuit with 6 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">└── H @ q[1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>    <span class="c1"># 1-qubit noise for GateH</span>
+<span class="go">6-qubit circuit with 7 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">└── AmplitudeDamping(0.1) @ q[1]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateCX</span><span class="p">(),</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="go">6-qubit circuit with 11 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">└── CX @ q[1], q[5]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Depolarizing2</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>    <span class="c1"># 2-qubit noise for GateCX</span>
+<span class="go">6-qubit circuit with 15 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,4]</span>
+<span class="go">└── Depolarizing(0.1) @ q[1,5]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>    <span class="c1"># measurement error. Note it&#39;s added before the measurement</span>
+<span class="go">6-qubit circuit with 20 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,4]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,5]</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">└── PauliX(0.1) @ q[5]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Measure</span><span class="p">(),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="go">6-qubit circuit with 25 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,4]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,5]</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── M @ q[1], c[1]</span>
+<span class="go">├── M @ q[2], c[2]</span>
+<span class="go">├── M @ q[3], c[3]</span>
+<span class="go">├── M @ q[4], c[4]</span>
+<span class="go">└── M @ q[5], c[5]</span>
+</pre></div>
+</div>
+<p>Note how bit-flip error (<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.PauliX" title="mimiqcircuits.PauliX"><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliX</span></code></a>) is added at the beginning for state preparation/reset errors and right before measuring for measurement errors.</p>
+</section>
+<section id="adding-noise-to-all-gates-of-the-same-type">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Adding noise to all gates of the same type</a><a class="headerlink" href="#adding-noise-to-all-gates-of-the-same-type" title="Link to this heading">#</a></h3>
+<p>Usually, when adding noise to a circuit, the same type of noise is added to each instance of a given gate. Instead of adding noise channels one by one, you can use <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.add_noise" title="mimiqcircuits.Circuit.add_noise"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_noise()</span></code></a>. It takes several parameters:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go">Circuit().add_noise(gate, kraus, before=False, parallel=False)</span>
+</pre></div>
+</div>
+<p>This function adds the noise channel specified by <cite>kraus</cite> to every instance of the gate <cite>g</cite> in the circuit <cite>circuit</cite>. The optional parameter <cite>before</cite> determines whether to add the noise before or after the operation, and <cite>parallel</cite> determines whether to add the noise in parallel after/before a block of transversal gates.</p>
+<p>Here’s the same noisy GHZ circuit, using <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.add_noise" title="mimiqcircuits.Circuit.add_noise"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_noise()</span></code></a>:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cnoise</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">add_noise</span><span class="p">(</span><span class="n">Reset</span><span class="p">(),</span> <span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cnoise</span><span class="o">.</span><span class="n">add_noise</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.1</span><span class="p">))</span>
+<span class="go">6-qubit circuit with 21 instructions:</span>
+<span class="go">├── Reset @ q[1]</span>
+<span class="go">├── Reset @ q[2]</span>
+<span class="go">├── Reset @ q[3]</span>
+<span class="go">├── Reset @ q[4]</span>
+<span class="go">├── Reset @ q[5]</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">├── M @ q[1], c[1]</span>
+<span class="go">├── M @ q[2], c[2]</span>
+<span class="go">├── M @ q[3], c[3]</span>
+<span class="go">⋮   ⋮</span>
+<span class="go">└── M @ q[5], c[5]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cnoise</span><span class="o">.</span><span class="n">add_noise</span><span class="p">(</span><span class="n">GateCX</span><span class="p">(),</span> <span class="n">Depolarizing2</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">6-qubit circuit with 25 instructions:</span>
+<span class="go">├── Reset @ q[1]</span>
+<span class="go">├── Reset @ q[2]</span>
+<span class="go">├── Reset @ q[3]</span>
+<span class="go">├── Reset @ q[4]</span>
+<span class="go">├── Reset @ q[5]</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">⋮   ⋮</span>
+<span class="go">└── M @ q[5], c[5]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cnoise</span><span class="o">.</span><span class="n">add_noise</span><span class="p">(</span><span class="n">Measure</span><span class="p">(),</span> <span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">before</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">6-qubit circuit with 30 instructions:</span>
+<span class="go">├── Reset @ q[1]</span>
+<span class="go">├── Reset @ q[2]</span>
+<span class="go">├── Reset @ q[3]</span>
+<span class="go">├── Reset @ q[4]</span>
+<span class="go">├── Reset @ q[5]</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">⋮   ⋮</span>
+<span class="go">└── M @ q[5], c[5]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="running-a-noisy-circuit">
+<h2><a class="toc-backref" href="#id15" role="doc-backlink">Running a noisy circuit</a><a class="headerlink" href="#running-a-noisy-circuit" title="Link to this heading">#</a></h2>
+<p id="id6">Circuits with noise can be run using the <code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code> function,
+just as with circuits without noise. Currently, noisy simulations are run using the quantum trajectories
+method. In this case, when running a circuit with noise for <cite>n</cite> samples, the circuit will internally be
+run once for each sample, with a different set of random Kraus operators selected based on the
+corresponding probabilities.</p>
+<p>When the noise channel is a mixed-unitary channel, the unitary operators to be applied can be selected
+before applying the operations on the state. Use the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.sample_mixedunitaries" title="mimiqcircuits.Circuit.sample_mixedunitaries"><code class="xref py py-func docutils literal notranslate"><span class="pre">sample_mixedunitaries()</span></code></a>
+function to generate samples of a circuit with mixed-unitary noise:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Depolarizing1</span><span class="p">(</span><span class="mf">0.5</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="go">6-qubit circuit with 5 instructions:</span>
+<span class="go">├── Depolarizing(0.5) @ q[1]</span>
+<span class="go">├── Depolarizing(0.5) @ q[2]</span>
+<span class="go">├── Depolarizing(0.5) @ q[3]</span>
+<span class="go">├── Depolarizing(0.5) @ q[4]</span>
+<span class="go">└── Depolarizing(0.5) @ q[5]</span>
+
+
+<span class="go"># Produce a circuit with either I, X, Y, or Z in place of each depolarizing channel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">sample_mixedunitaries</span><span class="p">(</span><span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">6-qubit circuit with 5 instructions:</span>
+<span class="go">├── X @ q[1]</span>
+<span class="go">├── I @ q[2]</span>
+<span class="go">├── I @ q[3]</span>
+<span class="go">├── I @ q[4]</span>
+<span class="go">└── Y @ q[5]</span>
+</pre></div>
+</div>
+<p>This function is called internally when executing a circuit, but it can also be used separately.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="non_unitary_ops.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Non-unitary Operations</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="symbolic_ops.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Symbolic Operations in MIMIQ</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Noisy simulations on MIMIQ</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-of-noise-functionality">Summary of noise functionality</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mathematical-background">Mathematical background</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kraus-operators">Kraus operators</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evolution-with-noise">Evolution with noise</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#building-noise-channels">Building noise channels</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-add-noise">How to add noise</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-noise-one-by-one">Adding noise one by one</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adding-noise-to-all-gates-of-the-same-type">Adding noise to all gates of the same type</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-noisy-circuit">Running a noisy circuit</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/manual/noise.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

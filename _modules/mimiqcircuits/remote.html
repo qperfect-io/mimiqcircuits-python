@@ -1,0 +1,1141 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mimiqcircuits.remote &#8212; MIMIQ Circuits 0.18.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=29ae757a"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/tabs.js?v=3ee01567"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/mimiqcircuits/remote';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest 0.18.2 version.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>
+    <script>document.write(`<img src="../../_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../manual/index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../manual/index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../mimiqcircuits.html" class="nav-link">mimiqcircuits</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">mimiqcircuits.remote</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for mimiqcircuits.remote</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.</span>
+<span class="c1"># Copyright © 2023-2025 QPerfect. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">mimiqlink</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.circuit</span><span class="w"> </span><span class="kn">import</span> <span class="n">Circuit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.qcsresults</span><span class="w"> </span><span class="kn">import</span> <span class="n">QCSResults</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.__version__</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">sleep</span>
+
+<span class="c1"># maximum number of samples allowed</span>
+<span class="n">MAX_SAMPLES</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">16</span>
+
+<span class="c1"># default value for the number of samples</span>
+<span class="n">DEFAULT_SAMPLES</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="c1"># minimum and maximum bond dimension allowed</span>
+<span class="n">MIN_BONDDIM</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">MAX_BONDDIM</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">12</span>
+
+<span class="c1"># minimum and maximum entanglement dimension allowed</span>
+<span class="n">MIN_ENTDIM</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">MAX_ENTDIM</span> <span class="o">=</span> <span class="mi">64</span>
+
+<span class="c1"># default bond dimension</span>
+<span class="n">DEFAULT_BONDDIM</span> <span class="o">=</span> <span class="mi">256</span>
+
+<span class="c1"># default entanglement dimension</span>
+<span class="n">DEFAULT_ENTDIM</span> <span class="o">=</span> <span class="mi">16</span>
+
+<span class="c1"># default time limit</span>
+<span class="n">DEFAULT_TIME_LIMIT</span> <span class="o">=</span> <span class="mi">30</span>
+
+<span class="c1"># default algorithm</span>
+<span class="n">DEFAULT_ALGORITHM</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span>
+
+<span class="n">RESULTSPB_FILE</span> <span class="o">=</span> <span class="s2">&quot;results.pb&quot;</span>
+
+<span class="n">CIRCUIT_FNAME</span> <span class="o">=</span> <span class="s2">&quot;circuit&quot;</span>
+
+<span class="n">EXTENSION_PROTO</span> <span class="o">=</span> <span class="s2">&quot;pb&quot;</span>
+<span class="n">EXTENSION_QASM</span> <span class="o">=</span> <span class="s2">&quot;qasm&quot;</span>
+<span class="n">EXTENSION_STIM</span> <span class="o">=</span> <span class="s2">&quot;stim&quot;</span>
+
+<span class="n">TYPE_PROTO</span> <span class="o">=</span> <span class="s2">&quot;proto&quot;</span>
+<span class="n">TYPE_QASM</span> <span class="o">=</span> <span class="s2">&quot;qasm&quot;</span>
+<span class="n">TYPE_STIM</span> <span class="o">=</span> <span class="s2">&quot;stim&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_file_is_openqasm2</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;//&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">return</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;OPENQASM 2.0;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_file_may_be_stim</span><span class="p">(</span><span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">STIM_KEYWORDS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;I&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;X&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Y&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Z&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;C_XYZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;C_ZYX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;H&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;H_XY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;H_XZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;H_YZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;S&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_X&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_X_DAG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_Y&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_Y_DAG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_Z&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_Z_DAG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;S_DAG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CNOT&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CXSWAP&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CZSWAP&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ISWAP&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ISWAP_DAG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_XX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_XX_DAG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_YY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_YY_DAG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_ZZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQRT_ZZ_DAG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SWAP&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SWAPCX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SWAPCZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;XCX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;XCY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;XCZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;YCX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;YCY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;YCZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ZCX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ZCY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ZCZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;CORRELATED_ERROR&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DEPOLARIZE1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DEPOLARIZE2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;E&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ELSE_CORRELATED_ERROR&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;HERALDED_ERASE&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;HERALDED_PAULI_CHANNEL_1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;PAULI_CHANNEL_1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;PAULI_CHANNEL_2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;X_ERROR&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Y_ERROR&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Z_ERROR&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;M&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MR&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MRX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MRY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MRZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;R&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MXX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MYY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MZZ&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MPP&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SPP&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SPP_DAG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;REPEAT&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DETECTOR&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;MPAD&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;OBSERVABLE_INCLUDE&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;QUBIT_COORDS&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SHIFT_COORDS&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;TICK&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">first_word</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">if</span> <span class="n">first_word</span> <span class="ow">in</span> <span class="n">STIM_KEYWORDS</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">QCSError</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="n">error</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RemoteConnection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for connections to the Mimiq Server.</span>
+
+<span class="sd">    This class provides common functionality for both MimiqConnection and PlanqkConnection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">mimiqlink</span><span class="o">.</span><span class="n">AbstractConnection</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a remote connection using a specific connection type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            connection: A mimiqlink connection object (MimiqConnection or PlanqkConnection)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">connection</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__get_timelimit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetch the maximum time limit for execution from the server.&quot;&quot;&quot;</span>
+        <span class="c1"># For MimiqConnection, get from user_limits</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="n">mimiqlink</span><span class="o">.</span><span class="n">MimiqConnection</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;user_limits&quot;</span>
+        <span class="p">):</span>
+            <span class="n">limits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">user_limits</span>
+            <span class="k">if</span> <span class="n">limits</span> <span class="ow">and</span> <span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enabledMaxTimeout&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;maxTimeout&quot;</span><span class="p">,</span> <span class="n">DEFAULT_TIME_LIMIT</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">DEFAULT_TIME_LIMIT</span>
+
+    <span class="c1"># Forward the attribute/method call to the connection object</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># It it is not callable, jsut return it</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">original</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">original</span>
+
+        <span class="c1"># If it is a method, we need to wrap the return value</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapped</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">original</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="bp">self</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">return</span> <span class="n">wrapped</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">circuits</span><span class="p">,</span>  <span class="c1"># Can be a single Circuit object or a list of Circuit objects or QASM file paths</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;pyapi_v&quot;</span> <span class="o">+</span> <span class="n">__version__</span><span class="p">,</span>
+        <span class="n">algorithm</span><span class="o">=</span><span class="n">DEFAULT_ALGORITHM</span><span class="p">,</span>
+        <span class="n">nsamples</span><span class="o">=</span><span class="n">DEFAULT_SAMPLES</span><span class="p">,</span>
+        <span class="n">bitstrings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">timelimit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">bonddim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">entdim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">fuse</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">reorderqubits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">qasmincludes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute a circuit or a list of quantum circuits on the Mimiq server.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            circuits (Circuit or list of Circuits or str): A single Circuit object, a list of Circuit objects,</span>
+<span class="sd">                                                           or QASM file paths representing the circuits to be executed.</span>
+<span class="sd">            label (str): A label for the execution. Defaults to &quot;pyapi_v&quot; + __version__.</span>
+<span class="sd">            algorithm (str): The algorithm to use. Defaults to &quot;auto&quot;.</span>
+<span class="sd">            nsamples (int): The number of samples to collect. Defaults to DEFAULT_SAMPLES.</span>
+<span class="sd">            bitstrings (list of str, optional): Specific bitstrings to measure. Defaults to None.</span>
+<span class="sd">            timelimit (int, optional): The maximum execution time in minutes. Defaults to None.</span>
+<span class="sd">            bonddim (int, optional): The bond dimension to use. Defaults to None.</span>
+<span class="sd">            entdim (int, optional): The entanglement dimension to use. Defaults to None.</span>
+<span class="sd">            fuse (bool, optional): Whether to fuse gates. Defaults to None (let the remote service decide).</span>
+<span class="sd">            reorderqubits (bool, optional): Whether to reorder qubits. Defaults to None (let the remote service decide).</span>
+<span class="sd">            seed (int, optional): A seed for random number generation. Defaults to None.</span>
+<span class="sd">            qasmincludes (list of str, optional): Additional QASM includes. Defaults to None.</span>
+<span class="sd">            **kwargs: Additional keyword arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            object: A handle to the execution, typically used to retrieve results.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If nsamples exceeds MAX_SAMPLES, bond/entanglement dimensions are out of bounds,</span>
+<span class="sd">                        or if a circuit contains unevaluated symbolic parameters.</span>
+<span class="sd">            FileNotFoundError: If a QASM file is not found.</span>
+<span class="sd">            TypeError: If the circuits argument is not a Circuit object or a valid file path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="n">MAX_SAMPLES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;nsamples must be less than </span><span class="si">{</span><span class="n">MAX_SAMPLES</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">timelimit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">timelimit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_timelimit</span><span class="p">()</span>
+
+        <span class="n">maxtimelimit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_timelimit</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">timelimit</span> <span class="o">&gt;</span> <span class="n">maxtimelimit</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Timelimit cannot be set more than </span><span class="si">{</span><span class="n">maxtimelimit</span><span class="si">}</span><span class="s2"> minutes.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">bitstrings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bitstrings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">circuits</span><span class="p">,</span> <span class="n">Circuit</span><span class="p">):</span>
+            <span class="n">nq</span> <span class="o">=</span> <span class="n">circuits</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bitstrings</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">!=</span> <span class="n">nq</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;The number of qubits in the bitstring is not equal to the number of qubits in the circuit.&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">))</span>
+
+        <span class="c1"># Set bond and entangling dimensions based on algorithm</span>
+        <span class="k">if</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span> <span class="ow">or</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;mps&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bonddim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">bonddim</span> <span class="o">=</span> <span class="n">DEFAULT_BONDDIM</span>
+            <span class="k">if</span> <span class="n">entdim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">entdim</span> <span class="o">=</span> <span class="n">DEFAULT_ENTDIM</span>
+
+        <span class="k">if</span> <span class="n">bonddim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">bonddim</span> <span class="o">&lt;</span> <span class="n">MIN_BONDDIM</span> <span class="ow">or</span> <span class="n">bonddim</span> <span class="o">&gt;</span> <span class="n">MAX_BONDDIM</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;bonddim must be between </span><span class="si">{</span><span class="n">MIN_BONDDIM</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">MAX_BONDDIM</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check for entdim constraint in specific algorithms</span>
+        <span class="k">if</span> <span class="n">algorithm</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mps&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">]:</span>
+            <span class="n">actual_entdim</span> <span class="o">=</span> <span class="n">DEFAULT_ENTDIM</span> <span class="k">if</span> <span class="n">entdim</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">entdim</span>
+            <span class="k">if</span> <span class="n">actual_entdim</span> <span class="o">&lt;</span> <span class="n">MIN_ENTDIM</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;entdim must be between </span><span class="si">{</span><span class="n">MIN_ENTDIM</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">MAX_ENTDIM</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">actual_entdim</span> <span class="o">&lt;</span> <span class="n">MIN_ENTDIM</span> <span class="ow">and</span> <span class="n">force</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Warning: Running simulation with entdim=</span><span class="si">{</span><span class="n">actual_entdim</span><span class="si">}</span><span class="s2">. Results may be misleading.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">allfiles</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">circuit_files</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c1"># Ensure circuits is a list</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">circuits</span><span class="p">,</span> <span class="p">(</span><span class="n">Circuit</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+                <span class="n">circuits</span> <span class="o">=</span> <span class="p">[</span><span class="n">circuits</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;The &#39;auto&#39; algorithm is not supported in batch mode. Please specify &#39;mps&#39; or &#39;statevector&#39; for batch executions.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">circuits</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;The provided list of circuits is empty. At least one circuit is required.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuits</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">Circuit</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Invalid type at index </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: expected Circuit or QASM file path, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">Circuit</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Empty Circuit object at index </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> is not allowed.&quot;</span>
+                    <span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Invalid QASM file path at index </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> does not exist.&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">circuit</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuits</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">Circuit</span><span class="p">)</span> <span class="ow">and</span> <span class="n">circuit</span><span class="o">.</span><span class="n">is_symbolic</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;The circuit contains unevaluated symbolic parameters and cannot be processed until all parameters are fully evaluated.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">Circuit</span><span class="p">):</span>
+                    <span class="n">circuit_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="n">tmpdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">CIRCUIT_FNAME</span><span class="si">}{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">EXTENSION_PROTO</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">circuit</span><span class="o">.</span><span class="n">saveproto</span><span class="p">(</span><span class="n">circuit_filename</span><span class="p">)</span>
+                    <span class="n">circuit_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">circuit_filename</span><span class="p">),</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">TYPE_PROTO</span><span class="p">,</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+                    <span class="n">allfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">circuit_filename</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">circuit</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">circuit</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Case: QASM</span>
+                    <span class="k">if</span> <span class="n">_file_is_openqasm2</span><span class="p">(</span><span class="n">circuit</span><span class="p">):</span>
+                        <span class="n">circuit_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="n">tmpdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">CIRCUIT_FNAME</span><span class="si">}{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">EXTENSION_QASM</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">circuit_filename</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">qasmincludes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">qasmincludes</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">circuit_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="p">{</span>
+                                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">circuit_filename</span><span class="p">),</span>
+                                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">TYPE_QASM</span><span class="p">,</span>
+                            <span class="p">}</span>
+                        <span class="p">)</span>
+                        <span class="n">allfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">circuit_filename</span><span class="p">)</span>
+
+                    <span class="c1"># Case: STIM</span>
+                    <span class="k">elif</span> <span class="n">_file_may_be_stim</span><span class="p">(</span><span class="n">circuit</span><span class="p">):</span>
+                        <span class="n">circuit_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="n">tmpdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">CIRCUIT_FNAME</span><span class="si">}{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">EXTENSION_STIM</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">circuit_filename</span><span class="p">)</span>
+                        <span class="n">circuit_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="p">{</span>
+                                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">circuit_filename</span><span class="p">),</span>
+                                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">TYPE_STIM</span><span class="p">,</span>
+                            <span class="p">}</span>
+                        <span class="p">)</span>
+                        <span class="n">allfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">circuit_filename</span><span class="p">)</span>
+
+                    <span class="c1"># Unknown type</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">circuit</span><span class="si">}</span><span class="s2"> is neither a valid OpenQASM 2.0 file nor a recognizable STIM file.&quot;</span>
+                        <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="s2">&quot;circuits must be Circuit objects or paths to QASM or STIM files&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="n">jsonbitstrings</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;bs&quot;</span> <span class="o">+</span> <span class="n">o</span><span class="o">.</span><span class="n">to01</span><span class="p">()</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">bitstrings</span><span class="p">]</span>
+
+            <span class="n">pars</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;algorithm&quot;</span><span class="p">:</span> <span class="n">algorithm</span><span class="p">,</span>
+                <span class="s2">&quot;bitstrings&quot;</span><span class="p">:</span> <span class="n">jsonbitstrings</span><span class="p">,</span>
+                <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="n">nsamples</span><span class="p">,</span>
+                <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">,</span>
+                <span class="s2">&quot;circuits&quot;</span><span class="p">:</span> <span class="n">circuit_files</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">bonddim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pars</span><span class="p">[</span><span class="s2">&quot;bondDimension&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bonddim</span>
+
+            <span class="k">if</span> <span class="n">entdim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pars</span><span class="p">[</span><span class="s2">&quot;entDimension&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entdim</span>
+
+            <span class="k">if</span> <span class="n">fuse</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pars</span><span class="p">[</span><span class="s2">&quot;fuse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fuse</span>
+
+            <span class="k">if</span> <span class="n">reorderqubits</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pars</span><span class="p">[</span><span class="s2">&quot;reorderQubits&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reorderqubits</span>
+
+            <span class="c1"># Add any additional keyword arguments</span>
+            <span class="n">pars</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="c1"># Save the parameters to a JSON file</span>
+            <span class="n">pars_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">&quot;circuits.json&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pars_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+            <span class="c1"># Prepare the request</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;executor&quot;</span><span class="p">:</span> <span class="s2">&quot;Circuits&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;timelimit&quot;</span><span class="p">:</span> <span class="n">timelimit</span><span class="p">,</span>
+                <span class="s2">&quot;apilang&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;apiversion&quot;</span><span class="p">:</span> <span class="n">__version__</span><span class="p">,</span>
+                <span class="s2">&quot;circuitsapiversion&quot;</span><span class="p">:</span> <span class="n">__version__</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="n">reqfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">&quot;request.json&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">reqfile</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+            <span class="c1"># Make the request to the server</span>
+            <span class="n">emutype</span> <span class="o">=</span> <span class="s2">&quot;CIRC&quot;</span>
+
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+                <span class="n">emutype</span><span class="p">,</span>
+                <span class="n">algorithm</span><span class="p">,</span>
+                <span class="n">label</span><span class="p">,</span>
+                <span class="n">timelimit</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">reqfile</span><span class="p">,</span> <span class="n">pars_filename</span><span class="p">]</span> <span class="o">+</span> <span class="n">allfiles</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">execution</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the results of a completed execution.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            execution (str): The execution identifier.</span>
+<span class="sd">            interval (int): The interval (in seconds) for checking job status (default: 1).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[QCSResults]: A list of QCSResults instances.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: If the remote job encounters an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Wait for the job to finish</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">isJobDone</span><span class="p">(</span><span class="n">execution</span><span class="p">):</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
+
+        <span class="n">infos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">requestInfo</span><span class="p">(</span><span class="n">execution</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">infos</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;ERROR&quot;</span><span class="p">:</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="n">infos</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;errorMessage&quot;</span><span class="p">,</span> <span class="s2">&quot;Remote job errored.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Remote job errored: </span><span class="si">{</span><span class="n">error_message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">infos</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;CANCELED&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Remote job canceled.&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;mimiq_res_&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">downloadResults</span><span class="p">(</span><span class="n">execution</span><span class="p">,</span> <span class="n">destdir</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
+
+            <span class="n">results_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">&quot;results.json&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;results.json&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">names</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">results_file_path</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No results found in execution </span><span class="si">{</span><span class="n">execution</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">results_file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">results_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;error&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">QCSError</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing result file </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">QCSResults</span><span class="o">.</span><span class="n">loadproto</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">execution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the first result if multiple are found.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            execution (str): The execution identifier.</span>
+<span class="sd">            **kwargs: Additional keyword arguments for result retrieval.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            QCSResults: The first result found.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeWarning: If multiple results are found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">execution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Multiple results found. Returning the first one.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">execution</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the inputs (circuits and parameters) of the execution.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            execution (str): The execution identifier.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing a list of Circuit objects and parameters (dict).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: If required files are not found in the inputs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;mimiq_in_&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">downloadJobFiles</span><span class="p">(</span><span class="n">execution</span><span class="p">,</span> <span class="n">destdir</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
+
+            <span class="c1"># Print the downloaded files for debugging purposes</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloaded files: </span><span class="si">{</span><span class="n">names</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Get the base names of the downloaded files</span>
+            <span class="n">base_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+
+            <span class="c1"># Check if the circuits.json and request.json files are present</span>
+            <span class="k">if</span> <span class="s2">&quot;circuits.json&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">base_names</span> <span class="ow">or</span> <span class="s2">&quot;request.json&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">base_names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">execution</span><span class="si">}</span><span class="s2"> is not a valid execution for MimiqCircuits: missing necessary files&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Load the parameters from the circuits.json file</span>
+            <span class="n">circuits_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">&quot;circuits.json&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">circuits_file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">parameters</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+            <span class="n">circuits</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;circuits&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">TYPE_PROTO</span><span class="p">:</span>
+                    <span class="n">circuit</span> <span class="o">=</span> <span class="n">Circuit</span><span class="o">.</span><span class="n">loadproto</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">]))</span>
+                    <span class="n">circuits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">circuit</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># case of STIM and QASM files</span>
+                    <span class="n">circuits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">]))</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;No valid circuit files found. Input parameters not valid.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">circuits</span><span class="p">,</span> <span class="n">parameters</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">execution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the first circuit and parameters of the execution.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            execution (str): The execution identifier.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing the first Circuit object and parameters (dict).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: If required files are not found in the inputs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">circuits</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_inputs</span><span class="p">(</span><span class="n">execution</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Multiple results found. Returning the first one.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">circuits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">parameters</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a string representation of the connection.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a string representation of the connection.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="MimiqConnection">
+<a class="viewcode-back" href="../../apidocs/mimiqcircuits.html#mimiqcircuits.MimiqConnection">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MimiqConnection</span><span class="p">(</span><span class="n">RemoteConnection</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a connection to the Mimiq Server via direct cloud connection.</span>
+
+<span class="sd">    This is a wrapper around mimiqlink.MimiqConnection to provide the circuit execution API.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a MimiqConnection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (str, optional): The URL of the Mimiq server. Defaults to None (using default cloud URL).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">connection</span> <span class="o">=</span> <span class="n">mimiqlink</span><span class="o">.</span><span class="n">MimiqConnection</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PlanqkConnection</span><span class="p">(</span><span class="n">RemoteConnection</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a connection to the Mimiq Server via PlanQK.</span>
+
+<span class="sd">    This is a wrapper around mimiqlink.PlanqkConnection to provide the circuit execution API.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">consumer_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">consumer_secret</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a PlanqkConnection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (str, optional): The URL of the PlanQK API. Defaults to None (using default PlanQK URL).</span>
+<span class="sd">            consumer_key (str, optional): The consumer key for PlanQK authentication. Defaults to None.</span>
+<span class="sd">            consumer_secret (str, optional): The consumer secret for PlanQK authentication. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">connection</span> <span class="o">=</span> <span class="n">mimiqlink</span><span class="o">.</span><span class="n">PlanqkConnection</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">consumer_key</span><span class="p">,</span> <span class="n">consumer_secret</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;MimiqConnection&quot;</span><span class="p">,</span> <span class="s2">&quot;PlanqkConnection&quot;</span><span class="p">,</span> <span class="s2">&quot;RemoteConnection&quot;</span><span class="p">]</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

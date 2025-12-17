@@ -1,0 +1,748 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Hamiltonians and Time Evolution &#8212; MIMIQ Circuits 0.18.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=29ae757a"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'manual/hamiltonian';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mimiqcircuits package" href="../apidocs/mimiqcircuits.html" />
+    <link rel="prev" title="Z-register Operations" href="zops.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest 0.18.2 version.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>
+    <script>document.write(`<img src="../_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="circuits.html">Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="unitary_gates.html">Unitary Gates</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="non_unitary_ops.html">Non-unitary Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="noise.html">Noisy simulations on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="statistical_ops.html">Statistical Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_ops.html">Special Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulating Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="remote_execution.html">Execution on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="import_export.html">Import and export circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_topics.html">Special Topics</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="zops.html">Z-register Operations</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Hamiltonians and Time Evolution</a></li>
+
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Hamiltonians...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="hamiltonians-and-time-evolution">
+<h1>Hamiltonians and Time Evolution<a class="headerlink" href="#hamiltonians-and-time-evolution" title="Link to this heading">#</a></h1>
+<p>MIMIQ provides tools to define quantum Hamiltonians and simulate their time evolution using
+Trotterization methods. This page explains how to construct Hamiltonians, compute their
+expectation values, and apply Lie-Trotter, Suzuki-Trotter, and Yoshida decompositions.</p>
+<p>This workflow allows you to:</p>
+<blockquote>
+<div><p>Build realistic Hamiltonians from Pauli terms</p>
+<p>Simulate time evolution efficiently using Trotter expansions</p>
+<p>Measure physical observables like energy</p>
+</div></blockquote>
+</section>
+<section id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h1>
+<nav class="contents local" id="id1">
+<ul class="simple">
+<li><p><a class="reference internal" href="#hamiltonian" id="id4">Hamiltonian</a></p></li>
+<li><p><a class="reference internal" href="#simulating-the-ising-model" id="id5">Simulating the Ising Model</a></p></li>
+<li><p><a class="reference internal" href="#ising-model" id="id6">Ising Model</a></p></li>
+<li><p><a class="reference internal" href="#building-the-hamiltonian" id="id7">Building the Hamiltonian</a></p></li>
+<li><p><a class="reference internal" href="#simulating-time-evolution" id="id8">Simulating Time Evolution</a></p></li>
+<li><p><a class="reference internal" href="#measuring-the-energy" id="id9">Measuring the Energy</a></p></li>
+</ul>
+</nav>
+<section id="hamiltonian">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Hamiltonian</a><a class="headerlink" href="#hamiltonian" title="Link to this heading">#</a></h2>
+<p id="id2">In quantum computing, Hamiltonians play a central role in algorithms such as the Variational Quantum Eigensolver (VQE),
+Quantum Phase Estimation, and the Quantum Approximate Optimization Algorithm (QAOA). They are used to encode the energy landscape of
+a physical system, generate dynamics, or define cost functions for optimization.</p>
+<p>A typical Hamiltonian is expressed as a sum of weighted Pauli strings:</p>
+<div class="math notranslate nohighlight">
+\[H = \sum_j c_j \cdot P_j\]</div>
+<p>Each term consists of a real coefficient <span class="math notranslate nohighlight">\(c_j\)</span> and a Pauli string <span class="math notranslate nohighlight">\(P_j\)</span>, such as <code class="docutils literal notranslate"><span class="pre">X</span></code>, <code class="docutils literal notranslate"><span class="pre">ZZ</span></code>, or <code class="docutils literal notranslate"><span class="pre">XYZ</span></code>,
+which acts on a specific subset of qubits.</p>
+<p>In quantum circuit frameworks, these Hamiltonians are often represented programmatically by associating each
+Pauli string with a set of target qubit indices and a coefficient, allowing users to construct and simulate physical models
+or optimization problems.</p>
+</section>
+<section id="simulating-the-ising-model">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Simulating the Ising Model</a><a class="headerlink" href="#simulating-the-ising-model" title="Link to this heading">#</a></h2>
+<p id="ising-model-simulation">A fundamental use case for Hamiltonians in quantum computing is to estimate physical quantities like the <strong>ground state energy</strong> of a system.
+This is at the heart of quantum algorithms such as the Variational Quantum Eigensolver (VQE), quantum simulation of materials, and quantum optimization.</p>
+<p>Here, we demonstrate how to use MIMIQ to:</p>
+<ul class="simple">
+<li><p>Build the Hamiltonian for the <strong>1D transverse-field Ising model</strong></p></li>
+<li><p>Apply <strong>Trotterized time evolution</strong> (first and second order)</p></li>
+<li><p><strong>Measure the energy</strong> (expectation value of the Hamiltonian)</p></li>
+</ul>
+<p>This provides a concrete template for simulating many-body quantum systems.</p>
+</section>
+<section id="ising-model">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Ising Model</a><a class="headerlink" href="#ising-model" title="Link to this heading">#</a></h2>
+<p id="isinh-model">The <strong>1D transverse-field Ising model</strong> is defined by the Hamiltonian:</p>
+<div class="math notranslate nohighlight">
+\[H = -J \sum_{j=0}^{N-1} Z_j Z_{j+1} - h \sum_{j=0}^{N} X_j\]</div>
+<p>This models a chain of spins with:</p>
+<ul class="simple">
+<li><p>nearest-neighbor interaction (<cite>ZZ</cite> terms),</p></li>
+<li><p>and a transverse magnetic field (<cite>X</cite> terms).</p></li>
+</ul>
+<p>It’s widely used in condensed matter physics and quantum algorithm benchmarks.</p>
+</section>
+<section id="building-the-hamiltonian">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Building the Hamiltonian</a><a class="headerlink" href="#building-the-hamiltonian" title="Link to this heading">#</a></h2>
+<p id="id3">To construct this model in MIMIQ you can use <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Hamiltonian" title="mimiqcircuits.Hamiltonian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hamiltonian</span></code></a> class to easily build your hamiltonian:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">N</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># number of qubits (spins)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">J</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># interaction strength</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">h</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># field strength</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hamiltonian</span> <span class="o">=</span> <span class="n">Hamiltonian</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">hamiltonian</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="o">-</span><span class="n">J</span><span class="p">,</span> <span class="n">PauliString</span><span class="p">(</span><span class="s2">&quot;ZZ&quot;</span><span class="p">),</span> <span class="n">j</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">hamiltonian</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="n">PauliString</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="n">j</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">hamiltonian</span><span class="p">)</span>
+<span class="go">4-qubit Hamiltonian with 7 terms:</span>
+<span class="go">├── -1.0 * ZZ @ q[0,1]</span>
+<span class="go">├── -1.0 * ZZ @ q[1,2]</span>
+<span class="go">├── -1.0 * ZZ @ q[2,3]</span>
+<span class="go">├── -0.5 * X @ q[0]</span>
+<span class="go">├── -0.5 * X @ q[1]</span>
+<span class="go">├── -0.5 * X @ q[2]</span>
+<span class="go">└── -0.5 * X @ q[3]</span>
+</pre></div>
+</div>
+</section>
+<section id="simulating-time-evolution">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Simulating Time Evolution</a><a class="headerlink" href="#simulating-time-evolution" title="Link to this heading">#</a></h2>
+<p>Suppose we want to apply <span class="math notranslate nohighlight">\(e^{-iHt}\)</span> to a quantum state. This is useful for preparing ground states via imaginary-time evolution (approximate cooling),
+or evolving an initial state in real time.</p>
+<p>Because <cite>H</cite> has non-commuting terms, we use a <strong>Trotter approximation</strong>.</p>
+<p><cite>First-order Trotterization (Lie)</cite> (<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push_lietrotter" title="mimiqcircuits.Circuit.push_lietrotter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push_lietrotter()</span></code></a>)</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push_lietrotter</span><span class="p">(</span><span class="n">hamiltonian</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)),</span> <span class="n">t</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">steps</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">4-qubit circuit with 1 instructions:</span>
+<span class="go">└── trotter(0.1) @ q[0,1,2,3]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">4-qubit circuit with 7 instructions:</span>
+<span class="go">├── RZZ(-0.2) @ q[0,1]</span>
+<span class="go">├── RZZ(-0.2) @ q[1,2]</span>
+<span class="go">├── RZZ(-0.2) @ q[2,3]</span>
+<span class="go">├── RX(-0.1) @ q[0]</span>
+<span class="go">├── RX(-0.1) @ q[1]</span>
+<span class="go">├── RX(-0.1) @ q[2]</span>
+<span class="go">└── RX(-0.1) @ q[3]</span>
+</pre></div>
+</div>
+<p><cite>Second-order Trotterization (Suzuki)</cite> (<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push_suzukitrotter" title="mimiqcircuits.Circuit.push_suzukitrotter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push_suzukitrotter()</span></code></a>)</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push_suzukitrotter</span><span class="p">(</span><span class="n">hamiltonian</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)),</span> <span class="n">t</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">steps</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">4-qubit circuit with 1 instructions:</span>
+<span class="go">└── suzukitrotter_2(0.1) @ q[0,1,2,3]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">4-qubit circuit with 14 instructions:</span>
+<span class="go">├── RZZ(-0.1) @ q[0,1]</span>
+<span class="go">├── RZZ(-0.1) @ q[1,2]</span>
+<span class="go">├── RZZ(-0.1) @ q[2,3]</span>
+<span class="go">├── RX(-0.05) @ q[0]</span>
+<span class="go">├── RX(-0.05) @ q[1]</span>
+<span class="go">├── RX(-0.05) @ q[2]</span>
+<span class="go">├── RX(-0.05) @ q[3]</span>
+<span class="go">├── RX(-0.05) @ q[3]</span>
+<span class="go">├── RX(-0.05) @ q[2]</span>
+<span class="go">├── RX(-0.05) @ q[1]</span>
+<span class="go">├── RX(-0.05) @ q[0]</span>
+<span class="go">├── RZZ(-0.1) @ q[2,3]</span>
+<span class="go">├── RZZ(-0.1) @ q[1,2]</span>
+<span class="go">└── RZZ(-0.1) @ q[0,1]</span>
+</pre></div>
+</div>
+</section>
+<section id="measuring-the-energy">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">Measuring the Energy</a><a class="headerlink" href="#measuring-the-energy" title="Link to this heading">#</a></h2>
+<p id="measuring-energy">Once the circuit has prepared the desired quantum state such as by applying time evolution with Trotterization we can measure the energy
+by evaluating the expectation value (<a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.push_expval" title="mimiqcircuits.Circuit.push_expval"><code class="xref py py-meth docutils literal notranslate"><span class="pre">push_expval()</span></code></a>) of the Hamiltonian.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push_expval</span><span class="p">(</span><span class="n">hamiltonian</span><span class="p">,</span> <span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">))</span>
+<span class="go">4-qubit, 7-zvar circuit with 16 instructions:</span>
+<span class="go">├── suzukitrotter_2(0.1) @ q[0,1,2,3]</span>
+<span class="go">├── ⟨ZZ⟩ @ q[0,1], z[0]</span>
+<span class="go">├── z[0] *= -1.0</span>
+<span class="go">├── ⟨ZZ⟩ @ q[1,2], z[1]</span>
+<span class="go">├── z[1] *= -1.0</span>
+<span class="go">├── ⟨ZZ⟩ @ q[2,3], z[2]</span>
+<span class="go">├── z[2] *= -1.0</span>
+<span class="go">├── ⟨X⟩ @ q[0], z[3]</span>
+<span class="go">├── z[3] *= -0.5</span>
+<span class="go">├── ⟨X⟩ @ q[1], z[4]</span>
+<span class="go">├── z[4] *= -0.5</span>
+<span class="go">├── ⟨X⟩ @ q[2], z[5]</span>
+<span class="go">├── z[5] *= -0.5</span>
+<span class="go">├── ⟨X⟩ @ q[3], z[6]</span>
+<span class="go">├── z[6] *= -0.5</span>
+<span class="go">└── z[0] += 0.0 + z[1] + z[2] + z[3] + z[4] + z[5] + z[6]</span>
+</pre></div>
+</div>
+<p>The result is stored in the Z-register — the first index contains the total expectation value (energy).
+You can access it from the simulation result.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="zops.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Z-register Operations</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../apidocs/mimiqcircuits.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">mimiqcircuits package</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Hamiltonians and Time Evolution</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hamiltonian">Hamiltonian</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simulating-the-ising-model">Simulating the Ising Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ising-model">Ising Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-the-hamiltonian">Building the Hamiltonian</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simulating-time-evolution">Simulating Time Evolution</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#measuring-the-energy">Measuring the Energy</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/manual/hamiltonian.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

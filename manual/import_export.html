@@ -1,0 +1,816 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Import and export circuits &#8212; MIMIQ Circuits 0.18.2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=29ae757a"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'manual/import_export';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Special Topics" href="special_topics.html" />
+    <link rel="prev" title="Execution on MIMIQ" href="remote_execution.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The MIMIQ Autumn Update 2024 is out! Update now the user libraries to the latest 0.18.2 version.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/qperfect_logo.png" class="logo__image only-light" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>
+    <script>document.write(`<img src="../_static/qperfect_logo.png" class="logo__image only-dark" alt="MIMIQ Circuits 0.18.2 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../mimiq_documentation.html">
+    MIMIQ Documentation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quick_start.html">
+    Quick Start
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Manual
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs/mimiqcircuits.html">
+    API References
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/qperfect-io/mimiqcircuits-python">
+    GitHub
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://mimiq.qperfect.io/docs/julia/">
+    Julia APIs
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://qperfect.io">
+    QPerfect
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="circuits.html">Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="unitary_gates.html">Unitary Gates</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="non_unitary_ops.html">Non-unitary Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="noise.html">Noisy simulations on MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="statistical_ops.html">Statistical Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_ops.html">Special Operations</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulating Circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="remote_execution.html">Execution on MIMIQ</a></li>
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Import and export circuits</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="special_topics.html">Special Topics</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="zops.html">Z-register Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hamiltonian.html">Hamiltonians and Time Evolution</a></li>
+
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Import and...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="import-and-export-circuits">
+<h1>Import and export circuits<a class="headerlink" href="#import-and-export-circuits" title="Link to this heading">#</a></h1>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go">from mimiqcircuits import *</span>
+</pre></div>
+</div>
+<p>In this section we introduce different options to import and export circuits.
+In particular, MIMIQ allows to import circuits in well-known languages such as OpenQASM and Stim, as well as save and import circuits using its own Protobuf structure.</p>
+</section>
+<section id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h1>
+<nav class="contents local" id="id1">
+<ul class="simple">
+<li><p><a class="reference internal" href="#protobuf" id="id3">Protobuf</a></p>
+<ul>
+<li><p><a class="reference internal" href="#export-protobuf-files-from-mimiq" id="id4">Export Protobuf files from MIMIQ</a></p></li>
+<li><p><a class="reference internal" href="#import-protobuf-file-to-mimiq" id="id5">Import Protobuf file to MIMIQ</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#openqasm" id="id6">OpenQASM</a></p>
+<ul>
+<li><p><a class="reference internal" href="#execute-openqasm-file-in-mimiq" id="id7">Execute OpenQASM file in MIMIQ</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#relations-between-openqasm-registers-and-mimiq-indices" id="id8">Relations between OpenQASM registers and MIMIQ indices</a></p></li>
+<li><p><a class="reference internal" href="#stim" id="id9">Stim</a></p>
+<ul>
+<li><p><a class="reference internal" href="#execute-stim-file-on-mimiq" id="id10">Execute Stim file on MIMIQ</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="protobuf">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Protobuf</a><a class="headerlink" href="#protobuf" title="Link to this heading">#</a></h2>
+<section id="export-protobuf-files-from-mimiq">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Export Protobuf files from MIMIQ</a><a class="headerlink" href="#export-protobuf-files-from-mimiq" title="Link to this heading">#</a></h3>
+<p>After building a circuit in MIMIQ you can export it into a Protobuf format using the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.saveproto" title="mimiqcircuits.Circuit.saveproto"><code class="xref py py-func docutils literal notranslate"><span class="pre">saveproto()</span></code></a> function. You need to give it two arguments, the name of the file to create (<cite>.pb</cite> format) and the circuit to save.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go">results.saveproto(&quot;my_circuit.pb&quot;)</span>
+</pre></div>
+</div>
+<p>The same method allows you to save your simulation results in a Protobuf file.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># get the results</span>
+<span class="go">results = conn.get_results(job)</span>
+<span class="go"># save the results</span>
+<span class="go">results.saveproto(&quot;my_results.pb&quot;)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Protobuf is a serialized file format developed by google. It is very lightweight and efficient to parse. Check the  <cite>Protobuf repository &lt;https://github.com/protocolbuffers/protobuf&gt;`_</cite> for more information.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can only export a circuit into Protobuf format and cannot export an OpenQASM or Stim file in the current version of MIMIQ.</p>
+</div>
+</section>
+<section id="import-protobuf-file-to-mimiq">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Import Protobuf file to MIMIQ</a><a class="headerlink" href="#import-protobuf-file-to-mimiq" title="Link to this heading">#</a></h3>
+<p>MIMIQ allows you to import Protobuf circuit files using the <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.loadproto" title="mimiqcircuits.Circuit.loadproto"><code class="xref py py-func docutils literal notranslate"><span class="pre">loadproto()</span></code></a> function and import Protobuf results file using <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.QCSResults.loadproto" title="mimiqcircuits.QCSResults.loadproto"><code class="xref py py-func docutils literal notranslate"><span class="pre">loadproto()</span></code></a>.
+With this function you can get previously saved circuit or get previous simulation results.
+You need to give this function the name of the file to parse and the type of object to parse.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># Import circuit from Protobuf to MIMIQ</span>
+<span class="go">circuit = Circuit.loadproto(&quot;my_circuit.pb&quot;)</span>
+
+<span class="go"># Import results from Protobuf to MIMIQ</span>
+<span class="go">results = QCSResults.loadproto(&quot;my_results.pb&quot;)</span>
+</pre></div>
+</div>
+<p>The circuit imported with <a class="reference internal" href="../apidocs/mimiqcircuits.html#mimiqcircuits.Circuit.loadproto" title="mimiqcircuits.Circuit.loadproto"><code class="xref py py-meth docutils literal notranslate"><span class="pre">loadproto()</span></code></a> can be manipulated like any other circuit on MIMIQ to add or insert gates, see <a class="reference internal" href="circuits.html"><span class="doc">circuit</span></a> page.</p>
+</section>
+</section>
+<section id="openqasm">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">OpenQASM</a><a class="headerlink" href="#openqasm" title="Link to this heading">#</a></h2>
+<p>Open Quantum Assembly Language is a programming language designed for describing quantum circuits and algorithms for execution on quantum computers. It is a very convenient middle ground for different quantum computer architectures to interpret and execute circuits.</p>
+<section id="execute-openqasm-file-in-mimiq">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Execute OpenQASM file in MIMIQ</a><a class="headerlink" href="#execute-openqasm-file-in-mimiq" title="Link to this heading">#</a></h3>
+<p>The remote MIMIQ services can readily process and execute OpenQASM files, thanks to fast and feature-complete Julia and C++ parsers and interpreters.</p>
+<p>Here is a simple comprehensive example of executing a QASM file on MIMIQ.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">qasm</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="gp">... </span><span class="s2">// Implementation of Deutsch algorithm with two qubits for f(x)=x</span>
+<span class="gp">... </span><span class="s2">// taken from https://github.com/pnnl/QASMBench/blob/master/small/deutsch_n2/deutsch_n2.qasm</span>
+<span class="gp">... </span><span class="s2">OPENQASM 2.0;</span>
+<span class="gp">... </span><span class="s2">include &quot;qelib1.inc&quot;;</span>
+<span class="gp">... </span><span class="s2">qreg q[2];</span>
+<span class="gp">... </span><span class="s2">creg c[2];</span>
+<span class="gp">... </span><span class="s2">x q[1];</span>
+<span class="gp">... </span><span class="s2">h q[0];</span>
+<span class="gp">... </span><span class="s2">h q[1];</span>
+<span class="gp">... </span><span class="s2">cx q[0],q[1];</span>
+<span class="gp">... </span><span class="s2">h q[0];</span>
+<span class="gp">... </span><span class="s2">measure q[0] -&gt; c[0];</span>
+<span class="gp">... </span><span class="s2">measure q[1] -&gt; c[1];</span>
+<span class="gp">... </span><span class="s2">&quot;&quot;&quot;</span>
+
+<span class="go"># Write the OPENQASM as a file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/tmp/deutsch_n2.qasm&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">qasm</span><span class="p">)</span>
+<span class="go">308</span>
+
+<span class="go"># actual execution of the QASM file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;/tmp/deutsch_n2.qasm&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;statevector&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_result</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">histogram</span><span class="p">()</span>
+<span class="go">{frozenbitarray(&#39;10&#39;): 530, frozenbitarray(&#39;11&#39;): 470}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="go"># Visualizing the result</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plothistogram</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+<span class="go">&lt;Figure size 960x720 with 1 Axes&gt;</span>
+</pre></div>
+</div>
+<p>The result will be plotted as follows:</p>
+<img alt="Alternative Text" src="../_images/hist2.png" />
+<p>For more informations, read the documentation of <code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code>.</p>
+<section id="behaviour-of-include-files">
+<h4>Behaviour of include files<a class="headerlink" href="#behaviour-of-include-files" title="Link to this heading">#</a></h4>
+<p>A common file used by many QASM files is the <cite>qelib1.inc</cite> file.
+This file is not defined as being part of OpenQASM 2.0, but its usage is so widespread that it might be considered as de-facto part of the specifications.</p>
+<div class="admonition-details admonition">
+<p class="admonition-title">details</p>
+<p>We remind the careful reader that OpenQASM 2.0 specifications only define 6 operations:
+<cite>U</cite>, <cite>CX</cite>, <cite>measure</cite>, <cite>reset</cite>, <cite>barrier</cite> and <cite>if</cite>.</p>
+</div>
+<p>If we were to parse every file together with <cite>qelib1.inc</cite>, we would have at the end just a list of simple <cite>U</cite> and <cite>CX</cite> gates, leaving behind any speed improvement that we would gain by using more complex gates as blocks. For this reason, if you don’t explicitly provide the include files, MIMIQ will not parse the usual <cite>qelib1.inc</cite> file but will instead use a simplified version of it, where almost all gate definitions are replaced by <cite>opaque</cite> definitions. These opaque definitions will be converted to the corresponding MIMIQ gates listed in <code class="xref py py-meth docutils literal notranslate"><span class="pre">`GATES`()</span></code>.</p>
+<p>Another alternative is to use the <cite>mimiqlib.inc</cite> directly in your file. For now it’s almost a copy of the modified <cite>qelib1.inc</cite> but in the future it will be extended to contain more gates and operations, diverging from <cite>qelib1.inc</cite>.</p>
+</section>
+</section>
+</section>
+<section id="relations-between-openqasm-registers-and-mimiq-indices">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Relations between OpenQASM registers and MIMIQ indices</a><a class="headerlink" href="#relations-between-openqasm-registers-and-mimiq-indices" title="Link to this heading">#</a></h2>
+<p>During the parsing of the QASM file, we will assign a unique index to each qubit
+and classical bit. This index will be used to identify the qubit or bit in the
+MIMIQ-CIRC service.</p>
+<p>The indices are assigned in the following way:</p>
+<ul class="simple">
+<li><p>The first qubit is assigned index <cite>0</cite> (Python), the second <cite>1</cite>, and so on.</p></li>
+<li><p>All registers retain the same ordering as in the QASM file.</p></li>
+<li><p>Qubits and classical bits behave similarly but have they have each other its
+own sequence from indices, starting from <cite>0</cite>.</p></li>
+</ul>
+<p>A simple example will clarify this behaviour:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">OPENQASM</span> <span class="mf">2.0</span><span class="p">;</span>
+<span class="n">qreg</span> <span class="n">q</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="n">creg</span> <span class="n">m</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+<span class="n">qreg</span> <span class="n">a</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+<span class="n">creg</span> <span class="n">g</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</pre></div>
+</div>
+<p>Will be parsed as:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>QASM name</p></th>
+<th class="head"><p>MIMIQ Qubit index</p></th>
+<th class="head"><p>MIMIQ Bit index</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">q[0]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">q[1]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">a[0]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">a[1]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">3</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td><p>…</p></td>
+<td><p>…</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">a[9]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">11</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">m[0]</span></code></p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">m[1]</span></code></p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td><p>…</p></td>
+<td><p>…</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">m[9]</span></code></p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">g[0]</span></code></p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">10</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">g[1]</span></code></p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">11</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="stim">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">Stim</a><a class="headerlink" href="#stim" title="Link to this heading">#</a></h2>
+<section id="execute-stim-file-on-mimiq">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Execute Stim file on MIMIQ</a><a class="headerlink" href="#execute-stim-file-on-mimiq" title="Link to this heading">#</a></h3>
+<p><a class="reference external" href="https://github.com/quantumlib/Stim">Stim</a> is a fast stabilizer circuit simulator commonly used for Clifford circuit simulation. Stim allows users to export their circuit to a text format usually with the <cite>.stim</cite> extention.
+The remote MIMIQ services can readily process and execute Stim files as follows:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go">job = conn.execute(&quot;my_stim_circuit.stim&quot;)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The support of Stim is still in progress and some of the most specific Stim features are not supported. For instance, detectors will be completely ignored by MIMIQ at exectution time.</p>
+</div>
+<p>The results of the simulation can be accessed as usual on MIMIQ, see <a class="reference internal" href="remote_execution.html"><span class="doc">remote execution</span></a> page.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="remote_execution.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Execution on MIMIQ</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="special_topics.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Special Topics</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Import and export circuits</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#protobuf">Protobuf</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#export-protobuf-files-from-mimiq">Export Protobuf files from MIMIQ</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#import-protobuf-file-to-mimiq">Import Protobuf file to MIMIQ</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openqasm">OpenQASM</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#execute-openqasm-file-in-mimiq">Execute OpenQASM file in MIMIQ</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#behaviour-of-include-files">Behaviour of include files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#relations-between-openqasm-registers-and-mimiq-indices">Relations between OpenQASM registers and MIMIQ indices</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stim">Stim</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#execute-stim-file-on-mimiq">Execute Stim file on MIMIQ</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/manual/import_export.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023-2025, QPerfect.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
