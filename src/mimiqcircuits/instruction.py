@@ -323,7 +323,10 @@ def _string_with_square(arr, sep):
     return (
         "["
         + sep.join(
-            map(lambda e: sep.join(map(str, e)) if isinstance(e, list) else str(e), arr)
+            map(
+                lambda e: f"{e[0]}:{e[-1] + 1}" if isinstance(e, list) else str(e),
+                arr,
+            )
         )
         + "]"
     )
