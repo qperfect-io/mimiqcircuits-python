@@ -56,7 +56,7 @@ class Projector0(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector0()), 1, 1)
-        2-qubit, 2-zvar circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨P₀(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -124,7 +124,7 @@ class Projector1(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector1()), 1, 1)
-        2-qubit, 2-zvar circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨P₁(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -192,7 +192,7 @@ class ProjectorX0(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(ProjectorX0()), 1, 1)
-        2-qubit, 2-zvar circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨PX₀(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -260,7 +260,7 @@ class ProjectorX1(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(ProjectorX1()), 1, 1)
-        2-qubit, 2-zvar circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨PX₁(1)⟩ @ q[1], z[1]
         <BLANKLINE>
         
@@ -329,7 +329,7 @@ class ProjectorY0(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(ProjectorY0()), 1, 1)
-        2-qubit, 2-zvar circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨PY₀(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -397,7 +397,7 @@ class ProjectorY1(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(ProjectorY1()), 1, 1)
-        2-qubit, 2-zvar circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨PY₁(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -466,8 +466,8 @@ class Projector00(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector00()), 1, 2, 1)
-        3-qubit, 2-zvar circuit with 1 instructions:
-        └── ⟨P₀₀(1)⟩ @ q[1,2], z[1]
+        3-qubit, 2-zvar circuit with 1 instruction:
+        └── ⟨P₀₀(1)⟩ @ q[1:2], z[1]
         <BLANKLINE>
     """
 
@@ -535,8 +535,8 @@ class Projector01(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector01()), 1, 2, 1)
-        3-qubit, 2-zvar circuit with 1 instructions:
-        └── ⟨P₀₁(1)⟩ @ q[1,2], z[1]
+        3-qubit, 2-zvar circuit with 1 instruction:
+        └── ⟨P₀₁(1)⟩ @ q[1:2], z[1]
         <BLANKLINE>
     """
 
@@ -604,8 +604,8 @@ class Projector10(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector10()), 1, 2, 1)
-        3-qubit, 2-zvar circuit with 1 instructions:
-        └── ⟨P₁₀(1)⟩ @ q[1,2], z[1]
+        3-qubit, 2-zvar circuit with 1 instruction:
+        └── ⟨P₁₀(1)⟩ @ q[1:2], z[1]
         <BLANKLINE>
     """
 
@@ -673,8 +673,8 @@ class Projector11(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Projector11()), 1, 2, 1)
-        3-qubit, 2-zvar circuit with 1 instructions:
-        └── ⟨P₁₁(1)⟩ @ q[1,2], z[1]
+        3-qubit, 2-zvar circuit with 1 instruction:
+        └── ⟨P₁₁(1)⟩ @ q[1:2], z[1]
         <BLANKLINE>
     """
 

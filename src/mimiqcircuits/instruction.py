@@ -14,21 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Instruction class and utilities."""
 
 from mimiqcircuits.operations.operation import Operation
 import mimiqcircuits as mc
 import copy
 import numpy as np
 from mimiqcircuits.matrices import reorder_qubits_matrix
-
-
-def _allunique(lst):
-    seen = set()
-    for element in lst:
-        if element in seen:
-            return False
-        seen.add(element)
-    return True
+from mimiqcircuits.instruction_extras import (
+    _partition,
+    _string_with_square,
+    _find_unit_range,
+    _allunique,
+)
 
 
 class Instruction:
@@ -49,7 +47,7 @@ class Instruction:
         >>> Instruction(GateX(),(0,),())
         X @ q[0]
         >>> Instruction(Barrier(4),(0,1,2,3),())
-        Barrier @ q[0,1,2,3]
+        Barrier @ q[0:3]
 
     """
 
@@ -210,6 +208,16 @@ class Instruction:
     def inverse(self):
         return Instruction(self.operation.inverse(), self.qubits, self.bits)
 
+    def isunitary(self):
+        """
+        Check if Instruction is unitary.
+
+        Returns:
+            bool: True if Instruction is unitary, False otherwise.
+
+        """
+        return self.operation.isunitary()
+
     def copy(self):
         """Creates a shallow copy of the instruction.
             To create a full copy use deepcopy() instead.
@@ -289,7 +297,8 @@ class Instruction:
                     self.get_bits(), np.cumsum(self.operation.cregsizes)
                 )
                 c_targets = "".join(  # Concatenate classical bits without extra commas
-                    f"c{_string_with_square(x, ',')}" for x in c_partition
+                    f"c{_string_with_square(_find_unit_range(x), ',')}"
+                    for x in c_partition
                 )
                 targets += c_targets
 
@@ -302,59 +311,12 @@ class Instruction:
                     self.get_zvars(), np.cumsum(self.operation.zregsizes)
                 )
                 z_targets = "".join(  # Concatenate z-vars without extra commas
-                    f"z{_string_with_square(x, ',')}" for x in z_partition
+                    f"z{_string_with_square(_find_unit_range(x), ',')}"
+                    for x in z_partition
                 )
                 targets += z_targets
 
         return f"{op}{targets}"
-
-
-def _partition(arr, indices):
-    vec = list(arr)
-    partitions = [vec[: indices[0]]]
-
-    for i in range(1, len(indices)):
-        partitions.append(vec[indices[i - 1] : indices[i]])
-
-    return partitions
-
-
-def _string_with_square(arr, sep):
-    return (
-        "["
-        + sep.join(
-            map(lambda e: sep.join(map(str, e)) if isinstance(e, list) else str(e), arr)
-        )
-        + "]"
-    )
-
-
-def _find_unit_range(arr):
-    if len(arr) < 2:
-        return arr
-
-    narr = []
-    rangestart = arr[0]
-    rangestop = arr[0]
-
-    for v in arr[1:]:
-        if v == rangestop + 1:
-            rangestop = v
-        elif rangestart == rangestop:
-            narr.append(rangestart)
-            rangestart = v
-            rangestop = v
-        else:
-            narr.append(list(range(rangestart, rangestop + 1)))
-            rangestart = v
-            rangestop = v
-
-    if rangestart == rangestop:
-        narr.append(rangestart)
-    else:
-        narr.append(list(range(rangestart, rangestop + 1)))
-
-    return narr
 
 
 __all__ = ["Instruction"]

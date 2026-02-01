@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Measure and reset operations."""
+
 import mimiqcircuits as mc
 from mimiqcircuits.operations.operation import Operation
 from mimiqcircuits.operations.measure import AbstractMeasurement
@@ -31,13 +33,13 @@ class MeasureReset(AbstractMeasurement):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureReset(), 1, 0)
-        2-qubit, 1-bit circuit with 1 instructions:
+        2-qubit, 1-bit circuit with 1 instruction:
         └── MR @ q[1], c[0]
         <BLANKLINE>
         >>> c.decompose()
         2-qubit, 1-bit circuit with 2 instructions:
         ├── M @ q[1], c[0]
-        └── IF (c==1) X @ q[1], c[0]
+        └── IF(c==1) X @ q[1], condition[0]
         <BLANKLINE>
     """
 
@@ -91,7 +93,7 @@ class MeasureResetX(AbstractMeasurement):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureResetX(), 1, 0)
-        2-qubit, 1-bit circuit with 1 instructions:
+        2-qubit, 1-bit circuit with 1 instruction:
         └── MRX @ q[1], c[0]
         <BLANKLINE>
         >>> c.decompose()
@@ -155,7 +157,7 @@ class MeasureResetY(AbstractMeasurement):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureResetY(), 1, 0)
-        2-qubit, 1-bit circuit with 1 instructions:
+        2-qubit, 1-bit circuit with 1 instruction:
         └── MRY @ q[1], c[0]
         <BLANKLINE>
         >>> c.decompose()

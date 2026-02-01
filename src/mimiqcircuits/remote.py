@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Remote connection and execution utilities."""
 
 import mimiqlink
 import tempfile
@@ -228,7 +229,7 @@ class RemoteConnection:
 
         return wrapped
 
-    def execute(
+    def submit(
         self,
         circuits,  # Can be a single Circuit object or a list of Circuit objects or QASM file paths
         label="pyapi_v" + __version__,
@@ -243,10 +244,15 @@ class RemoteConnection:
         seed=None,
         qasmincludes=None,
         force=False,
+        mpsmethod=None,
+        traversal=None,
+        noisemodel=None,
+        streaming=None,
         **kwargs,
     ):
         """
-        Execute a circuit or a list of quantum circuits on the Mimiq server.
+        Submit a circuit or a list of quantum circuits to the Mimiq server.
+        Returns a Job object (non-blocking).
 
         Args:
             circuits (Circuit or list of Circuits or str): A single Circuit object, a list of Circuit objects,
@@ -254,13 +260,17 @@ class RemoteConnection:
             label (str): A label for the execution. Defaults to "pyapi_v" + __version__.
             algorithm (str): The algorithm to use. Defaults to "auto".
             nsamples (int): The number of samples to collect. Defaults to DEFAULT_SAMPLES.
+            seed (int, optional): A seed for random number generation. Defaults to None.
             bitstrings (list of str, optional): Specific bitstrings to measure. Defaults to None.
             timelimit (int, optional): The maximum execution time in minutes. Defaults to None.
             bonddim (int, optional): The bond dimension to use. Defaults to None.
             entdim (int, optional): The entanglement dimension to use. Defaults to None.
             fuse (bool, optional): Whether to fuse gates. Defaults to None (let the remote service decide).
             reorderqubits (bool, optional): Whether to reorder qubits. Defaults to None (let the remote service decide).
-            seed (int, optional): A seed for random number generation. Defaults to None.
+            mpsmethod (str, optional): whether to use variational ("vmpoa", "vmpob") or direct ("dmpo") methods for MPO application in MPS simulations. Defaults to None (let the remote service decide).
+            traversal (str, optional): method to traverse the circuit while compressing it into MPOs. Can be "sequential" (default) or "bfs" (Breadth-First Search). Defaults to None.
+            noisemodel (NoiseModel, optional): A NoiseModel object to be applied to the circuit(s) before execution. Defaults to None.
+            streaming (bool, optional): whether or not to use the streaming simulator. Defaults to None (let the remote service decide).
             qasmincludes (list of str, optional): Additional QASM includes. Defaults to None.
             **kwargs: Additional keyword arguments.
 
@@ -273,8 +283,33 @@ class RemoteConnection:
             FileNotFoundError: If a QASM file is not found.
             TypeError: If the circuits argument is not a Circuit object or a valid file path.
         """
+        from mimiqcircuits.circuittester import CircuitTesterExperiment
+
+        if isinstance(circuits, CircuitTesterExperiment):
+            c = circuits.build_circuit()
+            return self.submit(
+                c,
+                label=label,
+                algorithm=algorithm,
+                nsamples=nsamples,
+                bitstrings=bitstrings,
+                timelimit=timelimit,
+                bonddim=bonddim,
+                entdim=entdim,
+                fuse=fuse,
+                reorderqubits=reorderqubits,
+                seed=seed,
+                qasmincludes=qasmincludes,
+                force=force,
+                mpsmethod=mpsmethod,
+                traversal=traversal,
+                noisemodel=noisemodel,
+                streaming=streaming,
+                **kwargs,
+            )
 
         if nsamples > MAX_SAMPLES:
+
             raise ValueError(f"nsamples must be less than {MAX_SAMPLES}")
 
         if timelimit is None:
@@ -329,6 +364,28 @@ class RemoteConnection:
             if isinstance(circuits, (Circuit, str)):
                 circuits = [circuits]
 
+            if noisemodel is not None:
+                from mimiqcircuits.noisemodel import apply_noise_model, NoiseModel
+
+                if not isinstance(noisemodel, NoiseModel):
+                    raise TypeError(
+                        f"noisemodel must be a NoiseModel object, got {type(noisemodel).__name__}."
+                    )
+
+                new_circuits = []
+                for i, c in enumerate(circuits):
+                    if isinstance(c, Circuit):
+                        new_circuits.append(apply_noise_model(c, noisemodel))
+                    elif isinstance(c, str):
+                        raise ValueError(
+                            f"Cannot apply NoiseModel to file path at index {i}. "
+                            "Please load the circuit into a Circuit object first."
+                        )
+                    else:
+                        # Will be caught by later checks, but safe to keep valid circuits
+                        new_circuits.append(c)
+                circuits = new_circuits
+
             if len(circuits) > 1 and algorithm == "auto":
                 raise ValueError(
                     "The 'auto' algorithm is not supported in batch mode. Please specify 'mps' or 'statevector' for batch executions."
@@ -379,7 +436,7 @@ class RemoteConnection:
                     # Case: QASM
                     if _file_is_openqasm2(circuit):
                         circuit_filename = os.path.join(
-                            tmpdir, f"{CIRCUIT_FNAME}{i+1}.{EXTENSION_QASM}"
+                            tmpdir, f"{CIRCUIT_FNAME}{i + 1}.{EXTENSION_QASM}"
                         )
                         shutil.copyfile(circuit, circuit_filename)
                         if qasmincludes is None:
@@ -395,7 +452,7 @@ class RemoteConnection:
                     # Case: STIM
                     elif _file_may_be_stim(circuit):
                         circuit_filename = os.path.join(
-                            tmpdir, f"{CIRCUIT_FNAME}{i+1}.{EXTENSION_STIM}"
+                            tmpdir, f"{CIRCUIT_FNAME}{i + 1}.{EXTENSION_STIM}"
                         )
                         shutil.copyfile(circuit, circuit_filename)
                         circuit_files.append(
@@ -438,6 +495,21 @@ class RemoteConnection:
             if reorderqubits is not None:
                 pars["reorderQubits"] = reorderqubits
 
+            if traversal is not None:
+                if traversal not in ["sequential", "bfs"]:
+                    raise ValueError("traversal must be one of 'sequential' or 'bfs'.")
+                pars["mpoTraversal"] = traversal
+
+            if mpsmethod is not None:
+                if mpsmethod not in ["vmpoa", "vmpob", "dmpo"]:
+                    raise ValueError(
+                        "mpsmethod must be one of 'vmpoa', 'vmpob', or 'dmpo'."
+                    )
+                pars["mpsMethod"] = mpsmethod
+
+            if streaming is not None:
+                pars["streaming"] = streaming
+
             # Add any additional keyword arguments
             pars.update(kwargs)
 
@@ -471,140 +543,91 @@ class RemoteConnection:
                 [reqfile, pars_filename] + allfiles,
             )
 
-    def get_results(self, execution, interval=1):
-        """Retrieve the results of a completed execution.
+    def execute(self, *args, **kwargs):
+        import warnings
+
+        warnings.warn(
+            "execute() is deprecated and will be blocking in the future. "
+            "Use submit() for non-blocking execution.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.submit(*args, **kwargs)
+
+    def schedule(self, *args, **kwargs):
+        """Deprecated alias for submit."""
+        import warnings
+        warnings.warn(
+            "schedule() is deprecated. Use submit() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.submit(*args, **kwargs)
+
+    def check_equivalence(
+        self,
+        experiment,
+        **kwargs,
+    ):
+        """
+        Executes a CircuitTesterExperiment and verifies the results.
+        Blocks until execution is complete.
 
         Args:
-            execution (str): The execution identifier.
-            interval (int): The interval (in seconds) for checking job status (default: 1).
+            experiment (CircuitTesterExperiment): The experiment to run.
+            **kwargs: Arguments passed to execute.
 
         Returns:
-            List[QCSResults]: A list of QCSResults instances.
-
-        Raises:
-            RuntimeError: If the remote job encounters an error.
+            float: The verification score (probability of all-zero state).
         """
-        # Wait for the job to finish
-        while not self.connection.isJobDone(execution):
-            sleep(interval)
+        job = self.submit(experiment, **kwargs)
+        # Assuming job has get_results()
+        if hasattr(job, "get_results"):
+            results = job.get_results()
+            return experiment.interpret_results(results[0])
+        else:
 
-        infos = self.connection.requestInfo(execution)
+            # Fallback or error if job type is unexpected
+            raise RuntimeError(
+                "Job object returned by submit does not support get_results()."
+            )
 
-        if infos.status == "ERROR":
-            error_message = infos.get("errorMessage", "Remote job errored.")
-            raise RuntimeError(f"Remote job errored: {error_message}")
-        elif infos.status == "CANCELED":
-            raise RuntimeError("Remote job canceled.")
+    def optimize(
+        self,
+        experiments,
+        label="pyapi_v" + __version__,
+        algorithm=DEFAULT_ALGORITHM,
+        nsamples=DEFAULT_SAMPLES,
+        timelimit=None,
+        bonddim=None,
+        entdim=None,
+        fuse=None,
+        reorderqubits=None,
+        seed=None,
+        history=False,
+        force=False,
+        debug=False,
+        **kwargs,
+    ):
+        from mimiqcircuits.optimization_remote import optimize_impl
 
-        with tempfile.TemporaryDirectory(prefix="mimiq_res_") as tmpdir:
-            names = self.connection.downloadResults(execution, destdir=tmpdir)
-
-            results_file_path = os.path.join(tmpdir, "results.json")
-
-            if "results.json" not in names or not os.path.isfile(results_file_path):
-                raise RuntimeError(f"No results found in execution {execution}.")
-
-            with open(results_file_path, "r") as f:
-                results_list = json.load(f)
-
-            results = []
-            for result in results_list:
-                if "error" in result:
-                    results.append(QCSError(result["error"]))
-                else:
-                    fname = os.path.join(tmpdir, result["file"])
-                    if not os.path.isfile(fname):
-                        raise RuntimeError(f"Missing result file {fname}")
-                    results.append(QCSResults.loadproto(fname))
-
-        return results
-
-    def get_result(self, execution, **kwargs):
-        """Retrieve the first result if multiple are found.
-
-        Args:
-            execution (str): The execution identifier.
-            **kwargs: Additional keyword arguments for result retrieval.
-
-        Returns:
-            QCSResults: The first result found.
-
-        Raises:
-            RuntimeWarning: If multiple results are found.
-        """
-        results = self.get_results(execution, **kwargs)
-
-        if len(results) > 1:
-            print("Warning: Multiple results found. Returning the first one.")
-
-        return results[0]
-
-    def get_inputs(self, execution):
-        """Retrieve the inputs (circuits and parameters) of the execution.
-
-        Args:
-            execution (str): The execution identifier.
-
-        Returns:
-            tuple: A tuple containing a list of Circuit objects and parameters (dict).
-
-        Raises:
-            RuntimeError: If required files are not found in the inputs.
-        """
-        with tempfile.TemporaryDirectory(prefix="mimiq_in_") as tmpdir:
-            names = self.connection.downloadJobFiles(execution, destdir=tmpdir)
-
-            # Print the downloaded files for debugging purposes
-            print(f"Downloaded files: {names}")
-
-            # Get the base names of the downloaded files
-            base_names = [os.path.basename(name) for name in names]
-
-            # Check if the circuits.json and request.json files are present
-            if "circuits.json" not in base_names or "request.json" not in base_names:
-                raise RuntimeError(
-                    f"{execution} is not a valid execution for MimiqCircuits: missing necessary files"
-                )
-
-            # Load the parameters from the circuits.json file
-            circuits_file_path = os.path.join(tmpdir, "circuits.json")
-            with open(circuits_file_path, "r") as f:
-                parameters = json.load(f)
-
-            circuits = []
-            for c in parameters["circuits"]:
-                if c["type"] == TYPE_PROTO:
-                    circuit = Circuit.loadproto(os.path.join(tmpdir, c["file"]))
-                    circuits.append(circuit)
-                else:
-                    # case of STIM and QASM files
-                    circuits.append(os.path.join(tmpdir, c["file"]))
-
-            if len(circuits) == 0:
-                raise RuntimeError(
-                    "No valid circuit files found. Input parameters not valid."
-                )
-
-        return circuits, parameters
-
-    def get_input(self, execution, **kwargs):
-        """Retrieve the first circuit and parameters of the execution.
-
-        Args:
-            execution (str): The execution identifier.
-
-        Returns:
-            tuple: A tuple containing the first Circuit object and parameters (dict).
-
-        Raises:
-            RuntimeError: If required files are not found in the inputs.
-        """
-        circuits, parameters = self.get_inputs(execution, **kwargs)
-
-        if len(circuits) > 1:
-            print("Warning: Multiple results found. Returning the first one.")
-
-        return circuits[0], parameters
+        return optimize_impl(
+            self,
+            experiments,
+            label=label,
+            algorithm=algorithm,
+            nsamples=nsamples,
+            timelimit=timelimit,
+            bonddim=bonddim,
+            entdim=entdim,
+            fuse=fuse,
+            reorderqubits=reorderqubits,
+            seed=seed,
+            history=history,
+            force=force,
+            debug=debug,
+            **kwargs,
+        )
 
     def __repr__(self):
         """Return a string representation of the connection."""

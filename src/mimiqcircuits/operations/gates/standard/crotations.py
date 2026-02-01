@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-Rotation (CRX, CRY, CRZ) gates."""
 
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.u import GateU
@@ -58,7 +59,7 @@ def GateCRX(theta):
         <BLANKLINE>
         >>> c = Circuit().push(GateCRZ(theta), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CRZ(theta) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCRZ(theta).power(2), GateCRZ(theta).inverse()
@@ -122,7 +123,7 @@ def GateCRY(theta):
         <BLANKLINE>
         >>> c = Circuit().push(GateCRY(theta), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CRY(theta) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCRY(theta).power(2), GateCRY(theta).inverse()
@@ -184,7 +185,7 @@ def GateCRZ(lmbda):
         <BLANKLINE>
         >>> c = Circuit().push(GateCRZ(lmbda), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CRZ(lambda) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCRZ(lmbda).power(2), GateCRZ(lmbda).inverse()

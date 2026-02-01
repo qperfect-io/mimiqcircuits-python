@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Repeat operation."""
 
 import copy
 from mimiqcircuits.operations.operation import Operation
@@ -47,7 +48,7 @@ class Repeat(Operation):
 
         >>> c = Circuit().push(Repeat(2, GateX()), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── ∏² X @ q[0]
         <BLANKLINE>
 
@@ -59,9 +60,9 @@ class Repeat(Operation):
 
         >>> Repeat(3, GateSWAP()).decompose()
         2-qubit circuit with 3 instructions:
-        ├── SWAP @ q[0,1]
-        ├── SWAP @ q[0,1]
-        └── SWAP @ q[0,1]
+        ├── SWAP @ q[0:1]
+        ├── SWAP @ q[0:1]
+        └── SWAP @ q[0:1]
         <BLANKLINE>
 
     .. note::

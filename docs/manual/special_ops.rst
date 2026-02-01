@@ -3,15 +3,6 @@ Special Operations
 
 MIMIQ offers further possibilities to create circuits, such as new gate declarations, or wrappers for common combinations of gates.
 
-Contents
-========
-
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
-
 Gate Declaration & Gate Calls
 ---------------------------------
 .. _gate-declaration--gate-calls:
@@ -110,11 +101,12 @@ For example, here is how to add noise to the previous gate declaration:
     <BLANKLINE>
 
     >>> c.draw()
-            ┌────────────┐  ┌───────────────────┐                                   
-     q[0]: ╶┤0           ├──┤0                  ├──────────────────────────────────╴
-            │  ansatz(pi)│  │  Depolarizing(0.1)│                                   
-     q[1]: ╶┤1           ├──┤1                  ├──────────────────────────────────╴
-            └────────────┘  └───────────────────┘                                   
+                    ┌────────────┐  ┌───────────────────┐                                   
+             q[0]: ╶┤0           ├──┤0                  ├──────────────────────────────────╴
+                    │  ansatz(pi)│  │  Depolarizing(0.1)│                                   
+             q[1]: ╶┤1           ├──┤1                  ├──────────────────────────────────╴
+                    └────────────┘  └───────────────────┘                                   
+                                                                                
                                                                                 
                                                                                                                                                                                                                                                                                                                 
 Gate declarations can be combined with other quantum operations like :class:`~mimiqcircuits.Control`, noise, or even conditional logic.
@@ -172,7 +164,7 @@ A :class:`~mimiqcircuits.Block`` can be created in several ways:
     # Empty block with specified dimensions
     >>> block3 = Block(2, 1, 0)  # 2 qubits, 1 classical bit, 0 z-variables
     >>> block3
-    empty circuit
+    empty block
 
 Example: Error Correction Code Block
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -229,10 +221,19 @@ Working with Blocks
 
     >>> b = Block(2, 1, 0)
     >>> b
-    empty circuit
+    empty block
     >>> b.push(GateH(), 0)
+    2-qubit, 1-bit block 755fa548dc10 with 1 instructions:
+    └── H @ q[0]
     >>> b.push(GateX(), 1)
+    2-qubit, 1-bit block 755fa548dc10 with 2 instructions:
+    ├── H @ q[0]
+    └── X @ q[1]
     >>> b.push(GateCX(), 0, 1)
+    2-qubit, 1-bit block 755fa548dc10 with 3 instructions:
+    ├── H @ q[0]
+    ├── X @ q[1]
+    └── CX @ q[0], q[1]
 
 Blocks can be iterated over, indexed, and have a length just like circuits:
 
@@ -450,6 +451,22 @@ Here is how to use the :class:`~mimiqcircuits.PolynomialOracle`:
     └── PolynomialOracle(1, 2, 3, 4) @ q[0,1,2,3,4], q[5,6,7,8,9]
     <BLANKLINE>
 
+    <BLANKLINE>
+    
+RNZ Gate
+---------------------------------
+.. _rnz-gate:
+
+The :class:`~mimiqcircuits.GateRNZ` applies a rotation along the Z-axis conditioned on the parity of the qubits.
+
+.. doctest::
+
+    >>> c = Circuit()
+    >>> c.push(GateRNZ(5, 0.5), 1, 2, 3, 4, 5)
+    6-qubit circuit with 1 instructions:
+    └── RNZ(0.5) @ q[1,2,3,4,5]
+    <BLANKLINE>
+
 Diffusion
 ---------------------------------
 .. _diffusion:
@@ -585,11 +602,42 @@ Example usage:
     <BLANKLINE>
 
     >>> c.draw()
-            ┌─┐ ┌─┐   ┌─┐                                                           
-     q[0]: ╶┤X├░┤X├░──┤X├──────░───────────────────────────────────────────────────╴
-            └─┘░└─┘░  └─┘┌─┐   ░                                                    
-     q[1]: ╶────────░────┤X├───░───────────────────────────────────────────────────╴
-                    ░    └─┘┌─┐░                                                    
-     q[2]: ╶─────────░──────┤X├░───────────────────────────────────────────────────╴
-                     ░      └─┘░                                                    
+                    ┌─┐ ┌─┐   ┌─┐                                                           
+             q[0]: ╶┤X├░┤X├░──┤X├──────░───────────────────────────────────────────────────╴
+                    └─┘░└─┘░  └─┘┌─┐   ░                                                    
+             q[1]: ╶────────░────┤X├───░───────────────────────────────────────────────────╴
+                            ░    └─┘┌─┐░                                                    
+             q[2]: ╶─────────░──────┤X├░───────────────────────────────────────────────────╴
+                             ░      └─┘░                                                    
                                                                                 
+                                                                                
+
+Reference
+---------
+
+.. autoclass:: mimiqcircuits.GateDecl
+    :noindex:
+.. autofunction:: mimiqcircuits.gatedecl
+    :noindex:
+.. autoclass:: mimiqcircuits.Block
+    :noindex:
+.. autoclass:: mimiqcircuits.Repeat
+    :noindex:
+.. autofunction:: mimiqcircuits.repeat
+    :noindex:
+.. autoclass:: mimiqcircuits.IfStatement
+    :noindex:
+.. autoclass:: mimiqcircuits.PauliString
+    :noindex:
+.. autoclass:: mimiqcircuits.QFT
+    :noindex:
+.. autoclass:: mimiqcircuits.PhaseGradient
+    :noindex:
+.. autoclass:: mimiqcircuits.PolynomialOracle
+    :noindex:
+.. autoclass:: mimiqcircuits.GateRNZ
+    :noindex:
+.. autoclass:: mimiqcircuits.Diffusion
+    :noindex:
+.. autoclass:: mimiqcircuits.Barrier
+    :noindex:

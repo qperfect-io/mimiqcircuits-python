@@ -3,13 +3,6 @@ Noisy simulations on MIMIQ
 
 This page provides detailed information on simulating noise in quantum circuits using MIMIQ.
 
-Contents
-========
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
 Summary of noise functionality
 ------------------------------
 .. _summary-of-noise-functionality:
@@ -392,7 +385,7 @@ Here's the same noisy GHZ circuit, using :meth:`~mimiqcircuits.Circuit.add_noise
     └── CX @ q[1], q[5]
     <BLANKLINE>
     >>> c.push(Measure(), [1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
-    6-qubit circuit with 15 instructions:
+    6-qubit, 6-bit circuit with 15 instructions:
     ├── Reset @ q[1]
     ├── Reset @ q[2]
     ├── Reset @ q[3]
@@ -412,7 +405,7 @@ Here's the same noisy GHZ circuit, using :meth:`~mimiqcircuits.Circuit.add_noise
 
     >>> cnoise = c.add_noise(Reset(), PauliX(0.1), parallel=True)
     >>> cnoise.add_noise(GateH(), AmplitudeDamping(0.1))
-    6-qubit circuit with 21 instructions:
+    6-qubit, 6-bit circuit with 21 instructions:
     ├── Reset @ q[1]
     ├── Reset @ q[2]
     ├── Reset @ q[3]
@@ -436,7 +429,7 @@ Here's the same noisy GHZ circuit, using :meth:`~mimiqcircuits.Circuit.add_noise
     └── M @ q[5], c[5]
     <BLANKLINE>
     >>> cnoise.add_noise(GateCX(), Depolarizing2(0.1), parallel=True)
-    6-qubit circuit with 25 instructions:
+    6-qubit, 6-bit circuit with 25 instructions:
     ├── Reset @ q[1]
     ├── Reset @ q[2]
     ├── Reset @ q[3]
@@ -460,7 +453,7 @@ Here's the same noisy GHZ circuit, using :meth:`~mimiqcircuits.Circuit.add_noise
     └── M @ q[5], c[5]
     <BLANKLINE>
     >>> cnoise.add_noise(Measure(), PauliX(0.1), before=True, parallel=True)
-    6-qubit circuit with 30 instructions:
+    6-qubit, 6-bit circuit with 30 instructions:
     ├── Reset @ q[1]
     ├── Reset @ q[2]
     ├── Reset @ q[3]
@@ -526,3 +519,139 @@ function to generate samples of a circuit with mixed-unitary noise:
     <BLANKLINE>
 
 This function is called internally when executing a circuit, but it can also be used separately.
+
+Noise Models
+------------
+.. _noise-models:
+
+In addition to adding noise directly to the circuit, MIMIQ provides a **Noise Model** framework. A :class:`~mimiqcircuits.NoiseModel` is a collection of "noise rules" that define how noise should be applied to a circuit. This allows you to define a noise profile once and apply it to multiple circuits.
+
+Building a Noise Model
+~~~~~~~~~~~~~~~~~~~~~~
+
+A noise model is essentially a container for rules. You can create an empty noise model and add rules to it.
+
+.. code-block:: python
+
+    model = NoiseModel(name="My Noise Model")
+
+The recommended way to add rules is using the helper methods:
+
+* :meth:`~mimiqcircuits.NoiseModel.add_gate_noise`
+* :meth:`~mimiqcircuits.NoiseModel.add_readout_noise`
+* :meth:`~mimiqcircuits.NoiseModel.add_idle_noise`
+
+Gate Noise
+^^^^^^^^^^
+
+Use ``add_gate_noise`` to add noise to specific gates. You can specify the gate type (or a symbolic pattern), the noise channel, and optionally specific qubits.
+
+.. code-block:: python
+
+    # Add noise to all Hadamard gates
+    model.add_gate_noise(GateH(), Depolarizing1(0.001))
+
+    # Add noise to CX gates only on qubits [1, 2]
+    model.add_gate_noise(GateCX(), Depolarizing2(0.01), qubits=[1, 2], exact=True)
+
+    # Add noise to any CX gate involving qubits in set {1, 2, 3}
+    model.add_gate_noise(GateCX(), Depolarizing2(0.005), qubits=[1, 2, 3], exact=False)
+
+Readout Noise
+^^^^^^^^^^^^^
+
+Use ``add_readout_noise`` to add noise to measurements.
+
+.. code-block:: python
+
+    # Global readout error
+    model.add_readout_noise(ReadoutErr(0.01, 0.02))
+
+    # Readout error only on qubit 1
+    model.add_readout_noise(ReadoutErr(0.05, 0.05), qubits=[1])
+
+Idle Noise
+^^^^^^^^^^
+
+Use ``add_idle_noise`` to add noise to idle qubits (during ``Delay`` operations).
+
+.. code-block:: python
+
+    # Constant idle noise
+    model.add_idle_noise(AmplitudeDamping(0.0001))
+
+    # Time-dependent idle noise (using symbolic variable t)
+    from symengine import Symbol
+    t = Symbol("t")
+    model.add_idle_noise(t, AmplitudeDamping(t / 1000.0))
+
+Applying a Noise Model
+~~~~~~~~~~~~~~~~~~~~~~
+
+Once you have defined a noise model, you can apply it to a circuit using :func:`~mimiqcircuits.apply_noise_model`. This will return a *new* circuit with the noise instructions inserted.
+
+.. code-block:: python
+
+    noisy_circuit = apply_noise_model(circuit, model)
+
+Adding Rules Directly
+~~~~~~~~~~~~~~~~~~~~~
+
+While helper functions are convenient, you can also add rules directly to the model using :meth:`~mimiqcircuits.NoiseModel.add_rule`. This gives you full control over the rule parameters.
+
+.. code-block:: python
+
+    model.add_rule(GlobalReadoutNoise(ReadoutErr(0.01, 0.01)))
+
+Available Rules
+^^^^^^^^^^^^^^^
+
+Here is a list of the available noise rules. Each rule matches a specific condition in the circuit.
+
+**Readout Noise**
+
+* :class:`~mimiqcircuits.GlobalReadoutNoise`: Applies noise to *all* measurements.
+* :class:`~mimiqcircuits.SetQubitReadoutNoise`: Applies noise to measurements on any qubit in a given set.
+* :class:`~mimiqcircuits.ExactQubitReadoutNoise`: Applies noise to measurements on a specific sequence of qubits (sensitive to order).
+
+**Gate Noise**
+
+* :class:`~mimiqcircuits.GateInstanceNoise`: Applies noise to all instances of a specific gate type (e.g., all `CX` gates).
+* :class:`~mimiqcircuits.SetGateInstanceQubitNoise`: Applies noise to gates acting on qubits within a given set.
+* :class:`~mimiqcircuits.ExactGateInstanceQubitNoise`: Applies noise to gates acting on a specific sequence of qubits.
+
+**Idle Noise**
+
+* :class:`~mimiqcircuits.IdleNoise`: Applies noise to idle qubits during ``Delay`` instructions.
+* :class:`~mimiqcircuits.SetIdleQubitNoise`: Applies idle noise only to specific qubits.
+
+Saving and Loading
+^^^^^^^^^^^^^^^^^^
+
+Noise models can be saved to and loaded from disk using the protobuf format. This allows sharing models between Python and Julia.
+
+.. code-block:: python
+
+    # Save to a file
+    model.saveproto("noise_model.pb")
+
+    # Load from a file
+    loaded_model = NoiseModel.loadproto("noise_model.pb")
+
+Reference
+---------
+
+.. autoclass:: mimiqcircuits.NoiseModel
+    :noindex:
+.. autofunction:: mimiqcircuits.apply_noise_model
+    :noindex:
+.. autoclass:: mimiqcircuits.Depolarizing1
+    :noindex:
+.. autoclass:: mimiqcircuits.Depolarizing2
+    :noindex:
+.. autoclass:: mimiqcircuits.AmplitudeDamping
+    :noindex:
+.. autoclass:: mimiqcircuits.PauliNoise
+    :noindex:
+.. autoclass:: mimiqcircuits.ReadoutErr
+    :noindex:

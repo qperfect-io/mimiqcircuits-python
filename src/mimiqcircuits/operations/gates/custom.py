@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Custom gate definition."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 from numpy import ndarray
@@ -31,8 +32,8 @@ class GateCustom(mcg.Gate):
         >>> matrix = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 0, -1j],[0, 0, 1j, 0]])
         >>> c = Circuit()
         >>> c.push(GateCustom(matrix), 0, 1)
-        2-qubit circuit with 1 instructions:
-        └── Custom(...) @ q[0,1]
+        2-qubit circuit with 1 instruction:
+        └── Custom(...) @ q[0:1]
         <BLANKLINE>
     """
 

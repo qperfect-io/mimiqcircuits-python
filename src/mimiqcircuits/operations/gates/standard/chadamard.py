@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-Hadamard gate."""
 
 import mimiqcircuits as mc
 
@@ -46,7 +47,7 @@ def GateCH():
         <BLANKLINE>
         >>> c = Circuit().push(GateCH(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CH @ q[0], q[1]
         <BLANKLINE>
         >>> GateCH().power(2), GateCH().inverse()

@@ -14,12 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Pair measurement operations (ZZ, XX, YY)."""
 
-from mimiqcircuits.operations.operation import Operation
+from mimiqcircuits.operations.measure import AbstractMeasurement
 import mimiqcircuits as mc
 
 
-class MeasureZZ(Operation):
+class MeasureZZ(AbstractMeasurement):
     r"""MeasureZZ operation.
 
     The MeasureZZ operation measures the joint parity of two qubits in the Z-basis.
@@ -36,8 +37,8 @@ class MeasureZZ(Operation):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureZZ(), 0, 1, 0)
-        2-qubit, 1-bit circuit with 1 instructions:
-        └── MZZ @ q[0,1], c[0]
+        2-qubit, 1-bit circuit with 1 instruction:
+        └── MZZ @ q[0:1], c[0]
         <BLANKLINE>
         >>> c.decompose()
         2-qubit, 1-bit circuit with 3 instructions:
@@ -79,7 +80,7 @@ class MeasureZZ(Operation):
         return circ
 
 
-class MeasureXX(Operation):
+class MeasureXX(AbstractMeasurement):
     r"""MeasureXX operation.
 
     The MeasureXX operation measures the joint parity of two qubits in the X-basis, determining whether
@@ -104,8 +105,8 @@ class MeasureXX(Operation):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureXX(), 0, 1, 0)
-        2-qubit, 1-bit circuit with 1 instructions:
-        └── MXX @ q[0,1], c[0]
+        2-qubit, 1-bit circuit with 1 instruction:
+        └── MXX @ q[0:1], c[0]
         <BLANKLINE>
         >>> c.decompose()
         2-qubit, 1-bit circuit with 5 instructions:
@@ -151,7 +152,7 @@ class MeasureXX(Operation):
         return circ
 
 
-class MeasureYY(Operation):
+class MeasureYY(AbstractMeasurement):
     r"""MeasureYY operation.
 
     The MeasureYY operation measures the joint parity of two qubits in the Y-basis,
@@ -172,8 +173,8 @@ class MeasureYY(Operation):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureYY(), 0, 1, 0)
-        2-qubit, 1-bit circuit with 1 instructions:
-        └── MYY @ q[0,1], c[0]
+        2-qubit, 1-bit circuit with 1 instruction:
+        └── MYY @ q[0:1], c[0]
         <BLANKLINE>
         >>> c.decompose()
         2-qubit, 1-bit circuit with 10 instructions:

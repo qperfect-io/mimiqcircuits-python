@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Parallel gate operation."""
 
 import numpy as np
 from functools import reduce
@@ -38,7 +39,7 @@ class Parallel(Gate):
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Parallel(3,GateX()),1,2,3)
-        4-qubit circuit with 1 instructions:
+        4-qubit circuit with 1 instruction:
         └── ⨷ ³ X @ q[1], q[2], q[3]
         <BLANKLINE>
     """

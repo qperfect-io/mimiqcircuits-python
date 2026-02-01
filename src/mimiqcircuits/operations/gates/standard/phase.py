@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Phase (P) gate."""
 
 import mimiqcircuits as mc
 from mimiqcircuits.matrices import pmatrix
@@ -48,13 +49,13 @@ class GateP(mc.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateP(lmbda), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── P(lambda) @ q[0]
         <BLANKLINE>
         >>> GateP(lmbda).power(2), GateP(lmbda).inverse()
         (P(2*lambda), P(-lambda))
         >>> GateP(lmbda).decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, lambda, 0.0) @ q[0]
         <BLANKLINE>
     """

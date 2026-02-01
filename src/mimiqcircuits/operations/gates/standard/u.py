@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""U (Generic Unitary) gate."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.matrices import umatrix
@@ -58,24 +59,24 @@ class GateU(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateU(theta, phi, lmbda, gamma), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(theta, phi, lambda, gamma) @ q[0]
         <BLANKLINE>
         >>> GateU(theta, phi, lmbda, gamma).power(2), GateU(theta, phi, lmbda, gamma).inverse()
         (U(theta, phi, lambda, gamma)**2, U(-theta, -lambda, -phi, -gamma))
         >>> GateU(theta, phi, lmbda, gamma).decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(theta, phi, lambda, gamma) @ q[0]
         <BLANKLINE>
         >>> c = Circuit().push(GateU(theta, phi, lmbda, gamma), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(theta, phi, lambda, gamma) @ q[0]
         <BLANKLINE>
         >>> GateU(theta, phi, lmbda, gamma).power(2), GateU(theta, phi, lmbda, gamma).inverse()
         (U(theta, phi, lambda, gamma)**2, U(-theta, -lambda, -phi, -gamma))
         >>> GateU(theta, phi, lmbda, gamma).decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(theta, phi, lambda, gamma) @ q[0]
         <BLANKLINE>
     """
@@ -105,7 +106,6 @@ class GateU(mcg.Gate):
         )
 
     def _power(self, p):
-
         if self.is_symbolic():
             return mc.Power(self, p)
 

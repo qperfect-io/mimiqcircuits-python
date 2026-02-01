@@ -6,42 +6,84 @@
 Introduction
 ============
 
-MIMIQ Circuits is a quantum computing framework and high performance simulator
-developed by QPerfect. It allows you to develop and run your quantum
-algorithms beyond the limits of today's noisy intermediate scale quantum (NISQ)
-computers.
+MIMIQ Circuits is a quantum computing framework and high-performance simulator developed by QPerfect.
 
-Quick Start
------------
+.. grid:: 1 2 2 3
+    :gutter: 3
+    :padding: 0
 
-:file:`mimiqcircuits.py` is a `Python Language <https://docs.python.org/3/>`_ package containing all the utilities and programming interfaces (APIs) 
- to build quantum systems, connect, and execute simulations on `QPerfect's MIMIQ-CIRC <https://qperfect.io/>`_ 
- large-scale quantum circuit simulator.
+    .. grid-item-card:: :octicon:`hourglass` Quick Start
+        :link: quick_start
+        :link-type: doc
 
-To install :file:`mimiqcircuits.py` you can use the following command:
+        Get up and running with a simple example.
+
+    .. grid-item-card:: :octicon:`download` Installation
+        :link: manual/installation
+        :link-type: doc
+
+        Step-by-step installation guide.
+
+    .. grid-item-card:: :octicon:`book` Manual
+        :link: manual/index
+        :link-type: doc
+
+        Comprehensive guide to MimiqCircuits.
+
+    .. grid-item-card:: :octicon:`beaker` Use Cases
+        :link: usecases/index
+        :link-type: doc
+
+        Examples and tutorials (VQE, QFT, Grover, etc.).
+
+    .. grid-item-card:: :octicon:`code` API Reference
+        :link: apidocs/mimiqcircuits
+        :link-type: doc
+
+        Detailed API documentation.
+
+    .. grid-item-card:: :octicon:`globe` QPerfect
+        :link: https://qperfect.io
+        :link-type: url
+
+        Visit the QPerfect website.
+
+    .. grid-item-card:: :octicon:`mark-github` GitHub
+        :link: https://github.com/qperfect-io/mimiqcircuits-python
+        :link-type: url
+
+        View the source code on GitHub.
+
+
+About MIMIQ Circuits
+--------------------
+
+MIMIQ Circuits allows you to develop and run your quantum algorithms beyond the limits of today's noisy intermediate scale quantum (NISQ) computers. 
+It provides a seamless interface to **QPerfect's MIMIQ-CIRC**, a large-scale quantum circuit simulator capable of executing complex circuits with high fidelity.
+
+**Quick Installation**
+
+Get started immediately by installing the package via pip:
 
 .. code-block:: bash
 
-  pip install "mimiqcircuits @ git+https://github.com/qperfect-io/mimiqcircuits-python.git"
+  pip install mimiqcircuits
 
+Or optionally installing dependencies for the local simulator (quantanium) and visualization (matplotlib) tools:
 
-For more details on installation, please refer to the :doc:`installation </manual/installation>` page. 
+.. code-block:: bash
 
+  pip install mimiqcircuits[quantanium,visualization]
 
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-Contents
---------
+For detailed requirements and setup, see the :doc:`Installation <manual/installation>` page.
 
 .. toctree::
+   :hidden:
+
    mimiq_documentation
    quick_start
    manual/index
+   usecases/index   
    API References <apidocs/mimiqcircuits>
    GitHub <https://github.com/qperfect-io/mimiqcircuits-python>
    Julia APIs <https://mimiq.qperfect.io/docs/julia/>

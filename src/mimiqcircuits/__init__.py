@@ -191,13 +191,16 @@ from mimiqcircuits.operations.annotations import (
     ObservableInclude,
     Tick,
 )
-from mimiqcircuits.classical.classical_not import Not
+from mimiqcircuits.classical.abstract_classical import AbstractClassical
+from mimiqcircuits.classical.not_operation import Not
+from mimiqcircuits.classical.and_operation import And
+from mimiqcircuits.classical.or_operation import Or
+from mimiqcircuits.classical.xor_operation import Xor
+from mimiqcircuits.classical.paritycheck import ParityCheck
+from mimiqcircuits.classical.setbits import SetBit0, SetBit1
 from mimiqcircuits.complex import Pow, Add, Multiply
 from mimiqcircuits.operations.block import Block
 from mimiqcircuits.operations.repeat import Repeat, repeat
-
-# needed to initialize the registers
-import mimiqcircuits.proto.circuitproto
 
 from mimiqlink import QPERFECT_CLOUD, QPERFECT_DEV, PLANQK_API
 from mimiqcircuits.hamiltonian import (
@@ -209,106 +212,102 @@ from mimiqcircuits.hamiltonian import (
     push_yoshidatrotter,
 )
 from mimiqcircuits.operations.gates.generalized.rpauli import RPauli
+from mimiqcircuits.optimization import (
+    OptimizationExperiment,
+    OptimizationResults,
+    OptimizationRun,
+)
+from mimiqcircuits.circuittester import CircuitTesterExperiment
+
+from mimiqcircuits.get import get_results, get_input, get_inputs, get_result
+from mimiqcircuits.operations.generating_list import (
+    attach_inheritance_tree_to_docstring,
+    generate_ascii_gate_tree_grouped,
+    SIMPLEGATES,
+    OPERATIONS,
+    SIMPLEGATES_GROUPS,
+    KRAUSCHANNELS,
+    MEASUREMENTS,
+    ANNOTATIONS,
+    GATES,
+    CLASSICALOPERATIONS,
+    _rst_fenced,
+)
+from mimiqcircuits.operations.readouterr import ReadoutErr
+from mimiqcircuits.noisemodel import (
+    AbstractNoiseRule,
+    ExactQubitReadoutNoise,
+    SetQubitReadoutNoise,
+    NoiseModel,
+    apply_noise_model,
+    IdleNoise,
+    CustomNoiseRule,
+    GateInstanceNoise,
+    ExactGateInstanceQubitNoise,
+    SetGateInstanceQubitNoise,
+    SetIdleQubitNoise,
+    GlobalReadoutNoise
+)
+from mimiqcircuits.circuit_extras import remove_unused, remove_swaps
+
+from mimiqcircuits.circuittester import CircuitTesterExperiment
+
+# needed to initialize the registers
+import mimiqcircuits.proto.circuitproto
 
 
-class GATES:
-    """
-    Helper class to list gates.
+try:
+    ascii_tree = generate_ascii_gate_tree_grouped(SIMPLEGATES_GROUPS)
+    SIMPLEGATES.__doc__ = "Available quantum gates:\n" + _rst_fenced(ascii_tree)
+except Exception:
+    SIMPLEGATES.__doc__ = (
+        "Available quantum gates:\n\n[Failed to generate grouped gate list]"
+    )
 
-    **NOTE**: Cannot instantiated called directly. Use `GATES.list()` for a list
-    of gate types, and `help(GATES)` for the .
 
+attach_inheritance_tree_to_docstring(
+    mimiqcircuits.Operation,
+    mimiqcircuits,
+    target_object=OPERATIONS,
+    title="Operations Hierarchy",
+    start_from="Operation",
+)
+attach_inheritance_tree_to_docstring(
+    mimiqcircuits.Operation,
+    mimiqcircuits,
+    target_object=ANNOTATIONS,
+    title="Annotation Hierarchy",
+    start_from="AbstractAnnotation",
+)
+attach_inheritance_tree_to_docstring(
+    mimiqcircuits.Operation,
+    mimiqcircuits,
+    target_object=GATES,
+    title="Gate Hierarchy",
+    start_from="Gate",
+)
+attach_inheritance_tree_to_docstring(
+    mimiqcircuits.Operation,
+    mimiqcircuits,
+    target_object=KRAUSCHANNELS,
+    title="krauschannel Hierarchy",
+    start_from="krauschannel",
+)
+attach_inheritance_tree_to_docstring(
+    mimiqcircuits.Operation,
+    mimiqcircuits,
+    target_object=MEASUREMENTS,
+    title="Measurement Hierarchy",
+    start_from="AbstractMeasurement",
+)
 
-    **Single qubit gates**
-        :func:`GateX` :func:`GateY` :func:`GateZ` :func:`GateH`
-        :func:`GateS` :func:`GateSDG`
-        :func:`GateT` :func:`GateTDG`
-        :func:`GateSX` :func:`GateSXDG`
-        :func:`GateID`
-
-    **Single qubit gates (parametric)**
-        :func:`GateU` :func:`GateP`
-        :func:`GateRX` :func:`GateRY` :func:`GateRZ` :func:`GateP`
-
-    **Two qubit gates**
-        :func:`GateCX` :func:`GateCY` :func:`GateCZ`
-        :func:`GateCH`
-        :func:`GateSWAP` :func:`GateISWAP`
-        :func:`GateCS` :func:`GateCSX`
-        :func:`GateECR` :func:`GateDCX`
-
-    **Two qubit gates (parametric)**
-        :func:`GateCU`
-        :func:`GateCP`
-        :func:`GateCRX` :func:`GateCRY` :func:`GateCRZ`
-        :func:`GateRXX` :func:`GateRYY` :func:`GateRZZ`
-        :func:`GateXXplusYY` :func:`GateXXminusYY`
-
-    **Other**
-        :func:`GateCustom`
-    """
-
-    def __new__(cls):
-        raise NotImplementedError
-
-    @staticmethod
-    def list():
-        return [
-            GateCustom,
-            GateU,
-            GateID,
-            GateX,
-            GateY,
-            GateZ,
-            GateH,
-            GateHXY,
-            GateHXZ,
-            GateHYZ,
-            GateS,
-            GateSDG,
-            GateT,
-            GateTDG,
-            GateSX,
-            GateSXDG,
-            GateSY,
-            GateSYDG,
-            GateRX,
-            GateRY,
-            GateRZ,
-            GateR,
-            GateU1,
-            GateU2,
-            GateU3,
-            GateCX,
-            GateCY,
-            GateCZ,
-            GateCH,
-            GateSWAP,
-            GateISWAP,
-            GateCS,
-            GateCSDG,
-            GateCSX,
-            GateCSXDG,
-            GateECR,
-            GateDCX,
-            GateCP,
-            GateCU,
-            GateCRX,
-            GateCRY,
-            GateCRZ,
-            GateRXX,
-            GateRYY,
-            GateRZZ,
-            GateRZX,
-            GateXXplusYY,
-            GateXXminusYY,
-            GateCCX,
-            GateC3X,
-            GateCCP,
-            GateCSWAP,
-            GateP,
-        ]
-
+attach_inheritance_tree_to_docstring(
+    mimiqcircuits.Operation,
+    mimiqcircuits,
+    target_object=CLASSICALOPERATIONS,
+    title="Classical Operations Hierarchy",
+    start_from="AbstractClassical",
+)
 
 # Export specific classes, and functions.
 __all__ = [
@@ -477,4 +476,42 @@ __all__ = [
     "Block",
     "Repeat",
     "repeat",
+    "OptimizationExperiment",
+    "OptimizationResults",
+    "OptimizationRun",
+    "CircuitTesterExperiment",
+    "get_input",
+    "get_inputs",
+    "get_result",
+    "get_results",
+    "OPERATIONS",
+    "ANNOTATIONS",
+    "SIMPLEGATES",
+    "KRAUSCHANNELS",
+    "MEASUREMENTS",
+    "ReadoutErr",
+    "AbstractNoiseRule",
+    "ExactQubitReadoutNoise",
+    "GlobalReadoutNoise",
+    "SetQubitReadoutNoise",
+    "NoiseModel",
+    "apply_noise_model",
+    "IdleNoise",
+    "CustomNoiseRule",
+    "ExactGateInstanceQubitNoise",
+    "SetGateInstanceQubitNoise",
+    "GateInstanceNoise",
+    "SetIdleQubitNoise",
+    "SetBit1",
+    "SetBit0",
+    "And",
+    "Or",
+    "Xor",
+    "ParityCheck",
+    "AbstractClassical",
+    "CircuitTesterExperiment",
+    "CLASSICALOPERATIONS",
+    "remove_unused",
+    "remove_swaps",
+    "GateInstanceNoise"
 ]

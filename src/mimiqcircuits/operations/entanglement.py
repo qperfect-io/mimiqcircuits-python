@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Entanglement measures (BondDim, VonNeumannEntropy, etc.)."""
 
 from mimiqcircuits import Operation
 
@@ -51,7 +52,7 @@ class BondDim(Operation):
         >>> k = 5
         >>> c = Circuit()
         >>> c.push(BondDim(), k, 1)
-        6-qubit, 2-zvar circuit with 1 instructions:
+        6-qubit, 2-zvar circuit with 1 instruction:
         └── BondDim @ q[5], z[1]
         <BLANKLINE>
     """
@@ -132,7 +133,7 @@ class VonNeumannEntropy(Operation):
         >>> k = 5
         >>> c = Circuit()
         >>> c.push(VonNeumannEntropy(), k, 1)
-        6-qubit, 2-zvar circuit with 1 instructions:
+        6-qubit, 2-zvar circuit with 1 instruction:
         └── VonNeumannEntropy @ q[5], z[1]
         <BLANKLINE>
     """
@@ -211,7 +212,7 @@ class SchmidtRank(Operation):
         >>> k = 5
         >>> c = Circuit()
         >>> c.push(SchmidtRank(), k, 1)
-        6-qubit, 2-zvar circuit with 1 instructions:
+        6-qubit, 2-zvar circuit with 1 instruction:
         └── SchmidtRank @ q[5], z[1]
         <BLANKLINE>
     """

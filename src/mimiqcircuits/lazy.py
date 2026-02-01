@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Lazy evaluation and composition functions."""
 
 import mimiqcircuits as mc
 
@@ -84,6 +85,36 @@ class LazyExpr:
 
 
 def control(*args):
+    """
+    Apply a control to a quantum operation or creating a lazy expression.
+
+    This function can be used in two ways:
+    1. To create a controlled version of a `Gate` or `Operation`.
+    2. To create a lazy expression that will apply a control to a future argument.
+
+    Args:
+        *args: Variable length argument list.
+            - If one argument is provided:
+              - If it's an operation, returns a lazy expression `control(?, op)`.
+              - If it's an integer (num_controls), returns a lazy expression `control(n, ?)`.
+            - If two arguments are provided (num_controls, gate):
+              - Returns the controlled operation `gate.control(num_controls)`.
+
+    Returns:
+        Union[Operation, LazyExpr]: The controlled operation or a lazy expression.
+
+    Raises:
+        TypeError: If the arguments are of invalid types or count.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> op = control(2, GateX())
+        >>> op
+        C₂X
+        >>> lazy_ctrl = control(2)
+        >>> lazy_ctrl(GateX())
+        C₂X
+    """
     if len(args) == 1:
         arg = args[0]
         if isinstance(arg, mc.Operation):
@@ -100,6 +131,32 @@ def control(*args):
 
 
 def parallel(*args):
+    """
+    Create a parallel execution of a quantum operation or a lazy expression.
+
+    This function can be used to apply an operation multiple times in parallel across different qubits.
+
+    Args:
+        *args: Variable length argument list.
+            - If one argument is provided:
+                - If it's an operation, returns a lazy expression `parallel(?, op)`.
+                - If it's an integer (num_repeats), returns a lazy expression `parallel(n, ?)`.
+
+            - If two arguments are provided (num_repeats, gate):
+                - Returns the parallel operation `gate.parallel(num_repeats)`.
+
+    Returns:
+        Union[Operation, LazyExpr]: The parallel operation or a lazy expression.
+
+    Raises:
+        TypeError: If the arguments are of invalid types or count.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> op = parallel(3, GateH())
+        >>> op
+        ⨷ ³ H
+    """
     if len(args) == 1:
         arg = args[0]
         if isinstance(arg, mc.Operation):
@@ -116,10 +173,48 @@ def parallel(*args):
 
 
 def inverse(op):
+    """
+    Compute the inverse of a quantum operation.
+
+    Args:
+        op (Operation): The operation to invert.
+
+    Returns:
+        Operation: The inverse of the operation.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> op = inverse(GateS())
+        >>> op
+        S†
+    """
     return op.inverse()
 
 
 def power(*args):
+    """
+    Raise a quantum operation to a power or create a lazy expression.
+
+    Args:
+        *args: Variable length argument list.
+            - If one argument is provided:
+              - If it's an operation, returns a lazy expression `power(op, ?)`.
+              - If it's a number (exponent), returns a lazy expression `power(?, exponent)`.
+            - If two arguments are provided (gate, exponent):
+              - Returns the powered operation `gate.power(exponent)`.
+
+    Returns:
+        Union[Operation, LazyExpr]: The powered operation or a lazy expression.
+
+    Raises:
+        TypeError: If the arguments are of invalid types or count.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> op = power(GateX(), 0.5)
+        >>> op
+        SX
+    """
     if len(args) == 1:
         arg = args[0]
         if isinstance(arg, mc.Operation):

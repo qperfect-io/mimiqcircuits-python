@@ -7,14 +7,6 @@ and installing the MIMIQ Circuits package, to setting up Jupyter for an enhanced
 By the end of this guide, you’ll be ready to dive into quantum computing with MIMIQ Circuits.
 
 
-Contents
-========
-
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
 Prerequisites
 -------------
 
@@ -70,7 +62,7 @@ Use `pip` to install the latest version of MIMIQ Circuits from GitHub:
 
 .. code-block:: shell
 
-    pip3 install "mimiqcircuits @ git+https://github.com/qperfect-io/mimiqcircuits-python.git"
+    pip3 install mimiqcircuits
 
 Step 4: Verify the Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,7 +80,13 @@ To use visualization functionality or work with Jupyter notebooks, install addit
 
 .. code-block:: shell
 
-    pip3 install "mimiqcircuits[visualization] @ git+https://github.com/qperfect-io/mimiqcircuits-python.git"
+    pip3 install mimiqcircuits[visualization]
+
+To use the local statevector simulator Quantanium:
+
+.. code-block:: shell
+
+    pip3 install mimiqcircuits[quantanium]
 
 Jupyter Kernel Setup
 --------------------

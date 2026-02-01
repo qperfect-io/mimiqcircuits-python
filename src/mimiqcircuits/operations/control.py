@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Control operation."""
 
 import symengine as se
 import sympy as sp
@@ -53,16 +54,12 @@ class Control(Gate):
     A Control is a special operation that wraps another gate with multiple
     control qubits.
 
-    Attributes:
-        num_controls: Number of control qubits
-        op: The target gate operation
-
     Examples:
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(Control(3,GateX()),1,2,3,4)
-        5-qubit circuit with 1 instructions:
-        └── C₃X @ q[1,2,3], q[4]
+        5-qubit circuit with 1 instruction:
+        └── C₃X @ q[1:3], q[4]
         <BLANKLINE>
         >>> Control(2, GateX()).matrix()
         [1.0, 0, 0, 0, 0, 0, 0, 0]

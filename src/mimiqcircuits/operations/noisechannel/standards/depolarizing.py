@@ -62,14 +62,14 @@ class Depolarizing(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(Depolarizing(1, 0.1), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── Depolarizing(0.1) @ q[1]
         <BLANKLINE>
 
         >>> c.push(Depolarizing(5, 0.1), 1, 2, 3, 4, 5)
         6-qubit circuit with 2 instructions:
         ├── Depolarizing(0.1) @ q[1]
-        └── Depolarizing(0.1) @ q[1,2,3,4,5]
+        └── Depolarizing(0.1) @ q[1:5]
         <BLANKLINE>
 
         For one and two qubits, you can use the shorthand notation:
@@ -77,16 +77,16 @@ class Depolarizing(krauschannel):
         >>> c.push(Depolarizing(1, 0.1), 1)
         6-qubit circuit with 3 instructions:
         ├── Depolarizing(0.1) @ q[1]
-        ├── Depolarizing(0.1) @ q[1,2,3,4,5]
+        ├── Depolarizing(0.1) @ q[1:5]
         └── Depolarizing(0.1) @ q[1]
         <BLANKLINE>
 
         >>> c.push(Depolarizing(2, 0.1), 1, 2)
         6-qubit circuit with 4 instructions:
         ├── Depolarizing(0.1) @ q[1]
-        ├── Depolarizing(0.1) @ q[1,2,3,4,5]
+        ├── Depolarizing(0.1) @ q[1:5]
         ├── Depolarizing(0.1) @ q[1]
-        └── Depolarizing(0.1) @ q[1,2]
+        └── Depolarizing(0.1) @ q[1:2]
         <BLANKLINE>
     """
 

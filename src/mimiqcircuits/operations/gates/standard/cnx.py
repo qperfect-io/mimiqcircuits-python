@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-Controlled-X (Toffoli) and C3X gates."""
 
 from symengine import pi
 import mimiqcircuits as mc
@@ -41,8 +42,8 @@ def GateCCX():
         <BLANKLINE>
         >>> c = Circuit().push(GateCCX(), 0, 1, 2)
         >>> c
-        3-qubit circuit with 1 instructions:
-        └── C₂X @ q[0,1], q[2]
+        3-qubit circuit with 1 instruction:
+        └── C₂X @ q[0:1], q[2]
         <BLANKLINE>
         >>> GateCCX().power(2), GateCCX().inverse()
         (C₂ID, C₂X)
@@ -119,8 +120,8 @@ def GateC3X():
         <BLANKLINE>
         >>> c = Circuit().push(GateC3X(), 0, 1, 2, 3)
         >>> c
-        4-qubit circuit with 1 instructions:
-        └── C₃X @ q[0,1,2], q[3]
+        4-qubit circuit with 1 instruction:
+        └── C₃X @ q[0:2], q[3]
         <BLANKLINE>
         >>> GateC3X().power(2), GateC3X().inverse()
         (C₃ID, C₃X)

@@ -15,15 +15,16 @@
 # limitations under the License.
 #
 
-from mimiqcircuits import Operation
+from mimiqcircuits.classical.abstract_classical import AbstractClassical
 
 
-class Not(Operation):
+class Not(AbstractClassical):
     r"""
     Not operation.
 
     Represents a NOT operation that can be added to quantum circuits.
-    This operation  inverts a classical bit.
+    Classical operation that flips a classical bit:
+    `0 → 1` and `1 → 0`.
 
     Examples:
 
@@ -33,8 +34,8 @@ class Not(Operation):
         '!'
         >>> c = Circuit()
         >>> c.push(Not(), 1)
-        2-bit circuit with 1 instructions:
-        └── ! @ c[1]
+        2-bit circuit with 1 instruction:
+        └── c[1] = !c[1]
         <BLANKLINE>
     """
 
@@ -57,6 +58,9 @@ class Not(Operation):
 
     def __repr__(self):
         return f"{self._name}"
+
+    def format_with_targets(self, qubits, bits, zvars):
+        return f"c[{bits[0]}] = !c[{bits[0]}]"
 
 
 __all__ = ["Not"]

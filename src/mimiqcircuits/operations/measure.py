@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Measurement operations."""
 
 from mimiqcircuits.operations.operation import Operation
 import mimiqcircuits as mc
 
 
 class AbstractMeasurement(Operation):
-
     _name = "AbstractMeasurement"
 
     def iswrapper(self):
@@ -28,6 +28,9 @@ class AbstractMeasurement(Operation):
 
     def __str__(self):
         return self._name
+
+    def asciiwidth(self, qubits, bits, zvars):
+        return len(str(self)) + 2
 
 
 class Measure(AbstractMeasurement):
@@ -47,7 +50,7 @@ class Measure(AbstractMeasurement):
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Measure(),0,0)
-        1-qubit, 1-bit circuit with 1 instructions:
+        1-qubit, 1-bit circuit with 1 instruction:
         └── M @ q[0], c[0]
         <BLANKLINE>
 
@@ -106,7 +109,7 @@ class MeasureX(AbstractMeasurement):
 
         >>> c = Circuit()
         >>> c.push(MeasureX(), 2, 1)
-        3-qubit, 2-bit circuit with 1 instructions:
+        3-qubit, 2-bit circuit with 1 instruction:
         └── MX @ q[2], c[1]
         <BLANKLINE>
 
@@ -170,7 +173,7 @@ class MeasureY(AbstractMeasurement):
 
         >>> c = Circuit()
         >>> c.push(MeasureY(), 2, 1)
-        3-qubit, 2-bit circuit with 1 instructions:
+        3-qubit, 2-bit circuit with 1 instruction:
         └── MY @ q[2], c[1]
         <BLANKLINE>
 
@@ -231,7 +234,7 @@ class MeasureZ(AbstractMeasurement):
 
         >>> c = Circuit()
         >>> c.push(MeasureZ(), 0, 0)
-        1-qubit, 1-bit circuit with 1 instructions:
+        1-qubit, 1-bit circuit with 1 instruction:
         └── M @ q[0], c[0]
         <BLANKLINE>
 

@@ -52,7 +52,7 @@ class AmplitudeDamping(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(AmplitudeDamping(0.1), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── AmplitudeDamping(0.1) @ q[0]
         <BLANKLINE>
         
@@ -149,7 +149,7 @@ class GeneralizedAmplitudeDamping(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(GeneralizedAmplitudeDamping(0.1,1), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── GeneralizedAmplitudeDamping((0.1, 1)) @ q[0]
         <BLANKLINE>
         
@@ -221,7 +221,7 @@ class GeneralizedAmplitudeDamping(krauschannel):
         return self._parnames
 
     def __str__(self):
-        return f"{self._name}({self.p,self.gamma})"
+        return f"{self._name}({self.p, self.gamma})"
 
 
 __all__ = ["GeneralizedAmplitudeDamping", "AmplitudeDamping"]

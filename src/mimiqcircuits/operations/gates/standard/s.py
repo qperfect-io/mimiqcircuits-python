@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""S and SDG gates."""
 
 from symengine import pi
 
@@ -43,13 +44,13 @@ def GateS():
         <BLANKLINE>
         >>> c = Circuit().push(GateS(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── S @ q[0]
         <BLANKLINE>
         >>> GateS().power(2), GateS().inverse()
         (Z, S†)
         >>> GateS().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, (1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
@@ -87,13 +88,13 @@ def GateSDG():
         <BLANKLINE>
         >>> c = Circuit().push(GateSDG(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── S† @ q[0]
         <BLANKLINE>
         >>> GateSDG().power(2), GateSDG().inverse()
         ((S†)**2, S)
         >>> GateSDG().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, (-1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """

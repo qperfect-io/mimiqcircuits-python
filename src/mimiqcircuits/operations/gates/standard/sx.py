@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""SX (Sqrt(X)) and SXDG gates."""
 
 from symengine import pi
 
@@ -41,7 +42,7 @@ def GateSX():
         <BLANKLINE>
         >>> c = Circuit().push(GateSX(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── SX @ q[0]
         <BLANKLINE>
         >>> GateSX().power(2), GateSX().inverse()
@@ -91,7 +92,7 @@ def GateSXDG():
         <BLANKLINE>
         >>> c = Circuit().push(GateSXDG(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── SX† @ q[0]
         <BLANKLINE>
         >>> GateSXDG().power(2), GateSXDG().inverse()

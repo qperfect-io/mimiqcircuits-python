@@ -47,7 +47,7 @@ class DiagonalOp(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(DiagonalOp(1, 0.5)), 1, 2)
-        2-qubit, 3-zvar circuit with 1 instructions:
+        2-qubit, 3-zvar circuit with 1 instruction:
         └── ⟨D(1, 0.5)⟩ @ q[1], z[2]
         <BLANKLINE>
     """
@@ -71,7 +71,7 @@ class DiagonalOp(mc.AbstractOperator):
         return mat
 
     def __str__(self):
-        return f"{self._name}{self.a,self.b}"
+        return f"{self._name}{self.a, self.b}"
 
     @property
     def parnames(self):

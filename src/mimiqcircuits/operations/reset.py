@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Reset operations."""
 
 from mimiqcircuits.operations.krauschannel import krauschannel
 import mimiqcircuits as mc
@@ -38,7 +39,7 @@ class Reset(krauschannel):
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Reset(), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── Reset @ q[0]
         <BLANKLINE>
         >>> from mimiqcircuits import *
@@ -106,7 +107,7 @@ class ResetX(krauschannel):
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(ResetX(), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── ResetX @ q[0]
         <BLANKLINE>
         >>> c.decompose()
@@ -166,7 +167,7 @@ class ResetY(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(ResetY(), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── ResetY @ q[0]
         <BLANKLINE>
         >>> c.decompose()
@@ -224,11 +225,11 @@ class ResetZ(krauschannel):
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(ResetZ(), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── Reset @ q[0]
         <BLANKLINE>
         >>> c.decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── Reset @ q[0]
         <BLANKLINE>
 

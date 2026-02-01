@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Power operation."""
 
 from fractions import Fraction
 from symengine import pi
@@ -53,7 +54,7 @@ class Power(Gate):
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Power(GateX(),1/2),1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── SX @ q[1]
         <BLANKLINE>
         >>> c.push(Power(GateX(),5),1)
@@ -227,6 +228,21 @@ class Power(Gate):
         if isinstance(self.exponent, int) and self.exponent >= 1:
             for _ in range(self.exponent):
                 circ.push(self.op, *qubits)
+            return circ
+
+        if isinstance(self.op, mc.Parallel):
+            nq = self.op.op.num_qubits
+            for i in range(self.op.num_repeats):
+                q = [qubits[j] for j in range(i * nq, (i + 1) * nq)]
+                circ.push(self.op.op.power(self.exponent), *q)
+            return circ
+
+        if isinstance(self.op, mc.Inverse) and isinstance(self.op.op, mc.Parallel):
+            base = self.op.op.op.inverse()
+            nq = base.num_qubits
+            for i in range(self.op.op.num_repeats):
+                q = [qubits[j] for j in range(i * nq, (i + 1) * nq)]
+                circ.push(base.power(self.exponent), *q)
             return circ
 
         # try to decompose,

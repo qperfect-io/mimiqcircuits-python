@@ -73,7 +73,7 @@ class Kraus(krauschannel):
         >>> from symengine import *
         >>> c = Circuit()
         >>> c.push(Kraus([Matrix([[1, 0], [0, sqrt(0.9)]]), Matrix([[0, sqrt(0.1)], [0, 0]])]), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── Kraus(Operator([[1, 0], [0, 0.948683298050514]]), Operator([[0, 0.316227766016838], [0, 0]])) @ q[0]
         <BLANKLINE>
 
@@ -91,7 +91,7 @@ class Kraus(krauschannel):
 
         >>> c = Circuit()
         >>> c.push(Kraus([Projector0(), Projector1()]), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── Kraus(P₀(1), P₁(1)) @ q[0]
         <BLANKLINE>
 
@@ -99,7 +99,7 @@ class Kraus(krauschannel):
 
         >>> c = Circuit()
         >>> c.push(Kraus([Matrix([[1, 0], [0, 0]]), Projector1()]), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── Kraus(Operator([[1, 0], [0, 0]]), P₁(1)) @ q[0]
         <BLANKLINE>
     """

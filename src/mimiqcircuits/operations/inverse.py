@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Inverse operation."""
 
 import mimiqcircuits as mc
 import mimiqcircuits.lazy as lz
@@ -60,7 +61,7 @@ class Inverse(Gate):
         <BLANKLINE>
         >>> c = Circuit()
         >>> c.push(Inverse(GateP(1)), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── P(1)† @ q[1]
         <BLANKLINE>
     """

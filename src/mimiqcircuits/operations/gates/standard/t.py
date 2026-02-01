@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""T and TDG gates."""
 
 from symengine import pi
 
@@ -41,13 +42,13 @@ def GateT():
         <BLANKLINE>
         >>> c = Circuit().push(GateT(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── T @ q[0]
         <BLANKLINE>
         >>> GateT().power(2), GateT().inverse()
         (S, T†)
         >>> GateT().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, (1/4)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
@@ -85,13 +86,13 @@ def GateTDG():
         <BLANKLINE>
         >>> c = Circuit().push(GateTDG(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── T† @ q[0]
         <BLANKLINE>
         >>> GateTDG().power(2), GateTDG().inverse()
         ((T†)**2, T)
         >>> GateTDG().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, (-1/4)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """

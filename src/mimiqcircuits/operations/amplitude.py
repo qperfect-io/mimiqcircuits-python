@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+"""Amplitude operation."""
 
 from mimiqcircuits import Operation, BitString
 
@@ -30,7 +30,7 @@ class Amplitude(Operation):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(Amplitude(BitString(2)),0)
-        1-zvar circuit with 1 instructions:
+        1-zvar circuit with 1 instruction:
         └── Amplitude(bs"00") @ z[0]
         <BLANKLINE>
     """

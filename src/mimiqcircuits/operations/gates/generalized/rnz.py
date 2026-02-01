@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+"""RNZ (Multi-qubit Z-rotation) gate."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 import mimiqcircuits as mc
@@ -55,8 +55,8 @@ class GateRNZ(mcg.Gate):
 
     >>> c = Circuit()
     >>> c.push(GateRNZ(3, pi/2), 1, 2, 3)
-    4-qubit circuit with 1 instructions:
-    └── RNZ((1/2)*pi) @ q[1,2,3]
+    4-qubit circuit with 1 instruction:
+    └── RNZ((1/2)*pi) @ q[1:3]
     <BLANKLINE>
     """
 

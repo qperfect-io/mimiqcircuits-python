@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-Pauli (CX, CY, CZ) gates."""
 
 import mimiqcircuits.operations.control as mctrl
 from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
@@ -50,13 +51,13 @@ def GateCX():
         <BLANKLINE>
         >>> c = Circuit().push(GateCX(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CX @ q[0], q[1]
         <BLANKLINE>
         >>> GateCX().power(2), GateCX().inverse()
         (CID, CX)
         >>> GateCX().decompose()
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
@@ -98,7 +99,7 @@ def GateCY():
         <BLANKLINE>
         >>> c = Circuit().push(GateCY(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CY @ q[0], q[1]
         <BLANKLINE>
         >>> GateCY().power(2), GateCY().inverse()
@@ -150,7 +151,7 @@ def GateCZ():
         <BLANKLINE>
         >>> c = Circuit().push(GateCZ(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CZ @ q[0], q[1]
         <BLANKLINE>
         >>> GateCZ().power(2), GateCZ().inverse()

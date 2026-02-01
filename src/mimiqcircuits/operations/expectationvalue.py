@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Expectation value operation."""
+
 from mimiqcircuits import Operation
 from mimiqcircuits.operations.operator import AbstractOperator
 import mimiqcircuits as mc
@@ -57,7 +59,7 @@ class ExpectationValue(Operation):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(GateX()), 1, 1)
-        2-qubit, 2-zvar circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨X⟩ @ q[1], z[1]
         <BLANKLINE>
 

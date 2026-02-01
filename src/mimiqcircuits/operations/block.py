@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+"""Block operation for grouping instructions."""
 
 import copy
 from mimiqcircuits.instruction import Instruction
@@ -46,7 +46,7 @@ class Block(Operation):
         >>> c = Circuit()
 
         >>> c.push(GateCX(), 1, 2)
-        3-qubit circuit with 1 instructions:
+        3-qubit circuit with 1 instruction:
         └── CX @ q[1], q[2]
         <BLANKLINE>
 
@@ -61,27 +61,27 @@ class Block(Operation):
         4-qubit, 2-bit circuit with 3 instructions:
         ├── CX @ q[1], q[2]
         ├── CX @ q[1], q[3]
-        └── MZZ @ q[1,2], c[1]
+        └── MZZ @ q[1:2], c[1]
         <BLANKLINE>
 
         >>> block = Block(c)
         >>> block
-        4-qubit, 2-bit block ... with 3 instructions:
+        4-qubit, 2-bit block 7f4e8fbcfe00 with 3 instructions:
         ├── CX @ q[1], q[2]
         ├── CX @ q[1], q[3]
-        └── MZZ @ q[1,2], c[1]
+        └── MZZ @ q[1:2], c[1]
 
         >>> main = Circuit()
         >>> main.push(block, 0, 1, 2, 3, 0, 1)
-        4-qubit, 2-bit circuit with 1 instructions:
-        └── block ... @ q[0,1,2,3], c[0,1]
+        4-qubit, 2-bit circuit with 1 instruction:
+        └── block 7f4e8fbcfe00 @ q[0,1,2,3], c[0,1]
         <BLANKLINE>
 
         >>> main.decompose()
         4-qubit, 2-bit circuit with 3 instructions:
         ├── CX @ q[1], q[2]
         ├── CX @ q[1], q[3]
-        └── MZZ @ q[1,2], c[1]
+        └── MZZ @ q[1:2], c[1]
         <BLANKLINE>
 
     See Also:

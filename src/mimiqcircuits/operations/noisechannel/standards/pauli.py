@@ -58,7 +58,7 @@ class PauliNoise(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(PauliNoise([0.8, 0.1, 0.1], ["I", "X", "Y"]), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── PauliNoise((0.8, pauli"I"), (0.1, pauli"X"), (0.1, pauli"Y")) @ q[1]
         <BLANKLINE>
 
@@ -239,7 +239,7 @@ class PauliX(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(PauliX(0.1), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── PauliX(0.1) @ q[1]
         <BLANKLINE>
     """
@@ -323,7 +323,7 @@ class PauliY(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(PauliY(0.1), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── PauliY(0.1) @ q[1]
         <BLANKLINE>
     """
@@ -404,7 +404,7 @@ class PauliZ(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(PauliZ(0.1), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── PauliZ(0.1) @ q[1]
         <BLANKLINE>
     """

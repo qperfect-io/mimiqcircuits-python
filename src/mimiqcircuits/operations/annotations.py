@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Circuit annotations (Detector, QubitCoordinates, etc.)."""
 
 import mimiqcircuits as mc
 from mimiqcircuits.lazy import LazyExpr, LazyArg
@@ -29,7 +30,11 @@ class AbstractAnnotation(mc.Operation):
     `ShiftCoordinates`,`Tick`, `ObservableInclude`, which provide metadata or structural information for quantum circuits.
     """
 
-    pass
+    def iswrapper(self):
+        return False
+
+    def isunitary(self):
+        return True
 
 
 class Detector(AbstractAnnotation):
@@ -81,7 +86,7 @@ class Detector(AbstractAnnotation):
 
         >>> c = Circuit()
         >>> c.push(Detector(1), 0)
-        1-bit circuit with 1 instructions:
+        1-bit circuit with 1 instruction:
         └── Detector() @ c[0]
         <BLANKLINE>
         >>> c.push(Detector(1, [0.5, 1.0]), 1)
@@ -177,7 +182,7 @@ class QubitCoordinates(AbstractAnnotation):
         [0.5, 0.75, 1.0]
         >>> c= Circuit()
         >>> c.push(QubitCoordinates([0.2, 0.3]), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── QubitCoordinates(0.2, 0.3) @ q[0]
         <BLANKLINE>
     """
@@ -245,9 +250,9 @@ class ShiftCoordinates(AbstractAnnotation):
         [0.1, 0.9]
         >>> c = Circuit()
         >>> c.push(ShiftCoordinates(0.4, 0.2))
-         circuit with 1 instructions:
-        └── ShiftCoordinates(0.4, 0.2)
-        <BLANKLINE>
+         circuit with 1 instruction:
+         └── ShiftCoordinates(0.4, 0.2)
+         <BLANKLINE>
     """
 
     _name = "ShiftCoordinates"
@@ -319,7 +324,7 @@ class ObservableInclude(AbstractAnnotation):
         ObservableInclude()
         >>> c= Circuit()
         >>> c.push(ObservableInclude(1), 0)
-        1-bit circuit with 1 instructions:
+        1-bit circuit with 1 instruction:
         └── ObservableInclude() @ c[0]
         <BLANKLINE>
     """
@@ -404,9 +409,9 @@ class Tick(AbstractAnnotation):
 
         >>> c = Circuit()
         >>> c.push(tick)
-         circuit with 1 instructions:
-        └── Tick
-        <BLANKLINE>
+         circuit with 1 instruction:
+         └── Tick
+         <BLANKLINE>
     """
 
     _name = "Tick"

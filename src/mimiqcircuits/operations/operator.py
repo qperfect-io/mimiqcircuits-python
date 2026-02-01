@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""AbstractOperator base class."""
 
 from abc import abstractmethod
 import sympy as sp

@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+import "circuit.proto";
+
+// ===============================
+//  Noise Model Schema
+//  Copyright © 2023–2025 QPerfect.
+//  All Rights Reserved.
+// ===============================
+
+message NoiseModel {
+  string name = 1;
+  repeated NoiseRule rules = 2;
+}
+
+message NoiseRule {
+  oneof kind {
+    GlobalReadoutNoise global_readout = 1;
+    ExactQubitReadoutNoise exact_qubit_readout = 2;
+    SetQubitReadoutNoise set_qubit_readout = 3;
+
+    GateInstanceNoise gate_instance_noise = 4;
+    ExactGateInstanceQubitNoise exact_gate_instance_noise = 5;
+    SetGateInstanceQubitNoise set_gate_instance_noise = 6;
+
+    IdleNoise idle_noise = 7;
+    CustomNoiseRule custom_noise = 8;
+    SetIdleQubitNoise set_idle_noise = 9;
+  }
+}
+
+// ====================
+//  Readout Noise Rules
+// ====================
+
+message GlobalReadoutNoise {
+  Operation noise = 1;
+}
+
+message ExactQubitReadoutNoise {
+  repeated uint32 qubits = 1;
+  Operation noise = 2;
+}
+
+message SetQubitReadoutNoise {
+  repeated uint32 qubits = 1;
+  Operation noise = 2;
+}
+
+// ==========================
+//  Gate Instance Noise Rules
+// ==========================
+
+message GateInstanceNoise {
+  Operation gate = 1;
+  Operation noise = 2;
+  bool before = 3;
+}
+
+message ExactGateInstanceQubitNoise {
+  Operation gate = 1;
+  repeated uint32 qubits = 2;
+  Operation noise = 3;
+  bool before = 4;
+}
+
+message SetGateInstanceQubitNoise {
+  Operation gate = 1;
+  repeated uint32 qubits = 2;
+  Operation noise = 3;
+  bool before = 4;
+}
+
+// ============================
+//  Idle and Custom Noise Rules
+// ============================
+
+message SymbolicPattern {
+  repeated Arg variables = 1;
+  Operation operation = 2;
+}
+
+message IdleNoise {
+  SymbolicPattern relation = 1;
+}
+
+message SetIdleQubitNoise {
+  SymbolicPattern relation = 1;
+  repeated uint32 qubits = 2;
+}
+
+message CustomNoiseRule {
+  string matcher = 1; 
+  string generator = 2;
+  int32 priority = 3;
+  bool before = 4;
+  bool replace = 5;
+}

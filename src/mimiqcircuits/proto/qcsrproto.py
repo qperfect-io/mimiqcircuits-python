@@ -41,9 +41,9 @@ def bytes_to_bitvec(b, n=None):
         for i in range(8):
             bitstring += str((val >> i) & 1)
     if n is not None:
-        return frozenbitarray(bitstring[:n], endian='little')
+        return frozenbitarray(bitstring[:n], endian="little")
     else:
-        return frozenbitarray(bitstring, endian='little')
+        return frozenbitarray(bitstring, endian="little")
 
 
 def toproto_qcsr(s):

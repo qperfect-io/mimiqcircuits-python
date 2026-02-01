@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Phase gradient gate."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.phase import GateP
@@ -44,7 +45,7 @@ class PhaseGradient(mcg.Gate):
         >>> from mimiqcircuits import *
         >>> c=Circuit()
         >>> c.push(PhaseGradient(2),9,8)
-        10-qubit circuit with 1 instructions:
+        10-qubit circuit with 1 instruction:
         └── PhaseGradient @ q[9,8]
         <BLANKLINE>
 

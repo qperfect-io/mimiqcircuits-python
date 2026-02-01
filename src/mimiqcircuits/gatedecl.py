@@ -84,18 +84,18 @@ class GateDecl:
 
         >>> c = Circuit()
         >>> c.push(GateXXplusYY(x,y), 0,1)
-        2-qubit circuit with 1 instructions:
-        └── XXplusYY(x, y) @ q[0,1]
+        2-qubit circuit with 1 instruction:
+        └── XXplusYY(x, y) @ q[0:1]
         <BLANKLINE>
         >>> c.push(GateRX(x), 1)
         2-qubit circuit with 2 instructions:
-        ├── XXplusYY(x, y) @ q[0,1]
+        ├── XXplusYY(x, y) @ q[0:1]
         └── RX(x) @ q[1]
         <BLANKLINE>
         >>> gate_decl = GateDecl("ansatz", (x,y), c)
         >>> gate_decl
         gate ansatz(x, y) =
-        ├── XXplusYY(x, y) @ q[0,1]
+        ├── XXplusYY(x, y) @ q[0:1]
         └── RX(x) @ q[1]
         <BLANKLINE>
         >>> GateCall(gate_decl, (2,4))
@@ -105,7 +105,7 @@ class GateDecl:
 
         >>> GateCall(gate_decl, (2,4)).decompose()
         2-qubit circuit with 2 instructions:
-        ├── XXplusYY(2, 4) @ q[0,1]
+        ├── XXplusYY(2, 4) @ q[0:1]
         └── RX(2) @ q[1]
         <BLANKLINE>
 
@@ -114,7 +114,7 @@ class GateDecl:
         >>> g = GateCall(gate_decl, (2,4))
         >>> c = Circuit()
         >>> c.push(g,10,22)
-        23-qubit circuit with 1 instructions:
+        23-qubit circuit with 1 instruction:
         └── ansatz(2, 4) @ q[10,22]
         <BLANKLINE>
     """
@@ -143,7 +143,16 @@ class GateDecl:
 
         self.name = name
         self.arguments = arguments
-        self.circuit = circuit
+        new_circuit = mc.Circuit()
+        for inst in circuit:
+            new_circuit.push(
+                inst.get_operation(),
+                *inst.get_qubits(),
+                *inst.get_bits(),
+                *inst.get_zvars(),
+            )
+
+        self.circuit = new_circuit
 
     @property
     def num_qubits(self):
@@ -204,6 +213,14 @@ class GateCall(mc.Gate):
         self._args = args
         self._qregsizes = [self._num_qubits]
 
+    @property
+    def decl(self):
+        return self._decl
+
+    @property
+    def arguments(self):
+        return self._args
+
     def _matrix(self):
         pass
 
@@ -212,10 +229,8 @@ class GateCall(mc.Gate):
         d = dict(zip(self._decl.arguments, self._args))
         for inst in self._decl.circuit:
             op = inst.operation.evaluate(d)
-            qubits = [i for i in inst.get_qubits()]
-            bits = [i for i in inst.get_bits()]
-            zvars = [i for i in inst.get_zvars()]
-            circ.push(op, *qubits, *bits, *zvars)
+            qubits = inst.get_qubits()
+            circ.push(op, *qubits)
         return circ
 
     def _decompose(self, circ, qubits, bits, zvars):
@@ -242,7 +257,11 @@ class GateCall(mc.Gate):
         return circ
 
     def __str__(self):
-        return f"{self._decl.name}"
+        arg_str = ", ".join(map(str, self._args))
+        display_args = f"({arg_str})"
+        if len(display_args) > 20:
+            display_args = "(...)"
+        return f"{self._decl.name}{display_args}"
 
     def evaluate(self, d):
         new_args = [arg.subs(d) if hasattr(arg, "subs") else arg for arg in self._args]

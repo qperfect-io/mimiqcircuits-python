@@ -2,13 +2,6 @@ Execution on MIMIQ
 ==================
 This page provides detailed information on how to execute quantum circuits on MIMIQ's remote services.
 
-contents
-========
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
 Cloud Service
 -------------
 .. _cloud-service:
@@ -148,7 +141,7 @@ Execution
 
 MIMIQ supports sending quantum circuits to its remote services for execution, either as a **single circuit** or in **batch mode** (i.e., multiple circuits at once). In both cases, circuits are initialized in the zero state, and results are obtained by running the circuit and sampling.
 
-You can submit one or multiple circuits for execution using the :meth:`~mimiqcircuits.MimiqConnection.execute` method. This unified interface simplifies quantum job management, whether you're running a single job or a batch of jobs.
+You can submit one or multiple circuits for execution using the :meth:`~mimiqcircuits.MimiqConnection.submit` method. This unified interface simplifies quantum job management, whether you're running a single job or a batch of jobs.
 
 **Parameters**:
 
@@ -172,9 +165,24 @@ You can submit one or multiple circuits for execution using the :meth:`~mimiqcir
 
   - **seed**: Seed for the random number generator.
 
+  - **simulation parameters**: See :doc:`Simulation Parameters <simulation_parameters>` page for more details on advanced simulation parameters like `mpsmethod` and `traversal`.
+
+  **Noisy Simulation**:
+
+  To run a noisy simulation, you can pass a :class:`~mimiqcircuits.NoiseModel` object to the `noisemodel` parameter.
+  This model will be applied to the circuit(s) locally before execution.
+
+  .. code-block:: python
+
+      nm = NoiseModel()
+      nm.add_readout_noise(ReadoutErr(0.01, 0.02))
+      conn.submit(c, noisemodel=nm)
+
   **Return type: Jobs**:
 
-It is important to note that the :meth:`~mimiqcircuits.MimiqConnection.execute` method. 
+  **Return type: Jobs**:
+
+It is important to note that the :meth:`~mimiqcircuits.MimiqConnection.submit` method. 
 returns an `execution ID` (a unique string). 
 This ID represents the submitted job and can be used in subsequent calls to 
 retrieve results or check the job status. For example, 
@@ -198,15 +206,13 @@ Here, `"job-id"` is the unique identifier of the job, which you can find in the 
 
     >>> from mimiqcircuits import *
     >>> import os
-    >>> conn = MimiqConnection(QPERFECT_CLOUD2)
+    >>> conn = MimiqConnection(QPERFECT_CLOUD)
     >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
-    Connection:
-    ├── url: https://mimiqfast.qperfect.io/api
-    ├── Computing time: 598/10000 minutes
-    ├── Executions: 591/10000
-    ├── Max time limit per request: 180 minutes
+    MimiqConnection:
+    ├── url: https://mimiq.qperfect.io
+    ├── Max time limit per request: 360 minutes
+    ├── Default time limit is equal to max time limit: 360 minutes
     └── status: open
-    <BLANKLINE>
 
     
 .. doctest:: Execute
@@ -227,12 +233,12 @@ Here, `"job-id"` is the unique identifier of the job, which you can find in the 
     <BLANKLINE>
 
     # Execute Single circuit
-    >>> job_single = conn.execute(c1, nsamples=1000, label="Single_run")
+    >>> job_single = conn.submit(c1, nsamples=1000, label="Single_run")
     >>> job_single
-    '673900451aa1b0ea6ef1fd66'
+    '6891b4c2e9ed81e0cb891c0d'
 
     # Execute circuits in batch mode
-    >>> job_batch = conn.execute([c1, c2], nsamples=1000, label="batch_run")
+    >>> job_batch = conn.submit([c1, c2], nsamples=1000, label="batch_run")
     >>> job_batch
     '673900471aa1b0ea6ef1fd82'
 
@@ -272,7 +278,7 @@ Getting results (Python session)
 .. _getting-results-puthon:
 
 You can download results from your Python session by calling these two methods :meth:`~mimiqcircuits.MimiqConnection.get_results` and 
-:meth:`~mimiqcircuits.MimiqConnection.get_result` which like `~mimiqcircuits.MimiqConnection.execute` method belong to the :class:`~mimiqcircuits.MimiqConnection` class. 
+:meth:`~mimiqcircuits.MimiqConnection.get_result` which like `~mimiqcircuits.MimiqConnection.submit` method belong to the :class:`~mimiqcircuits.MimiqConnection` class. 
 
 The only difference between the two is that `get_results` retrieves the 
 results of *all* the circuits sent in a job, whereas `get_result` 
@@ -284,7 +290,7 @@ They are both called in a similar way as `connection.get_results(execution_id, *
 
 **Parameters:**
 
-  - `execution (Execution)`: The execution object representing the job whose results are to be fetched, see :ref:`execution <execution>` section. If you saved the output of `execute` then you can pass it to `get_results` (see example below). If you didn't save it, then you can copy the job ID from the Cloud server (see :ref:`cloud-service <cloud-service>` section) and pass it to `get_results` as `"job-id"`.
+  - `execution (Execution)`: The execution object representing the job whose results are to be fetched, see :ref:`execution <execution>` section. If you saved the output of `submit` then you can pass it to `get_results` (see example below). If you didn't save it, then you can copy the job ID from the Cloud server (see :ref:`cloud-service <cloud-service>` section) and pass it to `get_results` as `"job-id"`.
   - `interval (Int)`: Time interval in seconds between calls to the remote to check for job completion (default: 1 second). A shorter interval results in more frequent checks, while a longer interval reduces the frequency of status checks, saving computational resources.
 
 .. warning::
@@ -303,13 +309,14 @@ They are both called in a similar way as `connection.get_results(execution_id, *
     >>> res_single = conn.get_result(job_single)
     >>> res_single
     QCSResults:
-    ├── simulator: MIMIQ-StateVector 0.18.0
+    ├── simulator: MIMIQ-MPS 0.18.3
     ├── timings:
-    │    ├── parse time: 5.3745e-05s
-    │    ├── apply time: 1.6822e-05s
-    │    ├── total time: 0.000170674s
-    │    ├── compression time: 3.539e-06s
-    │    └── sample time: 4.2118e-05s
+    │    ├── compression time: 0.000519923s
+    │    ├── apply time: 0.002742807s
+    │    ├── parse time: 0.000903225s
+    │    ├── sample time: 0.002097291s
+    │    ├── amplitudes time: 1.55e-07s
+    │    └── total time: 0.0068613139999999994s
     ├── fidelity estimate: 1
     ├── average multi-qubit gate error estimate: 0
     ├── most sampled:
@@ -429,7 +436,7 @@ Here's an example of how to access different fields:
     # Get total execution time
     >>> tot = res_single.timings["total"]
     >>> print(tot)
-    0.000170674
+    0.0068613139999999994
 
     # Get classical registers of the first 10 samples
     >>> first_samples = res_single.cstates[0:10]
@@ -481,7 +488,7 @@ Here is an example:
 
     # Saving Single Result
     >>> res_single.saveproto("res_single.pb")
-    7169
+    7161
 
     # Saving Batch Result (Should be saved one by one)
     >>> res_batch[0].saveproto("res_batch_1.pb")
@@ -491,13 +498,14 @@ Here is an example:
 
     >>> QCSResults.loadproto("res_single.pb")
     QCSResults:
-    ├── simulator: MIMIQ-StateVector 0.18.0
+    ├── simulator: MIMIQ-MPS 0.18.3
     ├── timings:
-    │    ├── parse time: 5.3745e-05s
-    │    ├── apply time: 1.6822e-05s
-    │    ├── total time: 0.000170674s
-    │    ├── compression time: 3.539e-06s
-    │    └── sample time: 4.2118e-05s
+    │    ├── total time: 0.0068613139999999994s
+    │    ├── apply time: 0.002742807s
+    │    ├── parse time: 0.000903225s
+    │    ├── sample time: 0.002097291s
+    │    ├── amplitudes time: 1.55e-07s
+    │    └── compression time: 0.000519923s
     ├── fidelity estimate: 1
     ├── average multi-qubit gate error estimate: 0
     ├── most sampled:
@@ -585,4 +593,15 @@ from all circuits in the job (useful in batch mode). This is similar to :meth:`~
 .. code-block::
     
     circuits, parameters = connection.get_inputs(job)
+
+Reference
+---------
+
+.. autoclass:: mimiqcircuits.MimiqConnection
+.. autoclass:: mimiqcircuits.MimiqConnection
+    :noindex:
+    :members: connect, submit, get_results, get_result
+.. autoclass:: mimiqcircuits.QCSResults
+    :noindex:
+    :members: loadproto, saveproto
 

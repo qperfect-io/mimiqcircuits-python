@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-SWAP (Fredkin) gate."""
 
 from mimiqcircuits.operations.gates.standard.swap import GateSWAP
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
@@ -46,15 +47,15 @@ def GateCSWAP():
         (C(⨷ ² ID), CSWAP)
         >>> c = Circuit().push(GateCSWAP(), 0, 1, 2)
         >>> c
-        3-qubit circuit with 1 instructions:
-        └── CSWAP @ q[0], q[1,2]
+        3-qubit circuit with 1 instruction:
+        └── CSWAP @ q[0], q[1:2]
         <BLANKLINE>
         >>> GateCSWAP().power(2), GateCSWAP().inverse()
         (C(⨷ ² ID), CSWAP)
         >>> GateCSWAP().decompose()
         3-qubit circuit with 3 instructions:
         ├── CX @ q[2], q[1]
-        ├── C₂X @ q[0,1], q[2]
+        ├── C₂X @ q[0:1], q[2]
         └── CX @ q[2], q[1]
         <BLANKLINE>
     """

@@ -233,6 +233,7 @@ class QCSResults:
 
             >>> from mimiqcircuits import *
             >>> from symengine import *
+            >>> import os
             >>> import tempfile
             >>> x, y = symbols("x y")
             >>> c = Circuit()
@@ -241,51 +242,51 @@ class QCSResults:
             └── H @ q[0]
             <BLANKLINE>
             >>> conn = MimiqConnection()
-            >>> conn.connect()
-            Connection:
-            ├── url: https://mimiq.qperfect.io/api
-            ├── Computing time: 597/10000 minutes
-            ├── Executions: 451/10000
-            ├── Max time limit per request: 180 minutes
+            >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
+            MimiqConnection:
+            ├── url: https://mimiq.qperfect.io
+            ├── Max time limit per request: 360 minutes
+            ├── Default time limit is equal to max time limit: 360 minutes
             └── status: open
-            <BLANKLINE>
             >>> job = conn.execute(c)
             >>> res = conn.get_result(job)
             >>> res
             QCSResults:
-            ├── simulator: MIMIQ-StateVector 0.18.0
+            ├── simulator: MIMIQ-MPS 0.18.3
             ├── timings:
-            │    ├── parse time: 5.9552e-05s
-            │    ├── apply time: 1.6682e-05s
-            │    ├── total time: 0.00019081399999999998s
-            │    ├── compression time: 4.575e-06s
-            │    └── sample time: 5.299e-05s
+            │    ├── amplitudes time: 1.65e-07s
+            │    ├── sample time: 0.000204869s
+            │    ├── parse time: 0.000296368s
+            │    ├── total time: 0.001337133s
+            │    ├── compression time: 0.000166837s
+            │    └── apply time: 0.0003098s
             ├── fidelity estimate: 1
             ├── average multi-qubit gate error estimate: 0
             ├── most sampled:
-            │    ├── bs"1" => 513
-            │    └── bs"0" => 487
+            │    ├── bs"1" => 537
+            │    └── bs"0" => 463
             ├── 1 executions
             ├── 0 amplitudes
             └── 1000 samples
 
             >>> tmpfile = tempfile.NamedTemporaryFile(suffix=".pb", delete=True)
             >>> res.saveproto(tmpfile.name)
-            7169
+            7161
             >>> res.loadproto(tmpfile.name)
             QCSResults:
-            ├── simulator: MIMIQ-StateVector 0.18.0
+            ├── simulator: MIMIQ-MPS 0.18.3
             ├── timings:
-            │    ├── parse time: 5.9552e-05s
-            │    ├── apply time: 1.6682e-05s
-            │    ├── total time: 0.00019081399999999998s
-            │    ├── compression time: 4.575e-06s
-            │    └── sample time: 5.299e-05s
+            │    ├── parse time: 0.000296368s
+            │    ├── sample time: 0.000204869s
+            │    ├── amplitudes time: 1.65e-07s
+            │    ├── total time: 0.001337133s
+            │    ├── compression time: 0.000166837s
+            │    └── apply time: 0.0003098s
             ├── fidelity estimate: 1
             ├── average multi-qubit gate error estimate: 0
             ├── most sampled:
-            │    ├── bs"1" => 513
-            │    └── bs"0" => 487
+            │    ├── bs"1" => 537
+            │    └── bs"0" => 463
             ├── 1 executions
             ├── 0 amplitudes
             └── 1000 samples
@@ -299,11 +300,9 @@ class QCSResults:
                     res.saveproto("example.pb")
                     res.loadproto("example.pb")
         """
-        if isinstance(file, str):
-            with open(file, "wb") as f:
-                return f.write(toproto_qcsr(self).SerializeToString())
-        elif hasattr(file, "write"):
-            return file.write(toproto_qcsr(self).SerializeToString())
+        from mimiqcircuits.proto.protoio import saveproto
+
+        return saveproto(self, file)
 
     @staticmethod
     def loadproto(file):
@@ -316,17 +315,9 @@ class QCSResults:
 
             Look for example in :func:`QCSResults.saveproto`
         """
-        from mimiqcircuits.proto import qcsresults_pb2
+        from mimiqcircuits.proto.protoio import loadproto
 
-        qcs_results_proto = qcsresults_pb2.QCSResults()
-
-        if isinstance(file, str):
-            with open(file, "rb") as f:
-                qcs_results_proto.ParseFromString(f.read())
-        elif hasattr(file, "read"):
-            qcs_results_proto.ParseFromString(file.read())
-
-        return fromproto_qcsr(qcs_results_proto)
+        return loadproto(file, QCSResults)
 
 
 __all__ = ["QCSResults"]

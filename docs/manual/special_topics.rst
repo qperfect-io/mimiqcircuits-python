@@ -3,13 +3,6 @@ Special Topics
 
 This page provides detailed information on specialized functionalities in MIMIQ.
 
-Contents
-========
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
 BitString
 ---------
 .. _bitstring:
@@ -211,3 +204,9 @@ combine or extend bitstrings efficiently:
       >>> bs = BitString("1010")
       >>> bs * 2
       bs"10101010"
+
+Reference
+---------
+
+.. autoclass:: mimiqcircuits.BitString
+    :noindex:

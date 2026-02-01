@@ -9,13 +9,6 @@ Import and export circuits
 In this section we introduce different options to import and export circuits.
 In particular, MIMIQ allows to import circuits in well-known languages such as OpenQASM and Stim, as well as save and import circuits using its own Protobuf structure.
 
-Contents
-========
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
 Protobuf
 -----------------
 
@@ -147,7 +140,61 @@ This file is not defined as being part of OpenQASM 2.0, but its usage is so wide
 
 If we were to parse every file together with `qelib1.inc`, we would have at the end just a list of simple `U` and `CX` gates, leaving behind any speed improvement that we would gain by using more complex gates as blocks. For this reason, if you don't explicitly provide the include files, MIMIQ will not parse the usual `qelib1.inc` file but will instead use a simplified version of it, where almost all gate definitions are replaced by `opaque` definitions. These opaque definitions will be converted to the corresponding MIMIQ gates listed in :meth:`~mimiqcircuits.Circuit.`GATES``.
 
+
 Another alternative is to use the `mimiqlib.inc` directly in your file. For now it's almost a copy of the modified `qelib1.inc` but in the future it will be extended to contain more gates and operations, diverging from `qelib1.inc`.
+
+Parse OpenQASM locally
+~~~~~~~~~~~~~~~~~~~~~~
+
+You can parse OpenQASM 2.0 code directly into a MIMIQ :class:`~mimiqcircuits.Circuit` object using the :mod:`mimiqcircuits.qasm` module. This is useful for importing circuits from other tools, analyzing them, or modifying them before execution.
+
+The parsing process involves two steps:
+
+1.  **Parsing**: Converts the QASM source (string) into an Abstract Syntax Tree (AST) using :func:`~mimiqcircuits.qasm.loads` or :func:`~mimiqcircuits.qasm.load`.
+2.  **Interpretation**: Converts the AST into a :class:`~mimiqcircuits.Circuit`.
+
+.. doctest:: import_export
+
+    >>> from mimiqcircuits.qasm import loads
+    >>> qasm_source = """
+    ... OPENQASM 2.0;
+    ... include "qelib1.inc";
+    ... qreg q[2];
+    ... h q[0];
+    ... cx q[0], q[1];
+    ... """
+    >>> circuit = loads(qasm_source)
+    >>> print(f"Circuit with {circuit.num_qubits()} qubits") # compact print for doctest
+    Circuit with 2 qubits
+
+You can also load directly from a file:
+
+.. code-block:: python
+
+    from mimiqcircuits.qasm import load
+    circuit = load("my_circuit.qasm")
+
+Export to OpenQASM
+~~~~~~~~~~~~~~~~~~
+
+Any MIMIQ :class:`~mimiqcircuits.Circuit` can be exported back to OpenQASM 2.0 format. This supports standard gates as well as custom gate definitions.
+
+* :func:`~mimiqcircuits.qasm.dumps`: Returns the QASM representation of the circuit as a string.
+* :func:`~mimiqcircuits.qasm.dump`: Writes the QASM representation directly to a file.
+
+.. doctest:: import_export
+
+    >>> from mimiqcircuits.qasm import dumps
+    >>> qasm_out = dumps(circuit)
+    >>> print(qasm_out)
+    OPENQASM 2.0;
+    include "qelib1.inc";
+    qreg q[2];
+    creg c[0];
+    h q[0];
+    cx q[0],q[1];
+    <BLANKLINE>
+
 
 
 Relations between OpenQASM registers and MIMIQ indices
@@ -183,11 +230,11 @@ QASM name MIMIQ Qubit index MIMIQ Bit index
 ``q[1]``  ``1``
 ``a[0]``  ``2``
 ``a[1]``  ``3``
-…         …                 …
+``...``   ``...``           ``...``
 ``a[9]``  ``11``
 ``m[0]``                    ``0``
 ``m[1]``                    ``1``
-…         …                 …
+``...``   ``...``           ``...``
 ``m[9]``                    ``0``
 ``g[0]``                    ``10``
 ``g[1]``                    ``11``
@@ -213,3 +260,22 @@ The remote MIMIQ services can readily process and execute Stim files as follows:
 
 The results of the simulation can be accessed as usual on MIMIQ, see :doc:`remote execution <remote_execution>` page.
 
+Reference
+---------
+
+.. autofunction:: mimiqcircuits.Circuit.saveproto
+    :noindex:
+.. autofunction:: mimiqcircuits.Circuit.loadproto
+    :noindex:
+.. autofunction:: mimiqcircuits.QCSResults.saveproto
+    :noindex:
+.. autofunction:: mimiqcircuits.QCSResults.loadproto
+    :noindex:
+.. autofunction:: mimiqcircuits.qasm.load
+    :noindex:
+.. autofunction:: mimiqcircuits.qasm.loads
+    :noindex:
+.. autofunction:: mimiqcircuits.qasm.dump
+    :noindex:
+.. autofunction:: mimiqcircuits.qasm.dumps
+    :noindex:

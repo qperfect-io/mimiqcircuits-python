@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-SX and Controlled-SXDG gates."""
 
 from mimiqcircuits.operations.gates.standard.sx import GateSX, GateSXDG
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
@@ -52,7 +53,7 @@ def GateCSX():
         <BLANKLINE>
         >>> c = Circuit().push(GateCSX(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CSX @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSX().power(2), GateCSX().inverse()
@@ -104,7 +105,7 @@ def GateCSXDG():
         <BLANKLINE>
         >>> c = Circuit().push(GateCSXDG(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── C(SX†) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSXDG().power(2), GateCSXDG().inverse()

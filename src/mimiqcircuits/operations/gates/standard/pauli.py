@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Pauli gates (X, Y, Z)."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.utils import power_idempotent, control_one_defined
@@ -44,13 +45,13 @@ class GateX(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateX(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── X @ q[0]
         <BLANKLINE>
         >>> GateX().power(2), GateX().inverse()
         (ID, X)
         >>> GateX().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(pi, 0, pi, 0.0) @ q[0]
         <BLANKLINE>
     """
@@ -113,7 +114,7 @@ class GateY(mcg.Gate):
         >>> GateY().power(2), GateY().inverse()
         (ID, Y)
         >>> GateY().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(pi, (1/2)*pi, (1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
@@ -166,7 +167,7 @@ class GateZ(mcg.Gate):
         >>> GateZ().power(2), GateZ().inverse()
         (ID, Z)
         >>> GateZ().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── P(pi) @ q[0]
         <BLANKLINE>
     """

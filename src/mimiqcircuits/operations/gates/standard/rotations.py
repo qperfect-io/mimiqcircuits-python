@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Rotation gates (RX, RY, RZ, R)."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.u import GateU
@@ -49,13 +50,13 @@ class GateRX(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateRX(theta), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── RX(theta) @ q[0]
         <BLANKLINE>
         >>> GateRX(theta).power(2), GateRX(theta).inverse()
         (RX(2*theta), RX(-theta))
         >>> GateRX(theta).decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(theta, (-1/2)*pi, (1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
@@ -124,13 +125,13 @@ class GateRY(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateRY(theta), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── RY(theta) @ q[0]
         <BLANKLINE>
         >>> GateRY(theta).power(2), GateRY(theta).inverse()
         (RY(2*theta), RY(-theta))
         >>> GateRY(theta).decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(theta, 0, 0, 0.0) @ q[0]
         <BLANKLINE>
     """
@@ -199,13 +200,13 @@ class GateRZ(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateRZ(lmbda), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── RZ(lambda) @ q[0]
         <BLANKLINE>
         >>> GateRZ(lmbda).power(2), GateRZ(lmbda).inverse()
         (RZ(2*lambda), RZ(-lambda))
         >>> GateRZ(lmbda).decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, lambda, (-1/2)*lambda) @ q[0]
         <BLANKLINE>
     """
@@ -272,7 +273,7 @@ class GateR(mcg.Gate):
         >>> GateR(theta, phi).power(2), GateR(theta, phi).inverse()
         (R(2*theta, phi), R(-theta, phi))
         >>> GateR(theta, phi).decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U3(theta, phi + (-1/2)*pi, -phi + (1/2)*pi) @ q[0]
         <BLANKLINE>
     """

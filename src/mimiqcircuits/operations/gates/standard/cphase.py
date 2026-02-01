@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-Phase gate."""
 
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.phase import GateP
@@ -55,7 +56,7 @@ def GateCP(lmbda):
         <BLANKLINE>
         >>> c = Circuit().push(GateCP(lmbda), 10, 11)
         >>> c
-        12-qubit circuit with 1 instructions:
+        12-qubit circuit with 1 instruction:
         └── CP(lambda) @ q[10], q[11]
         <BLANKLINE>
         >>> GateCP(lmbda).decompose()

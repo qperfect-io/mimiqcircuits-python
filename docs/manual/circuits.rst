@@ -3,16 +3,6 @@ Circuits
 
 On this page you can find all the information needed to build a circuit using MIMIQ. Every useful function will be presented below, accompanied by an explanation of their purpose and examples of use.
 
-
-Contents
-========
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
-
-
 .. doctest:: quick_start
     :hide:
 
@@ -21,15 +11,13 @@ Contents
     >>> import os
     >>> import math
 
-    >>> conn = MimiqConnection(url="https://mimiqfast.qperfect.io/api")
+    >>> conn = MimiqConnection(url="https://mimiq.qperfect.io")
     >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
-    Connection:
-    ├── url: https://mimiqfast.qperfect.io/api
-    ├── Computing time: 598/10000 minutes
-    ├── Executions: 595/10000
-    ├── Max time limit per request: 180 minutes
+    MimiqConnection:
+    ├── url: https://mimiq.qperfect.io
+    ├── Max time limit per request: 360 minutes
+    ├── Default time limit is equal to max time limit: 360 minutes
     └── status: open
-    <BLANKLINE>
 
 
 What is a circuit and what are instructions 
@@ -56,18 +44,17 @@ Here is a representation of a simple GHZ circuit on 4 qubits:
     <BLANKLINE>
     >>>
     >>> ghz.draw()
-            ┌─┐                                                                     
-     q[0]: ╶┤H├─●──●──●────────────────────────────────────────────────────────────╴
-            └─┘┌┴┐ │  │                                                             
-     q[1]: ╶───┤X├─┼──┼────────────────────────────────────────────────────────────╴
-               └─┘┌┴┐ │                                                             
-     q[2]: ╶──────┤X├─┼────────────────────────────────────────────────────────────╴
-                  └─┘┌┴┐                                                            
-     q[3]: ╶─────────┤X├───────────────────────────────────────────────────────────╴
-                     └─┘                                                            
+                    ┌─┐                                                                     
+             q[0]: ╶┤H├─●──●──●────────────────────────────────────────────────────────────╴
+                    └─┘┌┴┐ │  │                                                             
+             q[1]: ╶───┤X├─┼──┼────────────────────────────────────────────────────────────╴
+                       └─┘┌┴┐ │                                                             
+             q[2]: ╶──────┤X├─┼────────────────────────────────────────────────────────────╴
+                          └─┘┌┴┐                                                            
+             q[3]: ╶─────────┤X├───────────────────────────────────────────────────────────╴
+                             └─┘                                                            
                                                                                 
-                                                                                
-                                                                                
+                                                                            
 
 In this representation, each qubit is depicted by a horizontal line labeled q[x], where x is the qubit’s index. The circuit is read from left to right, with each 'block' or symbol along a line representing an operation applied to that specific qubit.
 
@@ -112,14 +99,14 @@ Here is a circuit interacting with all registers:
     >>> # compute Expectation value of qubit 1 and store complex number on the first Z-Register
     >>> ev = ExpectationValue(GateZ())
     >>> circuit.push(ev, 0, 0)
-    1-qubit circuit with 2 instructions:
+    1-qubit, 1-zvar circuit with 2 instructions:
     ├── X @ q[0]
     └── ⟨Z⟩ @ q[0], z[0]
     <BLANKLINE>
 
     >>> # Measure the qubit state and store bit into the first classical register
     >>> circuit.push(Measure(), 0, 0)
-    1-qubit circuit with 3 instructions:
+    1-qubit, 1-bit, 1-zvar circuit with 3 instructions:
     ├── X @ q[0]
     ├── ⟨Z⟩ @ q[0], z[0]
     └── M @ q[0], c[0]
@@ -127,15 +114,15 @@ Here is a circuit interacting with all registers:
 
     >>> # draw the circuit
     >>> circuit.draw()
-            ┌─┐┌─────────┐┌──────┐                                                  
-     q[0]: ╶┤X├┤   ⟨Z⟩   ├┤   M  ├─────────────────────────────────────────────────╴
-            └─┘└────╥────┘└───╥──┘                                                  
-                    ║         ║                                                     
-                    ║         ║                                                     
-     c:    ═════════╬═════════╩═════════════════════════════════════════════════════
-                    ║         0                                                     
-     z:    ═════════╩═══════════════════════════════════════════════════════════════
-                    0                                                               
+                    ┌─┐┌─────────┐┌──────┐                                                  
+             q[0]: ╶┤X├┤   ⟨Z⟩   ├┤  M   ├─────────────────────────────────────────────────╴
+                    └─┘└────╥────┘└───╥──┘                                                  
+                            ║         ║                                                     
+                            ║         ║                                                     
+             c:    ═════════╬═════════╩═════════════════════════════════════════════════════
+                            ║         0                                                     
+             z:    ═════════╩═══════════════════════════════════════════════════════════════
+                            0                                                               
 
 As you can see in the code above the indexing of the different registers always starts by the quantum register. If your operator interacts with the three registers the index will have to be provided in the following order: 
 #. Index of the qantum register.
@@ -293,21 +280,19 @@ This also works on 2-qubit gates:
     <BLANKLINE>
 
     >>> circuit.draw()
-            ┌──┐                                                                    
-     q[0]: ╶┤ID├─●────────●──●──●──●───────────────────────────────────────────────╴
-            └──┘ │       ┌┴┐ │  │  │                                                
-     q[1]: ╶─────┼──●────┤X├─┼──┼──┼──●────────────────────────────────────────────╴
-                 │  │    └─┘┌┴┐ │  │  │                                             
-     q[2]: ╶─────┼──┼──●────┤X├─┼──┼──┼──●─────────────────────────────────────────╴
-                ┌┴┐┌┴┐┌┴┐   └─┘┌┴┐┌┴┐ │  │                                          
-     q[3]: ╶────┤X├┤X├┤X├──────┤X├┤X├─┼──┼─────────────────────────────────────────╴
-                └─┘└─┘└─┘      └─┘└─┘┌┴┐ │                                          
-     q[4]: ╶─────────────────────────┤X├─┼─────────────────────────────────────────╴
-                                     └─┘┌┴┐                                         
-     q[5]: ╶────────────────────────────┤X├────────────────────────────────────────╴
-                                        └─┘                                         
-                                                                                
-                                                                                
+                    ┌──┐                                                                    
+             q[0]: ╶┤ID├─●────────●──●──●──●───────────────────────────────────────────────╴
+                    └──┘ │       ┌┴┐ │  │  │                                                
+             q[1]: ╶─────┼──●────┤X├─┼──┼──┼──●────────────────────────────────────────────╴
+                         │  │    └─┘┌┴┐ │  │  │                                             
+             q[2]: ╶─────┼──┼──●────┤X├─┼──┼──┼──●─────────────────────────────────────────╴
+                        ┌┴┐┌┴┐┌┴┐   └─┘┌┴┐┌┴┐ │  │                                          
+             q[3]: ╶────┤X├┤X├┤X├──────┤X├┤X├─┼──┼─────────────────────────────────────────╴
+                        └─┘└─┘└─┘      └─┘└─┘┌┴┐ │                                          
+             q[4]: ╶─────────────────────────┤X├─┼─────────────────────────────────────────╴
+                                             └─┘┌┴┐                                         
+             q[5]: ╶────────────────────────────┤X├────────────────────────────────────────╴
+                                                └─┘                                         
                                                                                 
 
 Be careful when using vectors for both control and target, if one of the two vectors in longer than the other only the `N` first element of the vector will be accounted for with :code:`N = min(length.(vector1, vector2))`.
@@ -331,23 +316,19 @@ See the output of the code below to see the implication in practice:
     <BLANKLINE>
 
     >>> circuit.draw()
-            ┌──┐                                                                    
-     q[0]: ╶┤ID├─●─────────────────────────────────────────────────────────────────╴
-            └──┘ │                                                                  
-     q[1]: ╶─────┼──●──────────────────────────────────────────────────────────────╴
-                 │  │                                                               
-     q[2]: ╶─────┼──┼──●───────────────────────────────────────────────────────────╴
-                ┌┴┐ │  │                                                            
-     q[3]: ╶────┤X├─┼──┼───────────────────────────────────────────────────────────╴
-                └─┘┌┴┐ │                                                            
-     q[4]: ╶───────┤X├─┼───────────────────────────────────────────────────────────╴
-                   └─┘┌┴┐                                                           
-     q[5]: ╶──────────┤X├──────────────────────────────────────────────────────────╴
-                      └─┘                                                           
-                                                                                
-                                                                                
-                                                                                
-                                                                                
+                    ┌──┐                                                                    
+             q[0]: ╶┤ID├─●─────────────────────────────────────────────────────────────────╴
+                    └──┘ │                                                                  
+             q[1]: ╶─────┼──●──────────────────────────────────────────────────────────────╴
+                         │  │                                                               
+             q[2]: ╶─────┼──┼──●───────────────────────────────────────────────────────────╴
+                        ┌┴┐ │  │                                                            
+             q[3]: ╶────┤X├─┼──┼───────────────────────────────────────────────────────────╴
+                        └─┘┌┴┐ │                                                            
+             q[4]: ╶───────┤X├─┼───────────────────────────────────────────────────────────╴
+                           └─┘┌┴┐                                                           
+             q[5]: ╶──────────┤X├──────────────────────────────────────────────────────────╴
+                              └─┘                                                           
 
 You can also use tuples or vectors in the exact same fashion:
 
@@ -374,15 +355,16 @@ You can also use tuples or vectors in the exact same fashion:
     <BLANKLINE>
 
     >>> circuit.draw()
-            ┌──┐                                                                    
-     q[0]: ╶┤ID├─●─────●───────────────────────────────────────────────────────────╴
-            └──┘ │    ┌┴┐                                                           
-     q[1]: ╶─────┼──●─┤X├──────────────────────────────────────────────────────────╴
-                ┌┴┐ │ └─┘                                                           
-     q[2]: ╶────┤X├─┼─────●────────────────────────────────────────────────────────╴
-                └─┘┌┴┐   ┌┴┐                                                        
-     q[3]: ╶───────┤X├───┤X├───────────────────────────────────────────────────────╴
-                   └─┘   └─┘                                                        
+                    ┌──┐                                                                    
+             q[0]: ╶┤ID├─●─────●───────────────────────────────────────────────────────────╴
+                    └──┘ │    ┌┴┐                                                           
+             q[1]: ╶─────┼──●─┤X├──────────────────────────────────────────────────────────╴
+                        ┌┴┐ │ └─┘                                                           
+             q[2]: ╶────┤X├─┼─────●────────────────────────────────────────────────────────╴
+                        └─┘┌┴┐   ┌┴┐                                                        
+             q[3]: ╶───────┤X├───┤X├───────────────────────────────────────────────────────╴
+                           └─┘   └─┘                                                        
+                                                                                
                                                                                 
                                                                                 
                                                                                 
@@ -482,21 +464,18 @@ ere is a representation of a sim
     └── X @ q[4]
     <BLANKLINE>
     >>> circuit.draw()
-            ┌─┐                                                                     
-     q[0]: ╶┤X├────────────────────────────────────────────────────────────────────╴
-            └─┘┌─┐                                                                  
-     q[1]: ╶───┤X├─────────────────────────────────────────────────────────────────╴
-               └─┘┌─┐                                                               
-     q[2]: ╶──────┤X├──────────────────────────────────────────────────────────────╴
-                  └─┘┌─┐                                                            
-     q[3]: ╶─────────┤X├───────────────────────────────────────────────────────────╴
-                     └─┘┌─┐                                                         
-     q[4]: ╶────────────┤X├────────────────────────────────────────────────────────╴
-                        └─┘                                                         
+                    ┌─┐                                                                     
+             q[0]: ╶┤X├────────────────────────────────────────────────────────────────────╴
+                    └─┘┌─┐                                                                  
+             q[1]: ╶───┤X├─────────────────────────────────────────────────────────────────╴
+                       └─┘┌─┐                                                               
+             q[2]: ╶──────┤X├──────────────────────────────────────────────────────────────╴
+                          └─┘┌─┐                                                            
+             q[3]: ╶─────────┤X├───────────────────────────────────────────────────────────╴
+                             └─┘┌─┐                                                         
+             q[4]: ╶────────────┤X├────────────────────────────────────────────────────────╴
+                                └─┘                                                         
                                                                                 
-                                                                                
-                                                                                
-
 Information such as the :meth:`~mimiqcircuits.Circuit.depth`  and the width (:meth:`~mimiqcircuits.Circuit.num_qubits` ) can be extracted from the circuit:
 
 .. doctest:: python
@@ -525,5 +504,20 @@ Most gates can be decomposed into a combination of `U` and `CX` gates, the :meth
     └── U(pi, 0, pi, 0.0) @ q[0]
     <BLANKLINE>
 
-    
+Reference
+---------
 
+.. autoclass:: mimiqcircuits.Circuit
+    :noindex:
+.. autoclass:: mimiqcircuits.Instruction
+    :noindex:
+.. autofunction:: mimiqcircuits.Circuit.push
+    :noindex:
+.. autofunction:: mimiqcircuits.Circuit.insert
+    :noindex:
+.. autofunction:: mimiqcircuits.Circuit.append
+    :noindex:
+.. autofunction:: mimiqcircuits.Circuit.draw
+    :noindex:
+.. autofunction:: mimiqcircuits.Circuit.decompose
+    :noindex:

@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-U gate."""
 
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.u import GateU
@@ -55,7 +56,7 @@ def GateCU(theta, phi, lmbda, gamma):
         <BLANKLINE>
         >>> c = Circuit().push(GateCU(theta, phi, lmbda, gamma), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CU(theta, phi, lambda, gamma) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCU(theta, phi, lmbda, gamma).power(2), GateCU(theta, phi, lmbda, gamma).inverse()

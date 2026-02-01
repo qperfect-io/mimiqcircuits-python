@@ -105,6 +105,11 @@ def plothistogram(results, num_outcomes=15, mimiqstyle=True, nobitstrings=False)
 
     hist = results.histogram()
 
+    if not hist:
+        raise ValueError(
+            "The result histogram is empty — the circuit contains non-unitary — Please ensure the circuit ends with at least one Measure() operation."
+        )
+
     outcomes = sorted(hist, key=hist.get, reverse=True)[0:num_outcomes]
     counts = [hist[x] for x in outcomes]
 

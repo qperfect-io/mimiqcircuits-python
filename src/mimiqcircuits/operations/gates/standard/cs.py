@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-S and Controlled-SDG gates."""
 
 from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from mimiqcircuits.operations.gates.standard.cphase import GateCP
@@ -51,13 +52,13 @@ def GateCS():
         <BLANKLINE>
         >>> c = Circuit().push(GateCS(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CS @ q[0], q[1]
         <BLANKLINE>
         >>> GateCS().power(2), GateCS().inverse()
         (CZ, C(S†))
         >>> GateCS().decompose()
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CU(0, 0, (1/2)*pi, 0.0) @ q[0], q[1]
         <BLANKLINE>
     """
@@ -99,13 +100,13 @@ def GateCSDG():
         <BLANKLINE>
         >>> c = Circuit().push(GateCSDG(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── C(S†) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSDG().power(2), GateCSDG().inverse()
         (C((S†)**2), CS)
         >>> GateCSDG().decompose()
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CU(0, 0, (-1/2)*pi, 0.0) @ q[0], q[1]
         <BLANKLINE>
     """

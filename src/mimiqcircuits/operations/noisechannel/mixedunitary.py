@@ -80,7 +80,7 @@ class MixedUnitary(krauschannel):
         >>> from symengine import *
         >>> c = Circuit()
         >>> c.push(MixedUnitary([0.9, 0.1], [Matrix([[1, 0], [0, 1]]), Matrix([[0, 1], [1, 0]])]), 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── MixedUnitary((0.9, "Custom([1 0; 0 1])"),(0.1, "Custom([0 1; 1 0])")) @ q[0]
         <BLANKLINE>
 
@@ -195,7 +195,6 @@ class MixedUnitary(krauschannel):
         if all(
             isinstance(prob, (float, int)) or prob.is_number for prob in evaluated_p
         ):
-
             numeric_probs = [
                 float(prob) if isinstance(prob, se.Basic) else prob
                 for prob in evaluated_p

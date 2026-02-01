@@ -56,7 +56,7 @@ class Operator(mc.AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Operator(Matrix([[0, 1], [0, 0]]))), 1, 1)
-        2-qubit, 2-zvar circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨Operator([[0, 1], [0, 0]])⟩ @ q[1], z[1]
         <BLANKLINE>
     """

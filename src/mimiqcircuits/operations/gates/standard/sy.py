@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""SY (Sqrt(Y)) and SYDG gates."""
 
 from mimiqcircuits.operations.utils import control_one_defined
 import mimiqcircuits as mc
@@ -49,7 +50,7 @@ class GateSY(mc.Power):
 
         >>> c = Circuit()
         >>> c.push(GateSY(), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── SY @ q[1]
         <BLANKLINE>
 
@@ -132,7 +133,7 @@ class GateSYDG(mc.Inverse):
 
         >>> c = Circuit()
         >>> c.push(GateSYDG(), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── SY† @ q[1]
         <BLANKLINE>
 

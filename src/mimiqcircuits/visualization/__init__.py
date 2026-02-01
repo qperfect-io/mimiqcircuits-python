@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Visualization utilities for results and circuits."""
 
 from mimiqcircuits.visualization.results import plothistogram
 

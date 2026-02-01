@@ -3,15 +3,6 @@ Non-unitary Operations
 
 Contrary to :doc:`unitary gates <unitary_gates>`, non-unitary operations based on measurements make the quantum state collapse. Find in the following sections all the non-unitary operations supported by MIMIQ.
 
-Contents
-========
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
-
-
 .. doctest:: quick_start
     :hide:
 
@@ -20,15 +11,14 @@ Contents
     >>> import os
     >>> import math
 
-    >>> conn = MimiqConnection(url="https://mimiqfast.qperfect.io/api")
+    >>> conn = MimiqConnection(url="https://mimiqfast.qperfect.io")
     >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
-    Connection:
-    ├── url: https://mimiqfast.qperfect.io/api
-    ├── Computing time: 599/10000 minutes
-    ├── Executions: 605/10000
+    MimiqConnection:
+    ├── url: https://mimiqfast.qperfect.io
+    ├── Computing time: 0/10000 minutes
     ├── Max time limit per request: 180 minutes
+    ├── Default time limit is equal to max time limit: 180 minutes
     └── status: open
-    <BLANKLINE>
 
 .. note:: 
 
@@ -80,7 +70,7 @@ With MIMIQ you can measure the qubits at any point in the circuit (not only at t
 
     >>> circuit = Circuit() 
     >>> circuit.push(Measure(), 0, 0)
-    1-qubit circuit with 1 instructions:
+    1-qubit, 1-bit circuit with 1 instructions:
     └── M @ q[0], c[0]
     <BLANKLINE>
 
@@ -92,7 +82,7 @@ You can also use iterators to Measure multiple qubits at once, as for gates:
 .. doctest:: non_unitary 
 
     >>> circuit.push(Measure(), range(0, 10), range(0,10))
-    10-qubit circuit with 11 instructions:
+    10-qubit, 10-bit circuit with 11 instructions:
     ├── M @ q[0], c[0]
     ├── M @ q[0], c[0]
     ├── M @ q[1], c[1]
@@ -153,7 +143,7 @@ A measure-reset operation is the same as a reset operation except that we store 
 
     >>> circuit = Circuit()  
     >>> circuit.push(MeasureReset(), 0, 0)
-    1-qubit circuit with 1 instructions:
+    1-qubit, 1-bit circuit with 1 instructions:
     └── MR @ q[0], c[0]
     <BLANKLINE>
 
@@ -187,7 +177,7 @@ To add an :class:`~mimiqcircuits.IfStatement` to a circuit use the :meth:`~mimiq
 
     >>> # Apply a GateX on qubit 1 if the qubits 2 and 4 are in the state 1 and qubit 3 in the state 0. 
     >>> circuit.push(IfStatement(GateX(), BitString("101")), 0, 1, 2, 3)
-    1-qubit circuit with 1 instructions:
+    1-qubit, 4-bit circuit with 1 instructions:
     └── IF (c==101) X @ q[0], c[1,2,3]
     <BLANKLINE>
 
@@ -242,7 +232,7 @@ Operators can be used to compute expectation values as follows (see also :class:
 
     >>> circuit = Circuit()
     >>> circuit.push(ev, 0, 0)
-    1-qubit circuit with 1 instructions:
+    1-qubit, 1-zvar circuit with 1 instructions:
     └── ⟨SigmaPlus(1)⟩ @ q[0], z[0]
     <BLANKLINE>
 
@@ -265,11 +255,33 @@ This is equivalent to
     >>> gamma = 0.1
     >>> ampdamp = AmplitudeDamping(gamma)
     >>> ampdamp.krausoperators()
-    [D(1, 0.9486832980505138), SigmaMinus(0.31622776601683794)]
+    [D(1, np.float64(0.9486832980505138)), SigmaMinus(0.31622776601683794)]
 
 
 .. note:: 
 
     Whenever possible, using specialized operators, such as `DiagonalOp` and `SigmaMinus`, as opposed to custom operators, such as `Operator`, is generally better for performance.
+
+Reference
+---------
+
+.. autoclass:: mimiqcircuits.Measure
+    :noindex:
+.. autoclass:: mimiqcircuits.Reset
+    :noindex:
+.. autoclass:: mimiqcircuits.MeasureReset
+    :noindex:
+.. autoclass:: mimiqcircuits.IfStatement
+    :noindex:
+.. autoclass:: mimiqcircuits.Operator
+    :noindex:
+.. autoclass:: mimiqcircuits.Kraus
+    :noindex:
+.. autoclass:: mimiqcircuits.DiagonalOp
+    :noindex:
+.. autoclass:: mimiqcircuits.SigmaPlus
+    :noindex:
+.. autoclass:: mimiqcircuits.SigmaMinus
+    :noindex:
 
 
