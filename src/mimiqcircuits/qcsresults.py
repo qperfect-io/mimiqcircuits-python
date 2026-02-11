@@ -20,6 +20,62 @@ from mimiqcircuits.bitstrings import bitvec_to_int
 from statistics import mean, median, stdev
 
 
+def _format_duration(t):
+    if t == 0:
+        return "0s"
+
+    # round to 3 significant digits
+    rt = float(f"{t:.3g}")
+
+    if rt >= 1:
+        minutes = int(rt // 60)
+        seconds = rt % 60
+
+        hours = int(minutes // 60)
+        minutes = minutes % 60
+
+        days = int(hours // 24)
+        hours = hours % 24
+
+        strings = []
+        if days > 0:
+            strings.append(f"{days}d")
+        if hours > 0:
+            strings.append(f"{hours}h")
+        if minutes > 0:
+            strings.append(f"{minutes}m")
+        if seconds > 0:
+            # Check if seconds is an integer effectively
+            if seconds.is_integer():
+                strings.append(f"{int(seconds)}s")
+            else:
+                strings.append(f"{seconds}s")
+
+        return " ".join(strings)
+    elif rt >= 1e-3:
+        val = float(f"{rt * 1e3:.3g}")
+        if val.is_integer():
+            return f"{int(val)}ms"
+        return f"{val}ms"
+    elif rt >= 1e-6:
+        val = float(f"{rt * 1e6:.3g}")
+        if val.is_integer():
+            return f"{int(val)}μs"
+        return f"{val}μs"
+    else:
+        val = float(f"{rt * 1e9:.3g}")
+        if val.is_integer():
+            return f"{int(val)}ns"
+        return f"{val}ns"
+
+
+def _get_sorted_timings(timings):
+    valid_timings = [(k, v) for k, v in timings.items() if v > 1e-7]
+    # Sort so "total" is last (key 2), others are first (key 1), then alphabetically
+    valid_timings.sort(key=lambda x: (2 if x[0] == "total" else 1, x[0]))
+    return valid_timings
+
+
 class QCSResults:
     """
     Represents the results of quantum computations obtained from quantum cloud services (QCS).
@@ -62,15 +118,16 @@ class QCSResults:
         if self.simulator is not None:
             result_str += f"├── simulator: {self.simulator} {self.version}\n"
 
-        # filter out the ones < 1e-7
-        timings = {k: v for k, v in self.timings.items() if v > 1e-7}
+        # filter out the ones < 1e-7 and sort
+        timings = _get_sorted_timings(self.timings)
 
-        result_str += "├── timings:\n"
-        for key, value in list(timings.items())[:-1]:
-            result_str += f"│    ├── {key} time: {value}s\n"
+        if timings:
+            result_str += "├── timings:\n"
+            for key, value in timings[:-1]:
+                result_str += f"│    ├── {key} time: {_format_duration(value)}\n"
 
-        key, value = list(timings.items())[-1]
-        result_str += f"│    └── {key} time: {value}s\n"
+            key, value = timings[-1]
+            result_str += f"│    └── {key} time: {_format_duration(value)}\n"
 
         if len(self.fidelities) == 1:
             result_str += f"├── fidelity estimate: {self.fidelities[0]:.3g}\n"
@@ -125,8 +182,8 @@ class QCSResults:
 
         # Timings
         html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Timings</strong></td></tr>'
-        for key, value in self.timings.items():
-            html_output += f'<tr><td style="text-align:left;">{key} time</td><td>{value}s</td></tr>'
+        for key, value in _get_sorted_timings(self.timings):
+            html_output += f'<tr><td style="text-align:left;">{key} time</td><td>{_format_duration(value)}</td></tr>'
         html_output += "<tr><td colspan=2><hr></td></tr>"
 
         # Fidelity Estimates

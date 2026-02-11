@@ -239,6 +239,8 @@ class RemoteConnection:
         timelimit=None,
         bonddim=None,
         entdim=None,
+        remove_swaps=None,
+        canonical_decompose=None,
         fuse=None,
         reorderqubits=None,
         seed=None,
@@ -265,6 +267,8 @@ class RemoteConnection:
             timelimit (int, optional): The maximum execution time in minutes. Defaults to None.
             bonddim (int, optional): The bond dimension to use. Defaults to None.
             entdim (int, optional): The entanglement dimension to use. Defaults to None.
+            remove_swaps (bool, optional): Whether to remove SWAP gates. Defaults to None (let the remote service decide).
+            canonical_decompose (bool, optional): Whether to decompose the circuit into GateU and GateCX. Defaults to None (let the remote service decide).
             fuse (bool, optional): Whether to fuse gates. Defaults to None (let the remote service decide).
             reorderqubits (bool, optional): Whether to reorder qubits. Defaults to None (let the remote service decide).
             mpsmethod (str, optional): whether to use variational ("vmpoa", "vmpob") or direct ("dmpo") methods for MPO application in MPS simulations. Defaults to None (let the remote service decide).
@@ -296,6 +300,8 @@ class RemoteConnection:
                 timelimit=timelimit,
                 bonddim=bonddim,
                 entdim=entdim,
+                remove_swaps=remove_swaps,
+                canonical_decompose=canonical_decompose,
                 fuse=fuse,
                 reorderqubits=reorderqubits,
                 seed=seed,
@@ -489,6 +495,12 @@ class RemoteConnection:
             if entdim is not None:
                 pars["entDimension"] = entdim
 
+            if remove_swaps is not None:
+                pars["removeSwaps"] = remove_swaps
+
+            if canonical_decompose is not None:
+                pars["canonicalDecompose"] = canonical_decompose
+
             if fuse is not None:
                 pars["fuse"] = fuse
 
@@ -509,6 +521,15 @@ class RemoteConnection:
 
             if streaming is not None:
                 pars["streaming"] = streaming
+
+            if kwargs:
+                import warnings
+
+                for key in kwargs:
+                    warnings.warn(
+                        f"Unknown option '{key}' passed to submit(). This option will be sent to the backend but may be ignored.",
+                        stacklevel=2,
+                    )
 
             # Add any additional keyword arguments
             pars.update(kwargs)
@@ -601,6 +622,8 @@ class RemoteConnection:
         timelimit=None,
         bonddim=None,
         entdim=None,
+        remove_swaps=None,
+        canonical_decompose=None,
         fuse=None,
         reorderqubits=None,
         seed=None,
@@ -620,6 +643,8 @@ class RemoteConnection:
             timelimit=timelimit,
             bonddim=bonddim,
             entdim=entdim,
+            remove_swaps=remove_swaps,
+            canonical_decompose=canonical_decompose,
             fuse=fuse,
             reorderqubits=reorderqubits,
             seed=seed,

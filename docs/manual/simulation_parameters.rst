@@ -6,6 +6,22 @@ This page describes the advanced parameters available for fine-tuning the circui
 General Parameters
 ------------------
 
+remove_swaps
+~~~~~~~~~~~~
+
+**Type:** `bool`
+**Default:** `False` (backend dependent)
+
+Controls whether to automatically remove SWAP gates by permuting the logical-to-physical qubit mapping. This can significantly reduce the depth of the circuit and the number of gates to be executed.
+
+canonical_decompose
+~~~~~~~~~~~~~~~~~~~
+
+**Type:** `bool`
+**Default:** `False` (backend dependent)
+
+Controls whether to decompose the circuit into a canonical set of gates, typically GateU and GateCX. This is often a preliminary step for other optimizations.
+
 fuse
 ~~~~
 

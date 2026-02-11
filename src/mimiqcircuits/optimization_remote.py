@@ -51,6 +51,8 @@ def optimize_impl(
     timelimit=None,
     bonddim=None,
     entdim=None,
+    remove_swaps=None,
+    canonical_decompose=None,
     fuse=None,
     reorderqubits=None,
     seed=None,
@@ -74,6 +76,8 @@ def optimize_impl(
         timelimit (int, optional): Maximum execution time in minutes. If `None`, uses the backend’s default.
         bonddim (int, optional): Bond dimension for MPS simulation. Used only if algorithm is `"mps"` or `"auto"`.
         entdim (int, optional): Entanglement dimension for MPS simulation. Used only if algorithm is `"mps"` or `"auto"`.
+        remove_swaps (bool, optional): Whether to remove SWAP gates. If `None`, backend chooses automatically.
+        canonical_decompose (bool, optional): Whether to decompose the circuit into GateU and GateCX. If `None`, backend chooses automatically.
         fuse (bool, optional): Whether to fuse single-qubit gates. If `None`, backend chooses automatically.
         reorderqubits (bool, optional): Whether to reorder qubits before execution. If `None`, backend chooses automatically.
         seed (int, optional): Seed for random number generation. If `None`, a random seed is chosen.
@@ -166,11 +170,26 @@ def optimize_impl(
             )
         pars["entDimension"] = actual_entdim
 
+    if remove_swaps is not None:
+        pars["removeSwaps"] = remove_swaps
+
+    if canonical_decompose is not None:
+        pars["canonicalDecompose"] = canonical_decompose
+
     if fuse is not None:
         pars["fuse"] = fuse
 
     if reorderqubits is not None:
         pars["reorderQubits"] = reorderqubits
+
+    if kwargs:
+        import warnings
+
+        for key in kwargs:
+            warnings.warn(
+                f"Unknown option '{key}' passed to optimize(). This option will be sent to the backend but may be ignored.",
+                stacklevel=2,
+            )
 
     pars.update(kwargs)
 
