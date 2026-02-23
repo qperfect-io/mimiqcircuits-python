@@ -16,14 +16,20 @@
 #
 """Custom gate definition."""
 
-import mimiqcircuits.operations.gates.gate as mcg
-from numpy import ndarray
+
+import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.gate import Gate
 import symengine as se
 import sympy as sp
 import numpy as np
+from mimiqcircuits.operations.decompositions.matrix_decompositions.utils import  _as_numpy_numeric
+from mimiqcircuits.operations.decompositions.matrix_decompositions.qsd import  _qsd_decomposition
+from mimiqcircuits.operations.decompositions.matrix_decompositions.zyz import  _zyz_decomposition
 
 
-class GateCustom(mcg.Gate):
+
+
+class GateCustom(Gate):
     """One or Two qubit Custom gates.
 
     Examples:
@@ -44,7 +50,7 @@ class GateCustom(mcg.Gate):
     def __init__(self, matrix):
         super().__init__()
 
-        if isinstance(matrix, ndarray):
+        if isinstance(matrix, np.ndarray):
             mat = se.Matrix(matrix.tolist())
         elif isinstance(matrix, se.Matrix):
             mat = matrix
@@ -77,9 +83,20 @@ class GateCustom(mcg.Gate):
             num_qubits,
         ]
 
-    @property
-    def _matrix(self):
-        return self.matrix
+    
+    def matrix(self):
+        """
+        Try to numerically evaluate entries when possible,
+        otherwise keep symbolic.
+        """
+        out = []
+        for x in self.matrix:
+            try:
+                out.append(complex(x))
+            except Exception:
+                out.append(x)
+        return se.Matrix(self.matrix.rows, self.matrix.cols, out)
+
 
     @property
     def num_qubits(self):
@@ -133,6 +150,36 @@ class GateCustom(mcg.Gate):
         )
         evaluated_matrix = se.Matrix(matrix.tolist())
         return GateCustom(evaluated_matrix)
+
+    def unwrappedmatrix(self):
+        return _as_numpy_numeric(self.matrix)
+
+    def _decompose(self, circ, qubits, bits, zvars):
+        N = self.num_qubits
+        if len(qubits) != N:
+            raise ValueError(f"GateCustom expects {N} qubits, got {len(qubits)}")
+
+        if N == 1:
+            U_num = self.unwrappedmatrix()
+            theta, phi, lam, gamma = _zyz_decomposition(U_num)
+            circ.push(mc.GateU(theta, phi, lam, gamma), qubits[0])
+            return circ
+
+        U_num = self.unwrappedmatrix() 
+        sub_circ, phase = _qsd_decomposition(U_num)
+
+        # Map local qubits -> actual qubits
+        mapping = {i: qubits[i] for i in range(N)}
+
+        for inst in sub_circ:
+            op = inst.get_operation()
+            local_q = list(inst.get_qubits())
+            new_q = [mapping[q] for q in local_q]
+            circ.push(op, *new_q)
+
+
+        return circ
+
 
 
 __all__ = ["Custom"]

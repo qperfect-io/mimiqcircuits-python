@@ -18,9 +18,7 @@ from mimiqcircuits.instruction import Instruction
 from mimiqcircuits.operations.gates.standard.swap import GateSWAP
 from mimiqcircuits.circuit import Circuit
 from mimiqcircuits.operations.inverse import Inverse
-from mimiqcircuits.operations.control import Control
 from mimiqcircuits.operations.block import Block
-from mimiqcircuits.operations.ifstatement import IfStatement
 from mimiqcircuits.gatedecl import GateDecl, GateCall
 import mimiqcircuits as mc
 
@@ -272,20 +270,29 @@ def remove_swaps(circuit, recursive=False, cache=None):
             new_instr = Instruction(op, new_qubits, instr.get_bits(), instr.get_zvars())
             new_circuit.append([new_instr])
 
+    _pad_to_arity(new_circuit.instructions, circuit.num_qubits())
+
     return new_circuit, perm
 
 
+def _pad_to_arity(instructions, target_nq):
+    """Pad instruction list with GateID to preserve qubit arity."""
+    nq = _get_num_qubits(instructions)
+    for q in range(nq, target_nq):
+        instructions.append(mc.Instruction(mc.GateID(), (q,), (), ()))
+
+
 def _is_composite_operation(op):
-    """Check if operation is a composite that may contain swaps."""
-    # Adjust these type checks based on your actual Python class hierarchy
+    """Check if operation is a composite that may contain swaps.
+
+    Note: Control(GateCall) and IfStatement(Block) are intentionally excluded.
+    Their internal SWAPs are conditional (only execute when control is |1> or
+    classical condition is met), so they cannot be tracked as static permutations.
+    """
     return (
         isinstance(op, GateCall)
         or isinstance(op, Block)
-        or (isinstance(op, IfStatement) and isinstance(op.get_operation(), Block))
-        or (
-            (isinstance(op, Inverse) or isinstance(op, Control))
-            and isinstance(op.get_operation(), GateCall)
-        )
+        or (isinstance(op, Inverse) and isinstance(op.op, GateCall))
     )
 
 
@@ -295,36 +302,56 @@ def _remove_swaps_from_operation(op, recursive, cache):
         return GateCall(new_decl, op._args), qubit_map
 
     elif isinstance(op, Block):
-        if op in cache:
-            return cache[op]
+        block_id = id(op)
+        if block_id in cache:
+            return cache[block_id]
 
         new_instrs, qubit_map = _remove_swaps_from_instructions(
             op.instructions, recursive, cache
         )
-        res = (Block(new_instrs), qubit_map)
-        cache[op] = res
+        # Preserve original block dimensions (don't let Block shrink)
+        nq = op._num_qubits
+        nb = op._num_bits
+        nz = op._num_zvars
+        # Pad qubit_map with identity for qubits not used in instructions
+        if len(qubit_map) < nq:
+            qubit_map.extend(range(len(qubit_map), nq))
+
+        _pad_to_arity(new_instrs, nq)
+
+        res = (Block(nq, nb, nz, new_instrs), qubit_map)
+        cache[block_id] = res
         return res
 
-    elif isinstance(op, IfStatement) and isinstance(op.get_operation(), Block):
-        new_block, qubit_map = _remove_swaps_from_operation(
-            op.get_operation(), recursive, cache
-        )
-        return IfStatement(new_block, op.get_bitstring()), qubit_map
+    elif isinstance(op, Inverse) and isinstance(op.op, GateCall):
+        if id(op) in cache:
+            return cache[id(op)]
 
-    elif isinstance(op, Control) and isinstance(op.get_operation(), GateCall):
-        gcall, qubit_map = _remove_swaps_from_operation(
-            op.get_operation(), recursive, cache
-        )
-        n_controls = op.num_controls
-        # Adjust permutation: control qubits unchanged, target qubits permuted
-        new_perm = list(range(n_controls)) + [n_controls + q for q in qubit_map]
-        return Control(n_controls, gcall), new_perm
+        gcall = op.op
+        decl = gcall._decl
 
-    elif isinstance(op, Inverse) and isinstance(op.get_operation(), GateCall):
-        gcall, qubit_map = _remove_swaps_from_operation(
-            op.get_operation(), recursive, cache
+        # Expand the inverse body, remove swaps, then rebuild the forward body
+        # to keep the Inverse(GateCall(...)) wrapper.
+        inv_circuit = decl.circuit.inverse()
+        inv_instrs = inv_circuit.instructions
+
+        # Remove swaps from the expanded inverse
+        new_inv_instrs, qubit_map = _remove_swaps_from_instructions(
+            inv_instrs, recursive, cache
         )
-        return Inverse(gcall), qubit_map
+
+        # Preserve original arity
+        orig_nq = decl.num_qubits() if callable(decl.num_qubits) else decl.num_qubits
+        _pad_to_arity(new_inv_instrs, orig_nq)
+
+        # Rebuild the forward body
+        new_fwd_circuit = Circuit(new_inv_instrs).inverse()
+        new_fwd_instrs = new_fwd_circuit.instructions
+
+        fwd_decl = GateDecl(decl.name, decl.arguments, mc.Circuit(new_fwd_instrs))
+        res = (mc.Inverse(GateCall(fwd_decl, gcall._args)), qubit_map)
+        cache[id(op)] = res
+        return res
 
     else:
         raise ValueError(f"Unsupported composite operation type: {type(op)}")
@@ -372,19 +399,7 @@ def _remove_swaps_from_gate_decl(decl, recursive, cache):
 
     # Preserve original arity (do NOT let GateDecl shrink)
     orig_nq = decl.num_qubits() if callable(decl.num_qubits) else decl.num_qubits
-    new_nq = _get_num_qubits(new_instrs)
-
-    if new_nq < orig_nq:
-        new_instrs = list(new_instrs)
-        for q in range(new_nq, orig_nq):
-            new_instrs.append(
-                mc.Instruction(
-                    mc.GateID(),
-                    (q,),
-                    (),
-                    (),
-                )
-            )
+    _pad_to_arity(new_instrs, orig_nq)
 
     res = (GateDecl(decl.name, decl.arguments, mc.Circuit(new_instrs)), qubit_map)
     cache[decl] = res
