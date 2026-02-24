@@ -165,6 +165,8 @@ You can submit one or multiple circuits for execution using the :meth:`~mimiqcir
 
   - **seed**: Seed for the random number generator.
 
+  - **reorderqubits_seed**: Independent seed for the qubit reordering RNG (default: ``None``, uses main seed). See :doc:`Simulation Parameters <simulation_parameters>` for details.
+
   - **simulation parameters**: See :doc:`Simulation Parameters <simulation_parameters>` page for more details on advanced simulation parameters like `mpsmethod` and `traversal`.
 
   **Noisy Simulation**:

@@ -55,6 +55,7 @@ def optimize_impl(
     canonical_decompose=None,
     fuse=None,
     reorderqubits=None,
+    reorderqubits_seed=None,
     seed=None,
     history=False,
     force=False,
@@ -80,6 +81,7 @@ def optimize_impl(
         canonical_decompose (bool, optional): Whether to decompose the circuit into GateU and GateCX. If `None`, backend chooses automatically.
         fuse (bool, optional): Whether to fuse single-qubit gates. If `None`, backend chooses automatically.
         reorderqubits (bool, optional): Whether to reorder qubits before execution. If `None`, backend chooses automatically.
+        reorderqubits_seed (int, optional): Independent seed for the qubit reordering RNG, allowing reproducible reordering independently of the simulation seed. Defaults to `None` (uses main seed).
         seed (int, optional): Seed for random number generation. If `None`, a random seed is chosen.
         history (bool, optional): If `True`, records the full optimization trajectory. Defaults to `False`.
         force (bool, optional): If `True`, bypasses entdim range checks. Use with caution.
@@ -181,6 +183,9 @@ def optimize_impl(
 
     if reorderqubits is not None:
         pars["reorderQubits"] = reorderqubits
+
+    if reorderqubits_seed is not None:
+        pars["reorderQubitsSeed"] = reorderqubits_seed
 
     if kwargs:
         import warnings

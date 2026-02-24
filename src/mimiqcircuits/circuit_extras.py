@@ -282,6 +282,22 @@ def _pad_to_arity(instructions, target_nq):
         instructions.append(mc.Instruction(mc.GateID(), (q,), (), ()))
 
 
+_PYOBJ_IDENTITY_CACHE_PREFIX = "__remove_swaps_identity__"
+
+def _get_identity_cached(cache, op):
+    entry = cache.get((_PYOBJ_IDENTITY_CACHE_PREFIX, id(op)))
+    if entry is None:
+        return None
+    cached_op, cached_value = entry
+    if cached_op is op:
+        return cached_value
+    return None
+
+
+def _set_identity_cached(cache, op, value):
+    cache[(_PYOBJ_IDENTITY_CACHE_PREFIX, id(op))] = (op, value)
+
+
 def _is_composite_operation(op):
     """Check if operation is a composite that may contain swaps.
 
@@ -302,9 +318,9 @@ def _remove_swaps_from_operation(op, recursive, cache):
         return GateCall(new_decl, op._args), qubit_map
 
     elif isinstance(op, Block):
-        block_id = id(op)
-        if block_id in cache:
-            return cache[block_id]
+        cached = _get_identity_cached(cache, op)
+        if cached is not None:
+            return cached
 
         new_instrs, qubit_map = _remove_swaps_from_instructions(
             op.instructions, recursive, cache
@@ -320,12 +336,13 @@ def _remove_swaps_from_operation(op, recursive, cache):
         _pad_to_arity(new_instrs, nq)
 
         res = (Block(nq, nb, nz, new_instrs), qubit_map)
-        cache[block_id] = res
+        _set_identity_cached(cache, op, res)
         return res
 
     elif isinstance(op, Inverse) and isinstance(op.op, GateCall):
-        if id(op) in cache:
-            return cache[id(op)]
+        cached = _get_identity_cached(cache, op)
+        if cached is not None:
+            return cached
 
         gcall = op.op
         decl = gcall._decl
@@ -350,7 +367,7 @@ def _remove_swaps_from_operation(op, recursive, cache):
 
         fwd_decl = GateDecl(decl.name, decl.arguments, mc.Circuit(new_fwd_instrs))
         res = (mc.Inverse(GateCall(fwd_decl, gcall._args)), qubit_map)
-        cache[id(op)] = res
+        _set_identity_cached(cache, op, res)
         return res
 
     else:

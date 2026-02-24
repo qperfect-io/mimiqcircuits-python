@@ -243,6 +243,7 @@ class RemoteConnection:
         canonical_decompose=None,
         fuse=None,
         reorderqubits=None,
+        reorderqubits_seed=None,
         seed=None,
         qasmincludes=None,
         force=False,
@@ -270,7 +271,8 @@ class RemoteConnection:
             remove_swaps (bool, optional): Whether to remove SWAP gates. Defaults to None (let the remote service decide).
             canonical_decompose (bool, optional): Whether to decompose the circuit into GateU and GateCX. Defaults to None (let the remote service decide).
             fuse (bool, optional): Whether to fuse gates. Defaults to None (let the remote service decide).
-            reorderqubits (bool or str, optional): Whether to reorder qubits. Can be a boolean or a string specifying the method (e.g., 'greedy', 'multilevel'). Defaults to None (let the remote service decide).
+            reorderqubits (bool or str, optional): Whether to reorder qubits. Can be a boolean or a string specifying the method (e.g., 'greedy', 'spectral', 'rcm', 'sa_warm_start', 'sa_only', 'memetic', 'multilevel', 'grasp', 'hybrid'). Defaults to None (let the remote service decide).
+            reorderqubits_seed (int, optional): Independent seed for the qubit reordering RNG, allowing reproducible reordering independently of the simulation seed. Defaults to None (uses main seed).
             mpsmethod (str, optional): whether to use variational ("vmpoa", "vmpob") or direct ("dmpo") methods for MPO application in MPS simulations. Defaults to None (let the remote service decide).
             traversal (str, optional): method to traverse the circuit while compressing it into MPOs. Can be "sequential" (default) or "bfs" (Breadth-First Search). Defaults to None.
             noisemodel (NoiseModel, optional): A NoiseModel object to be applied to the circuit(s) before execution. Defaults to None.
@@ -304,6 +306,7 @@ class RemoteConnection:
                 canonical_decompose=canonical_decompose,
                 fuse=fuse,
                 reorderqubits=reorderqubits,
+                reorderqubits_seed=reorderqubits_seed,
                 seed=seed,
                 qasmincludes=qasmincludes,
                 force=force,
@@ -507,6 +510,9 @@ class RemoteConnection:
             if reorderqubits is not None:
                 pars["reorderQubits"] = reorderqubits
 
+            if reorderqubits_seed is not None:
+                pars["reorderQubitsSeed"] = reorderqubits_seed
+
             if traversal is not None:
                 if traversal not in ["sequential", "bfs"]:
                     raise ValueError("traversal must be one of 'sequential' or 'bfs'.")
@@ -626,6 +632,7 @@ class RemoteConnection:
         canonical_decompose=None,
         fuse=None,
         reorderqubits=None,
+        reorderqubits_seed=None,
         seed=None,
         history=False,
         force=False,
@@ -647,6 +654,7 @@ class RemoteConnection:
             canonical_decompose=canonical_decompose,
             fuse=fuse,
             reorderqubits=reorderqubits,
+            reorderqubits_seed=reorderqubits_seed,
             seed=seed,
             history=history,
             force=force,

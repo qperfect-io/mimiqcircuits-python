@@ -349,6 +349,17 @@ class TestOpaqueWrappers:
         # Outer SWAP [1,0] composed with Inverse's internal SWAP [1,0] = identity
         assert perm == [0, 1]
 
+    def test_recursive_cache_uses_operation_keys(self):
+        decl = self._make_swap_decl()
+        c = Circuit()
+        c.push(Inverse(GateCall(decl, ())), 0, 1)
+
+        # Pre-populate with a stale integer id entry. remove_swaps should ignore it.
+        cache = {id(c.instructions[0].get_operation()): ("stale", [0])}
+        new_c, _ = remove_swaps(c, recursive=True, cache=cache)
+
+        assert isinstance(new_c.instructions[0].get_operation(), Inverse)
+
 
 # ---------------------------------------------------------------------------
 # Permutation composition tests
