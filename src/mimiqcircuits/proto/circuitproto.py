@@ -79,8 +79,24 @@ class ProtoRegistry:
         self.fromproto_registry[proto_field] = converter_func
 
     def get_toproto_converter(self, obj_type: Type) -> Optional[Callable]:
-        """Get converter for a specific mimiqcircuits type."""
-        return self.toproto_registry.get(obj_type)
+        """Get converter for a specific mimiqcircuits type.
+
+        This method traverses the type's MRO (method resolution order) to find
+        a converter. This allows canonical subclasses (e.g., GateCH which is a
+        subclass of Control) to use the parent class's converter.
+        """
+        # First try exact type match
+        converter = self.toproto_registry.get(obj_type)
+        if converter:
+            return converter
+
+        # Traverse MRO to find a converter for a parent class
+        for parent_type in obj_type.__mro__[1:]:
+            converter = self.toproto_registry.get(parent_type)
+            if converter:
+                return converter
+
+        return None
 
     def get_fromproto_converter(self, proto_field: str) -> Optional[Callable]:
         """Get converter for a specific protobuf field."""
@@ -149,6 +165,8 @@ OPERATIONMAP = {
     mc.VonNeumannEntropy: circuit_pb2.OperationType.VonNeumannEntropy,
     mc.Not: circuit_pb2.OperationType.Not,
     mc.Pow: circuit_pb2.OperationType.Pow,
+    mc.SetBit0: circuit_pb2.OperationType.SetBit0,
+    mc.SetBit1: circuit_pb2.OperationType.SetBit1,
 }
 
 # Reverse operation mapping: protobuf -> mimiqcircuits
@@ -159,6 +177,10 @@ GENERALIZEDOPERATIONMAP = {
     mc.Barrier: circuit_pb2.GeneralizedOperationType.Barrier,
     mc.Add: circuit_pb2.GeneralizedOperationType.Add,
     mc.Multiply: circuit_pb2.GeneralizedOperationType.Multiply,
+    mc.And: circuit_pb2.GeneralizedOperationType.And,
+    mc.Or: circuit_pb2.GeneralizedOperationType.Or,
+    mc.Xor: circuit_pb2.GeneralizedOperationType.Xor,
+    mc.ParityCheck: circuit_pb2.GeneralizedOperationType.ParityCheck,
 }
 
 # Reverse generalized operation mapping: protobuf -> mimiqcircuits
@@ -319,6 +341,11 @@ def toproto_arg(param):
             return handle_numeric(float(param))
         except Exception:
             pass
+
+    if isinstance(param, (np.float64, np.float32)):
+        return handle_float(float(param))
+    elif isinstance(param, (np.int64, np.int32)):
+        return toproto_arg(int(param))
 
     # Handle the parameter using the appropriate handler
     handler = type_handlers.get(type(param))
@@ -1386,6 +1413,24 @@ def fromproto_ifstatement(ifstatement_proto, declcache=None):
     operation = fromproto_operation(ifstatement_proto.operation, declcache)
     bitstring = mc.BitString(fromproto_bitvector(ifstatement_proto.bitstring))
     return mc.IfStatement(operation=operation, bitstring=bitstring)
+
+
+@operation_registry.register_toproto(mc.ReadoutErr)
+def toproto_readouterr(operation, declcache=None):
+    """Convert a ReadoutErr operation to protobuf format."""
+    msg = circuit_pb2.Operation()
+    msg.readouterr.p0.CopyFrom(toproto_arg(operation.p0))
+    msg.readouterr.p1.CopyFrom(toproto_arg(operation.p1))
+    return msg
+
+
+@operation_registry.register_fromproto("readouterr")
+def fromproto_readouterr(readouterr_proto, declcache=None):
+    """Convert protobuf ReadoutErr to mimiqcircuits ReadoutErr."""
+    return mc.ReadoutErr(
+        fromproto_arg(readouterr_proto.p0),
+        fromproto_arg(readouterr_proto.p1),
+    )
 
 
 # ------------ Block & Repeat -----------

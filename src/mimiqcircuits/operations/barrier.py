@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Barrier operation."""
 
 from mimiqcircuits.operations.operation import Operation
 import mimiqcircuits.lazy as lz
@@ -34,7 +35,7 @@ class Barrier(Operation):
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Barrier(1), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── Barrier @ q[1]
         <BLANKLINE>
 
@@ -53,8 +54,8 @@ class Barrier(Operation):
         >>> from mimiqcircuits import *
         >>> c= Circuit()
         >>> c.push(Barrier(5),1,2,3,4,5)
-        6-qubit circuit with 1 instructions:
-        └── Barrier @ q[1,2,3,4,5]
+        6-qubit circuit with 1 instruction:
+        └── Barrier @ q[1:5]
         <BLANKLINE>
     """
 

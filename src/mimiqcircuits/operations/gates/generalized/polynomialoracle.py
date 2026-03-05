@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+"""Polynomial Oracle gate."""
 
 import mimiqcircuits as mc
 import mimiqcircuits.lazy as lz
@@ -41,8 +41,8 @@ class PolynomialOracle(mc.Gate):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(PolynomialOracle(5,5,1, 2, 3, 4), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-        11-qubit circuit with 1 instructions:
-        └── PolynomialOracle(1, 2, 3, 4) @ q[1,2,3,4,5], q[6,7,8,9,10]
+        11-qubit circuit with 1 instruction:
+        └── PolynomialOracle(1, 2, 3, 4) @ q[1:5], q[6:10]
         <BLANKLINE>
     """
 

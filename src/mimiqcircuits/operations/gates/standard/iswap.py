@@ -14,18 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""iSWAP and iSWAP† gates."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
-from mimiqcircuits.operations.gates.standard.s import GateS
+from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from symengine import Matrix, I
+import mimiqcircuits as mc
 
 
 class GateISWAP(mcg.Gate):
     r""" Two qubit ISWAP gate.
 
-    See Also :func:`GateISWAPDG` and :func:`GateSWAP`
+    See Also :class:`GateISWAPDG` and :class:`GateSWAP`
 
     **Matrix representation:**
 
@@ -69,6 +71,9 @@ class GateISWAP(mcg.Gate):
     def _matrix(self):
         return Matrix([[1, 0, 0, 0], [0, 0, I, 0], [0, I, 0, 0], [0, 0, 0, 1]])
 
+    def inverse(self):
+        return GateISWAPDG()
+
     def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits
         circ.push(GateS(), c)
@@ -77,4 +82,65 @@ class GateISWAP(mcg.Gate):
         circ.push(GateCX(), c, t)
         circ.push(GateCX(), t, c)
         circ.push(GateH(), t)
+        return circ
+
+
+@mc.canonical_inverse(GateISWAP)
+class GateISWAPDG(mc.Inverse):
+    r"""Two qubit ISWAP† (iSWAP dagger) gate.
+
+    See Also :class:`GateISWAP` and :class:`GateSWAP`
+
+    **Matrix representation:**
+
+    .. math::
+        \operatorname{ISWAP}^\dagger = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 0 & -i & 0 \\
+            0 & -i & 0 & 0 \\
+            0 & 0 & 0 & 1
+        \end{pmatrix}
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> GateISWAPDG()
+        ISWAP†
+        >>> GateISWAPDG().matrix()
+        [1.0, 0, 0, 0]
+        [0, 0, 6.12323399573677e-17 - 1.0*I, 0]
+        [0, 6.12323399573677e-17 - 1.0*I, 0, 0]
+        [0, 0, 0, 1.0]
+        <BLANKLINE>
+        >>> c = Circuit().push(GateISWAPDG(), 0, 1)
+        >>> GateISWAPDG().power(2), GateISWAPDG().inverse()
+        (ISWAP†**2, ISWAP)
+        >>> GateISWAPDG().decompose()
+        2-qubit circuit with 6 instructions:
+        ├── H @ q[1]
+        ├── CX @ q[1], q[0]
+        ├── CX @ q[0], q[1]
+        ├── H @ q[0]
+        ├── S† @ q[1]
+        └── S† @ q[0]
+        <BLANKLINE>
+    """
+
+    def __init__(self, operation=None):
+        """Initialize an ISWAP† gate."""
+        super().__init__(GateISWAP())
+
+    def inverse(self):
+        return GateISWAP()
+
+    def isopalias(self):
+        return True
+
+    def _decompose(self, circ, qubits, bits, zvars):
+        c, t = qubits
+        circ.push(GateH(), t)
+        circ.push(GateCX(), t, c)
+        circ.push(GateCX(), c, t)
+        circ.push(GateH(), c)
+        circ.push(GateSDG(), t)
+        circ.push(GateSDG(), c)
         return circ

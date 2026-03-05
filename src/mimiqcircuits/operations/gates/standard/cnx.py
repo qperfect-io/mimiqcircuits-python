@@ -14,12 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-Controlled-X (Toffoli) and C3X gates."""
 
+from mimiqcircuits.operations.gates.standard.pauli import GateX
 from symengine import pi
 import mimiqcircuits as mc
 
 
-def GateCCX():
+@mc.canonical_control(2, GateX)
+class GateCCX(mc.Control):
     """Three qubit Controlled-Controlled-X gate.
 
     By convention, the first two qubits are the controls and the third is the
@@ -41,8 +44,8 @@ def GateCCX():
         <BLANKLINE>
         >>> c = Circuit().push(GateCCX(), 0, 1, 2)
         >>> c
-        3-qubit circuit with 1 instructions:
-        └── C₂X @ q[0,1], q[2]
+        3-qubit circuit with 1 instruction:
+        └── C₂X @ q[0:1], q[2]
         <BLANKLINE>
         >>> GateCCX().power(2), GateCCX().inverse()
         (C₂ID, C₂X)
@@ -65,7 +68,10 @@ def GateCCX():
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
-    return mc.Control(2, mc.GateX())
+
+    def __init__(self, num_controls=2, operation=None):
+        """Initialize a CCX (Toffoli) gate."""
+        super().__init__(2, mc.GateX())
 
 
 @mc.register_control_decomposition(2, mc.GateX)
@@ -89,7 +95,8 @@ def _decompose_gateccx(self, circ, qubits, bits, zvars):
     return circ
 
 
-def GateC3X():
+@mc.canonical_control(3, GateX)
+class GateC3X(mc.Control):
     r"""Four qubit Controlled-Controlled-Controlled-X gate.
 
     By convention, the first three qubits are the controls and the fourth is
@@ -119,8 +126,8 @@ def GateC3X():
         <BLANKLINE>
         >>> c = Circuit().push(GateC3X(), 0, 1, 2, 3)
         >>> c
-        4-qubit circuit with 1 instructions:
-        └── C₃X @ q[0,1,2], q[3]
+        4-qubit circuit with 1 instruction:
+        └── C₃X @ q[0:2], q[3]
         <BLANKLINE>
         >>> GateC3X().power(2), GateC3X().inverse()
         (C₃ID, C₃X)
@@ -149,7 +156,10 @@ def GateC3X():
         └── H @ q[3]
         <BLANKLINE>
     """
-    return mc.Control(3, mc.GateX())
+
+    def __init__(self, num_controls=3, operation=None):
+        """Initialize a C3X gate."""
+        super().__init__(3, mc.GateX())
 
 
 @mc.register_control_decomposition(3, mc.GateX)

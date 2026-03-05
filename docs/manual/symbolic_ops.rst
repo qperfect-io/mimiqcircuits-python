@@ -3,14 +3,6 @@ Symbolic Operations in MIMIQ
 
 This section provides detailed information on how to use symbolic operations in MIMIQ, including defining symbols, creating symbolic operations, substituting values, and running circuits with symbolic parameters.
 
-contents
-========
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
-
 When Symbolic Operations Can Be Useful
 ---------------------------------------
 .. _when-symbolic-operations-can-be-useful:
@@ -108,3 +100,9 @@ Before executing a circuit that includes symbolic parameters, you need to replac
     <BLANKLINE>
 
 In this example, :meth:`~mimiqcircuits.AbstractOperator.evaluate` is used to create a new circuit where `theta` is replaced by `π/2` and `phi` by `π/4`.
+
+Reference
+---------
+
+.. autofunction:: mimiqcircuits.AbstractOperator.evaluate
+    :noindex:

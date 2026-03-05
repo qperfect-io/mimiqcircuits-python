@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Identity (ID) gate."""
 
 import mimiqcircuits as mc
 from mimiqcircuits.matrices import umatrixpi
@@ -40,13 +41,13 @@ class GateID(mc.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateID(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── ID @ q[0]
         <BLANKLINE>
         >>> GateID().power(2), GateID().inverse()
         (ID, ID)
         >>> GateID().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, 0, 0.0) @ q[0]
         <BLANKLINE>
     """

@@ -14,14 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Inverse operation."""
 
 import mimiqcircuits as mc
 import mimiqcircuits.lazy as lz
 from mimiqcircuits.printutils import print_wrapped_parens
 from mimiqcircuits.operations.gates.gate import Gate
+from typing import Type, Dict, Tuple, Any, Union
 
 _inverse_decomposition_registry = {}
 _inverse_aliases_registry = {}
+
+# Registry for canonical Inverse subclasses: inner_gate_type -> subclass
+_inverse_canonical_types: Dict[Type, Type] = {}
 
 
 def register_inverse_alias(exponent, gate_type, name):
@@ -41,11 +46,44 @@ def register_inverse_decomposition(gate_type):
     return decorator
 
 
+def canonical_inverse(inner_gate_type: Type):
+    """Decorator to register a canonical Inverse subclass.
+
+    When Inverse(inner_gate_type()) is called, it will
+    return an instance of the decorated subclass instead.
+
+    Args:
+        inner_gate_type: Type of the inner gate
+
+    Returns:
+        Decorator that registers the class
+
+    Example:
+        >>> from mimiqcircuits import *
+        >>> @canonical_inverse(GateS)
+        ... class GateSDG(Inverse):
+        ...     pass
+        >>> isinstance(Inverse(GateS()), GateSDG)
+        True
+    """
+
+    def decorator(cls: Type) -> Type:
+        _inverse_canonical_types[inner_gate_type] = cls
+        return cls
+
+    return decorator
+
+
 class Inverse(Gate):
     """Inverse of the wrapped quantum operation.
 
     The inversion is not performed right away, but only when the circuit is
     cached or executed.
+
+    When a canonical subclass is registered (e.g., GateSDG for Inverse(GateS())),
+    constructing Inverse with matching arguments will return an instance of that
+    subclass. This enables isinstance() checks to work correctly:
+
 
     .. warning::
 
@@ -54,13 +92,15 @@ class Inverse(Gate):
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> isinstance(Inverse(GateS()), GateSDG)
+        True
         >>> Inverse(GateP(1)).matrix()
         [1.0, 0]
         [0, 0.54030230586814 - 0.841470984807897*I]
         <BLANKLINE>
         >>> c = Circuit()
         >>> c.push(Inverse(GateP(1)), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── P(1)† @ q[1]
         <BLANKLINE>
     """
@@ -72,6 +112,42 @@ class Inverse(Gate):
     _num_cregs = 0
 
     _op = None
+
+    def __new__(cls, operation=None, *args, **kwargs):
+        """Create an Inverse instance, returning canonical subclass if registered.
+
+        If a canonical subclass is registered for type(operation),
+        an instance of that subclass is returned instead of a plain Inverse.
+
+        Args:
+            operation: Gate operation or gate class to invert
+            *args: Arguments to pass to operation constructor if a class is provided
+            **kwargs: Keyword arguments to pass to operation constructor
+
+        Returns:
+            Instance of Inverse or a registered canonical subclass
+        """
+        # Only intercept direct Inverse() calls, not subclass calls
+        if cls is Inverse:
+            if operation is None:
+                # Let __init__ handle the error
+                return object.__new__(cls)
+
+            # Resolve the operation to get its type
+            if isinstance(operation, type) and issubclass(operation, mc.Gate):
+                inner_type = operation
+            elif isinstance(operation, mc.Gate):
+                inner_type = type(operation)
+            else:
+                # Let __init__ handle the error
+                return object.__new__(cls)
+
+            # Check for canonical subclass
+            canonical_cls = _inverse_canonical_types.get(inner_type)
+            if canonical_cls is not None:
+                return object.__new__(canonical_cls)
+
+        return object.__new__(cls)
 
     def __init__(self, operation, *args, **kwargs):
         if isinstance(operation, type) and issubclass(operation, mc.Gate):
@@ -163,4 +239,4 @@ class Inverse(Gate):
         return circ
 
 
-__all__ = ["Inverse"]
+__all__ = ["Inverse", "canonical_inverse"]

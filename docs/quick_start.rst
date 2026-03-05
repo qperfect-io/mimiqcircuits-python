@@ -3,14 +3,6 @@ Quick Start
 
 In this tutorial, we will walk you through the fundamental procedures for simulating a quantum circuit using MIMIQ. Throughout the tutorial, we will provide links to detailed documentation and examples that can provide a deeper understanding of each topic.
 
-Contents
-========
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
-
 Install and load MIMIQ
 ----------------------
 
@@ -35,15 +27,13 @@ In order to use MIMIQ, we simply need to import the `mimiqcircuits` Python modul
     >>> from mimiqcircuits import *
     >>> import os
 
-    >>> conn = MimiqConnection(url="https://mimiqfast.qperfect.io/api")
+    >>> conn = MimiqConnection(url="https://mimiq.qperfect.io")
     >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
-    Connection:
-    ├── url: https://mimiqfast.qperfect.io/api
-    ├── Computing time: 598/10000 minutes
-    ├── Executions: 569/10000
-    ├── Max time limit per request: 180 minutes
+    MimiqConnection:
+    ├── url: https://mimiq.qperfect.io
+    ├── Max time limit per request: 360 minutes
+    ├── Default time limit is equal to max time limit: 360 minutes
     └── status: open
-    <BLANKLINE>
 
 Connect to remote service
 -------------------------
@@ -102,11 +92,12 @@ To prepare a 5-qubit GHZ state, we add 5 CX gates or control-`X` gates between t
 .. doctest:: quick_start
 
     >>> circuit.push(GateCX(), 0, range(1, 5))
-    4-qubit circuit with 4 instructions:
+    5-qubit circuit with 5 instructions:
     ├── H @ q[0]
     ├── CX @ q[0], q[1]
     ├── CX @ q[0], q[2]
-    └── CX @ q[0], q[3]
+    ├── CX @ q[0], q[3]
+    └── CX @ q[0], q[4]
     <BLANKLINE>
 
 
@@ -119,12 +110,13 @@ For example, we can compute the expectation value of :math:`| 11 \rangle\langle 
 .. doctest:: quick_start
 
     >>> circuit.push(ExpectationValue(Projector11()), 0, 4, 0)
-    6-qubit circuit with 5 instructions:
+    5-qubit, 1-zvar circuit with 6 instructions:
     ├── H @ q[0]
     ├── CX @ q[0], q[1]
     ├── CX @ q[0], q[2]
     ├── CX @ q[0], q[3]
-    └── ⟨P₁₁(1)⟩ @ q[1,5], z[1]
+    ├── CX @ q[0], q[4]
+    └── ⟨P₁₁(1)⟩ @ q[0,4], z[0]
     <BLANKLINE>
 
 
@@ -133,12 +125,14 @@ We can measure the qubits and add other :doc:`non-unitary operations <manual/non
 .. doctest:: quick_start
 
     >>> circuit.push(Measure(), range(0, 5), range(0, 5))
-    6-qubit circuit with 9 instructions:
+    5-qubit, 5-bit, 1-zvar circuit with 11 instructions:
     ├── H @ q[0]
     ├── CX @ q[0], q[1]
     ├── CX @ q[0], q[2]
     ├── CX @ q[0], q[3]
-    ├── ⟨P₁₁(1)⟩ @ q[1,5], z[1]
+    ├── CX @ q[0], q[4]
+    ├── ⟨P₁₁(1)⟩ @ q[0,4], z[0]
+    ├── M @ q[0], c[0]
     ├── M @ q[1], c[1]
     ├── M @ q[2], c[2]
     ├── M @ q[3], c[3]
@@ -158,20 +152,22 @@ To simulate imperfect quantum computers we can add noise to the circuit. Noise o
 .. doctest:: quick_start
 
     >>> circuit.add_noise(GateH(), AmplitudeDamping(0.01))
-    6-qubit circuit with 10 instructions:
+    5-qubit, 5-bit, 1-zvar circuit with 12 instructions:
     ├── H @ q[0]
     ├── AmplitudeDamping(0.01) @ q[0]
     ├── CX @ q[0], q[1]
     ├── CX @ q[0], q[2]
     ├── CX @ q[0], q[3]
-    ├── ⟨P₁₁(1)⟩ @ q[1,5], z[1]
+    ├── CX @ q[0], q[4]
+    ├── ⟨P₁₁(1)⟩ @ q[0,4], z[0]
+    ├── M @ q[0], c[0]
     ├── M @ q[1], c[1]
     ├── M @ q[2], c[2]
     ├── M @ q[3], c[3]
     └── M @ q[4], c[4]
     <BLANKLINE>
     >>> circuit.add_noise(GateCX(), Depolarizing2(0.1), parallel=True)
-    6-qubit circuit with 13 instructions:
+    5-qubit, 5-bit, 1-zvar circuit with 16 instructions:
     ├── H @ q[0]
     ├── AmplitudeDamping(0.01) @ q[0]
     ├── CX @ q[0], q[1]
@@ -180,14 +176,17 @@ To simulate imperfect quantum computers we can add noise to the circuit. Noise o
     ├── Depolarizing(0.1) @ q[0,2]
     ├── CX @ q[0], q[3]
     ├── Depolarizing(0.1) @ q[0,3]
-    ├── ⟨P₁₁(1)⟩ @ q[1,5], z[1]
+    ├── CX @ q[0], q[4]
+    ├── Depolarizing(0.1) @ q[0,4]
+    ├── ⟨P₁₁(1)⟩ @ q[0,4], z[0]
+    ├── M @ q[0], c[0]
     ├── M @ q[1], c[1]
     ├── M @ q[2], c[2]
     ├── M @ q[3], c[3]
     └── M @ q[4], c[4]
     <BLANKLINE>
     >>> circuit.add_noise(Measure(), PauliX(0.05), before=True, parallel=True)
-    6-qubit circuit with 17 instructions:
+    5-qubit, 5-bit, 1-zvar circuit with 21 instructions:
     ├── H @ q[0]
     ├── AmplitudeDamping(0.01) @ q[0]
     ├── CX @ q[0], q[1]
@@ -196,14 +195,18 @@ To simulate imperfect quantum computers we can add noise to the circuit. Noise o
     ├── Depolarizing(0.1) @ q[0,2]
     ├── CX @ q[0], q[3]
     ├── Depolarizing(0.1) @ q[0,3]
-    ├── ⟨P₁₁(1)⟩ @ q[1,5], z[1]
-    ├── PauliX(0.05) @ q[1]
-    ├── PauliX(0.05) @ q[1]
-    ├── PauliX(0.05) @ q[1]
-    ├── PauliX(0.05) @ q[1]
+    ├── CX @ q[0], q[4]
+    ├── Depolarizing(0.1) @ q[0,4]
+    ├── ⟨P₁₁(1)⟩ @ q[0,4], z[0]
+    ├── PauliX(0.05) @ q[0]
+    ├── PauliX(0.05) @ q[0]
+    ├── PauliX(0.05) @ q[0]
+    ├── PauliX(0.05) @ q[0]
+    ├── PauliX(0.05) @ q[0]
+    ├── M @ q[0], c[0]
     ├── M @ q[1], c[1]
     ├── M @ q[2], c[2]
-    ├── M @ q[3], c[3]
+    ⋮   ⋮
     └── M @ q[4], c[4]
     <BLANKLINE>
 
@@ -215,7 +218,7 @@ The number of qubits, classical bits, and complex z-values of a circuit can be o
 .. doctest:: quick_start
 
     >>> circuit.num_qubits(), circuit.num_bits(), circuit.num_zvars()
-    (6, 5, 2)
+    (5, 5, 1)
 
 
 A circuit behaves in many ways like a vector (of instructions, i.e. operations + targets). You can get the length as :code:`len(circuit)`, access elements as `circuit[2]`, insert elements with :meth:`~mimiqcircuits.Circuit.insert`, append other circuits with :meth:`~mimiqcircuits.Circuit.append` etc. You can also visualize circuits with :meth:`~mimiqcircuits.Circuit.draw`. See :doc:`circuit page <manual/circuits>` for more information.
@@ -229,11 +232,11 @@ Executing a circuit on MIMIQ requires three steps:
 2. send a circuit for execution,
 3. retrieve the results of the execution.
 
-After a connection has been established, an execution can be sent to the remote services using :meth:`~mimiqcircuits.MimiqConnection.execute`.
+After a connection has been established, an execution can be sent to the remote services using :meth:`~mimiqcircuits.MimiqConnection.schedule`.
 
 .. doctest:: quick_start
 
-    >>> job = conn.execute(circuit)
+    >>> job = conn.schedule(circuit)
 
 
 This will execute a simulation of the given circuit with default parameters. The default choice of algorithm is `"auto"`.  Generally, there are three available options:
@@ -242,7 +245,7 @@ This will execute a simulation of the given circuit with default parameters. The
 * `"statevector"` for a highly optimized state vector engine, and
 * `"mps"` for the large-scale Matrix Product States (MPS) method.
 
-Check out the documentation of the :meth:`~mimiqcircuits.MimiqConnection.execute` function for details.
+Check out the documentation of the :meth:`~mimiqcircuits.MimiqConnection.schedule` function for details.
 
 Once the execution has finished, the results can be retrieved via the :meth:`~mimiqcircuits.MimiqConnection.getresults` function, which returns a :class:`~mimiqcircuitsQCSResults` structure.
 
@@ -256,7 +259,7 @@ To make a histogram out of the retrieved samples, it suffices to execute
 .. doctest:: quick_start
 
       >>> res.histogram()
-      {frozenbitarray('01110'): 1000}
+      {frozenbitarray('00000'): 289, frozenbitarray('11111'): 307, frozenbitarray('00001'): 16, frozenbitarray('00111'): 6, frozenbitarray('10000'): 90, frozenbitarray('10011'): 16, frozenbitarray('01100'): 15, frozenbitarray('00011'): 3, frozenbitarray('11110'): 23, frozenbitarray('01111'): 84, frozenbitarray('10111'): 29, frozenbitarray('01110'): 15, frozenbitarray('01000'): 19, frozenbitarray('11100'): 6, frozenbitarray('10001'): 20, frozenbitarray('11101'): 11, frozenbitarray('10010'): 3, frozenbitarray('00100'): 9, frozenbitarray('01001'): 2, frozenbitarray('00010'): 12, frozenbitarray('11011'): 8, frozenbitarray('10100'): 3, frozenbitarray('01101'): 2, frozenbitarray('11010'): 1, frozenbitarray('01011'): 3, frozenbitarray('11001'): 1, frozenbitarray('10101'): 3, frozenbitarray('00101'): 1, frozenbitarray('11000'): 3}
 
 
 To plot the results use the following:
@@ -275,6 +278,6 @@ Check the :doc:`cloud execution<manual/remote_execution>` page for more details 
 OpenQASM and Stim
 ^^^^^^^^^^^^^^^^^
 
-OpenQASM and Stim files, defining quantum algorithms can be executed on MIMIQ in the same way native circuits can, simply use :meth:`~mimiqcircuits.MimiqConnection.execute` and provide the path of the file to upload.
+OpenQASM and Stim files, defining quantum algorithms can be executed on MIMIQ in the same way native circuits can, simply use :meth:`~mimiqcircuits.MimiqConnection.schedule` and provide the path of the file to upload.
 See the :doc:`import-export<manual/import_export>` page for more details on how include files are handled.
 

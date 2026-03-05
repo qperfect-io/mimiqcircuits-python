@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Control operation."""
 
 import symengine as se
 import sympy as sp
@@ -23,9 +24,12 @@ import mimiqcircuits.lazy as lz
 import mimiqcircuits.operations.decompositions.control as ctrldecomp
 from mimiqcircuits.operations.gates.gate import Gate
 from mimiqcircuits.printutils import print_wrapped_parens
-from typing import Union, Type, Tuple, Any
+from typing import Union, Type, Tuple, Any, Dict
 
 _control_decomposition_registry = {}
+
+# Registry for canonical Control subclasses: (num_controls, inner_gate_type) -> subclass
+_control_canonical_types: Dict[Tuple[int, Type], Type] = {}
 
 
 def register_control_decomposition(num_controls: int, gate_type):
@@ -47,22 +51,54 @@ def register_control_decomposition(num_controls: int, gate_type):
     return decorator
 
 
+def canonical_control(num_controls: int, inner_gate_type: Type):
+    """Decorator to register a canonical Control subclass.
+
+    When Control(num_controls, inner_gate_type()) is called, it will
+    return an instance of the decorated subclass instead.
+
+    Args:
+        num_controls: Number of control qubits
+        inner_gate_type: Type of the inner gate
+
+    Returns:
+        Decorator that registers the class
+
+    Example:
+        >>> from mimiqcircuits import *
+        >>> @canonical_control(1, GateX)
+        ... class GateCX(Control):
+        ...     pass
+        >>> isinstance(Control(1, GateX()), GateCX)
+        True
+    """
+
+    def decorator(cls: Type) -> Type:
+        _control_canonical_types[(num_controls, inner_gate_type)] = cls
+        return cls
+
+    return decorator
+
+
 class Control(Gate):
     """Control operation that applies multi-control gates to a Circuit.
 
     A Control is a special operation that wraps another gate with multiple
     control qubits.
 
-    Attributes:
-        num_controls: Number of control qubits
-        op: The target gate operation
+    When a canonical subclass is registered (e.g., GateCX for Control(1, GateX())),
+    constructing Control with matching arguments will return an instance of that
+    subclass. This enables isinstance() checks to work correctly:
+
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> isinstance(Control(1, GateX()), GateCX)
+        True
         >>> c = Circuit()
         >>> c.push(Control(3,GateX()),1,2,3,4)
-        5-qubit circuit with 1 instructions:
-        └── C₃X @ q[1,2,3], q[4]
+        5-qubit circuit with 1 instruction:
+        └── C₃X @ q[1:3], q[4]
         <BLANKLINE>
         >>> Control(2, GateX()).matrix()
         [1.0, 0, 0, 0, 0, 0, 0, 0]
@@ -77,6 +113,44 @@ class Control(Gate):
     """
 
     _name = "Control"
+
+    def __new__(cls, num_controls: int = None, operation: Union[Type[Gate], Gate] = None, *args, **kwargs):
+        """Create a Control instance, returning canonical subclass if registered.
+
+        If a canonical subclass is registered for (num_controls, type(operation)),
+        an instance of that subclass is returned instead of a plain Control.
+
+        Args:
+            num_controls: Number of control qubits
+            operation: Gate operation to control or gate class to instantiate
+            *args: Arguments to pass to operation constructor if a class is provided
+            **kwargs: Keyword arguments to pass to operation constructor
+
+        Returns:
+            Instance of Control or a registered canonical subclass
+        """
+        # Only intercept direct Control() calls, not subclass calls
+        if cls is Control:
+            if num_controls is None or operation is None:
+                # Let __init__ handle the error
+                return object.__new__(cls)
+
+            # Resolve the operation to get its type
+            if isinstance(operation, type) and issubclass(operation, mc.Gate):
+                inner_type = operation
+            elif isinstance(operation, mc.Gate):
+                inner_type = type(operation)
+            else:
+                # Let __init__ handle the error
+                return object.__new__(cls)
+
+            # Check for canonical subclass
+            key = (num_controls, inner_type)
+            canonical_cls = _control_canonical_types.get(key)
+            if canonical_cls is not None:
+                return object.__new__(canonical_cls)
+
+        return object.__new__(cls)
 
     def __init__(
         self, num_controls: int, operation: Union[Type[Gate], Gate], *args, **kwargs
@@ -354,4 +428,4 @@ class Control(Gate):
             return ctrldecomp.control_decompose(circ, self.op, controls, targets[0])
 
 
-__all__ = ["Control"]
+__all__ = ["Control", "canonical_control"]

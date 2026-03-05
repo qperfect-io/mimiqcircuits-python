@@ -4,10 +4,6 @@ Z-register Operations
 Operations on the Z-register allow users to manipulate complex-valued variables inside a quantum circuit.
 This section covers all the information needed to perform operations on the complex-valued variables stored in the Z-register.
 
-.. contents::
-   :local:
-   :depth: 2
-
 What is the Z-register?
 -----------------------
 
@@ -51,20 +47,20 @@ Some operations compute values from the quantum state and store the result into 
     └── CX @ q[1], q[2]
     <BLANKLINE>
     >>> c.push(ExpectationValue(PauliString("XX")), 1, 2, 1)  # qubits 1,2 -> z[1]
-    3-qubit circuit with 3 instructions:
+    3-qubit, 2-zvar circuit with 3 instructions:
     ├── H @ q[1]
     ├── CX @ q[1], q[2]
     └── ⟨XX⟩ @ q[1,2], z[1]
     <BLANKLINE>
     >>> c.push(ExpectationValue(PauliString("ZZ")), 1, 2, 2)  # qubits 1,2 -> z[2]
-    3-qubit circuit with 4 instructions:
+    3-qubit, 3-zvar circuit with 4 instructions:
     ├── H @ q[1]
     ├── CX @ q[1], q[2]
     ├── ⟨XX⟩ @ q[1,2], z[1]
     └── ⟨ZZ⟩ @ q[1,2], z[2]
     <BLANKLINE>
     >>> c.push(Amplitude(BitString(2)), 3)                      # bitstring -> z[3]
-    3-qubit circuit with 5 instructions:
+    3-qubit, 4-zvar circuit with 5 instructions:
     ├── H @ q[1]
     ├── CX @ q[1], q[2]
     ├── ⟨XX⟩ @ q[1,2], z[1]
@@ -84,7 +80,7 @@ The following operations perform arithmetic on Z-register variables:
 .. doctest::
 
     >>> c.push(Add(3), 4, 1, 2)         # z[4] = z[1] + z[2]
-    3-qubit circuit with 6 instructions:
+    3-qubit, 5-zvar circuit with 6 instructions:
     ├── H @ q[1]
     ├── CX @ q[1], q[2]
     ├── ⟨XX⟩ @ q[1,2], z[1]
@@ -93,7 +89,7 @@ The following operations perform arithmetic on Z-register variables:
     └── z[4] += 0.0 + z[1] + z[2]
     <BLANKLINE>
     >>> c.push(Multiply(3), 5, 1, 2)    # z[5] = z[1] * z[2]
-    3-qubit circuit with 7 instructions:
+    3-qubit, 6-zvar circuit with 7 instructions:
     ├── H @ q[1]
     ├── CX @ q[1], q[2]
     ├── ⟨XX⟩ @ q[1,2], z[1]
@@ -103,7 +99,7 @@ The following operations perform arithmetic on Z-register variables:
     └── z[5] *= 1.0 * z[1] * z[2]
     <BLANKLINE>
     >>> c.push(Multiply(1, 0.2), 3)     # z[3] *= 0.2
-    3-qubit circuit with 8 instructions:
+    3-qubit, 6-zvar circuit with 8 instructions:
     ├── H @ q[1]
     ├── CX @ q[1], q[2]
     ├── ⟨XX⟩ @ q[1,2], z[1]
@@ -114,7 +110,7 @@ The following operations perform arithmetic on Z-register variables:
     └── z[3] *= 0.2
     <BLANKLINE>
     >>> c.push(Pow(-1), 3)              # z[3] = z[3] ** -1
-    3-qubit circuit with 9 instructions:
+    3-qubit, 6-zvar circuit with 9 instructions:
     ├── H @ q[1]
     ├── CX @ q[1], q[2]
     ├── ⟨XX⟩ @ q[1,2], z[1]
@@ -146,9 +142,7 @@ where \( \sigma^z_j \) and \( \sigma^x_j \) are Pauli matrices on the \( j \)-th
 
 The circuit to compute the expectation value is:
 
-.. doctest:: python
-
-    Example: Ising Hamiltonian Expectation Value (Energy)
+Example: Ising Hamiltonian Expectation Value (Energy)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A more complex example is the computation of the expectation value of a 1D Ising Hamiltonian with transverse field:
@@ -178,7 +172,7 @@ The circuit to compute the expectation value is:
     ...     _ = c.push(Multiply(1, -J), newz)
 
     >>> c
-    4-qubit circuit with 6 instructions:
+    4-qubit, 3-zvar circuit with 6 instructions:
     ├── ⟨ZZ⟩ @ q[0,1], z[0]
     ├── z[0] *= -1.0
     ├── ⟨ZZ⟩ @ q[1,2], z[1]
@@ -193,7 +187,7 @@ The circuit to compute the expectation value is:
     ...     _ = c.push(Multiply(1, -h), newz)
 
     >>> c
-    4-qubit circuit with 14 instructions:
+    4-qubit, 7-zvar circuit with 14 instructions:
     ├── ⟨ZZ⟩ @ q[0,1], z[0]
     ├── z[0] *= -1.0
     ├── ⟨ZZ⟩ @ q[1,2], z[1]
@@ -213,7 +207,7 @@ The circuit to compute the expectation value is:
     >>> total_terms = c.num_zvars()
     >>> _ = c.push(Add(total_terms), *range(total_terms))
     >>> c
-    4-qubit circuit with 15 instructions:
+    4-qubit, 7-zvar circuit with 15 instructions:
     ├── ⟨ZZ⟩ @ q[0,1], z[0]
     ├── z[0] *= -1.0
     ├── ⟨ZZ⟩ @ q[1,2], z[1]
@@ -230,3 +224,13 @@ The circuit to compute the expectation value is:
     ├── z[6] *= -0.5
     └── z[0] += 0.0 + z[1] + z[2] + z[3] + z[4] + z[5] + z[6]
     <BLANKLINE>
+
+Reference
+---------
+
+.. autoclass:: mimiqcircuits.Add
+    :noindex:
+.. autoclass:: mimiqcircuits.Multiply
+    :noindex:
+.. autoclass:: mimiqcircuits.Pow
+    :noindex:

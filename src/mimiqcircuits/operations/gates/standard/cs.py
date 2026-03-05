@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-S and Controlled-SDG gates."""
 
 from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from mimiqcircuits.operations.gates.standard.cphase import GateCP
@@ -21,13 +22,14 @@ import mimiqcircuits as mc
 from symengine import pi
 
 
-def GateCS():
+@mc.canonical_control(1, GateS)
+class GateCS(mc.Control):
     r"""Two qubit Controlled-S gate.
 
     By convention, the first qubit is the control and the second is
     the target
 
-    See Also :func:`GateS`
+    See Also :class:`GateS`
 
     **Matrix representation:**:
 
@@ -51,17 +53,20 @@ def GateCS():
         <BLANKLINE>
         >>> c = Circuit().push(GateCS(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CS @ q[0], q[1]
         <BLANKLINE>
         >>> GateCS().power(2), GateCS().inverse()
         (CZ, C(S†))
         >>> GateCS().decompose()
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CU(0, 0, (1/2)*pi, 0.0) @ q[0], q[1]
         <BLANKLINE>
     """
-    return mc.Control(1, GateS())
+
+    def __init__(self, num_controls=1, operation=None):
+        """Initialize a CS gate."""
+        super().__init__(1, GateS())
 
 
 @mc.register_control_decomposition(1, mc.GateS)
@@ -71,7 +76,8 @@ def _decompose_gatecs(gate, circ, qubits, bits, zvars):
     return circ
 
 
-def GateCSDG():
+@mc.canonical_control(1, GateSDG)
+class GateCSDG(mc.Control):
     r"""Adjoint of two qubit Controlled-S gate.
 
     By convention, the first qubit is the control and the second is
@@ -99,17 +105,20 @@ def GateCSDG():
         <BLANKLINE>
         >>> c = Circuit().push(GateCSDG(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── C(S†) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSDG().power(2), GateCSDG().inverse()
         (C((S†)**2), CS)
         >>> GateCSDG().decompose()
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CU(0, 0, (-1/2)*pi, 0.0) @ q[0], q[1]
         <BLANKLINE>
     """
-    return mc.Control(1, mc.GateSDG())
+
+    def __init__(self, num_controls=1, operation=None):
+        """Initialize a CSDG gate."""
+        super().__init__(1, GateSDG())
 
 
 @mc.register_control_decomposition(1, mc.GateSDG)

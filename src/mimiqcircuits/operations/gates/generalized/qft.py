@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Quantum Fourier Transform (QFT)."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.cphase import GateCP
@@ -47,8 +48,8 @@ class QFT(mcg.Gate):
         >>> from mimiqcircuits import *
         >>> c=Circuit()
         >>> c.push(QFT(2),1,2)
-        3-qubit circuit with 1 instructions:
-        └── QFT @ q[1,2]
+        3-qubit circuit with 1 instruction:
+        └── QFT @ q[1:2]
         <BLANKLINE>
 
     """

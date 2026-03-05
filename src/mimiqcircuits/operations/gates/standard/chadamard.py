@@ -14,11 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-Hadamard gate."""
 
 import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
 
 
-def GateCH():
+@mc.canonical_control(1, GateH)
+class GateCH(mc.Control):
     r"""Two qubit Controlled-Hadamard gate.
 
     By convention, the first qubit is the control and the second is
@@ -46,7 +49,7 @@ def GateCH():
         <BLANKLINE>
         >>> c = Circuit().push(GateCH(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CH @ q[0], q[1]
         <BLANKLINE>
         >>> GateCH().power(2), GateCH().inverse()
@@ -63,7 +66,10 @@ def GateCH():
         <BLANKLINE>
 
     """
-    return mc.Control(1, mc.GateH())
+
+    def __init__(self, num_controls=1, operation=None):
+        """Initialize a CH gate."""
+        super().__init__(1, GateH())
 
 
 @mc.register_control_decomposition(1, mc.GateH)

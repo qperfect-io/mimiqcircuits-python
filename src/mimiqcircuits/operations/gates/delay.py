@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Delay gate operation."""
 
 from mimiqcircuits import Gate, GateID, Circuit
 
@@ -53,7 +54,7 @@ class Delay(Gate):
 
         >>> c = Circuit()
         >>> c.push(delay_gate, 0)
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── Delay(0.1) @ q[0]
         <BLANKLINE>
 
@@ -61,7 +62,7 @@ class Delay(Gate):
 
         >>> delay_gate = Delay(0.2)
         >>> delay_gate.decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── ID @ q[0]
         <BLANKLINE>
     """

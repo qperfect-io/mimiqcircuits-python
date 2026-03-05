@@ -14,14 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""T and TDG gates."""
 
+from fractions import Fraction
 from symengine import pi
 
 import mimiqcircuits as mc
 
 
-def GateT():
-    r""" Single qubit T gate.
+@mc.canonical_power(mc.GateZ, Fraction(1, 4))
+class GateT(mc.Power):
+    r"""Single qubit T gate.
 
     **Matrix representation:**
 
@@ -41,17 +44,20 @@ def GateT():
         <BLANKLINE>
         >>> c = Circuit().push(GateT(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── T @ q[0]
         <BLANKLINE>
         >>> GateT().power(2), GateT().inverse()
         (S, T†)
         >>> GateT().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, (1/4)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-    return mc.Power(mc.GateS(), 1 / 2)
+
+    def __init__(self, operation=None, exponent=None):
+        """Initialize a T gate."""
+        super().__init__(mc.GateZ(), Fraction(1, 4))
 
 
 mc.register_power_alias(mc.GateZ, 1 / 4, "T")
@@ -64,7 +70,8 @@ def _decompose_gatet(self, circ, qubits, bits, zvars):
     return circ
 
 
-def GateTDG():
+@mc.canonical_inverse(GateT)
+class GateTDG(mc.Inverse):
     r"""Single qubit T-dagger gate (conjugate transpose of the T gate).
 
     **Matrix representation:**
@@ -85,17 +92,20 @@ def GateTDG():
         <BLANKLINE>
         >>> c = Circuit().push(GateTDG(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── T† @ q[0]
         <BLANKLINE>
         >>> GateTDG().power(2), GateTDG().inverse()
         ((T†)**2, T)
         >>> GateTDG().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, (-1/4)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-    return mc.Inverse(GateT())
+
+    def __init__(self, operation=None):
+        """Initialize a TDG gate."""
+        super().__init__(GateT())
 
 
 @mc.register_inverse_decomposition((mc.Power, mc.GateZ, 1 / 4))

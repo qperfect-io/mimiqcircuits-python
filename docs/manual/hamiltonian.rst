@@ -13,14 +13,6 @@ This workflow allows you to:
 
     Measure physical observables like energy
 
-Contents
-========
-
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
 
 Hamiltonian
 -----------------------
@@ -116,7 +108,6 @@ To construct this model in MIMIQ you can use :class:`~mimiqcircuits.Hamiltonian`
 
 Simulating Time Evolution
 --------------------------------
-.. __simulating-time-evolution:
 
 Suppose we want to apply :math:`e^{-iHt}` to a quantum state. This is useful for preparing ground states via imaginary-time evolution (approximate cooling),
 or evolving an initial state in real time.
@@ -204,3 +195,15 @@ by evaluating the expectation value (:meth:`~mimiqcircuits.Circuit.push_expval`)
 
 The result is stored in the Z-register — the first index contains the total expectation value (energy).
 You can access it from the simulation result.
+
+Reference
+---------
+
+.. autoclass:: mimiqcircuits.Hamiltonian
+    :noindex:
+.. autofunction:: mimiqcircuits.Circuit.push_lietrotter
+    :noindex:
+.. autofunction:: mimiqcircuits.Circuit.push_suzukitrotter
+    :noindex:
+.. autofunction:: mimiqcircuits.Circuit.push_expval
+    :noindex:

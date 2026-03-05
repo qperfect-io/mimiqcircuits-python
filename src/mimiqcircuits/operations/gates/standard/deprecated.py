@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Deprecated gates (U1, U2, U3)."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.u import GateU
@@ -49,13 +50,13 @@ class GateU1(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateU1(lmbda), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U1(lambda) @ q[0]
         <BLANKLINE>
         >>> GateU1(lmbda).power(2), GateU1(lmbda).inverse()
         (U1(2*lambda), U1(-lambda))
         >>> GateU1(lmbda).decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, lambda, 0.0) @ q[0]
         <BLANKLINE>
     """
@@ -113,13 +114,13 @@ class GateU2(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateU2(phi, lmbda), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U2(phi, lambda) @ q[0]
         <BLANKLINE>
         >>> GateU2(phi, lmbda).power(2), GateU2(phi, lmbda).inverse()
         (U2(phi, lambda)**2, U2(-lambda - pi, -phi + pi))
         >>> GateU2(phi, lmbda).decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U((1/2)*pi, phi, lambda, 0.0) @ q[0]
         <BLANKLINE>
     """
@@ -180,7 +181,7 @@ class GateU3(mcg.Gate):
         >>> GateU3(theta, phi, lmbda).power(2), GateU3(theta, phi, lmbda).inverse()
         (U3(theta, phi, lambda)**2, U3(-theta, -lambda, -phi))
         >>> GateU3(theta, phi, lmbda).decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(theta, phi, lambda, 0.0) @ q[0]
         <BLANKLINE>
     """

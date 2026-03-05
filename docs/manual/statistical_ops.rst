@@ -6,15 +6,6 @@ All statistical operations will result in a real or complex number that will be 
 
 On this page you will find all statistical operations available on MIMIQ with explanations and examples.
 
-Contents
-========
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
-
-
 .. doctest:: statistical_op
     :hide:
 
@@ -23,15 +14,13 @@ Contents
     >>> import os
     >>> import math
 
-    >>> conn = MimiqConnection(url="https://mimiqfast.qperfect.io/api")
+    >>> conn = MimiqConnection(url="https://mimiq.qperfect.io")
     >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
-    Connection:
-    ├── url: https://mimiqfast.qperfect.io/api
-    ├── Computing time: 599/10000 minutes
-    ├── Executions: 605/10000
-    ├── Max time limit per request: 180 minutes
+    MimiqConnection:
+    ├── url: https://mimiq.qperfect.io
+    ├── Max time limit per request: 360 minutes
+    ├── Default time limit is equal to max time limit: 360 minutes
     └── status: open
-    <BLANKLINE>
 
 
 Expectation value
@@ -81,7 +70,7 @@ To ask MIMIQ to compute the expectation value for a circuit you can create an :c
     >>> # Ask to compute the expectation value
     >>> ev = ExpectationValue(op)
     >>> circuit.push(ev, 0, 0)
-    1-qubit circuit with 2 instructions:
+    1-qubit, 1-zvar circuit with 2 instructions:
     ├── H @ q[0]
     └── ⟨SigmaPlus(1)⟩ @ q[0], z[0]
     <BLANKLINE>
@@ -138,8 +127,8 @@ Usage on MIMIQ
     >>> circuit = Circuit() 
     >>> # Asking to compute the Von Neumann entropy between the two subsystems separated between qubit 1 and 2
     >>> circuit.push(VonNeumannEntropy(), 2, 0)
-    3-qubit circuit with 1 instructions:
-    └── VonNeumannEntropy @ q[2], z[1]
+    3-qubit, 1-zvar circuit with 1 instructions:
+    └── VonNeumannEntropy @ q[2], z[0]
     <BLANKLINE>
 
 
@@ -180,7 +169,7 @@ To compute the bond dimension between two halves of a system you can use the :cl
     >>> circuit = Circuit() 
     >>> # Asking to compute the BondDim between the second and third qubits
     >>> circuit.push(BondDim(), 2, 0)
-    3-qubit circuit with 1 instructions:
+    3-qubit, 1-zvar circuit with 1 instructions:
     └── BondDim @ q[2], z[0]
     <BLANKLINE>
 
@@ -223,7 +212,7 @@ To compute the Schmidt rank of a bipartition you can use the :class:`~mimiqcircu
     >>> circuit = Circuit() 
     >>> # Asking to compute the Schmidt rank between the two subsystems separated between qubits 1 and 2
     >>> circuit.push(SchmidtRank(), 2, 0)
-    3-qubit circuit with 1 instructions:
+    3-qubit, 1-zvar circuit with 1 instructions:
     └── SchmidtRank @ q[2], z[0]
     <BLANKLINE>
 
@@ -262,7 +251,7 @@ You can add the :class:`~mimiqcircuits.Amplitude` object to the circuit exactly 
 
     >>> # Add the amplitude operator to the circuit and write the result in the first complex number of the Z-Register
     >>> mystery_circuit.push(amp, 0)
-    3-qubit circuit with 4 instructions:
+    3-qubit, 1-zvar circuit with 4 instructions:
     ├── H @ q[0]
     ├── H @ q[1]
     ├── H @ q[2]
@@ -271,3 +260,17 @@ You can add the :class:`~mimiqcircuits.Amplitude` object to the circuit exactly 
 
 
 This will extract the amplitude of the basis state :math:`\ket{101}`. When adding the amplitude operation you do not need to give it any specific qubit target, the only index needed is for the Z-register to use for storing the result.
+
+Reference
+---------
+
+.. autoclass:: mimiqcircuits.ExpectationValue
+    :noindex:
+.. autoclass:: mimiqcircuits.VonNeumannEntropy
+    :noindex:
+.. autoclass:: mimiqcircuits.BondDim
+    :noindex:
+.. autoclass:: mimiqcircuits.SchmidtRank
+    :noindex:
+.. autoclass:: mimiqcircuits.Amplitude
+    :noindex:

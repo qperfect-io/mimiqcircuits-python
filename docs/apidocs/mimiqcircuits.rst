@@ -1,12 +1,19 @@
 .. _mimiqcircuits-module:
 
-mimiqcircuits package
-=====================
+API Reference
+=============
 
-.. automodule:: mimiqcircuits
-   :members:
-   :undoc-members:
-   :show-inheritance:
-.. toctree::
-   :maxdepth: 4
+.. autosummary::
+   :toctree: _autosummary
+   :recursive:
 
+   mimiqcircuits.circuit
+   mimiqcircuits.hamiltonian
+   mimiqcircuits.instruction
+   mimiqcircuits.operations
+   mimiqcircuits.classical
+   mimiqcircuits.noisemodel
+   mimiqcircuits.remote
+   mimiqcircuits.qcsresults
+   mimiqcircuits.lazy
+   mimiqcircuits.visualization

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "circuit.proto";
+import "qcsresults.proto";
+import "hamiltonian.proto";
+
+message ParametersDictItem {
+  Symbol key = 1;
+  double value = 2;
+}
+
+message OptimizationExperiment {
+  Circuit circuit = 1;
+  string optimizer = 2;
+  repeated ParametersDictItem initparams = 3;
+  uint64 maxiters = 4;
+  uint64 zregister = 5;
+  string label = 6;
+}
+
+message OptimizationRun {
+  double cost = 1;
+  repeated ParametersDictItem parameters = 2;
+  QCSResults results = 3;
+}
+
+message OptimizationResults {
+  OptimizationRun best = 1;
+  repeated OptimizationRun history = 2;
+}

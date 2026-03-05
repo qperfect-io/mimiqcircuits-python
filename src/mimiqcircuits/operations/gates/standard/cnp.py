@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-Controlled-Phase (CCP) gate."""
 
 import mimiqcircuits as mc
 
@@ -45,8 +46,8 @@ def GateCCP(lmbda):
         <BLANKLINE>
         >>> c = Circuit().push(GateCCP(lmbda), 0, 1, 2)
         >>> c
-        3-qubit circuit with 1 instructions:
-        └── C₂P(lmbda) @ q[0,1], q[2]
+        3-qubit circuit with 1 instruction:
+        └── C₂P(lmbda) @ q[0:1], q[2]
         <BLANKLINE>
         >>> GateCCP(lmbda).power(2), GateCCP(lmbda).inverse()
         (C₂P(2*lmbda), C₂P(-lmbda))

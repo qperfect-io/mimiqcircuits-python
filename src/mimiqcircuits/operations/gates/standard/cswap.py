@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-SWAP (Fredkin) gate."""
 
 from mimiqcircuits.operations.gates.standard.swap import GateSWAP
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
@@ -21,7 +22,8 @@ from mimiqcircuits.operations.gates.standard.cnx import GateCCX
 import mimiqcircuits as mc
 
 
-def GateCSWAP():
+@mc.canonical_control(1, GateSWAP)
+class GateCSWAP(mc.Control):
     r"""Three qubit Controlled-SWAP gate.
 
     By convention, the first qubit is the control and last two are the
@@ -46,19 +48,22 @@ def GateCSWAP():
         (C(⨷ ² ID), CSWAP)
         >>> c = Circuit().push(GateCSWAP(), 0, 1, 2)
         >>> c
-        3-qubit circuit with 1 instructions:
-        └── CSWAP @ q[0], q[1,2]
+        3-qubit circuit with 1 instruction:
+        └── CSWAP @ q[0], q[1:2]
         <BLANKLINE>
         >>> GateCSWAP().power(2), GateCSWAP().inverse()
         (C(⨷ ² ID), CSWAP)
         >>> GateCSWAP().decompose()
         3-qubit circuit with 3 instructions:
         ├── CX @ q[2], q[1]
-        ├── C₂X @ q[0,1], q[2]
+        ├── C₂X @ q[0:1], q[2]
         └── CX @ q[2], q[1]
         <BLANKLINE>
     """
-    return mc.Control(1, GateSWAP())
+
+    def __init__(self, num_controls=1, operation=None):
+        """Initialize a CSWAP gate."""
+        super().__init__(1, GateSWAP())
 
 
 @mc.register_control_decomposition(1, mc.GateSWAP)

@@ -51,7 +51,7 @@ class SigmaMinus(AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(SigmaMinus()), 1, 1)
-        2-qubit, 2-zvar circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨SigmaMinus(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """
@@ -122,7 +122,7 @@ class SigmaPlus(AbstractOperator):
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(SigmaPlus()), 1, 1)
-        2-qubit, 2-zvar circuit with 1 instructions:
+        2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨SigmaPlus(1)⟩ @ q[1], z[1]
         <BLANKLINE>
     """

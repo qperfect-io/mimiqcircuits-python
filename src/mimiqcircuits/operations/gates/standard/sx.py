@@ -14,13 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""SX (Sqrt(X)) and SXDG gates."""
 
+from fractions import Fraction
 from symengine import pi
 
 import mimiqcircuits as mc
 
 
-def GateSX():
+@mc.canonical_power(mc.GateX, Fraction(1, 2))
+class GateSX(mc.Power):
     r"""Single qubit :math:`\sqrt{X}` gate.
 
     **Matrix representation:**
@@ -41,7 +44,7 @@ def GateSX():
         <BLANKLINE>
         >>> c = Circuit().push(GateSX(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── SX @ q[0]
         <BLANKLINE>
         >>> GateSX().power(2), GateSX().inverse()
@@ -54,7 +57,10 @@ def GateSX():
         └── U(0, 0, 0, (1/4)*pi) @ q[0]
         <BLANKLINE>
     """
-    return mc.Power(mc.GateX(), 1 / 2)
+
+    def __init__(self, operation=None, exponent=None):
+        """Initialize an SX gate."""
+        super().__init__(mc.GateX(), Fraction(1, 2))
 
 
 mc.register_power_alias(mc.GateX, 1 / 2, "SX")
@@ -70,7 +76,8 @@ def _decompose_gatesx(self, circ, qubits, bits, zvars):
     return circ
 
 
-def GateSXDG():
+@mc.canonical_inverse(GateSX)
+class GateSXDG(mc.Inverse):
     r"""Single qubit :math:`\sqrt{X}^\dagger` gate (conjugate transpose of the :math:`\sqrt{X}` gate).
 
     **Matrix representation:**
@@ -91,7 +98,7 @@ def GateSXDG():
         <BLANKLINE>
         >>> c = Circuit().push(GateSXDG(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── SX† @ q[0]
         <BLANKLINE>
         >>> GateSXDG().power(2), GateSXDG().inverse()
@@ -104,7 +111,10 @@ def GateSXDG():
         └── U(0, 0, 0, (-1/4)*pi) @ q[0]
         <BLANKLINE>
     """
-    return mc.Inverse(GateSX())
+
+    def __init__(self, operation=None):
+        """Initialize an SXDG gate."""
+        super().__init__(GateSX())
 
 
 @mc.register_inverse_decomposition((mc.Power, mc.GateX, 1 / 2))

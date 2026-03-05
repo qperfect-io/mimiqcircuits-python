@@ -300,6 +300,8 @@ enum OperationType {
     VonNeumannEntropy = 11;
     Not = 12;
     Pow = 13;
+    SetBit0 = 14;
+    SetBit1 = 15;
 }
 
 message SimpleOperation {
@@ -311,6 +313,10 @@ enum GeneralizedOperationType {
     Barrier = 0;
     Add = 1;
     Multiply = 2;
+    And = 3;
+    Or = 4;
+    Xor = 5;
+    ParityCheck = 6;
 }
 
 message GeneralizedOperation {
@@ -365,6 +371,11 @@ message GeneralizedAnnotation {
     repeated Note notes = 5;
 }
 
+message ReadoutErr {
+  Arg p0 = 1;
+  Arg p1 = 2;
+}
+
 message Operation {
     oneof operation {
         SimpleGate simplegate = 1;
@@ -395,6 +406,7 @@ message Operation {
         RPauli rpauli = 26;
         Repeat repeat = 27;
         Block block = 28;
+        ReadoutErr readouterr = 29;
     }
 }
 

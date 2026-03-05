@@ -14,19 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-Phase gate."""
 
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.phase import GateP
 import mimiqcircuits as mc
 
 
-def GateCP(lmbda):
+@mc.canonical_control(1, GateP)
+class GateCP(mc.Control):
     r"""Two qubit Controlled-Phase gate.
 
     By convention, the first qubit is the control and the second is
     the target
 
-    See Also :func:`GateP`
+    See Also :class:`GateP`
 
     **Matrix representation:**
 
@@ -39,7 +41,7 @@ def GateCP(lmbda):
         \end{pmatrix}
 
     Parameters:
-        lambda: Phase angle in radians.
+        lmbda: Phase angle in radians.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -55,7 +57,7 @@ def GateCP(lmbda):
         <BLANKLINE>
         >>> c = Circuit().push(GateCP(lmbda), 10, 11)
         >>> c
-        12-qubit circuit with 1 instructions:
+        12-qubit circuit with 1 instruction:
         └── CP(lambda) @ q[10], q[11]
         <BLANKLINE>
         >>> GateCP(lmbda).decompose()
@@ -67,7 +69,23 @@ def GateCP(lmbda):
         └── P((1/2)*lambda) @ q[1]
         <BLANKLINE>
     """
-    return mc.Control(1, GateP(lmbda))
+
+    def __init__(self, lmbda_or_num_controls, num_controls_or_operation=None, operation=None):
+        """Initialize a CP gate.
+
+        Args:
+            lmbda_or_num_controls: Phase angle in radians when called directly,
+                or num_controls when called from Control's canonical creation.
+            num_controls_or_operation: Ignored when called directly, or the GateP
+                operation when called from Control's canonical creation.
+            operation: Ignored (for compatibility).
+        """
+        # Detect if called from Control's canonical creation: Control(1, GateP(lmbda))
+        if isinstance(lmbda_or_num_controls, int) and isinstance(num_controls_or_operation, GateP):
+            lmbda = num_controls_or_operation.lmbda
+        else:
+            lmbda = lmbda_or_num_controls
+        super().__init__(1, GateP(lmbda))
 
 
 @mc.register_control_decomposition(1, mc.GateP)

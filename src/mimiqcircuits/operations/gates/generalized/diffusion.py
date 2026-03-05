@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Grover diffusion operator."""
 
 import mimiqcircuits as mc
 from symengine import pi
@@ -40,8 +41,8 @@ class Diffusion(mc.Gate):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(Diffusion(2), 1, 2)
-        3-qubit circuit with 1 instructions:
-        └── Diffusion @ q[1,2]
+        3-qubit circuit with 1 instruction:
+        └── Diffusion @ q[1:2]
         <BLANKLINE>
 
     """

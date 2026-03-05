@@ -20,6 +20,62 @@ from mimiqcircuits.bitstrings import bitvec_to_int
 from statistics import mean, median, stdev
 
 
+def _format_duration(t):
+    if t == 0:
+        return "0s"
+
+    # round to 3 significant digits
+    rt = float(f"{t:.3g}")
+
+    if rt >= 1:
+        minutes = int(rt // 60)
+        seconds = rt % 60
+
+        hours = int(minutes // 60)
+        minutes = minutes % 60
+
+        days = int(hours // 24)
+        hours = hours % 24
+
+        strings = []
+        if days > 0:
+            strings.append(f"{days}d")
+        if hours > 0:
+            strings.append(f"{hours}h")
+        if minutes > 0:
+            strings.append(f"{minutes}m")
+        if seconds > 0:
+            # Check if seconds is an integer effectively
+            if seconds.is_integer():
+                strings.append(f"{int(seconds)}s")
+            else:
+                strings.append(f"{seconds}s")
+
+        return " ".join(strings)
+    elif rt >= 1e-3:
+        val = float(f"{rt * 1e3:.3g}")
+        if val.is_integer():
+            return f"{int(val)}ms"
+        return f"{val}ms"
+    elif rt >= 1e-6:
+        val = float(f"{rt * 1e6:.3g}")
+        if val.is_integer():
+            return f"{int(val)}μs"
+        return f"{val}μs"
+    else:
+        val = float(f"{rt * 1e9:.3g}")
+        if val.is_integer():
+            return f"{int(val)}ns"
+        return f"{val}ns"
+
+
+def _get_sorted_timings(timings):
+    valid_timings = [(k, v) for k, v in timings.items() if v > 1e-7]
+    # Sort so "total" is last (key 2), others are first (key 1), then alphabetically
+    valid_timings.sort(key=lambda x: (2 if x[0] == "total" else 1, x[0]))
+    return valid_timings
+
+
 class QCSResults:
     """
     Represents the results of quantum computations obtained from quantum cloud services (QCS).
@@ -62,15 +118,16 @@ class QCSResults:
         if self.simulator is not None:
             result_str += f"├── simulator: {self.simulator} {self.version}\n"
 
-        # filter out the ones < 1e-7
-        timings = {k: v for k, v in self.timings.items() if v > 1e-7}
+        # filter out the ones < 1e-7 and sort
+        timings = _get_sorted_timings(self.timings)
 
-        result_str += "├── timings:\n"
-        for key, value in list(timings.items())[:-1]:
-            result_str += f"│    ├── {key} time: {value}s\n"
+        if timings:
+            result_str += "├── timings:\n"
+            for key, value in timings[:-1]:
+                result_str += f"│    ├── {key} time: {_format_duration(value)}\n"
 
-        key, value = list(timings.items())[-1]
-        result_str += f"│    └── {key} time: {value}s\n"
+            key, value = timings[-1]
+            result_str += f"│    └── {key} time: {_format_duration(value)}\n"
 
         if len(self.fidelities) == 1:
             result_str += f"├── fidelity estimate: {self.fidelities[0]:.3g}\n"
@@ -125,8 +182,8 @@ class QCSResults:
 
         # Timings
         html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Timings</strong></td></tr>'
-        for key, value in self.timings.items():
-            html_output += f'<tr><td style="text-align:left;">{key} time</td><td>{value}s</td></tr>'
+        for key, value in _get_sorted_timings(self.timings):
+            html_output += f'<tr><td style="text-align:left;">{key} time</td><td>{_format_duration(value)}</td></tr>'
         html_output += "<tr><td colspan=2><hr></td></tr>"
 
         # Fidelity Estimates
@@ -233,6 +290,7 @@ class QCSResults:
 
             >>> from mimiqcircuits import *
             >>> from symengine import *
+            >>> import os
             >>> import tempfile
             >>> x, y = symbols("x y")
             >>> c = Circuit()
@@ -241,51 +299,51 @@ class QCSResults:
             └── H @ q[0]
             <BLANKLINE>
             >>> conn = MimiqConnection()
-            >>> conn.connect()
-            Connection:
-            ├── url: https://mimiq.qperfect.io/api
-            ├── Computing time: 597/10000 minutes
-            ├── Executions: 451/10000
-            ├── Max time limit per request: 180 minutes
+            >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
+            MimiqConnection:
+            ├── url: https://mimiq.qperfect.io
+            ├── Max time limit per request: 360 minutes
+            ├── Default time limit is equal to max time limit: 360 minutes
             └── status: open
-            <BLANKLINE>
             >>> job = conn.execute(c)
             >>> res = conn.get_result(job)
             >>> res
             QCSResults:
-            ├── simulator: MIMIQ-StateVector 0.18.0
+            ├── simulator: MIMIQ-MPS 0.18.3
             ├── timings:
-            │    ├── parse time: 5.9552e-05s
-            │    ├── apply time: 1.6682e-05s
-            │    ├── total time: 0.00019081399999999998s
-            │    ├── compression time: 4.575e-06s
-            │    └── sample time: 5.299e-05s
+            │    ├── amplitudes time: 1.65e-07s
+            │    ├── sample time: 0.000204869s
+            │    ├── parse time: 0.000296368s
+            │    ├── total time: 0.001337133s
+            │    ├── compression time: 0.000166837s
+            │    └── apply time: 0.0003098s
             ├── fidelity estimate: 1
             ├── average multi-qubit gate error estimate: 0
             ├── most sampled:
-            │    ├── bs"1" => 513
-            │    └── bs"0" => 487
+            │    ├── bs"1" => 537
+            │    └── bs"0" => 463
             ├── 1 executions
             ├── 0 amplitudes
             └── 1000 samples
 
             >>> tmpfile = tempfile.NamedTemporaryFile(suffix=".pb", delete=True)
             >>> res.saveproto(tmpfile.name)
-            7169
+            7161
             >>> res.loadproto(tmpfile.name)
             QCSResults:
-            ├── simulator: MIMIQ-StateVector 0.18.0
+            ├── simulator: MIMIQ-MPS 0.18.3
             ├── timings:
-            │    ├── parse time: 5.9552e-05s
-            │    ├── apply time: 1.6682e-05s
-            │    ├── total time: 0.00019081399999999998s
-            │    ├── compression time: 4.575e-06s
-            │    └── sample time: 5.299e-05s
+            │    ├── parse time: 0.000296368s
+            │    ├── sample time: 0.000204869s
+            │    ├── amplitudes time: 1.65e-07s
+            │    ├── total time: 0.001337133s
+            │    ├── compression time: 0.000166837s
+            │    └── apply time: 0.0003098s
             ├── fidelity estimate: 1
             ├── average multi-qubit gate error estimate: 0
             ├── most sampled:
-            │    ├── bs"1" => 513
-            │    └── bs"0" => 487
+            │    ├── bs"1" => 537
+            │    └── bs"0" => 463
             ├── 1 executions
             ├── 0 amplitudes
             └── 1000 samples
@@ -299,11 +357,9 @@ class QCSResults:
                     res.saveproto("example.pb")
                     res.loadproto("example.pb")
         """
-        if isinstance(file, str):
-            with open(file, "wb") as f:
-                return f.write(toproto_qcsr(self).SerializeToString())
-        elif hasattr(file, "write"):
-            return file.write(toproto_qcsr(self).SerializeToString())
+        from mimiqcircuits.proto.protoio import saveproto
+
+        return saveproto(self, file)
 
     @staticmethod
     def loadproto(file):
@@ -316,17 +372,9 @@ class QCSResults:
 
             Look for example in :func:`QCSResults.saveproto`
         """
-        from mimiqcircuits.proto import qcsresults_pb2
+        from mimiqcircuits.proto.protoio import loadproto
 
-        qcs_results_proto = qcsresults_pb2.QCSResults()
-
-        if isinstance(file, str):
-            with open(file, "rb") as f:
-                qcs_results_proto.ParseFromString(f.read())
-        elif hasattr(file, "read"):
-            qcs_results_proto.ParseFromString(file.read())
-
-        return fromproto_qcsr(qcs_results_proto)
+        return loadproto(file, QCSResults)
 
 
 __all__ = ["QCSResults"]

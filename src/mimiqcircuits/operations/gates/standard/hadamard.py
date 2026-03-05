@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Hadamard (H) and related gates (HXY, HYZ, HXZ)."""
 
 import mimiqcircuits as mc
 from mimiqcircuits.operations.utils import power_idempotent
@@ -42,13 +43,13 @@ class GateH(mc.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateH(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── H @ q[0]
         <BLANKLINE>
         >>> GateH().power(2), GateH().inverse()
         (ID, H)
         >>> GateH().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U((1/2)*pi, 0, pi, 0.0) @ q[0]
         <BLANKLINE>
     """
@@ -99,7 +100,7 @@ class GateHXY(mc.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateHXY(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── HXY @ q[0]
         <BLANKLINE>
         >>> GateHXY().power(2), GateHXY().inverse()
@@ -162,7 +163,7 @@ class GateHYZ(mc.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateHYZ(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── HYZ @ q[0]
         <BLANKLINE>
         >>> GateHYZ().power(2), GateHYZ().inverse()
@@ -241,7 +242,7 @@ class GateHXZ(mc.Gate):
         Decomposition of the gate:
 
         >>> GateHXZ().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U((1/2)*pi, 0, pi, 0.0) @ q[0]
         <BLANKLINE>
     """

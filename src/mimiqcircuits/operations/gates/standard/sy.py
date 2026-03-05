@@ -14,12 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""SY (Sqrt(Y)) and SYDG gates."""
 
 from mimiqcircuits.operations.utils import control_one_defined
+from mimiqcircuits.operations.gates.standard.pauli import GateY
+from fractions import Fraction
 import mimiqcircuits as mc
 from symengine import pi
 
 
+@mc.canonical_power(GateY, Fraction(1, 2))
 class GateSY(mc.Power):
     r"""Single qubit :math:`\sqrt{Y}` gate.
 
@@ -49,7 +53,7 @@ class GateSY(mc.Power):
 
         >>> c = Circuit()
         >>> c.push(GateSY(), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── SY @ q[1]
         <BLANKLINE>
 
@@ -60,7 +64,7 @@ class GateSY(mc.Power):
         <BLANKLINE>
 
         >>> power(GateSY(), 2)
-        Y**1.0
+        Y**1
 
     **Decomposition**
 
@@ -71,13 +75,14 @@ class GateSY(mc.Power):
         ├── H @ q[0]
         └── U(0, 0, 0, (1/4)*pi) @ q[0]
         <BLANKLINE>
-      
+
     """
 
     _name = "SY"
 
-    def __init__(self):
-        super().__init__(mc.GateY(), 1 / 2)
+    def __init__(self, operation=None, exponent=None):
+        """Initialize a SY gate."""
+        super().__init__(mc.GateY(), Fraction(1, 2))
 
     def inverse(self):
         return GateSYDG()
@@ -103,6 +108,7 @@ class GateSY(mc.Power):
         return circ
 
 
+@mc.canonical_inverse(GateSY)
 class GateSYDG(mc.Inverse):
     r"""Single qubit :math:`\sqrt{Y}^\dagger` gate (conjugate transpose of the :math:`\sqrt{Y}` gate).
 
@@ -132,7 +138,7 @@ class GateSYDG(mc.Inverse):
 
         >>> c = Circuit()
         >>> c.push(GateSYDG(), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── SY† @ q[1]
         <BLANKLINE>
 
@@ -150,7 +156,8 @@ class GateSYDG(mc.Inverse):
 
     """
 
-    def __init__(self):
+    def __init__(self, operation=None):
+        """Initialize a SYDG gate."""
         super().__init__(GateSY())
 
     def inverse(self):

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+"""Pauli rotation gate (RPauli)."""
 
 import numpy as np
 from mimiqcircuits.operations.gates.gate import Gate
@@ -58,23 +58,23 @@ class RPauli(Gate):
 
     >>> c = Circuit()
     >>> c.push(RPauli(PauliString("YXI"), 2.0), 1, 2, 3)
-    4-qubit circuit with 1 instructions:
-    └── R("YXI", 2.0) @ q[1,2,3]
+    4-qubit circuit with 1 instruction:
+    └── R("YXI", 2.0) @ q[1:3]
     <BLANKLINE>
 
 
     >>> c.push(RPauli(PauliString("III"), pi), 1, 2, 3)
     4-qubit circuit with 2 instructions:
-    ├── R("YXI", 2.0) @ q[1,2,3]
-    └── R("III", pi) @ q[1,2,3]
+    ├── R("YXI", 2.0) @ q[1:3]
+    └── R("III", pi) @ q[1:3]
     <BLANKLINE>
 
 
     >>> c.push(RPauli(PauliString("IXY"), pi), 1, 2, 3)
     4-qubit circuit with 3 instructions:
-    ├── R("YXI", 2.0) @ q[1,2,3]
-    ├── R("III", pi) @ q[1,2,3]
-    └── R("IXY", pi) @ q[1,2,3]
+    ├── R("YXI", 2.0) @ q[1:3]
+    ├── R("III", pi) @ q[1:3]
+    └── R("IXY", pi) @ q[1:3]
     <BLANKLINE>
 
 
@@ -93,7 +93,6 @@ class RPauli(Gate):
     _parnames = ("theta",)
 
     def __init__(self, pauli: PauliString, theta):
-
         self.pauli = pauli
         self.theta = theta
         super().__init__()

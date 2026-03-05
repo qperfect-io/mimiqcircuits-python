@@ -3,17 +3,6 @@ Unitary Gates
 
 Unitary gates are fundamental components of quantum circuits. Here we explain how to work with unitary gates in MIMIQ.
 
-
-
-Contents
-========
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: entry
-
-
-
 .. doctest:: quick_start
     :hide:
 
@@ -22,15 +11,14 @@ Contents
     >>> import os
     >>> import math
 
-    >>> conn = MimiqConnection(url="https://mimiqfast.qperfect.io/api")
+    >>> conn = MimiqConnection(url="https://mimiqfast.qperfect.io")
     >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
-    Connection:
-    ├── url: https://mimiqfast.qperfect.io/api
-    ├── Computing time: 599/10000 minutes
-    ├── Executions: 605/10000
+    MimiqConnection:
+    ├── url: https://mimiqfast.qperfect.io
+    ├── Computing time: 0/10000 minutes
     ├── Max time limit per request: 180 minutes
+    ├── Default time limit is equal to max time limit: 180 minutes
     └── status: open
-    <BLANKLINE>
 
 Mathematical background
 --------------------------------------------------------------------
@@ -236,7 +224,7 @@ Then you can create your unitary gate and use it like any other gate using :meth
     >>> custom_gate = GateCustom(custom_matrix)
     >>> circuit.push(custom_gate, 0, 1)
     2-qubit circuit with 1 instructions:
-    └── Custom([0.5 + 0.866025403784439*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I]...[0.0 + 0.0*I, 0.0 + 0.0*I, 0.0 + 0.0*I, 0.959492973614497 + 0.28173255684143*I]) @ q[0,1]
+    └── Custom(...) @ q[0,1]
     <BLANKLINE>
 
 Composition: Control, Power, Inverse, Parallel
@@ -315,19 +303,15 @@ To create a composite gate applying a specific gate to multiple qubits at once y
     └── ⨷ ⁴ X @ q[0], q[1], q[2], q[3]
     <BLANKLINE>
     >>> circuit.draw()                                                                         
-            ┌─┐                                                                     
-     q[0]: ╶┤X├────────────────────────────────────────────────────────────────────╴
-            ┌─┐                                                                     
-     q[1]: ╶┤X├────────────────────────────────────────────────────────────────────╴
-            ┌─┐                                                                     
-     q[2]: ╶┤X├────────────────────────────────────────────────────────────────────╴
-            ┌─┐                                                                     
-     q[3]: ╶┤X├────────────────────────────────────────────────────────────────────╴
-            └─┘                                                                     
-                                                                                
-                                                                                
-                                                                                
-                                                                                
+               ┌─┐                                                                     
+        q[0]: ╶┤X├────────────────────────────────────────────────────────────────────╴
+               ├─┤                                                                     
+        q[1]: ╶┤X├────────────────────────────────────────────────────────────────────╴
+               ├─┤                                                                     
+        q[2]: ╶┤X├────────────────────────────────────────────────────────────────────╴
+               ├─┤                                                                     
+        q[3]: ╶┤X├────────────────────────────────────────────────────────────────────╴
+               └─┘                                                                     
 
 To check the number of repetition of your custom parallel gate you can use the :meth:`~mimiqcircuits.Circuit.num_repeats` method:
 
@@ -353,17 +337,12 @@ for example see below the parallel applicatoin of a `CX` gate:
      q[0]: ╶┤0   ├─────────────────────────────────────────────────────────────────╴
             │  CX│                                                                  
      q[1]: ╶┤1   ├─────────────────────────────────────────────────────────────────╴
-            ┌────┐                                                                  
+            ├────┤                                                                  
      q[2]: ╶┤0   ├─────────────────────────────────────────────────────────────────╴
             │  CX│                                                                  
      q[3]: ╶┤1   ├─────────────────────────────────────────────────────────────────╴
-            └────┘                                                                  
-                                                                                
-                                                                                
-                                                                                
-                                                                                
-                                                                  
-                                                                       
+            └────┘                                                                                                     
+                                                                   
 Here the index 0 and 1 correspond to the control and target of the first `CX` gate and 2 and 3 correspond to the second `CX` gate.
 
 
@@ -413,4 +392,38 @@ Another way to know how many qubits, bits or z-variables are targeted by one uni
 
 
 See :doc:`non-unitary operations <non_unitary_ops>` and :doc:`statistical operations <statistical_ops>` pages for more information on :class:`~mimiqcircuits.Measure` and :class:`~mimiqcircuits.Amplitude`.
+
+Reference
+---------
+
+.. autoclass:: mimiqcircuits.GateID
+    :noindex:
+.. autoclass:: mimiqcircuits.GateX
+    :noindex:
+.. autoclass:: mimiqcircuits.GateY
+    :noindex:
+.. autoclass:: mimiqcircuits.GateZ
+    :noindex:
+.. autoclass:: mimiqcircuits.GateH
+    :noindex:
+.. autoclass:: mimiqcircuits.GateCX
+    :noindex:
+.. autoclass:: mimiqcircuits.GateRX
+    :noindex:
+.. autoclass:: mimiqcircuits.GateRY
+    :noindex:
+.. autoclass:: mimiqcircuits.GateRZ
+    :noindex:
+.. autoclass:: mimiqcircuits.GateU
+    :noindex:
+.. autoclass:: mimiqcircuits.GateCustom
+    :noindex:
+.. autofunction:: mimiqcircuits.control
+    :noindex:
+.. autofunction:: mimiqcircuits.power
+    :noindex:
+.. autofunction:: mimiqcircuits.inverse
+    :noindex:
+.. autofunction:: mimiqcircuits.parallel
+    :noindex:
 

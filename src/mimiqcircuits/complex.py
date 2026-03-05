@@ -29,7 +29,7 @@ class Pow(Operation):
         z[?] = z[?]^(-1)
         >>> c = Circuit()
         >>> c.push(Pow(2), 1)
-        2-zvar circuit with 1 instructions:
+        2-zvar circuit with 1 instruction:
         └── z[1] = z[1]^2
         <BLANKLINE>
     """
@@ -91,7 +91,7 @@ class Add(Operation):
         z[?0] += 3 + z[?1] + z[?2] + z[?3]
         >>> c = Circuit()
         >>> c.push(Add(2), 1, 2)
-        3-zvar circuit with 1 instructions:
+        3-zvar circuit with 1 instruction:
         └── z[1] += 0.0 + z[2]
         <BLANKLINE>
     """
@@ -155,7 +155,7 @@ class Multiply(Operation):
         z[?0] *= 2 * z[?1]
         >>> c = Circuit()
         >>> c.push(Multiply(2), 1, 2)
-        3-zvar circuit with 1 instructions:
+        3-zvar circuit with 1 instruction:
         └── z[1] *= 1.0 * z[2]
         <BLANKLINE>
     """

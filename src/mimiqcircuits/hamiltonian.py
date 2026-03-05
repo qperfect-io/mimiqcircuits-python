@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Hamiltonian class and utilities."""
 
 import mimiqcircuits as mc
 import symengine as se
@@ -162,41 +163,15 @@ class Hamiltonian:
         return self.__repr__()
 
     def saveproto(self, file):
-        from mimiqcircuits.proto.hamiltonianproto import toproto_hamiltonian
+        from mimiqcircuits.proto.protoio import saveproto
 
-        data = toproto_hamiltonian(self).SerializeToString()
-
-        if hasattr(file, "write"):
-            return file.write(data)
-        else:
-            try:
-                with open(file, "wb") as f:
-                    return f.write(data)
-            except TypeError:
-                raise ValueError(
-                    "Invalid file object. Should be a filename or a file-like object."
-                )
-            except Exception as e:
-                raise e
+        return saveproto(self, file)
 
     @staticmethod
     def loadproto(file):
-        from mimiqcircuits.proto import hamiltonian_pb2
-        from mimiqcircuits.proto.hamiltonianproto import fromproto_hamiltonian
+        from mimiqcircuits.proto.protoio import loadproto
 
-        if isinstance(file, str):
-            with open(file, "rb") as f:
-                proto = hamiltonian_pb2.Hamiltonian()
-                proto.ParseFromString(f.read())
-                return fromproto_hamiltonian(proto)
-        elif hasattr(file, "read"):
-            proto = hamiltonian_pb2.Hamiltonian()
-            proto.ParseFromString(file.read())
-            return fromproto_hamiltonian(proto)
-        else:
-            raise ValueError(
-                "Invalid file object. Should be a filename or a file-like object."
-            )
+        return loadproto(file, Hamiltonian)
 
     @staticmethod
     def _pauli_matrix(p: str):
@@ -305,7 +280,7 @@ def push_expval(self, hamiltonian: Hamiltonian, *qubits: int, firstzvar=None):
         └── 1.0 * ZZ @ q[0,1]
         >>> c.push_expval(h, 1, 2)
         3-qubit, 1-zvar circuit with 3 instructions:
-        ├── ⟨ZZ⟩ @ q[1,2], z[0]
+        ├── ⟨ZZ⟩ @ q[1:2], z[0]
         ├── z[0] *= 1.0
         └── z[0] += 0.0
         <BLANKLINE>
@@ -397,9 +372,9 @@ def push_lietrotter(self, h: Hamiltonian, qubits: tuple, t: float, steps: int):
         └── 1.0 * ZZ @ q[0,1]
         >>> c.push_lietrotter(h, (0, 1), t=1.0, steps=3)
         2-qubit circuit with 3 instructions:
-        ├── trotter(0.3333333333333333) @ q[0,1]
-        ├── trotter(0.3333333333333333) @ q[0,1]
-        └── trotter(0.3333333333333333) @ q[0,1]
+        ├── trotter(0.3333333333333333) @ q[0:1]
+        ├── trotter(0.3333333333333333) @ q[0:1]
+        └── trotter(0.3333333333333333) @ q[0:1]
         <BLANKLINE>
     """
     if len(qubits) != h.num_qubits():
@@ -489,11 +464,11 @@ def push_suzukitrotter(
         └── 1.0 * XX @ q[0,1]
         >>> c.push_suzukitrotter(h, (0, 1), t=1.0, steps=5, order=2)
         2-qubit circuit with 5 instructions:
-        ├── suzukitrotter_2(0.2) @ q[0,1]
-        ├── suzukitrotter_2(0.2) @ q[0,1]
-        ├── suzukitrotter_2(0.2) @ q[0,1]
-        ├── suzukitrotter_2(0.2) @ q[0,1]
-        └── suzukitrotter_2(0.2) @ q[0,1]
+        ├── suzukitrotter_2(0.2) @ q[0:1]
+        ├── suzukitrotter_2(0.2) @ q[0:1]
+        ├── suzukitrotter_2(0.2) @ q[0:1]
+        ├── suzukitrotter_2(0.2) @ q[0:1]
+        └── suzukitrotter_2(0.2) @ q[0:1]
         <BLANKLINE>
     """
     if len(qubits) != h.num_qubits():
@@ -605,9 +580,9 @@ def push_yoshidatrotter(
         └── 0.5 * Z @ q[0]
         >>> c.push_yoshidatrotter(h, (0, 1), t=1.0, steps=3, order=4)
         2-qubit circuit with 3 instructions:
-        ├── yoshida_4(0.3333333333333333) @ q[0,1]
-        ├── yoshida_4(0.3333333333333333) @ q[0,1]
-        └── yoshida_4(0.3333333333333333) @ q[0,1]
+        ├── yoshida_4(0.3333333333333333) @ q[0:1]
+        ├── yoshida_4(0.3333333333333333) @ q[0:1]
+        └── yoshida_4(0.3333333333333333) @ q[0:1]
         <BLANKLINE>
     """
 

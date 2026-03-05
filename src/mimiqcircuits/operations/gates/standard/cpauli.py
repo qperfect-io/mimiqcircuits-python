@@ -14,15 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-Pauli (CX, CY, CZ) gates."""
 
-import mimiqcircuits.operations.control as mctrl
 from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
-from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
 import mimiqcircuits as mc
 
 
-def GateCX():
+@mc.canonical_control(1, GateX)
+class GateCX(mc.Control):
     r"""Two qubit Controlled-X gate (or CNOT).
 
     By convention, the first qubit is the control and the second is
@@ -50,17 +50,25 @@ def GateCX():
         <BLANKLINE>
         >>> c = Circuit().push(GateCX(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CX @ q[0], q[1]
         <BLANKLINE>
         >>> GateCX().power(2), GateCX().inverse()
         (CID, CX)
         >>> GateCX().decompose()
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
-    return mc.Control(1, mc.GateX())
+
+    def __init__(self, num_controls=1, operation=None):
+        """Initialize a CX gate.
+
+        Args:
+            num_controls: Ignored, always 1 for CX.
+            operation: Ignored, always GateX() for CX.
+        """
+        super().__init__(1, GateX())
 
 
 @mc.register_control_decomposition(1, mc.GateX)
@@ -70,7 +78,8 @@ def _decompose_gatecx(gate, circ, qubits, bits, zvars):
     return circ
 
 
-def GateCY():
+@mc.canonical_control(1, GateY)
+class GateCY(mc.Control):
     r"""Two qubit Controlled-Y gate.
 
     By convention, the first qubit is the control and the second is
@@ -98,7 +107,7 @@ def GateCY():
         <BLANKLINE>
         >>> c = Circuit().push(GateCY(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CY @ q[0], q[1]
         <BLANKLINE>
         >>> GateCY().power(2), GateCY().inverse()
@@ -110,19 +119,23 @@ def GateCY():
         └── S @ q[1]
         <BLANKLINE>
     """
-    return mc.Control(1, GateY())
+
+    def __init__(self, num_controls=1, operation=None):
+        """Initialize a CY gate."""
+        super().__init__(1, GateY())
 
 
 @mc.register_control_decomposition(1, mc.GateY)
 def _decompose_gatecy(gate, circ, qubits, bits, zvars):
     c, t = qubits
-    circ.push(GateSDG(), t)
+    circ.push(mc.GateSDG(), t)
     circ.push(GateCX(), c, t)
-    circ.push(GateS(), t)
+    circ.push(mc.GateS(), t)
     return circ
 
 
-def GateCZ():
+@mc.canonical_control(1, GateZ)
+class GateCZ(mc.Control):
     r"""Two qubit Controlled-Z gate.
 
     By convention, the first qubit is the control and the second is
@@ -150,7 +163,7 @@ def GateCZ():
         <BLANKLINE>
         >>> c = Circuit().push(GateCZ(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CZ @ q[0], q[1]
         <BLANKLINE>
         >>> GateCZ().power(2), GateCZ().inverse()
@@ -162,7 +175,10 @@ def GateCZ():
         └── H @ q[1]
         <BLANKLINE>
     """
-    return mc.Control(1, GateZ())
+
+    def __init__(self, num_controls=1, operation=None):
+        """Initialize a CZ gate."""
+        super().__init__(1, GateZ())
 
 
 @mc.register_control_decomposition(1, mc.GateZ)

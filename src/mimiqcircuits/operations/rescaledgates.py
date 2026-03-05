@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+"""Rescaled gate operation."""
 
 import symengine as se
 from typing import TypeVar, Generic

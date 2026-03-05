@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Double-CNOT (DCX) gate."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
@@ -49,8 +50,8 @@ class GateDCX(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateDCX(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
-        └── DCX @ q[0,1]
+        2-qubit circuit with 1 instruction:
+        └── DCX @ q[0:1]
         <BLANKLINE>
         >>> GateDCX().power(2), GateDCX().inverse()
         (DCX†, DCX†)

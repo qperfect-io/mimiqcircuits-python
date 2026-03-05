@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Echoed Cross-Resonance (ECR) gate."""
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.interactions import GateRZX
@@ -47,16 +48,16 @@ class GateECR(mcg.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateECR(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
-        └── ECR @ q[0,1]
+        2-qubit circuit with 1 instruction:
+        └── ECR @ q[0:1]
         <BLANKLINE>
         >>> GateECR().power(2), GateECR().inverse()
         (⨷ ² ID, ECR)
         >>> GateECR().decompose()
         2-qubit circuit with 3 instructions:
-        ├── RZX((1/4)*pi) @ q[0,1]
+        ├── RZX((1/4)*pi) @ q[0:1]
         ├── X @ q[0]
-        └── RZX((-1/4)*pi) @ q[0,1]
+        └── RZX((-1/4)*pi) @ q[0:1]
         <BLANKLINE>
     """
 

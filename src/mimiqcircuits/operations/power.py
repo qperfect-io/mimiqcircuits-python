@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Power operation."""
 
 from fractions import Fraction
 from symengine import pi
@@ -22,9 +23,13 @@ import sympy as sp
 import numpy as np
 import mimiqcircuits as mc
 from mimiqcircuits.operations.gates.gate import Gate
+from typing import Type, Dict, Tuple, Any, Union
 
 _power_decomposition_registry = {}
 _power_aliases_registry = {}
+
+# Registry for canonical Power subclasses: (inner_gate_type, exponent) -> subclass
+_power_canonical_types: Dict[Tuple[Type, Any], Type] = {}
 
 
 def register_power_alias(exponent, gate_type, name):
@@ -44,16 +49,64 @@ def register_power_decomposition(exponent, gate_type):
     return decorator
 
 
+def canonical_power(inner_gate_type: Type, exponent: Any):
+    """Decorator to register a canonical Power subclass.
+
+    When Power(inner_gate_type(), exponent) is called, it will
+    return an instance of the decorated subclass instead.
+
+    Args:
+        inner_gate_type: Type of the inner gate
+        exponent: The exponent value
+
+    Returns:
+        Decorator that registers the class
+
+    Example:
+        >>> from mimiqcircuits import *
+        >>> @canonical_power(GateZ, Fraction(1, 2))
+        ... class GateS(Power):
+        ...     pass
+        >>> isinstance(Power(GateZ(), 0.5), GateS)
+        True
+    """
+
+    def decorator(cls: Type) -> Type:
+        _power_canonical_types[(inner_gate_type, exponent)] = cls
+        return cls
+
+    return decorator
+
+
+def _normalize_exponent(exponent: Any) -> Any:
+    """Normalize exponent to a canonical form for comparison.
+
+    Converts floats that are exact fractions to Fraction objects.
+    """
+    if isinstance(exponent, float):
+        frac = Fraction(exponent).limit_denominator(1000)
+        if float(frac) == exponent:
+            return frac
+    return exponent
+
+
 class Power(Gate):
     """Power operation.
 
     Represents a Power operation raised to a specified exponent.
 
+    When a canonical subclass is registered (e.g., GateS for Power(GateZ(), 1/2)),
+    constructing Power with matching arguments will return an instance of that
+    subclass. This enables isinstance() checks to work correctly:
+
+
     Examples:
         >>> from mimiqcircuits import *
+        >>> isinstance(Power(GateZ(), 0.5), GateS)
+        True
         >>> c= Circuit()
         >>> c.push(Power(GateX(),1/2),1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── SX @ q[1]
         <BLANKLINE>
         >>> c.push(Power(GateX(),5),1)
@@ -63,15 +116,15 @@ class Power(Gate):
         <BLANKLINE>
         >>> c.decompose()
         2-qubit circuit with 9 instructions:
-        ├── S† @ q[1]
-        ├── H @ q[1]
-        ├── S† @ q[1]
+        ├── U(0, 0, (-1/2)*pi, 0.0) @ q[1]
+        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
+        ├── U(0, 0, (-1/2)*pi, 0.0) @ q[1]
         ├── U(0, 0, 0, (1/4)*pi) @ q[1]
-        ├── X @ q[1]
-        ├── X @ q[1]
-        ├── X @ q[1]
-        ├── X @ q[1]
-        └── X @ q[1]
+        ├── U(pi, 0, pi, 0.0) @ q[1]
+        ├── U(pi, 0, pi, 0.0) @ q[1]
+        ├── U(pi, 0, pi, 0.0) @ q[1]
+        ├── U(pi, 0, pi, 0.0) @ q[1]
+        └── U(pi, 0, pi, 0.0) @ q[1]
         <BLANKLINE>
     """
 
@@ -84,6 +137,47 @@ class Power(Gate):
 
     _op = None
     _parnames = ("exponent",)
+
+    def __new__(cls, operation: Union[Type[Gate], Gate] = None, exponent: Any = None, *args, **kwargs):
+        """Create a Power instance, returning canonical subclass if registered.
+
+        If a canonical subclass is registered for (type(operation), exponent),
+        an instance of that subclass is returned instead of a plain Power.
+
+        Args:
+            operation: Gate operation or gate class to raise to a power
+            exponent: The exponent value
+            *args: Arguments to pass to operation constructor if a class is provided
+            **kwargs: Keyword arguments to pass to operation constructor
+
+        Returns:
+            Instance of Power or a registered canonical subclass
+        """
+        # Only intercept direct Power() calls, not subclass calls
+        if cls is Power:
+            if operation is None or exponent is None:
+                # Let __init__ handle the error
+                return object.__new__(cls)
+
+            # Resolve the operation to get its type
+            if isinstance(operation, type) and issubclass(operation, mc.Gate):
+                inner_type = operation
+            elif isinstance(operation, mc.Gate):
+                inner_type = type(operation)
+            else:
+                # Let __init__ handle the error
+                return object.__new__(cls)
+
+            # Normalize exponent for comparison
+            norm_exp = _normalize_exponent(exponent)
+
+            # Check for canonical subclass
+            key = (inner_type, norm_exp)
+            canonical_cls = _power_canonical_types.get(key)
+            if canonical_cls is not None:
+                return object.__new__(canonical_cls)
+
+        return object.__new__(cls)
 
     def __init__(self, operation, exponent, *args, **kwargs):
         if isinstance(operation, type) and issubclass(operation, mc.Gate):
@@ -229,6 +323,21 @@ class Power(Gate):
                 circ.push(self.op, *qubits)
             return circ
 
+        if isinstance(self.op, mc.Parallel):
+            nq = self.op.op.num_qubits
+            for i in range(self.op.num_repeats):
+                q = [qubits[j] for j in range(i * nq, (i + 1) * nq)]
+                circ.push(self.op.op.power(self.exponent), *q)
+            return circ
+
+        if isinstance(self.op, mc.Inverse) and isinstance(self.op.op, mc.Parallel):
+            base = self.op.op.op.inverse()
+            nq = base.num_qubits
+            for i in range(self.op.op.num_repeats):
+                q = [qubits[j] for j in range(i * nq, (i + 1) * nq)]
+                circ.push(base.power(self.exponent), *q)
+            return circ
+
         # try to decompose,
         # if there is only a gate, maybe it is ok
         # if the gates are all diagonal then we can continue
@@ -253,4 +362,4 @@ class Power(Gate):
 
 
 # export operation
-__all__ = ["Power"]
+__all__ = ["Power", "canonical_power"]

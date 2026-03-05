@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Abstract Gate base class."""
 
 from mimiqcircuits.operations.operator import AbstractOperator
 import mimiqcircuits.lazy as lz

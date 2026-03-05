@@ -157,7 +157,7 @@ class ProjectiveNoise(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(ProjectiveNoise("Z"), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── ProjectiveNoiseZ @ q[1]
         <BLANKLINE>
 

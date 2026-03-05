@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Operation utilities."""
 
 from mimiqcircuits.operations.power import Power
 from mimiqcircuits.operations.control import Control

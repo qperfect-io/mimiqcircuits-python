@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Controlled-SX and Controlled-SXDG gates."""
 
 from mimiqcircuits.operations.gates.standard.sx import GateSX, GateSXDG
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
@@ -22,7 +23,8 @@ import mimiqcircuits as mc
 from symengine import pi
 
 
-def GateCSX():
+@mc.canonical_control(1, GateSX)
+class GateCSX(mc.Control):
     r"""Two qubit Controled-SX gate.
 
     By convention, the first qubit is the control and second one is the
@@ -52,7 +54,7 @@ def GateCSX():
         <BLANKLINE>
         >>> c = Circuit().push(GateCSX(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── CSX @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSX().power(2), GateCSX().inverse()
@@ -65,7 +67,10 @@ def GateCSX():
         └── CU(0, 0, 0, (1/4)*pi) @ q[0], q[1]
         <BLANKLINE>
     """
-    return mc.Control(1, GateSX())
+
+    def __init__(self, num_controls=1, operation=None):
+        """Initialize a CSX gate."""
+        super().__init__(1, GateSX())
 
 
 @mc.register_control_decomposition(1, mc.GateSX)
@@ -79,7 +84,8 @@ def _decompose_gatecsx(gate, circ, qubits, bits, zvars):
     return circ
 
 
-def GateCSXDG():
+@mc.canonical_control(1, GateSXDG)
+class GateCSXDG(mc.Control):
     r"""Two qubit :math:`{CSX}^\dagger` gate.
 
     **Matrix representation:**
@@ -104,7 +110,7 @@ def GateCSXDG():
         <BLANKLINE>
         >>> c = Circuit().push(GateCSXDG(), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── C(SX†) @ q[0], q[1]
         <BLANKLINE>
         >>> GateCSXDG().power(2), GateCSXDG().inverse()
@@ -117,7 +123,10 @@ def GateCSXDG():
         └── CU(0, 0, 0, (-1/4)*pi) @ q[0], q[1]
         <BLANKLINE>
     """
-    return mc.Control(1, GateSXDG())
+
+    def __init__(self, num_controls=1, operation=None):
+        """Initialize a CSXDG gate."""
+        super().__init__(1, GateSXDG())
 
 
 @mc.register_control_decomposition(1, mc.GateSXDG)

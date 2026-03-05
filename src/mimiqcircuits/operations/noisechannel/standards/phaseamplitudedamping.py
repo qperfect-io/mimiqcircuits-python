@@ -56,7 +56,7 @@ class PhaseAmplitudeDamping(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(PhaseAmplitudeDamping(0.1, 0.2, 0.3), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── PhaseAmplitudeDamping(0.1, 0.2, 0.3) @ q[1]
         <BLANKLINE>
     """
@@ -144,7 +144,7 @@ class PhaseAmplitudeDamping(krauschannel):
         return self._parnames
 
     def __str__(self):
-        return f"{self._name}{self.p,self.gamma,self.beta}"
+        return f"{self._name}{self.p, self.gamma, self.beta}"
 
 
 class ThermalNoise(krauschannel):
@@ -181,7 +181,7 @@ class ThermalNoise(krauschannel):
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(ThermalNoise(0.5, 0.6, 1.2, 0.3), 1)
-        2-qubit circuit with 1 instructions:
+        2-qubit circuit with 1 instruction:
         └── ThermalNoise(0.5, 0.6, 1.2, 0.3) @ q[1]
         <BLANKLINE>
     """

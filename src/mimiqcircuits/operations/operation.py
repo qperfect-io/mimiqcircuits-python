@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Base Operation class."""
 
 from abc import ABC, abstractmethod
 import copy
@@ -145,6 +146,21 @@ class Operation(ABC):
 
     def __eq__(self, other):
         return isinstance(other, type(self)) and self.__dict__ == other.__dict__
+
+    def __hash__(self):
+        def make_hashable(value):
+            if isinstance(value, list):
+                return tuple(make_hashable(v) for v in value)
+            if isinstance(value, dict):
+                return tuple(sorted((k, make_hashable(v)) for k, v in value.items()))
+            return value
+
+        return hash(
+            (
+                type(self),
+                tuple(sorted((k, make_hashable(v)) for k, v in self.__dict__.items())),
+            )
+        )
 
     def copy(self):
         """Creates a shallow copy of the operation.

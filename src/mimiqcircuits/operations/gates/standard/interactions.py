@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Interaction gates (RXX, RYY, RZZ, RZX, XX+YY, XX-YY)."""
 
 import mimiqcircuits as mc
 from mimiqcircuits.matrices import cis
@@ -46,8 +47,8 @@ class GateRXX(mc.Gate):
         RXX(theta)
         >>> c = Circuit()
         >>> c.push(GateRXX(theta), 0, 1)
-        2-qubit circuit with 1 instructions:
-        └── RXX(theta) @ q[0,1]
+        2-qubit circuit with 1 instruction:
+        └── RXX(theta) @ q[0:1]
         <BLANKLINE>
         >>> GateRXX(theta).power(2), GateRXX(theta).inverse()
         (RXX(theta)**2, RXX(-theta))
@@ -141,8 +142,8 @@ class GateRYY(mc.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateRYY(theta), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
-        └── RYY(theta) @ q[0,1]
+        2-qubit circuit with 1 instruction:
+        └── RYY(theta) @ q[0:1]
         <BLANKLINE>
         >>> GateRYY(theta).power(2), GateRYY(theta).inverse()
         (RYY(theta)**2, RYY(-theta))
@@ -231,8 +232,8 @@ class GateRZZ(mc.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateRZZ(theta), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
-        └── RZZ(theta) @ q[0,1]
+        2-qubit circuit with 1 instruction:
+        └── RZZ(theta) @ q[0:1]
         <BLANKLINE>
         >>> GateRZZ(theta).power(2), GateRZZ(theta).inverse()
         (RZZ(theta)**2, RZZ(-theta))
@@ -306,8 +307,8 @@ class GateRZX(mc.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateRZX(theta), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
-        └── RZX(theta) @ q[0,1]
+        2-qubit circuit with 1 instruction:
+        └── RZX(theta) @ q[0:1]
         <BLANKLINE>
         >>> GateRZX(theta).power(2), GateRZX(theta).inverse()
         (RZX(theta)**2, RZX(-theta))
@@ -390,8 +391,8 @@ class GateXXplusYY(mc.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateXXplusYY(theta, beta), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
-        └── XXplusYY(theta, beta) @ q[0,1]
+        2-qubit circuit with 1 instruction:
+        └── XXplusYY(theta, beta) @ q[0:1]
         <BLANKLINE>
         >>> GateXXplusYY(theta, beta).power(2), GateXXplusYY(theta, beta).inverse()
         (XXplusYY(theta, beta)**2, XXplusYY(-theta, beta))
@@ -495,8 +496,8 @@ class GateXXminusYY(mc.Gate):
         <BLANKLINE>
         >>> c = Circuit().push(GateXXminusYY(theta, beta), 0, 1)
         >>> c
-        2-qubit circuit with 1 instructions:
-        └── XXminusYY(theta, beta) @ q[0,1]
+        2-qubit circuit with 1 instruction:
+        └── XXminusYY(theta, beta) @ q[0:1]
         <BLANKLINE>
         >>> GateXXminusYY(theta, beta).power(2), GateXXminusYY(theta, beta).inverse()
         (XXminusYY(theta, beta)**2, XXminusYY(-theta, beta))

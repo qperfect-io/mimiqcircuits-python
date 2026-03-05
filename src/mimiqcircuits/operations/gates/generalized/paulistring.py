@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+"""PauliString definition."""
 
 import numpy as np
 from typing import Union
@@ -64,14 +64,14 @@ class PauliString(mc.Gate):
         <BLANKLINE>
         >>> c= Circuit()
         >>> c.push(PauliString("XYZ"),0,1,2)
-        3-qubit circuit with 1 instructions:
-        └── XYZ @ q[0,1,2]
+        3-qubit circuit with 1 instruction:
+        └── XYZ @ q[0:2]
         <BLANKLINE>
         >>> c.decompose()
         3-qubit circuit with 3 instructions:
-        ├── X @ q[0]
-        ├── Y @ q[1]
-        └── Z @ q[2]
+        ├── U(pi, 0, pi, 0.0) @ q[0]
+        ├── U(pi, (1/2)*pi, (1/2)*pi, 0.0) @ q[1]
+        └── U(0, 0, pi, 0.0) @ q[2]
         <BLANKLINE>
     """
 

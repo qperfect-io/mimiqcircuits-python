@@ -14,13 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""S and SDG gates."""
 
+from fractions import Fraction
 from symengine import pi
 
 import mimiqcircuits as mc
 
 
-def GateS():
+@mc.canonical_power(mc.GateZ, Fraction(1, 2))
+class GateS(mc.Power):
     r"""Single qubit gate S.
 
     It induces a :math:`\frac{\pi}{2}` phase gate.
@@ -43,17 +46,20 @@ def GateS():
         <BLANKLINE>
         >>> c = Circuit().push(GateS(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── S @ q[0]
         <BLANKLINE>
         >>> GateS().power(2), GateS().inverse()
         (Z, S†)
         >>> GateS().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, (1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-    return mc.Power(mc.GateZ(), 1 / 2)
+
+    def __init__(self, operation=None, exponent=None):
+        """Initialize an S gate."""
+        super().__init__(mc.GateZ(), Fraction(1, 2))
 
 
 mc.register_power_alias(mc.GateZ, 1 / 2, "S")
@@ -66,7 +72,8 @@ def _decompose_gates(self, circ, qubits, bits, zvars):
     return circ
 
 
-def GateSDG():
+@mc.canonical_inverse(GateS)
+class GateSDG(mc.Inverse):
     r"""Single qubit S-dagger gate (conjugate transpose of the S gate).
 
     **Matrix representation:**
@@ -87,17 +94,20 @@ def GateSDG():
         <BLANKLINE>
         >>> c = Circuit().push(GateSDG(), 0)
         >>> c
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── S† @ q[0]
         <BLANKLINE>
         >>> GateSDG().power(2), GateSDG().inverse()
         ((S†)**2, S)
         >>> GateSDG().decompose()
-        1-qubit circuit with 1 instructions:
+        1-qubit circuit with 1 instruction:
         └── U(0, 0, (-1/2)*pi, 0.0) @ q[0]
         <BLANKLINE>
     """
-    return mc.Inverse(GateS())
+
+    def __init__(self, operation=None):
+        """Initialize an SDG gate."""
+        super().__init__(GateS())
 
 
 @mc.register_inverse_decomposition((mc.Power, mc.GateZ, 1 / 2))

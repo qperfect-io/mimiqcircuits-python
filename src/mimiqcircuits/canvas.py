@@ -18,38 +18,7 @@
 import mimiqcircuits as mc
 import shutil
 import math
-
-
-def _string_with_square(arr, sep):
-    return f"[{sep.join(map(str, arr))}]"
-
-
-def _find_unit_range(arr):
-    if len(arr) < 2:
-        return arr
-
-    narr = []
-    rangestart = arr[0]
-    rangestop = arr[0]
-
-    for v in arr[1:]:
-        if v == rangestop + 1:
-            rangestop = v
-        elif rangestart == rangestop:
-            narr.append(rangestart)
-            rangestart = v
-            rangestop = v
-        else:
-            narr.append(range(rangestart, rangestop + 1))
-            rangestart = v
-            rangestop = v
-
-    if rangestart == rangestop:
-        narr.append(rangestart)
-    else:
-        narr.append(range(rangestart, rangestop + 1))
-
-    return narr
+from mimiqcircuits.instruction_extras import _find_unit_range, _string_with_square
 
 
 def _gate_name_padding(qubits, bits, zvars):
@@ -351,7 +320,16 @@ class AsciiCanvas:
                 while j >= len(self.data[i]):
                     self.data[i].append(" ")
                 existing = self.data[i][j]
-                if existing in ("─", "╶", "╴", "│", "╷", "╵", " "):
+                if existing in (
+                    "─",
+                    "╶",
+                    "╴",
+                    "│",
+                    "╷",
+                    "╵",
+                    " ",
+                    "═",
+                ):
                     # Only clear common wire/line characters
                     if j == col and existing == "─":
                         self.data[i][j] = "╴"
@@ -716,45 +694,77 @@ class AsciiCircuit:
         return self
 
     def draw_ifstatement(self, g, qubits, bits, zvars):
+        # rows for each register
         qubitrow = [self.get_qubit_row(q) for q in qubits]
         bitrow = self.get_bit_row()
+        zvarrow = self.get_zvars_row()
 
-        nb = len(bits)
-        val = g.get_bitstring()
+        # split ctargets: first num_bits(op) belong to op, the rest are condition bits
+        inner = g.op
+        nb_op = getattr(inner, "num_bits", 0)
+        bs = g.get_bitstring()
+        nb_cond = len(bs.to01())
 
+        op_bits = list(bits[:nb_op])
+        cond_bits = list(bits[nb_op : nb_op + nb_cond])
+
+        # build condition text ONLY from condition bits
+        bstr = _string_with_square(_find_unit_range(cond_bits), ",")
+        btext = f"c{bstr}==" + bs.to01()
+
+        # draw condition box
         ccol = self.get_current_col()
-
-        bstr = _string_with_square(_find_unit_range(bits), ",")
-        btext = f"c{bstr}==" + val.to01()
-
         self.canvas.draw_box(bitrow - 1, ccol, len(btext) + 2, 3, clean=True)
         self.canvas.draw_text(btext, bitrow, ccol + 1)
 
+        # move to the right of the condition box
         self.set_current_col(ccol + len(btext) + 2)
         ifcol = self.get_current_col()
 
-        qstartrow = min(qubitrow) - 1
-        qstoprow = max(qubitrow) + 1
-        qw = g.op.asciiwidth(qubits, [], [])
-        qh = qstoprow - qstartrow + 1
-        qmh = qstartrow + qh // 2
-        namepadding = _gate_name_padding(qubits, [], [])
+        # --- draw the inner operation properly ---
+        if qubitrow or zvars:
+            saved_col = self.get_current_col()
+            self.currentcol = ifcol
+            if isinstance(inner, mc.Control):
+                self.draw_control(inner, qubits, op_bits)
+            elif isinstance(inner, mc.PauliString):
+                self.draw_paulistring(inner, qubits, op_bits, zvars)
+            elif isinstance(inner, mc.Reset):
+                self.draw_reset(inner, qubits, op_bits, zvars)
+            elif isinstance(inner, mc.Barrier):
+                self.draw_barrier(inner, qubits, op_bits, zvars)
+            elif isinstance(inner, mc.Parallel):
+                self.draw_parallel(inner, qubits, op_bits, zvars)
+            elif isinstance(inner, mc.IfStatement):
+                # allow nested IF
+                self.draw_ifstatement(inner, qubits, op_bits, zvars)
+            else:
+                self.draw_operation(inner, qubits, op_bits, zvars)
+            newcol = self.get_current_col()
+            self.set_current_col(max(saved_col, newcol))
 
-        self.canvas.draw_box(qstartrow, ifcol, qw, qh, clean=True)
+            # connectors (condition box → op box)
+            midcol = (ifcol + newcol) // 2
+            if qubitrow:
+                stoprow = max(qubitrow)
+                self.canvas.draw_double_vline(
+                    stoprow + 1, midcol, bitrow - (stoprow + 2)
+                )
+                self.canvas.draw_double_hline(bitrow - 1, ifcol, midcol - ifcol)
+                self.canvas.draw_text("╝", bitrow - 1, midcol)
+                self.canvas.draw_text("○", bitrow - 1, ifcol)
+            elif zvars:
+                self.canvas.draw_double_vline(
+                    bitrow + 1, midcol, zvarrow - (bitrow + 3)
+                )
+                self.canvas.draw_double_hline(bitrow - 1, ifcol, midcol - ifcol)
+                self.canvas.draw_text("╗", bitrow - 1, midcol)
+                self.canvas.draw_text("○", bitrow - 1, ifcol)
 
-        for i, qr in enumerate(qubitrow):
-            self.canvas.draw_text(str(i), qr, ifcol + 1)
-
-        self.canvas.draw_text(repr(g.op), qmh, ifcol + namepadding + 1)
-
-        midcol = ifcol + qw // 2
-
-        self.canvas.draw_double_vline(qstoprow, midcol, bitrow - qstoprow)
-        self.canvas.draw_double_hline(bitrow - 1, ifcol, midcol - ifcol)
-        self.canvas.draw_text("╝", bitrow - 1, midcol)
-        self.canvas.draw_text("○", bitrow - 1, ifcol)
-
-        self.set_current_col(ifcol + qw)
+        else:
+            # only condition box
+            self.set_current_col(ifcol + len(btext) + 2)
+        return self
 
     def draw_reset(self, reset, qubits, _, zvars):
         if not isinstance(reset, mc.Reset):

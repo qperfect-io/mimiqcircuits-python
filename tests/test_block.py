@@ -71,19 +71,33 @@ def test_block_operations():
 
 
 def test_block_in_circuit():
+    from mimiqcircuits.decomposition import decompose_step
+
     b = mc.Block(2, 0, 0)
     b.push(mc.GateH(), 0)
     b.push(mc.GateCX(), 0, 1)
 
     c = mc.Circuit()
     c.push(b, 0, 1)
-    c1 = c.decompose()
+
+    # Test single-step decomposition (Block flattening)
+    # decompose_step flattens the Block without further decomposing the inner gates
+    c1 = decompose_step(c)
 
     assert len(c1) == 2
     assert c1[0].operation == mc.GateH()
     assert c1[0].qubits == (0,)
     assert c1[1].operation == mc.GateCX()
     assert c1[1].qubits == (0, 1)
+
+    # Test full decomposition (recursive)
+    # Full decompose with CanonicalBasis converts GateH to GateU
+    c2 = c.decompose()  # Uses CanonicalBasis by default
+    assert len(c2) == 2
+    assert isinstance(c2[0].operation, mc.GateU)  # GateH decomposed to GateU
+    assert c2[0].qubits == (0,)
+    assert c2[1].operation == mc.GateCX()  # GateCX is terminal
+    assert c2[1].qubits == (0, 1)
 
     # Nested block
     b_inner = mc.Block(1, 0, 0)
