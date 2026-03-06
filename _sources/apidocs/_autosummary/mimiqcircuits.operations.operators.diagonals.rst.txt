@@ -1,0 +1,12 @@
+mimiqcircuits.operations.operators.diagonals
+============================================
+
+.. automodule:: mimiqcircuits.operations.operators.diagonals
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DiagonalOp
+   

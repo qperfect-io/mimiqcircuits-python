@@ -1,0 +1,12 @@
+mimiqcircuits.classical.or\_operation
+=====================================
+
+.. automodule:: mimiqcircuits.classical.or_operation
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Or
+   

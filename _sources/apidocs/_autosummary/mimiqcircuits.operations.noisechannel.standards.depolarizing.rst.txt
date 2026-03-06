@@ -1,0 +1,14 @@
+mimiqcircuits.operations.noisechannel.standards.depolarizing
+============================================================
+
+.. automodule:: mimiqcircuits.operations.noisechannel.standards.depolarizing
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Depolarizing
+      Depolarizing1
+      Depolarizing2
+   

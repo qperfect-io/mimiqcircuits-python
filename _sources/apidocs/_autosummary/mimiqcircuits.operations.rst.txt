@@ -1,0 +1,38 @@
+﻿mimiqcircuits.operations
+========================
+
+.. automodule:: mimiqcircuits.operations
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   amplitude
+   annotations
+   barrier
+   block
+   control
+   entanglement
+   expectationvalue
+   gates
+   generating_list
+   ifstatement
+   inverse
+   krauschannel
+   measure
+   measurereset
+   noisechannel
+   operation
+   operator
+   operators
+   pairmeasure
+   parallel
+   power
+   readouterr
+   repeat
+   rescaledgates
+   reset
+   utils

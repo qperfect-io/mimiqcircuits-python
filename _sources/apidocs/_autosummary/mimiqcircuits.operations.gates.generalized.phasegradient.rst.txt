@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.generalized.phasegradient
+========================================================
+
+.. automodule:: mimiqcircuits.operations.gates.generalized.phasegradient
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PhaseGradient
+   

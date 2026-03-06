@@ -1,0 +1,1596 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="mimiqcircuits.remote" href="mimiqcircuits.remote.html"><link rel="prev" title="mimiqcircuits.classical.xor_operation" href="mimiqcircuits.classical.xor_operation.html">
+        <link rel="prefetch" href="../../_static/qperfect_logo.png" as="image">
+
+    <!-- Generated with Sphinx 7.4.7 and Furo 2025.12.19 -->
+        <title>mimiqcircuits.noisemodel - MIMIQ Circuits v0.21.2</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=6deec1a2" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #990066;
+  --color-brand-content: #990066;
+  --color-inline-code-background: rgba(153, 0, 102, 0.08);
+  --color-admonition-background: #f8f9fc;
+  --color-api-name: #990066;
+  --color-api-pre-name: #4b5563;
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #d94faa;
+  --color-brand-content: #d94faa;
+  --color-background-primary: #0f1117;
+  --color-background-secondary: #161922;
+  --color-background-border: #2d3548;
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+  --color-sidebar-background: #0d0f14;
+  --color-sidebar-background-border: #1f2937;
+  --color-sidebar-link-text: #e5e7eb;
+  --color-sidebar-link-text--top-level: #ffffff;
+  --color-sidebar-item-background--current: rgba(217, 79, 170, 0.15);
+  --color-sidebar-item-background--hover: rgba(217, 79, 170, 0.08);
+  --color-inline-code-background: rgba(249, 168, 212, 0.15);
+  --color-admonition-background: #1a1f2c;
+  --color-api-background: #1a1f2c;
+  --color-api-name: #d94faa;
+  --color-api-pre-name: #9ca3af;
+  --color-highlight-on-target: rgba(255, 215, 0, 0.15);
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #d94faa;
+  --color-brand-content: #d94faa;
+  --color-background-primary: #0f1117;
+  --color-background-secondary: #161922;
+  --color-background-border: #2d3548;
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+  --color-sidebar-background: #0d0f14;
+  --color-sidebar-background-border: #1f2937;
+  --color-sidebar-link-text: #e5e7eb;
+  --color-sidebar-link-text--top-level: #ffffff;
+  --color-sidebar-item-background--current: rgba(217, 79, 170, 0.15);
+  --color-sidebar-item-background--hover: rgba(217, 79, 170, 0.08);
+  --color-inline-code-background: rgba(249, 168, 212, 0.15);
+  --color-admonition-background: #1a1f2c;
+  --color-api-background: #1a1f2c;
+  --color-api-name: #d94faa;
+  --color-api-pre-name: #9ca3af;
+  --color-highlight-on-target: rgba(255, 215, 0, 0.15);
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     The MIMIQ Update 2026 is out! Update now to the latest <strong>v0.21.2</strong> version. 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">MIMIQ Circuits v0.21.2</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../_static/qperfect_logo.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">MIMIQ Circuits v0.21.2</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../mimiq_documentation.html">MIMIQ Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../manual/index.html">Manual</a><input aria-label="Toggle navigation of Manual" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../manual/getting_started.html">Getting Started</a><input aria-label="Toggle navigation of Getting Started" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/installation.html">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/overview.html">Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../manual/core_concepts.html">Core Concepts</a><input aria-label="Toggle navigation of Core Concepts" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/circuits.html">Circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/hamiltonian.html">Hamiltonians and Time Evolution</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../manual/operations.html">Operations</a><input aria-label="Toggle navigation of Operations" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/unitary_gates.html">Unitary Gates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/classical_ops.html">Classical Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/non_unitary_ops.html">Non-unitary Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/noise.html">Noisy simulations on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/statistical_ops.html">Statistical Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/special_ops.html">Special Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/zops.html">Z-register Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../manual/simulation.html">Simulation &amp; Execution</a><input aria-label="Toggle navigation of Simulation &amp; Execution" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/local_statevector.html">Quantanium</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/remote_execution.html">Execution on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/simulation_parameters.html">Simulation Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../manual/advanced.html">Advanced Topics</a><input aria-label="Toggle navigation of Advanced Topics" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/import_export.html">Import and export circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/special_topics.html">Special Topics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../manual/compilation.html">Circuit Compilation &amp; Optimization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../usecases/index.html">Use Cases and Special Workflows</a><input aria-label="Toggle navigation of Use Cases and Special Workflows" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../usecases/vqe.html">Variational Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../usecases/circuit_tester.html">Circuit Equivalence Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../mimiqcircuits.html">API References</a><input aria-label="Toggle navigation of API References" checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="mimiqcircuits.circuit.html">mimiqcircuits.circuit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mimiqcircuits.hamiltonian.html">mimiqcircuits.hamiltonian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mimiqcircuits.instruction.html">mimiqcircuits.instruction</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="mimiqcircuits.operations.html">mimiqcircuits.operations</a><input aria-label="Toggle navigation of mimiqcircuits.operations" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.amplitude.html">mimiqcircuits.operations.amplitude</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.annotations.html">mimiqcircuits.operations.annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.barrier.html">mimiqcircuits.operations.barrier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.block.html">mimiqcircuits.operations.block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.control.html">mimiqcircuits.operations.control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.entanglement.html">mimiqcircuits.operations.entanglement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.expectationvalue.html">mimiqcircuits.operations.expectationvalue</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="mimiqcircuits.operations.gates.html">mimiqcircuits.operations.gates</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="mimiqcircuits.operations.gates.custom.html">mimiqcircuits.operations.gates.custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mimiqcircuits.operations.gates.delay.html">mimiqcircuits.operations.gates.delay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mimiqcircuits.operations.gates.gate.html">mimiqcircuits.operations.gates.gate</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="mimiqcircuits.operations.gates.generalized.html">mimiqcircuits.operations.gates.generalized</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates.generalized" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.generalized.diffusion.html">mimiqcircuits.operations.gates.generalized.diffusion</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.generalized.paulistring.html">mimiqcircuits.operations.gates.generalized.paulistring</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.generalized.phasegradient.html">mimiqcircuits.operations.gates.generalized.phasegradient</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.generalized.polynomialoracle.html">mimiqcircuits.operations.gates.generalized.polynomialoracle</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.generalized.qft.html">mimiqcircuits.operations.gates.generalized.qft</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.generalized.rnz.html">mimiqcircuits.operations.gates.generalized.rnz</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.generalized.rpauli.html">mimiqcircuits.operations.gates.generalized.rpauli</a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.html">mimiqcircuits.operations.gates.standard</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates.standard" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.chadamard.html">mimiqcircuits.operations.gates.standard.chadamard</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.cnp.html">mimiqcircuits.operations.gates.standard.cnp</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.cnx.html">mimiqcircuits.operations.gates.standard.cnx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.cpauli.html">mimiqcircuits.operations.gates.standard.cpauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.cphase.html">mimiqcircuits.operations.gates.standard.cphase</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.crotations.html">mimiqcircuits.operations.gates.standard.crotations</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.cs.html">mimiqcircuits.operations.gates.standard.cs</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.cswap.html">mimiqcircuits.operations.gates.standard.cswap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.csx.html">mimiqcircuits.operations.gates.standard.csx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.cu.html">mimiqcircuits.operations.gates.standard.cu</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.dcx.html">mimiqcircuits.operations.gates.standard.dcx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.deprecated.html">mimiqcircuits.operations.gates.standard.deprecated</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.ecr.html">mimiqcircuits.operations.gates.standard.ecr</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.hadamard.html">mimiqcircuits.operations.gates.standard.hadamard</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.id.html">mimiqcircuits.operations.gates.standard.id</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.interactions.html">mimiqcircuits.operations.gates.standard.interactions</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.iswap.html">mimiqcircuits.operations.gates.standard.iswap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.pauli.html">mimiqcircuits.operations.gates.standard.pauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.phase.html">mimiqcircuits.operations.gates.standard.phase</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.rotations.html">mimiqcircuits.operations.gates.standard.rotations</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.s.html">mimiqcircuits.operations.gates.standard.s</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.swap.html">mimiqcircuits.operations.gates.standard.swap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.sx.html">mimiqcircuits.operations.gates.standard.sx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.sy.html">mimiqcircuits.operations.gates.standard.sy</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.t.html">mimiqcircuits.operations.gates.standard.t</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.gates.standard.u.html">mimiqcircuits.operations.gates.standard.u</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.generating_list.html">mimiqcircuits.operations.generating_list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.ifstatement.html">mimiqcircuits.operations.ifstatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.inverse.html">mimiqcircuits.operations.inverse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.krauschannel.html">mimiqcircuits.operations.krauschannel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.measure.html">mimiqcircuits.operations.measure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.measurereset.html">mimiqcircuits.operations.measurereset</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="mimiqcircuits.operations.noisechannel.html">mimiqcircuits.operations.noisechannel</a><input aria-label="Toggle navigation of mimiqcircuits.operations.noisechannel" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="mimiqcircuits.operations.noisechannel.kraus.html">mimiqcircuits.operations.noisechannel.kraus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mimiqcircuits.operations.noisechannel.mixedunitary.html">mimiqcircuits.operations.noisechannel.mixedunitary</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="mimiqcircuits.operations.noisechannel.standards.html">mimiqcircuits.operations.noisechannel.standards</a><input aria-label="Toggle navigation of mimiqcircuits.operations.noisechannel.standards" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.noisechannel.standards.ampdamping.html">mimiqcircuits.operations.noisechannel.standards.ampdamping</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.noisechannel.standards.depolarizing.html">mimiqcircuits.operations.noisechannel.standards.depolarizing</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.noisechannel.standards.pauli.html">mimiqcircuits.operations.noisechannel.standards.pauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping.html">mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping</a></li>
+<li class="toctree-l5"><a class="reference internal" href="mimiqcircuits.operations.noisechannel.standards.projectivenoise.html">mimiqcircuits.operations.noisechannel.standards.projectivenoise</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.operation.html">mimiqcircuits.operations.operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.operator.html">mimiqcircuits.operations.operator</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="mimiqcircuits.operations.operators.html">mimiqcircuits.operations.operators</a><input aria-label="Toggle navigation of mimiqcircuits.operations.operators" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="mimiqcircuits.operations.operators.custom.html">mimiqcircuits.operations.operators.custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mimiqcircuits.operations.operators.diagonals.html">mimiqcircuits.operations.operators.diagonals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mimiqcircuits.operations.operators.projectors.html">mimiqcircuits.operations.operators.projectors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mimiqcircuits.operations.operators.sigmas.html">mimiqcircuits.operations.operators.sigmas</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.pairmeasure.html">mimiqcircuits.operations.pairmeasure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.parallel.html">mimiqcircuits.operations.parallel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.power.html">mimiqcircuits.operations.power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.readouterr.html">mimiqcircuits.operations.readouterr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.repeat.html">mimiqcircuits.operations.repeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.rescaledgates.html">mimiqcircuits.operations.rescaledgates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.reset.html">mimiqcircuits.operations.reset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.operations.utils.html">mimiqcircuits.operations.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="mimiqcircuits.classical.html">mimiqcircuits.classical</a><input aria-label="Toggle navigation of mimiqcircuits.classical" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.classical.abstract_classical.html">mimiqcircuits.classical.abstract_classical</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.classical.and_operation.html">mimiqcircuits.classical.and_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.classical.not_operation.html">mimiqcircuits.classical.not_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.classical.or_operation.html">mimiqcircuits.classical.or_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.classical.paritycheck.html">mimiqcircuits.classical.paritycheck</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.classical.setbits.html">mimiqcircuits.classical.setbits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mimiqcircuits.classical.xor_operation.html">mimiqcircuits.classical.xor_operation</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">mimiqcircuits.noisemodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mimiqcircuits.remote.html">mimiqcircuits.remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mimiqcircuits.qcsresults.html">mimiqcircuits.qcsresults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mimiqcircuits.lazy.html">mimiqcircuits.lazy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/qperfect-io/mimiqcircuits-python">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mimiq.qperfect.io/docs/julia/">Julia APIs</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://qperfect.io">QPerfect</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/qperfect-io/mimiqcircuits-python/blob/main/docs/apidocs/_autosummary/mimiqcircuits.noisemodel.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/qperfect-io/mimiqcircuits-python/edit/main/docs/apidocs/_autosummary/mimiqcircuits.noisemodel.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-mimiqcircuits.noisemodel">
+<span id="mimiqcircuits-noisemodel"></span><h1>mimiqcircuits.noisemodel<a class="headerlink" href="#module-mimiqcircuits.noisemodel" title="Link to this heading">¶</a></h1>
+<p>Noise model definitions and application.</p>
+<p>This module implements rule-based noise injection for <code class="docutils literal notranslate"><span class="pre">mimiqcircuits</span></code> circuits.
+Rules are evaluated by priority (lower value means higher priority), and the first
+matching rule is applied to each instruction.</p>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.apply_noise_model" title="mimiqcircuits.noisemodel.apply_noise_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_noise_model</span></code></a>(circuit, model)</p></td>
+<td><p>Apply a noise model to a circuit and return a new circuit.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a>()</p></td>
+<td><p>Abstract base class for all noise rules.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule" title="mimiqcircuits.noisemodel.CustomNoiseRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomNoiseRule</span></code></a>(matcher, generator[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise" title="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise</span></code></a>(operation, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise" title="mimiqcircuits.noisemodel.ExactQubitReadoutNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise</span></code></a>(qubits, noise)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise" title="mimiqcircuits.noisemodel.GlobalReadoutNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GlobalReadoutNoise</span></code></a>(noise)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.IdleNoise" title="mimiqcircuits.noisemodel.IdleNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IdleNoise</span></code></a>(relation)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel" title="mimiqcircuits.noisemodel.NoiseModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NoiseModel</span></code></a>([rules, name])</p></td>
+<td><p>Collection of prioritized noise rules.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise" title="mimiqcircuits.noisemodel.OperationInstanceNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OperationInstanceNoise</span></code></a>(operation, noise[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise" title="mimiqcircuits.noisemodel.SetIdleQubitNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SetIdleQubitNoise</span></code></a>(relation, qubits)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise" title="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise</span></code></a>(operation, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise" title="mimiqcircuits.noisemodel.SetQubitReadoutNoise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SetQubitReadoutNoise</span></code></a>(qubits, noise)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.AbstractNoiseRule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">AbstractNoiseRule</span></span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#AbstractNoiseRule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Abstract base class for all noise rules.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.AbstractNoiseRule.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#AbstractNoiseRule.priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.AbstractNoiseRule.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Lower = higher priority.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.AbstractNoiseRule.before">
+<span class="sig-name descname"><span class="pre">before</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#AbstractNoiseRule.before"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.AbstractNoiseRule.before" title="Link to this definition">¶</a></dt>
+<dd><p>If True, apply noise before the operation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.AbstractNoiseRule.replaces">
+<span class="sig-name descname"><span class="pre">replaces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#AbstractNoiseRule.replaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.AbstractNoiseRule.replaces" title="Link to this definition">¶</a></dt>
+<dd><p>If True, noise instruction replaces the original instruction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.AbstractNoiseRule.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#AbstractNoiseRule.matches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.AbstractNoiseRule.matches" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.AbstractNoiseRule.apply_rule">
+<span class="sig-name descname"><span class="pre">apply_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#AbstractNoiseRule.apply_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.AbstractNoiseRule.apply_rule" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.GlobalReadoutNoise">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">GlobalReadoutNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'mc.ReadoutErr'</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#GlobalReadoutNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.GlobalReadoutNoise.noise">
+<span class="sig-name descname"><span class="pre">noise</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.readouterr.html#mimiqcircuits.operations.readouterr.ReadoutErr" title="mimiqcircuits.operations.readouterr.ReadoutErr"><span class="pre">ReadoutErr</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise.noise" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.GlobalReadoutNoise.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#GlobalReadoutNoise.priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Lower = higher priority.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.GlobalReadoutNoise.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#GlobalReadoutNoise.matches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise.matches" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.GlobalReadoutNoise.apply_rule">
+<span class="sig-name descname"><span class="pre">apply_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#GlobalReadoutNoise.apply_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise.apply_rule" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.GlobalReadoutNoise.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactQubitReadoutNoise">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">ExactQubitReadoutNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Sequence[int]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'mc.ReadoutErr'</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#ExactQubitReadoutNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactQubitReadoutNoise.qubits">
+<span class="sig-name descname"><span class="pre">qubits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.qubits" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactQubitReadoutNoise.noise">
+<span class="sig-name descname"><span class="pre">noise</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.readouterr.html#mimiqcircuits.operations.readouterr.ReadoutErr" title="mimiqcircuits.operations.readouterr.ReadoutErr"><span class="pre">ReadoutErr</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.noise" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactQubitReadoutNoise.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#ExactQubitReadoutNoise.priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Lower = higher priority.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactQubitReadoutNoise.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#ExactQubitReadoutNoise.matches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.matches" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactQubitReadoutNoise.apply_rule">
+<span class="sig-name descname"><span class="pre">apply_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#ExactQubitReadoutNoise.apply_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.apply_rule" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactQubitReadoutNoise.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetQubitReadoutNoise">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">SetQubitReadoutNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Iterable[int]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'mc.ReadoutErr'</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetQubitReadoutNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetQubitReadoutNoise.qubits">
+<span class="sig-name descname"><span class="pre">qubits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.qubits" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetQubitReadoutNoise.noise">
+<span class="sig-name descname"><span class="pre">noise</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.readouterr.html#mimiqcircuits.operations.readouterr.ReadoutErr" title="mimiqcircuits.operations.readouterr.ReadoutErr"><span class="pre">ReadoutErr</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.noise" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetQubitReadoutNoise.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetQubitReadoutNoise.priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Lower = higher priority.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetQubitReadoutNoise.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetQubitReadoutNoise.matches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.matches" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetQubitReadoutNoise.apply_rule">
+<span class="sig-name descname"><span class="pre">apply_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetQubitReadoutNoise.apply_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.apply_rule" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetQubitReadoutNoise.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.OperationInstanceNoise">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">OperationInstanceNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'mc.Operation'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Union[mc.krauschannel,</span> <span class="pre">mc.Gate]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'bool'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'bool'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#OperationInstanceNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.OperationInstanceNoise" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.OperationInstanceNoise.operation">
+<span class="sig-name descname"><span class="pre">operation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.operation.html#mimiqcircuits.operations.operation.Operation" title="mimiqcircuits.operations.operation.Operation"><span class="pre">Operation</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.operation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.OperationInstanceNoise.noise">
+<span class="sig-name descname"><span class="pre">noise</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">krauschannel</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.gates.gate.html#mimiqcircuits.operations.gates.gate.Gate" title="mimiqcircuits.operations.gates.gate.Gate"><span class="pre">Gate</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.noise" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.OperationInstanceNoise.before">
+<span class="sig-name descname"><span class="pre">before</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.before" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.OperationInstanceNoise.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.replace" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.OperationInstanceNoise.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#OperationInstanceNoise.priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Lower = higher priority.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.OperationInstanceNoise.replaces">
+<span class="sig-name descname"><span class="pre">replaces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#OperationInstanceNoise.replaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.replaces" title="Link to this definition">¶</a></dt>
+<dd><p>If True, noise instruction replaces the original instruction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.OperationInstanceNoise.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#OperationInstanceNoise.matches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.matches" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.OperationInstanceNoise.apply_rule">
+<span class="sig-name descname"><span class="pre">apply_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#OperationInstanceNoise.apply_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.apply_rule" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.OperationInstanceNoise.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">ExactOperationInstanceQubitNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'mc.Operation'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Sequence[int]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Union[mc.krauschannel,</span> <span class="pre">mc.Gate]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'bool'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'bool'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#ExactOperationInstanceQubitNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.operation">
+<span class="sig-name descname"><span class="pre">operation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.operation.html#mimiqcircuits.operations.operation.Operation" title="mimiqcircuits.operations.operation.Operation"><span class="pre">Operation</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.operation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.qubits">
+<span class="sig-name descname"><span class="pre">qubits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.qubits" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.noise">
+<span class="sig-name descname"><span class="pre">noise</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">krauschannel</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.gates.gate.html#mimiqcircuits.operations.gates.gate.Gate" title="mimiqcircuits.operations.gates.gate.Gate"><span class="pre">Gate</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.noise" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.before">
+<span class="sig-name descname"><span class="pre">before</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.before" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.replace" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#ExactOperationInstanceQubitNoise.priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Lower = higher priority.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.replaces">
+<span class="sig-name descname"><span class="pre">replaces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#ExactOperationInstanceQubitNoise.replaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.replaces" title="Link to this definition">¶</a></dt>
+<dd><p>If True, noise instruction replaces the original instruction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#ExactOperationInstanceQubitNoise.matches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.matches" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.apply_rule">
+<span class="sig-name descname"><span class="pre">apply_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#ExactOperationInstanceQubitNoise.apply_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.apply_rule" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">SetOperationInstanceQubitNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'mc.Operation'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Iterable[int]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Union[mc.krauschannel,</span> <span class="pre">mc.Gate]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'bool'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'bool'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetOperationInstanceQubitNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.operation">
+<span class="sig-name descname"><span class="pre">operation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.operation.html#mimiqcircuits.operations.operation.Operation" title="mimiqcircuits.operations.operation.Operation"><span class="pre">Operation</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.operation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.qubits">
+<span class="sig-name descname"><span class="pre">qubits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.qubits" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.noise">
+<span class="sig-name descname"><span class="pre">noise</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">krauschannel</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.gates.gate.html#mimiqcircuits.operations.gates.gate.Gate" title="mimiqcircuits.operations.gates.gate.Gate"><span class="pre">Gate</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.noise" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.before">
+<span class="sig-name descname"><span class="pre">before</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.before" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.replace" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetOperationInstanceQubitNoise.priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Lower = higher priority.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.replaces">
+<span class="sig-name descname"><span class="pre">replaces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetOperationInstanceQubitNoise.replaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.replaces" title="Link to this definition">¶</a></dt>
+<dd><p>If True, noise instruction replaces the original instruction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetOperationInstanceQubitNoise.matches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.matches" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.apply_rule">
+<span class="sig-name descname"><span class="pre">apply_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetOperationInstanceQubitNoise.apply_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.apply_rule" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.IdleNoise">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">IdleNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Union[tuple,</span> <span class="pre">mc.Operation]'</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#IdleNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.IdleNoise" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.IdleNoise.relation">
+<span class="sig-name descname"><span class="pre">relation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.operation.html#mimiqcircuits.operations.operation.Operation" title="mimiqcircuits.operations.operation.Operation"><span class="pre">Operation</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.IdleNoise.relation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.IdleNoise.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#IdleNoise.priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.IdleNoise.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Lower = higher priority.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.IdleNoise.replaces">
+<span class="sig-name descname"><span class="pre">replaces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#IdleNoise.replaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.IdleNoise.replaces" title="Link to this definition">¶</a></dt>
+<dd><p>If True, noise instruction replaces the original instruction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.IdleNoise.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#IdleNoise.matches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.IdleNoise.matches" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.IdleNoise.apply_rule">
+<span class="sig-name descname"><span class="pre">apply_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#IdleNoise.apply_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.IdleNoise.apply_rule" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.IdleNoise.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mimiqcircuits.noisemodel.IdleNoise.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetIdleQubitNoise">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">SetIdleQubitNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Union[tuple,</span> <span class="pre">mc.Operation]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Iterable[int]'</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetIdleQubitNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetIdleQubitNoise.relation">
+<span class="sig-name descname"><span class="pre">relation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.operations.operation.html#mimiqcircuits.operations.operation.Operation" title="mimiqcircuits.operations.operation.Operation"><span class="pre">Operation</span></a></em><a class="headerlink" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.relation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetIdleQubitNoise.qubits">
+<span class="sig-name descname"><span class="pre">qubits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.qubits" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetIdleQubitNoise.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetIdleQubitNoise.priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Lower = higher priority.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetIdleQubitNoise.replaces">
+<span class="sig-name descname"><span class="pre">replaces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetIdleQubitNoise.replaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.replaces" title="Link to this definition">¶</a></dt>
+<dd><p>If True, noise instruction replaces the original instruction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetIdleQubitNoise.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetIdleQubitNoise.matches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.matches" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetIdleQubitNoise.apply_rule">
+<span class="sig-name descname"><span class="pre">apply_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#SetIdleQubitNoise.apply_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.apply_rule" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.SetIdleQubitNoise.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">CustomNoiseRule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matcher</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Callable[[mc.Instruction],</span> <span class="pre">bool]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Callable[[mc.Instruction],</span> <span class="pre">mc.Instruction]'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'int'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'bool'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'bool'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#CustomNoiseRule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule.matcher">
+<span class="sig-name descname"><span class="pre">matcher</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="mimiqcircuits.instruction.html#mimiqcircuits.instruction.Instruction" title="mimiqcircuits.instruction.Instruction"><span class="pre">Instruction</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule.matcher" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule.generator">
+<span class="sig-name descname"><span class="pre">generator</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="mimiqcircuits.instruction.html#mimiqcircuits.instruction.Instruction" title="mimiqcircuits.instruction.Instruction"><span class="pre">Instruction</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="mimiqcircuits.instruction.html#mimiqcircuits.instruction.Instruction" title="mimiqcircuits.instruction.Instruction"><span class="pre">Instruction</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule.generator" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule.priority_val">
+<span class="sig-name descname"><span class="pre">priority_val</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule.priority_val" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule.before">
+<span class="sig-name descname"><span class="pre">before</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule.before" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule.replace" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule.priority">
+<span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#CustomNoiseRule.priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule.priority" title="Link to this definition">¶</a></dt>
+<dd><p>Lower = higher priority.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#CustomNoiseRule.matches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule.matches" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule.apply_rule">
+<span class="sig-name descname"><span class="pre">apply_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#CustomNoiseRule.apply_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule.apply_rule" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule.replaces">
+<span class="sig-name descname"><span class="pre">replaces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#CustomNoiseRule.replaces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule.replaces" title="Link to this definition">¶</a></dt>
+<dd><p>If True, noise instruction replaces the original instruction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.CustomNoiseRule.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matcher</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mimiqcircuits.noisemodel.CustomNoiseRule.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">NoiseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rules=&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#NoiseModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Collection of prioritized noise rules.</p>
+<p>Rules are always kept sorted by <code class="docutils literal notranslate"><span class="pre">priority()</span></code> so more specific rules win over
+generic fallbacks.</p>
+<p>Priority order (lower number = higher priority):
+- <code class="docutils literal notranslate"><span class="pre">CustomNoiseRule</span></code> (default <code class="docutils literal notranslate"><span class="pre">PRIORITY_USER_OVERRIDE</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_EXACT_OPERATION</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_EXACT_READOUT</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_SET_OPERATION</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_SET_READOUT</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_GLOBAL_OPERATION</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">GlobalReadoutNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_GLOBAL_READOUT</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">SetIdleQubitNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_SET_IDLE</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">IdleNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_IDLE</span></code>)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rules</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a><em>[</em><a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><em>AbstractNoiseRule</em></a><em>]</em>) – Initial list of rules.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Optional model name.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition-example admonition">
+<p class="admonition-title">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">pi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">theta</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;theta&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[</span>
+<span class="gp">... </span>        <span class="n">mc</span><span class="o">.</span><span class="n">OperationInstanceNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">pi</span><span class="p">)),</span>
+<span class="gp">... </span>        <span class="n">mc</span><span class="o">.</span><span class="n">ExactOperationInstanceQubitNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCX</span><span class="p">(),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)),</span>
+<span class="gp">... </span>        <span class="n">mc</span><span class="o">.</span><span class="n">GlobalReadoutNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)),</span>
+<span class="gp">... </span>        <span class="n">mc</span><span class="o">.</span><span class="n">IdleNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)),</span>
+<span class="gp">... </span>    <span class="p">],</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;angle-dependent&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.rules">
+<span class="sig-name descname"><span class="pre">rules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><span class="pre">AbstractNoiseRule</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.rules" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.add_rule">
+<span class="sig-name descname"><span class="pre">add_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#NoiseModel.add_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.add_rule" title="Link to this definition">¶</a></dt>
+<dd><p>Add a rule and keep model rules sorted by priority.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.add_readout_noise">
+<span class="sig-name descname"><span class="pre">add_readout_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#NoiseModel.add_readout_noise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.add_readout_noise" title="Link to this definition">¶</a></dt>
+<dd><p>Add a readout-noise rule.</p>
+<p>Behavior:
+- <code class="docutils literal notranslate"><span class="pre">qubits</span> <span class="pre">is</span> <span class="pre">None</span></code>: add <code class="docutils literal notranslate"><span class="pre">GlobalReadoutNoise</span></code>.
+- <code class="docutils literal notranslate"><span class="pre">qubits</span></code> with <code class="docutils literal notranslate"><span class="pre">exact=False</span></code>: add <code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise</span></code>.
+- <code class="docutils literal notranslate"><span class="pre">qubits</span></code> with <code class="docutils literal notranslate"><span class="pre">exact=True</span></code>: add <code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noise</strong> (<a class="reference internal" href="mimiqcircuits.operations.readouterr.html#mimiqcircuits.operations.readouterr.ReadoutErr" title="mimiqcircuits.operations.readouterr.ReadoutErr"><em>ReadoutErr</em></a>) – Readout error channel.</p></li>
+<li><p><strong>qubits</strong> – Optional qubit targets.</p></li>
+<li><p><strong>exact</strong> – When <code class="docutils literal notranslate"><span class="pre">True</span></code>, qubit order must match exactly.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">self</span></code> (for chaining).</p>
+</dd>
+</dl>
+<div class="admonition-example admonition">
+<p class="admonition-title">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_readout_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">))</span>
+<span class="go">NoiseModel(rules=[GlobalReadoutNoise(noise=RErr(0.01,0.02))], name=&#39;&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_readout_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">),</span> <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">NoiseModel(rules=[SetQubitReadoutNoise(qubits=(0, 2), noise=RErr(0.03,0.04)), GlobalReadoutNoise(noise=RErr(0.01,0.02))], name=&#39;&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_readout_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">),</span> <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">NoiseModel(rules=[ExactQubitReadoutNoise(qubits=(2, 0), noise=RErr(0.05,0.06)), SetQubitReadoutNoise(qubits=(0, 2), noise=RErr(0.03,0.04)), GlobalReadoutNoise(noise=RErr(0.01,0.02))], name=&#39;&#39;)</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.add_operation_noise">
+<span class="sig-name descname"><span class="pre">add_operation_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#NoiseModel.add_operation_noise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.add_operation_noise" title="Link to this definition">¶</a></dt>
+<dd><p>Add operation-instance noise.</p>
+<p><code class="docutils literal notranslate"><span class="pre">operation</span></code> can be concrete (exact parameter match) or symbolic (match by
+operation type and substitute parameters into <code class="docutils literal notranslate"><span class="pre">noise</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>operation</strong> – Operation pattern to match.</p></li>
+<li><p><strong>noise</strong> – Noise operation/channel to inject.</p></li>
+<li><p><strong>qubits</strong> – Optional qubit restriction.</p></li>
+<li><p><strong>exact</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, qubits must match the exact ordered tuple.</p></li>
+<li><p><strong>before</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, insert noise before the matched instruction.</p></li>
+<li><p><strong>replace</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, replace the matched instruction with noise.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">self</span></code> (for chaining).</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If operation target is unsupported or arguments are invalid.</p>
+</dd>
+</dl>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">pi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">theta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;theta alpha beta&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.001</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">pi</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">GateU</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">alpha</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">beta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">pi</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">pi</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Measure</span><span class="p">(),</span> <span class="n">mc</span><span class="o">.</span><span class="n">PauliX</span><span class="p">(</span><span class="mf">0.02</span><span class="p">),</span> <span class="n">before</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Reset</span><span class="p">(),</span> <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.001</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.add_idle_noise">
+<span class="sig-name descname"><span class="pre">add_idle_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#NoiseModel.add_idle_noise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.add_idle_noise" title="Link to this definition">¶</a></dt>
+<dd><p>Add idle-noise rule(s) for <code class="docutils literal notranslate"><span class="pre">Delay</span></code> instructions.</p>
+<p><code class="docutils literal notranslate"><span class="pre">noise</span></code> can be a constant operation or a relation tuple
+<code class="docutils literal notranslate"><span class="pre">(time_symbol,</span> <span class="pre">target_operation_expr)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noise</strong> – Idle noise operation or symbolic relation.</p></li>
+<li><p><strong>qubits</strong> – Optional qubit subset where idle noise is allowed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">self</span></code> (for chaining).</p>
+</dd>
+</dl>
+<div class="admonition-example admonition">
+<p class="admonition-title">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="n">symbols</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_idle_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">))</span>
+<span class="go">NoiseModel(rules=[IdleNoise(relation=AmplitudeDamping(0.0001))], name=&#39;&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_idle_noise</span><span class="p">((</span><span class="n">t</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)),</span> <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">NoiseModel(rules=[SetIdleQubitNoise(relation=(t, AmplitudeDamping((1/1000)*t)), qubits=frozenset({0, 1, 2})), IdleNoise(relation=AmplitudeDamping(0.0001))], name=&#39;&#39;)</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.apply_noise_model">
+<span class="sig-name descname"><span class="pre">apply_noise_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#NoiseModel.apply_noise_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.apply_noise_model" title="Link to this definition">¶</a></dt>
+<dd><p>Apply this noise model and return a new noisy circuit.</p>
+<p>This is a convenience wrapper around module-level <code class="docutils literal notranslate"><span class="pre">apply_noise_model</span></code>.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.describe">
+<span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#NoiseModel.describe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.describe" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.saveproto">
+<span class="sig-name descname"><span class="pre">saveproto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#NoiseModel.saveproto"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.saveproto" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.loadproto">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">loadproto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#NoiseModel.loadproto"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.loadproto" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.NoiseModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rules=&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mimiqcircuits.noisemodel.NoiseModel.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mimiqcircuits.noisemodel.apply_noise_model">
+<span class="sig-prename descclassname"><span class="pre">mimiqcircuits.noisemodel.</span></span><span class="sig-name descname"><span class="pre">apply_noise_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/mimiqcircuits/noisemodel.html#apply_noise_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mimiqcircuits.noisemodel.apply_noise_model" title="Link to this definition">¶</a></dt>
+<dd><p>Apply a noise model to a circuit and return a new circuit.</p>
+<p>Rules are evaluated in priority order. For each instruction, only the first
+matching rule is applied.</p>
+<p>Wrapper operations are traversed recursively:
+<code class="docutils literal notranslate"><span class="pre">Block</span></code>, <code class="docutils literal notranslate"><span class="pre">IfStatement</span></code>, <code class="docutils literal notranslate"><span class="pre">Parallel</span></code>, <code class="docutils literal notranslate"><span class="pre">Repeat</span></code>, and <code class="docutils literal notranslate"><span class="pre">GateCall</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>circuit</strong> (<a class="reference internal" href="mimiqcircuits.circuit.html#mimiqcircuits.circuit.Circuit" title="mimiqcircuits.circuit.Circuit"><em>Circuit</em></a>) – Input circuit.</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel" title="mimiqcircuits.noisemodel.NoiseModel"><em>NoiseModel</em></a>) – Noise model to apply.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new circuit with injected noise.</p>
+</dd>
+</dl>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">pi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">theta</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;theta&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="mf">0.4</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 1 instruction:</span>
+<span class="go">└── RX(0.4) @ q[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="mf">0.8</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit circuit with 2 instructions:</span>
+<span class="go">├── RX(0.4) @ q[0]</span>
+<span class="go">└── RX(0.8) @ q[1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Measure</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">2-qubit, 1-bit circuit with 3 instructions:</span>
+<span class="go">├── RX(0.4) @ q[0]</span>
+<span class="go">├── RX(0.8) @ q[1]</span>
+<span class="go">└── M @ q[0], c[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Measure</span><span class="p">(),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit, 2-bit circuit with 4 instructions:</span>
+<span class="go">├── RX(0.4) @ q[0]</span>
+<span class="go">├── RX(0.8) @ q[1]</span>
+<span class="go">├── M @ q[0], c[0]</span>
+<span class="go">└── M @ q[1], c[1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">([</span><span class="n">mc</span><span class="o">.</span><span class="n">OperationInstanceNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">pi</span><span class="p">)),</span>
+<span class="gp">... </span>        <span class="n">mc</span><span class="o">.</span><span class="n">GlobalReadoutNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)),])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<dl>
+<dt>Recursive wrapper examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">([</span><span class="n">mc</span><span class="o">.</span><span class="n">OperationInstanceNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.01</span><span class="p">))])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inner</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_block</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Block</span><span class="p">(</span><span class="n">inner</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_block</span><span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_block</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_block</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">1-qubit circuit with 2 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decl</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GateDecl</span><span class="p">(</span><span class="s2">&quot;local_h&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="n">inner</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_call</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCall</span><span class="p">(</span><span class="n">decl</span><span class="p">,</span> <span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_call</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_call</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_call</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">1-qubit circuit with 2 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_parallel</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Parallel</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">()),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_parallel</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_parallel</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_parallel</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">2-qubit circuit with 4 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── AmplitudeDamping(0.01) @ q[0]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_repeat</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Repeat</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_repeat</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_repeat</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_repeat</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">1-qubit circuit with 4 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── AmplitudeDamping(0.01) @ q[0]</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_if</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">IfStatement</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">mc</span><span class="o">.</span><span class="n">BitString</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">)),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_if</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_if</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_if</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">1-qubit, 1-bit circuit with 2 instructions:</span>
+<span class="go">├── IF(c==1) H @ q[0], condition[0]</span>
+<span class="go">└── IF(c==1) AmplitudeDamping(0.01) @ q[0], condition[0]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">decl_inner</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GateDecl</span><span class="p">(</span><span class="s2">&quot;inner_h&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="n">inner</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">middle</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCall</span><span class="p">(</span><span class="n">decl_inner</span><span class="p">,</span> <span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decl_outer</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GateDecl</span><span class="p">(</span><span class="s2">&quot;outer_call&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="n">middle</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_nested</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCall</span><span class="p">(</span><span class="n">decl_outer</span><span class="p">,</span> <span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_nested</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_nested</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_nested</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">1-qubit circuit with 2 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[0]</span>
+</pre></div>
+</div>
+</dd>
+<dt>Recursive wrapper examples deeply nested:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c_nested2</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCall</span><span class="p">(</span><span class="n">decl_outer</span><span class="p">,</span> <span class="p">()),</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCall</span><span class="p">(</span><span class="n">decl_outer</span><span class="p">,</span> <span class="p">()),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_nested2</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">2-qubit circuit with 2 instructions:</span>
+<span class="go">├── inner_h() @ q[0]</span>
+<span class="go">└── inner_h() @ q[1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_nested2</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_nested2</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_nested2</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">2-qubit circuit with 4 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── AmplitudeDamping(0.01) @ q[0]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[1]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="mimiqcircuits.remote.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">mimiqcircuits.remote</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="mimiqcircuits.classical.xor_operation.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">mimiqcircuits.classical.xor_operation</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023-2026, QPerfect
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/qperfect-io/mimiqcircuits-python" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              <a class="muted-link " href="https://qperfect.io" aria-label="QPerfect">
+                <svg stroke="currentColor" fill="none" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">mimiqcircuits.noisemodel</a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule"><code class="docutils literal notranslate"><span class="pre">AbstractNoiseRule</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule.priority"><code class="docutils literal notranslate"><span class="pre">AbstractNoiseRule.priority()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule.before"><code class="docutils literal notranslate"><span class="pre">AbstractNoiseRule.before()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule.replaces"><code class="docutils literal notranslate"><span class="pre">AbstractNoiseRule.replaces()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule.matches"><code class="docutils literal notranslate"><span class="pre">AbstractNoiseRule.matches()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.AbstractNoiseRule.apply_rule"><code class="docutils literal notranslate"><span class="pre">AbstractNoiseRule.apply_rule()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise"><code class="docutils literal notranslate"><span class="pre">GlobalReadoutNoise</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise.noise"><code class="docutils literal notranslate"><span class="pre">GlobalReadoutNoise.noise</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise.priority"><code class="docutils literal notranslate"><span class="pre">GlobalReadoutNoise.priority()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise.matches"><code class="docutils literal notranslate"><span class="pre">GlobalReadoutNoise.matches()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise.apply_rule"><code class="docutils literal notranslate"><span class="pre">GlobalReadoutNoise.apply_rule()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.GlobalReadoutNoise.__init__"><code class="docutils literal notranslate"><span class="pre">GlobalReadoutNoise.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise"><code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.qubits"><code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise.qubits</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.noise"><code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise.noise</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.priority"><code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise.priority()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.matches"><code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise.matches()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.apply_rule"><code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise.apply_rule()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactQubitReadoutNoise.__init__"><code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise"><code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.qubits"><code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise.qubits</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.noise"><code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise.noise</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.priority"><code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise.priority()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.matches"><code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise.matches()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.apply_rule"><code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise.apply_rule()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetQubitReadoutNoise.__init__"><code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise"><code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.operation"><code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise.operation</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.noise"><code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise.noise</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.before"><code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise.before</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.replace"><code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise.replace</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.priority"><code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise.priority()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.replaces"><code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise.replaces()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.matches"><code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise.matches()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.apply_rule"><code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise.apply_rule()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.OperationInstanceNoise.__init__"><code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.operation"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise.operation</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.qubits"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise.qubits</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.noise"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise.noise</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.before"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise.before</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.replace"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise.replace</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.priority"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise.priority()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.replaces"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise.replaces()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.matches"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise.matches()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.apply_rule"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise.apply_rule()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.ExactOperationInstanceQubitNoise.__init__"><code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.operation"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise.operation</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.qubits"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise.qubits</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.noise"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise.noise</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.before"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise.before</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.replace"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise.replace</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.priority"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise.priority()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.replaces"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise.replaces()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.matches"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise.matches()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.apply_rule"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise.apply_rule()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetOperationInstanceQubitNoise.__init__"><code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.IdleNoise"><code class="docutils literal notranslate"><span class="pre">IdleNoise</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.IdleNoise.relation"><code class="docutils literal notranslate"><span class="pre">IdleNoise.relation</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.IdleNoise.priority"><code class="docutils literal notranslate"><span class="pre">IdleNoise.priority()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.IdleNoise.replaces"><code class="docutils literal notranslate"><span class="pre">IdleNoise.replaces()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.IdleNoise.matches"><code class="docutils literal notranslate"><span class="pre">IdleNoise.matches()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.IdleNoise.apply_rule"><code class="docutils literal notranslate"><span class="pre">IdleNoise.apply_rule()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.IdleNoise.__init__"><code class="docutils literal notranslate"><span class="pre">IdleNoise.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise"><code class="docutils literal notranslate"><span class="pre">SetIdleQubitNoise</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.relation"><code class="docutils literal notranslate"><span class="pre">SetIdleQubitNoise.relation</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.qubits"><code class="docutils literal notranslate"><span class="pre">SetIdleQubitNoise.qubits</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.priority"><code class="docutils literal notranslate"><span class="pre">SetIdleQubitNoise.priority()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.replaces"><code class="docutils literal notranslate"><span class="pre">SetIdleQubitNoise.replaces()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.matches"><code class="docutils literal notranslate"><span class="pre">SetIdleQubitNoise.matches()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.apply_rule"><code class="docutils literal notranslate"><span class="pre">SetIdleQubitNoise.apply_rule()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.SetIdleQubitNoise.__init__"><code class="docutils literal notranslate"><span class="pre">SetIdleQubitNoise.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule.matcher"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule.matcher</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule.generator"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule.generator</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule.priority_val"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule.priority_val</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule.before"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule.before</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule.replace"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule.replace</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule.priority"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule.priority()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule.matches"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule.matches()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule.apply_rule"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule.apply_rule()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule.replaces"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule.replaces()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.CustomNoiseRule.__init__"><code class="docutils literal notranslate"><span class="pre">CustomNoiseRule.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel"><code class="docutils literal notranslate"><span class="pre">NoiseModel</span></code></a><ul>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.rules"><code class="docutils literal notranslate"><span class="pre">NoiseModel.rules</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.name"><code class="docutils literal notranslate"><span class="pre">NoiseModel.name</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.add_rule"><code class="docutils literal notranslate"><span class="pre">NoiseModel.add_rule()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.add_readout_noise"><code class="docutils literal notranslate"><span class="pre">NoiseModel.add_readout_noise()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.add_operation_noise"><code class="docutils literal notranslate"><span class="pre">NoiseModel.add_operation_noise()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.add_idle_noise"><code class="docutils literal notranslate"><span class="pre">NoiseModel.add_idle_noise()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.apply_noise_model"><code class="docutils literal notranslate"><span class="pre">NoiseModel.apply_noise_model()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.describe"><code class="docutils literal notranslate"><span class="pre">NoiseModel.describe()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.saveproto"><code class="docutils literal notranslate"><span class="pre">NoiseModel.saveproto()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.loadproto"><code class="docutils literal notranslate"><span class="pre">NoiseModel.loadproto()</span></code></a></li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.NoiseModel.__init__"><code class="docutils literal notranslate"><span class="pre">NoiseModel.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiqcircuits.noisemodel.apply_noise_model"><code class="docutils literal notranslate"><span class="pre">apply_noise_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=01152e4d"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/tabs.js?v=3ee01567"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    </body>
+</html>

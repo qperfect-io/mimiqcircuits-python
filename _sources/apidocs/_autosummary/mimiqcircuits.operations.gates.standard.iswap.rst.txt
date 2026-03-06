@@ -1,0 +1,13 @@
+mimiqcircuits.operations.gates.standard.iswap
+=============================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.iswap
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateISWAP
+      GateISWAPDG
+   

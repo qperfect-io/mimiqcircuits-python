@@ -1,0 +1,1066 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Special Topics" href="special_topics.html"><link rel="prev" title="Advanced Topics" href="advanced.html">
+        <link rel="prefetch" href="../_static/qperfect_logo.png" as="image">
+
+    <!-- Generated with Sphinx 7.4.7 and Furo 2025.12.19 -->
+        <title>Import and export circuits - MIMIQ Circuits v0.21.2</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=6deec1a2" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #990066;
+  --color-brand-content: #990066;
+  --color-inline-code-background: rgba(153, 0, 102, 0.08);
+  --color-admonition-background: #f8f9fc;
+  --color-api-name: #990066;
+  --color-api-pre-name: #4b5563;
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #d94faa;
+  --color-brand-content: #d94faa;
+  --color-background-primary: #0f1117;
+  --color-background-secondary: #161922;
+  --color-background-border: #2d3548;
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+  --color-sidebar-background: #0d0f14;
+  --color-sidebar-background-border: #1f2937;
+  --color-sidebar-link-text: #e5e7eb;
+  --color-sidebar-link-text--top-level: #ffffff;
+  --color-sidebar-item-background--current: rgba(217, 79, 170, 0.15);
+  --color-sidebar-item-background--hover: rgba(217, 79, 170, 0.08);
+  --color-inline-code-background: rgba(249, 168, 212, 0.15);
+  --color-admonition-background: #1a1f2c;
+  --color-api-background: #1a1f2c;
+  --color-api-name: #d94faa;
+  --color-api-pre-name: #9ca3af;
+  --color-highlight-on-target: rgba(255, 215, 0, 0.15);
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #d94faa;
+  --color-brand-content: #d94faa;
+  --color-background-primary: #0f1117;
+  --color-background-secondary: #161922;
+  --color-background-border: #2d3548;
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+  --color-sidebar-background: #0d0f14;
+  --color-sidebar-background-border: #1f2937;
+  --color-sidebar-link-text: #e5e7eb;
+  --color-sidebar-link-text--top-level: #ffffff;
+  --color-sidebar-item-background--current: rgba(217, 79, 170, 0.15);
+  --color-sidebar-item-background--hover: rgba(217, 79, 170, 0.08);
+  --color-inline-code-background: rgba(249, 168, 212, 0.15);
+  --color-admonition-background: #1a1f2c;
+  --color-api-background: #1a1f2c;
+  --color-api-name: #d94faa;
+  --color-api-pre-name: #9ca3af;
+  --color-highlight-on-target: rgba(255, 215, 0, 0.15);
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     The MIMIQ Update 2026 is out! Update now to the latest <strong>v0.21.2</strong> version. 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MIMIQ Circuits v0.21.2</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/qperfect_logo.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">MIMIQ Circuits v0.21.2</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../mimiq_documentation.html">MIMIQ Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Manual</a><input aria-label="Toggle navigation of Manual" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="getting_started.html">Getting Started</a><input aria-label="Toggle navigation of Getting Started" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html">Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="core_concepts.html">Core Concepts</a><input aria-label="Toggle navigation of Core Concepts" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="circuits.html">Circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hamiltonian.html">Hamiltonians and Time Evolution</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="operations.html">Operations</a><input aria-label="Toggle navigation of Operations" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="unitary_gates.html">Unitary Gates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="classical_ops.html">Classical Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="non_unitary_ops.html">Non-unitary Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="noise.html">Noisy simulations on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="statistical_ops.html">Statistical Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="special_ops.html">Special Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zops.html">Z-register Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="simulation.html">Simulation &amp; Execution</a><input aria-label="Toggle navigation of Simulation &amp; Execution" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="local_statevector.html">Quantanium</a></li>
+<li class="toctree-l3"><a class="reference internal" href="remote_execution.html">Execution on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="simulation_parameters.html">Simulation Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="advanced.html">Advanced Topics</a><input aria-label="Toggle navigation of Advanced Topics" checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">Import and export circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="special_topics.html">Special Topics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="compilation.html">Circuit Compilation &amp; Optimization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../usecases/index.html">Use Cases and Special Workflows</a><input aria-label="Toggle navigation of Use Cases and Special Workflows" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../usecases/vqe.html">Variational Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usecases/circuit_tester.html">Circuit Equivalence Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../apidocs/mimiqcircuits.html">API References</a><input aria-label="Toggle navigation of API References" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.circuit.html">mimiqcircuits.circuit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.hamiltonian.html">mimiqcircuits.hamiltonian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.instruction.html">mimiqcircuits.instruction</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.html">mimiqcircuits.operations</a><input aria-label="Toggle navigation of mimiqcircuits.operations" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.amplitude.html">mimiqcircuits.operations.amplitude</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.annotations.html">mimiqcircuits.operations.annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.barrier.html">mimiqcircuits.operations.barrier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.block.html">mimiqcircuits.operations.block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.control.html">mimiqcircuits.operations.control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.entanglement.html">mimiqcircuits.operations.entanglement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.expectationvalue.html">mimiqcircuits.operations.expectationvalue</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.html">mimiqcircuits.operations.gates</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.custom.html">mimiqcircuits.operations.gates.custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.delay.html">mimiqcircuits.operations.gates.delay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.gate.html">mimiqcircuits.operations.gates.gate</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.html">mimiqcircuits.operations.gates.generalized</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates.generalized" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.diffusion.html">mimiqcircuits.operations.gates.generalized.diffusion</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.paulistring.html">mimiqcircuits.operations.gates.generalized.paulistring</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.phasegradient.html">mimiqcircuits.operations.gates.generalized.phasegradient</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.polynomialoracle.html">mimiqcircuits.operations.gates.generalized.polynomialoracle</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.qft.html">mimiqcircuits.operations.gates.generalized.qft</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.rnz.html">mimiqcircuits.operations.gates.generalized.rnz</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.rpauli.html">mimiqcircuits.operations.gates.generalized.rpauli</a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.html">mimiqcircuits.operations.gates.standard</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates.standard" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.chadamard.html">mimiqcircuits.operations.gates.standard.chadamard</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cnp.html">mimiqcircuits.operations.gates.standard.cnp</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cnx.html">mimiqcircuits.operations.gates.standard.cnx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cpauli.html">mimiqcircuits.operations.gates.standard.cpauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cphase.html">mimiqcircuits.operations.gates.standard.cphase</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.crotations.html">mimiqcircuits.operations.gates.standard.crotations</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cs.html">mimiqcircuits.operations.gates.standard.cs</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cswap.html">mimiqcircuits.operations.gates.standard.cswap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.csx.html">mimiqcircuits.operations.gates.standard.csx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cu.html">mimiqcircuits.operations.gates.standard.cu</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.dcx.html">mimiqcircuits.operations.gates.standard.dcx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.deprecated.html">mimiqcircuits.operations.gates.standard.deprecated</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.ecr.html">mimiqcircuits.operations.gates.standard.ecr</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.hadamard.html">mimiqcircuits.operations.gates.standard.hadamard</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.id.html">mimiqcircuits.operations.gates.standard.id</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.interactions.html">mimiqcircuits.operations.gates.standard.interactions</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.iswap.html">mimiqcircuits.operations.gates.standard.iswap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.pauli.html">mimiqcircuits.operations.gates.standard.pauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.phase.html">mimiqcircuits.operations.gates.standard.phase</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.rotations.html">mimiqcircuits.operations.gates.standard.rotations</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.s.html">mimiqcircuits.operations.gates.standard.s</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.swap.html">mimiqcircuits.operations.gates.standard.swap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.sx.html">mimiqcircuits.operations.gates.standard.sx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.sy.html">mimiqcircuits.operations.gates.standard.sy</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.t.html">mimiqcircuits.operations.gates.standard.t</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.u.html">mimiqcircuits.operations.gates.standard.u</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.generating_list.html">mimiqcircuits.operations.generating_list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.ifstatement.html">mimiqcircuits.operations.ifstatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.inverse.html">mimiqcircuits.operations.inverse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.krauschannel.html">mimiqcircuits.operations.krauschannel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.measure.html">mimiqcircuits.operations.measure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.measurereset.html">mimiqcircuits.operations.measurereset</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.html">mimiqcircuits.operations.noisechannel</a><input aria-label="Toggle navigation of mimiqcircuits.operations.noisechannel" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.kraus.html">mimiqcircuits.operations.noisechannel.kraus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.mixedunitary.html">mimiqcircuits.operations.noisechannel.mixedunitary</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.html">mimiqcircuits.operations.noisechannel.standards</a><input aria-label="Toggle navigation of mimiqcircuits.operations.noisechannel.standards" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.ampdamping.html">mimiqcircuits.operations.noisechannel.standards.ampdamping</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.depolarizing.html">mimiqcircuits.operations.noisechannel.standards.depolarizing</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.pauli.html">mimiqcircuits.operations.noisechannel.standards.pauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping.html">mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.projectivenoise.html">mimiqcircuits.operations.noisechannel.standards.projectivenoise</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operation.html">mimiqcircuits.operations.operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operator.html">mimiqcircuits.operations.operator</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operators.html">mimiqcircuits.operations.operators</a><input aria-label="Toggle navigation of mimiqcircuits.operations.operators" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operators.custom.html">mimiqcircuits.operations.operators.custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operators.diagonals.html">mimiqcircuits.operations.operators.diagonals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operators.projectors.html">mimiqcircuits.operations.operators.projectors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operators.sigmas.html">mimiqcircuits.operations.operators.sigmas</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.pairmeasure.html">mimiqcircuits.operations.pairmeasure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.parallel.html">mimiqcircuits.operations.parallel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.power.html">mimiqcircuits.operations.power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.readouterr.html">mimiqcircuits.operations.readouterr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.repeat.html">mimiqcircuits.operations.repeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.rescaledgates.html">mimiqcircuits.operations.rescaledgates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.reset.html">mimiqcircuits.operations.reset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.utils.html">mimiqcircuits.operations.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.html">mimiqcircuits.classical</a><input aria-label="Toggle navigation of mimiqcircuits.classical" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.abstract_classical.html">mimiqcircuits.classical.abstract_classical</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.and_operation.html">mimiqcircuits.classical.and_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.not_operation.html">mimiqcircuits.classical.not_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.or_operation.html">mimiqcircuits.classical.or_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.paritycheck.html">mimiqcircuits.classical.paritycheck</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.setbits.html">mimiqcircuits.classical.setbits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.xor_operation.html">mimiqcircuits.classical.xor_operation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.noisemodel.html">mimiqcircuits.noisemodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.remote.html">mimiqcircuits.remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.qcsresults.html">mimiqcircuits.qcsresults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.lazy.html">mimiqcircuits.lazy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/qperfect-io/mimiqcircuits-python">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mimiq.qperfect.io/docs/julia/">Julia APIs</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://qperfect.io">QPerfect</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/qperfect-io/mimiqcircuits-python/blob/main/docs/manual/import_export.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/qperfect-io/mimiqcircuits-python/edit/main/docs/manual/import_export.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="import-and-export-circuits">
+<h1>Import and export circuits<a class="headerlink" href="#import-and-export-circuits" title="Link to this heading">¶</a></h1>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go">from mimiqcircuits import *</span>
+</pre></div>
+</div>
+<p>In this section we introduce different options to import and export circuits.
+In particular, MIMIQ allows to import circuits in well-known languages such as OpenQASM and Stim, as well as save and import circuits using its own Protobuf structure.</p>
+<section id="protobuf">
+<h2>Protobuf<a class="headerlink" href="#protobuf" title="Link to this heading">¶</a></h2>
+<section id="export-protobuf-files-from-mimiq">
+<h3>Export Protobuf files from MIMIQ<a class="headerlink" href="#export-protobuf-files-from-mimiq" title="Link to this heading">¶</a></h3>
+<p>After building a circuit in MIMIQ you can export it into a Protobuf format using the <code class="xref py py-func docutils literal notranslate"><span class="pre">saveproto()</span></code> function. You need to give it two arguments, the name of the file to create (<cite>.pb</cite> format) and the circuit to save.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go">results.saveproto(&quot;my_circuit.pb&quot;)</span>
+</pre></div>
+</div>
+<p>The same method allows you to save your simulation results in a Protobuf file.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># get the results</span>
+<span class="go">results = conn.get_results(job)</span>
+<span class="go"># save the results</span>
+<span class="go">results.saveproto(&quot;my_results.pb&quot;)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Protobuf is a serialized file format developed by google. It is very lightweight and efficient to parse. Check the  <cite>Protobuf repository &lt;https://github.com/protocolbuffers/protobuf&gt;`_</cite> for more information.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can only export a circuit into Protobuf format and cannot export an OpenQASM or Stim file in the current version of MIMIQ.</p>
+</div>
+</section>
+<section id="import-protobuf-file-to-mimiq">
+<h3>Import Protobuf file to MIMIQ<a class="headerlink" href="#import-protobuf-file-to-mimiq" title="Link to this heading">¶</a></h3>
+<p>MIMIQ allows you to import Protobuf circuit files using the <code class="xref py py-func docutils literal notranslate"><span class="pre">loadproto()</span></code> function and import Protobuf results file using <code class="xref py py-func docutils literal notranslate"><span class="pre">loadproto()</span></code>.
+With this function you can get previously saved circuit or get previous simulation results.
+You need to give this function the name of the file to parse and the type of object to parse.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go"># Import circuit from Protobuf to MIMIQ</span>
+<span class="go">circuit = Circuit.loadproto(&quot;my_circuit.pb&quot;)</span>
+
+<span class="go"># Import results from Protobuf to MIMIQ</span>
+<span class="go">results = QCSResults.loadproto(&quot;my_results.pb&quot;)</span>
+</pre></div>
+</div>
+<p>The circuit imported with <code class="xref py py-meth docutils literal notranslate"><span class="pre">loadproto()</span></code> can be manipulated like any other circuit on MIMIQ to add or insert gates, see <a class="reference internal" href="circuits.html"><span class="doc">circuit</span></a> page.</p>
+</section>
+</section>
+<section id="openqasm">
+<h2>OpenQASM<a class="headerlink" href="#openqasm" title="Link to this heading">¶</a></h2>
+<p>Open Quantum Assembly Language is a programming language designed for describing quantum circuits and algorithms for execution on quantum computers. It is a very convenient middle ground for different quantum computer architectures to interpret and execute circuits.</p>
+<section id="execute-openqasm-file-in-mimiq">
+<h3>Execute OpenQASM file in MIMIQ<a class="headerlink" href="#execute-openqasm-file-in-mimiq" title="Link to this heading">¶</a></h3>
+<p>The remote MIMIQ services can readily process and execute OpenQASM files, thanks to fast and feature-complete Julia and C++ parsers and interpreters.</p>
+<p>Here is a simple comprehensive example of executing a QASM file on MIMIQ.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">qasm</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="gp">... </span><span class="s2">// Implementation of Deutsch algorithm with two qubits for f(x)=x</span>
+<span class="gp">... </span><span class="s2">// taken from https://github.com/pnnl/QASMBench/blob/master/small/deutsch_n2/deutsch_n2.qasm</span>
+<span class="gp">... </span><span class="s2">OPENQASM 2.0;</span>
+<span class="gp">... </span><span class="s2">include &quot;qelib1.inc&quot;;</span>
+<span class="gp">... </span><span class="s2">qreg q[2];</span>
+<span class="gp">... </span><span class="s2">creg c[2];</span>
+<span class="gp">... </span><span class="s2">x q[1];</span>
+<span class="gp">... </span><span class="s2">h q[0];</span>
+<span class="gp">... </span><span class="s2">h q[1];</span>
+<span class="gp">... </span><span class="s2">cx q[0],q[1];</span>
+<span class="gp">... </span><span class="s2">h q[0];</span>
+<span class="gp">... </span><span class="s2">measure q[0] -&gt; c[0];</span>
+<span class="gp">... </span><span class="s2">measure q[1] -&gt; c[1];</span>
+<span class="gp">... </span><span class="s2">&quot;&quot;&quot;</span>
+
+<span class="go"># Write the OPENQASM as a file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/tmp/deutsch_n2.qasm&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">qasm</span><span class="p">)</span>
+<span class="go">308</span>
+
+<span class="go"># actual execution of the QASM file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="s2">&quot;/tmp/deutsch_n2.qasm&quot;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;statevector&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_result</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">histogram</span><span class="p">()</span>
+<span class="go">{frozenbitarray(&#39;10&#39;): 530, frozenbitarray(&#39;11&#39;): 470}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="go"># Visualizing the result</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plothistogram</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+<span class="go">&lt;Figure size 960x720 with 1 Axes&gt;</span>
+</pre></div>
+</div>
+<p>The result will be plotted as follows:</p>
+<img alt="Alternative Text" src="../_images/hist2.png" />
+<p>For more informations, read the documentation of <code class="xref py py-meth docutils literal notranslate"><span class="pre">submit()</span></code>.</p>
+<section id="behaviour-of-include-files">
+<h4>Behaviour of include files<a class="headerlink" href="#behaviour-of-include-files" title="Link to this heading">¶</a></h4>
+<p>A common file used by many QASM files is the <cite>qelib1.inc</cite> file.
+This file is not defined as being part of OpenQASM 2.0, but its usage is so widespread that it might be considered as de-facto part of the specifications.</p>
+<div class="admonition-details admonition">
+<p class="admonition-title">details</p>
+<p>We remind the careful reader that OpenQASM 2.0 specifications only define 6 operations:
+<cite>U</cite>, <cite>CX</cite>, <cite>measure</cite>, <cite>reset</cite>, <cite>barrier</cite> and <cite>if</cite>.</p>
+</div>
+<p>If we were to parse every file together with <cite>qelib1.inc</cite>, we would have at the end just a list of simple <cite>U</cite> and <cite>CX</cite> gates, leaving behind any speed improvement that we would gain by using more complex gates as blocks. For this reason, if you don’t explicitly provide the include files, MIMIQ will not parse the usual <cite>qelib1.inc</cite> file but will instead use a simplified version of it, where almost all gate definitions are replaced by <cite>opaque</cite> definitions. These opaque definitions will be converted to the corresponding MIMIQ gates listed in <code class="xref py py-meth docutils literal notranslate"><span class="pre">`GATES`()</span></code>.</p>
+<p>Another alternative is to use the <cite>mimiqlib.inc</cite> directly in your file. For now it’s almost a copy of the modified <cite>qelib1.inc</cite> but in the future it will be extended to contain more gates and operations, diverging from <cite>qelib1.inc</cite>.</p>
+</section>
+</section>
+<section id="parse-openqasm-locally">
+<h3>Parse OpenQASM locally<a class="headerlink" href="#parse-openqasm-locally" title="Link to this heading">¶</a></h3>
+<p>You can parse OpenQASM 2.0 code directly into a MIMIQ <code class="xref py py-class docutils literal notranslate"><span class="pre">Circuit</span></code> object using the <code class="xref py py-mod docutils literal notranslate"><span class="pre">mimiqcircuits.qasm</span></code> module. This is useful for importing circuits from other tools, analyzing them, or modifying them before execution.</p>
+<p>The parsing process involves two steps:</p>
+<ol class="arabic simple">
+<li><p><strong>Parsing</strong>: Converts the QASM source (string) into an Abstract Syntax Tree (AST) using <code class="xref py py-func docutils literal notranslate"><span class="pre">loads()</span></code> or <code class="xref py py-func docutils literal notranslate"><span class="pre">load()</span></code>.</p></li>
+<li><p><strong>Interpretation</strong>: Converts the AST into a <code class="xref py py-class docutils literal notranslate"><span class="pre">Circuit</span></code>.</p></li>
+</ol>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.qasm</span><span class="w"> </span><span class="kn">import</span> <span class="n">loads</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qasm_source</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="gp">... </span><span class="s2">OPENQASM 2.0;</span>
+<span class="gp">... </span><span class="s2">include &quot;qelib1.inc&quot;;</span>
+<span class="gp">... </span><span class="s2">qreg q[2];</span>
+<span class="gp">... </span><span class="s2">h q[0];</span>
+<span class="gp">... </span><span class="s2">cx q[0], q[1];</span>
+<span class="gp">... </span><span class="s2">&quot;&quot;&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">qasm_source</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Circuit with </span><span class="si">{</span><span class="n">circuit</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">()</span><span class="si">}</span><span class="s2"> qubits&quot;</span><span class="p">)</span> <span class="c1"># compact print for doctest</span>
+<span class="go">Circuit with 2 qubits</span>
+</pre></div>
+</div>
+<p>You can also load directly from a file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.qasm</span><span class="w"> </span><span class="kn">import</span> <span class="n">load</span>
+<span class="n">circuit</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="s2">&quot;my_circuit.qasm&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="export-to-openqasm">
+<h3>Export to OpenQASM<a class="headerlink" href="#export-to-openqasm" title="Link to this heading">¶</a></h3>
+<p>Any MIMIQ <code class="xref py py-class docutils literal notranslate"><span class="pre">Circuit</span></code> can be exported back to OpenQASM 2.0 format. This supports standard gates as well as custom gate definitions.</p>
+<ul class="simple">
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">dumps()</span></code>: Returns the QASM representation of the circuit as a string.</p></li>
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">dump()</span></code>: Writes the QASM representation directly to a file.</p></li>
+</ul>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits.qasm</span><span class="w"> </span><span class="kn">import</span> <span class="n">dumps</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qasm_out</span> <span class="o">=</span> <span class="n">dumps</span><span class="p">(</span><span class="n">circuit</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">qasm_out</span><span class="p">)</span>
+<span class="go">OPENQASM 2.0;</span>
+<span class="go">include &quot;qelib1.inc&quot;;</span>
+<span class="go">qreg q[2];</span>
+<span class="go">creg c[0];</span>
+<span class="go">h q[0];</span>
+<span class="go">cx q[0],q[1];</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="relations-between-openqasm-registers-and-mimiq-indices">
+<h2>Relations between OpenQASM registers and MIMIQ indices<a class="headerlink" href="#relations-between-openqasm-registers-and-mimiq-indices" title="Link to this heading">¶</a></h2>
+<p>During the parsing of the QASM file, we will assign a unique index to each qubit
+and classical bit. This index will be used to identify the qubit or bit in the
+MIMIQ-CIRC service.</p>
+<p>The indices are assigned in the following way:</p>
+<ul class="simple">
+<li><p>The first qubit is assigned index <cite>0</cite> (Python), the second <cite>1</cite>, and so on.</p></li>
+<li><p>All registers retain the same ordering as in the QASM file.</p></li>
+<li><p>Qubits and classical bits behave similarly but have they have each other its
+own sequence from indices, starting from <cite>0</cite>.</p></li>
+</ul>
+<p>A simple example will clarify this behaviour:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">OPENQASM</span> <span class="mf">2.0</span><span class="p">;</span>
+<span class="n">qreg</span> <span class="n">q</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="n">creg</span> <span class="n">m</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+<span class="n">qreg</span> <span class="n">a</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+<span class="n">creg</span> <span class="n">g</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</pre></div>
+</div>
+<p>Will be parsed as:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>QASM name</p></th>
+<th class="head"><p>MIMIQ Qubit index</p></th>
+<th class="head"><p>MIMIQ Bit index</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">q[0]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">q[1]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">a[0]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">a[1]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">3</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">...</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">...</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">...</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">a[9]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">11</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">m[0]</span></code></p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">m[1]</span></code></p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">...</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">...</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">...</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">m[9]</span></code></p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">g[0]</span></code></p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">10</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">g[1]</span></code></p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">11</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="stim">
+<h2>Stim<a class="headerlink" href="#stim" title="Link to this heading">¶</a></h2>
+<section id="execute-stim-file-on-mimiq">
+<h3>Execute Stim file on MIMIQ<a class="headerlink" href="#execute-stim-file-on-mimiq" title="Link to this heading">¶</a></h3>
+<p><a class="reference external" href="https://github.com/quantumlib/Stim">Stim</a> is a fast stabilizer circuit simulator commonly used for Clifford circuit simulation. Stim allows users to export their circuit to a text format usually with the <cite>.stim</cite> extention.
+The remote MIMIQ services can readily process and execute Stim files as follows:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go">job = conn.submit(&quot;my_stim_circuit.stim&quot;)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The support of Stim is still in progress and some of the most specific Stim features are not supported. For instance, detectors will be completely ignored by MIMIQ at exectution time.</p>
+</div>
+<p>The results of the simulation can be accessed as usual on MIMIQ, see <a class="reference internal" href="remote_execution.html"><span class="doc">remote execution</span></a> page.</p>
+</section>
+</section>
+<section id="reference">
+<h2>Reference<a class="headerlink" href="#reference" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">mimiqcircuits.Circuit.</span></span><span class="sig-name descname"><span class="pre">saveproto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Saves the circuit as a protobuf (binary) file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the file to save the circuit to.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The number of bytes written to the file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;x y&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 1 instruction:</span>
+<span class="go">└── H @ q[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateXXplusYY</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit circuit with 2 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── XXplusYY(x**2, y) @ q[0:1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Measure</span><span class="p">(),</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">2-qubit, 1-bit circuit with 3 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── XXplusYY(x**2, y) @ q[0:1]</span>
+<span class="go">└── M @ q[0], c[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tmpfile</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.pb&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">saveproto</span><span class="p">(</span><span class="n">tmpfile</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="go">64</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">loadproto</span><span class="p">(</span><span class="n">tmpfile</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="go">2-qubit, 1-bit circuit with 3 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── XXplusYY(x**2, y) @ q[0:1]</span>
+<span class="go">└── M @ q[0], c[0]</span>
+</pre></div>
+</div>
+<dl>
+<dt>Note:</dt><dd><p>This example uses a temporary file to demonstrate the save and load functionality.
+You can save your file with any name at any location using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">saveproto</span><span class="p">(</span><span class="s2">&quot;example.pb&quot;</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">loadproto</span><span class="p">(</span><span class="s2">&quot;example.pb&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">mimiqcircuits.Circuit.</span></span><span class="sig-name descname"><span class="pre">loadproto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Loads a circuit from a protobuf (binary) file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the file to load the circuit from.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The circuit loaded from the file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.circuit.html#mimiqcircuits.circuit.Circuit" title="mimiqcircuits.circuit.Circuit">Circuit</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Look for example in <code class="xref py py-func docutils literal notranslate"><span class="pre">Circuit.saveproto()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">mimiqcircuits.QCSResults.</span></span><span class="sig-name descname"><span class="pre">saveproto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Save QCSResults object to a Protocol Buffers file.</p>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;x y&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 1 instructions:</span>
+<span class="go">└── H @ q[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conn</span> <span class="o">=</span> <span class="n">MimiqConnection</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conn</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;MIMIQUSER&quot;</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;MIMIQPASS&quot;</span><span class="p">))</span>
+<span class="go">MimiqConnection:</span>
+<span class="go">├── url: https://mimiq.qperfect.io</span>
+<span class="go">├── Max time limit per request: 360 minutes</span>
+<span class="go">├── Default time limit is equal to max time limit: 360 minutes</span>
+<span class="go">└── status: open</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_result</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span>
+<span class="go">QCSResults:</span>
+<span class="go">├── simulator: MIMIQ-MPS 0.18.3</span>
+<span class="go">├── timings:</span>
+<span class="go">│    ├── amplitudes time: 1.65e-07s</span>
+<span class="go">│    ├── sample time: 0.000204869s</span>
+<span class="go">│    ├── parse time: 0.000296368s</span>
+<span class="go">│    ├── total time: 0.001337133s</span>
+<span class="go">│    ├── compression time: 0.000166837s</span>
+<span class="go">│    └── apply time: 0.0003098s</span>
+<span class="go">├── fidelity estimate: 1</span>
+<span class="go">├── average multi-qubit gate error estimate: 0</span>
+<span class="go">├── most sampled:</span>
+<span class="go">│    ├── bs&quot;1&quot; =&gt; 537</span>
+<span class="go">│    └── bs&quot;0&quot; =&gt; 463</span>
+<span class="go">├── 1 executions</span>
+<span class="go">├── 0 amplitudes</span>
+<span class="go">└── 1000 samples</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tmpfile</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.pb&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">saveproto</span><span class="p">(</span><span class="n">tmpfile</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="go">7161</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">loadproto</span><span class="p">(</span><span class="n">tmpfile</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="go">QCSResults:</span>
+<span class="go">├── simulator: MIMIQ-MPS 0.18.3</span>
+<span class="go">├── timings:</span>
+<span class="go">│    ├── parse time: 0.000296368s</span>
+<span class="go">│    ├── sample time: 0.000204869s</span>
+<span class="go">│    ├── amplitudes time: 1.65e-07s</span>
+<span class="go">│    ├── total time: 0.001337133s</span>
+<span class="go">│    ├── compression time: 0.000166837s</span>
+<span class="go">│    └── apply time: 0.0003098s</span>
+<span class="go">├── fidelity estimate: 1</span>
+<span class="go">├── average multi-qubit gate error estimate: 0</span>
+<span class="go">├── most sampled:</span>
+<span class="go">│    ├── bs&quot;1&quot; =&gt; 537</span>
+<span class="go">│    └── bs&quot;0&quot; =&gt; 463</span>
+<span class="go">├── 1 executions</span>
+<span class="go">├── 0 amplitudes</span>
+<span class="go">└── 1000 samples</span>
+</pre></div>
+</div>
+<dl>
+<dt>Note:</dt><dd><p>This example uses a temporary file to demonstrate the save and load functionality.
+You can save your file with any name at any location using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">res</span><span class="o">.</span><span class="n">saveproto</span><span class="p">(</span><span class="s2">&quot;example.pb&quot;</span><span class="p">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">loadproto</span><span class="p">(</span><span class="s2">&quot;example.pb&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">mimiqcircuits.QCSResults.</span></span><span class="sig-name descname"><span class="pre">loadproto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Load QCSResults object from a Protocol Buffers file.</p>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">loadproto()</span></code> method is a static method and should be called on the class,
+not on an instance of the class.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Look for example in <code class="xref py py-func docutils literal notranslate"><span class="pre">QCSResults.saveproto()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">mimiqcircuits.qasm.</span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includedirs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/qasm/interpreter.html#load"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Parse and interpret an OpenQASM 2.0 file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the OpenQASM 2.0 file.</p></li>
+<li><p><strong>includedirs</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – List of directories to search for included files.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The interpreted circuit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>mc.Circuit</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">mimiqcircuits.qasm.</span></span><span class="sig-name descname"><span class="pre">loads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includedirs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/qasm/interpreter.html#loads"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Parse and interpret an OpenQASM 2.0 string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The OpenQASM 2.0 string.</p></li>
+<li><p><strong>includedirs</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – List of directories to search for included files.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The interpreted circuit.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>mc.Circuit</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">mimiqcircuits.qasm.</span></span><span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decompose_wrappers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/qasm/serializer.html#dump"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Serialize a circuit to an OpenQASM 2.0 file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> (<em>mc.Circuit</em>) – The circuit to serialize.</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The file path to write to.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">mimiqcircuits.qasm.</span></span><span class="sig-name descname"><span class="pre">dumps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decompose_wrappers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sanitize_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/qasm/serializer.html#dumps"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Serialize a circuit to an OpenQASM 2.0 string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>c</strong> (<em>mc.Circuit</em>) – The circuit to serialize.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The OpenQASM 2.0 string representation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="special_topics.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Special Topics</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="advanced.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Advanced Topics</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023-2026, QPerfect
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/qperfect-io/mimiqcircuits-python" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              <a class="muted-link " href="https://qperfect.io" aria-label="QPerfect">
+                <svg stroke="currentColor" fill="none" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Import and export circuits</a><ul>
+<li><a class="reference internal" href="#protobuf">Protobuf</a><ul>
+<li><a class="reference internal" href="#export-protobuf-files-from-mimiq">Export Protobuf files from MIMIQ</a></li>
+<li><a class="reference internal" href="#import-protobuf-file-to-mimiq">Import Protobuf file to MIMIQ</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#openqasm">OpenQASM</a><ul>
+<li><a class="reference internal" href="#execute-openqasm-file-in-mimiq">Execute OpenQASM file in MIMIQ</a><ul>
+<li><a class="reference internal" href="#behaviour-of-include-files">Behaviour of include files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#parse-openqasm-locally">Parse OpenQASM locally</a></li>
+<li><a class="reference internal" href="#export-to-openqasm">Export to OpenQASM</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#relations-between-openqasm-registers-and-mimiq-indices">Relations between OpenQASM registers and MIMIQ indices</a></li>
+<li><a class="reference internal" href="#stim">Stim</a><ul>
+<li><a class="reference internal" href="#execute-stim-file-on-mimiq">Execute Stim file on MIMIQ</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reference">Reference</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=01152e4d"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    </body>
+</html>
