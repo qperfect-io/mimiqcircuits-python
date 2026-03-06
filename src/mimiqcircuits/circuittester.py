@@ -74,16 +74,17 @@ class CircuitTesterExperiment:
 
         # Prepare Bell state for Choi-Jamiolkowski isomorphism
         c = Circuit()
-        c.push(GateH(), input_qubits)
-        c.push(GateCX(), input_qubits, test_ancilla)
+        bell_circuit = Circuit()
+        bell_circuit.push(GateH(), input_qubits)
+        bell_circuit.push(GateCX(), input_qubits, test_ancilla)
+        c.append(bell_circuit)
 
         # Apply channel and inverse channel
         c.append(c1)
         c.append(inverse(c2))
 
         # Uncompute Bell state to map identity to computational basis zero state
-        c.push(GateCX(), input_qubits, test_ancilla)
-        c.push(GateH(), input_qubits)
+        c.append(inverse(bell_circuit))
 
         # Measure in computational basis
         if self.method == "samples":
