@@ -143,6 +143,9 @@ MIMIQ supports sending quantum circuits to its remote services for execution, ei
 
 You can submit one or multiple circuits for execution using the :meth:`~mimiqcircuits.MimiqConnection.submit` method. This unified interface simplifies quantum job management, whether you're running a single job or a batch of jobs.
 
+.. deprecated::
+   The ``execute()`` and ``schedule()`` methods are deprecated. Use :meth:`~mimiqcircuits.MimiqConnection.submit` instead for all remote circuit executions.
+
 **Parameters**:
 
 - **circuits**: A single quantum circuit or a list of circuits. These can be provided as MIMIQ :class:`~mimiqcircuits.Circuit` objects or as paths to valid `.pb`, `.qasm`, or `.stim` files. See the :doc:`Import and Export <import_export>` and :doc:`Circuits <circuits>` pages for more details.

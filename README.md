@@ -92,8 +92,8 @@ circuit.push(Measure(), range(10), range(10))
 conn = MimiqConnection()
 conn.connect()
 
-# Execute on MIMIQ remote services
-job = conn.execute(circuit, algorithm="auto", nsamples=1000)
+# Submit to MIMIQ remote services
+job = conn.submit(circuit, algorithm="auto", nsamples=1000)
 
 # Wait for completion and retrieve results
 results = conn.get_results(job)
@@ -112,8 +112,8 @@ from mimiqcircuits import *
 conn = MimiqConnection()
 conn.connect()
 
-# Execute a QASM file
-job = conn.execute("path/to/circuit.qasm", algorithm="statevector")
+# Submit a QASM file
+job = conn.submit("path/to/circuit.qasm", algorithm="statevector")
 results = conn.get_results(job)
 ```
 
@@ -150,7 +150,7 @@ circuit.push(GateRZ(theta), 2)
 # Custom controlled rotation
 circuit.push(GateCRX(theta), 0, 1)
 
-circuit.deaw()
+circuit.draw()
 ```
 
 ### Expectation Values
@@ -167,7 +167,8 @@ circuit.push(ExpectationValue(GateZ()), 0, 0)
 
 conn = MimiqConnection()
 conn.connect()
-results = conn.execute(circuit, algorithm="statevector")
+job = conn.submit(circuit, algorithm="statevector")
+results = conn.get_results(job)
 ```
 
 ### Noisy Simulations
@@ -193,7 +194,7 @@ MIMIQ supports multiple simulation algorithms optimized for different use cases:
 
 ```python
 # Specify algorithm during execution
-job = conn.execute(circuit, algorithm="mps", nsamples=10000)
+job = conn.submit(circuit, algorithm="mps", nsamples=10000)
 ```
 
 ## Supported Gates and Operations

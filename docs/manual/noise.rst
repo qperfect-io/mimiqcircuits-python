@@ -481,7 +481,7 @@ Running a noisy circuit
 -----------------------
 .. _running-a-noisy-circuit:
 
-Circuits with noise can be run using the :func:`~mimiqcircuits.MimiqConnection.execute` function, 
+Circuits with noise can be run using the :func:`~mimiqcircuits.MimiqConnection.submit` function,
 just as with circuits without noise. Currently, noisy simulations are run using the quantum trajectories 
 method. In this case, when running a circuit with noise for `n` samples, the circuit will internally be 
 run once for each sample, with a different set of random Kraus operators selected based on the 

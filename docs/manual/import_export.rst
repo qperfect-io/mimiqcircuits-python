@@ -76,7 +76,7 @@ Here is a simple comprehensive example of executing a QASM file on MIMIQ.
 
     >>> from mimiqcircuits import *
     >>> import os
-    >>> conn = MimiqConnection(QPERFECT_CLOUD2)
+    >>> conn = MimiqConnection(QPERFECT_CLOUD)
     >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
     Connection:
     ├── url: https://mimiqfast.qperfect.io/api
@@ -110,7 +110,7 @@ Here is a simple comprehensive example of executing a QASM file on MIMIQ.
     308
 
     # actual execution of the QASM file
-    >>> job = conn.execute("/tmp/deutsch_n2.qasm", algorithm="statevector")
+    >>> job = conn.submit("/tmp/deutsch_n2.qasm", algorithm="statevector")
     >>> res = conn.get_result(job)
     >>> res.histogram()
     {frozenbitarray('10'): 530, frozenbitarray('11'): 470}
@@ -125,7 +125,7 @@ The result will be plotted as follows:
 .. image:: ../manual/hist2.png
    :alt: Alternative Text
 
-For more informations, read the documentation of :meth:`~mimiqcircuits.MimiqConnection.execute`.
+For more informations, read the documentation of :meth:`~mimiqcircuits.MimiqConnection.submit`.
 
 Behaviour of include files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -251,7 +251,7 @@ The remote MIMIQ services can readily process and execute Stim files as follows:
 
 .. doctest:: import_export
 
-    job = conn.execute("my_stim_circuit.stim")
+    job = conn.submit("my_stim_circuit.stim")
 
 
 .. warning::
