@@ -117,7 +117,7 @@ pygments_dark_style = "monokai"
 # Furo theme options
 html_theme_options = {
     # Announcement banner
-    "announcement": f"The MIMIQ Autumn Update 2024 is out! Update now to the latest <strong>v{release}</strong> version.",
+    "announcement": f"The MIMIQ Update 2026 is out! Update now to the latest <strong>v{release}</strong> version.",
     # TOC depth
     "navigation_with_keys": True,
     # Light mode CSS variables
