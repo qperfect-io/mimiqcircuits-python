@@ -145,8 +145,26 @@ class QASMBasis(DecompositionBasis):
         if isinstance(op, mc.GateCH):
             return True
 
-        # Ising coupling gates
-        if isinstance(op, (mc.GateRXX, mc.GateRZZ)):
+        # Ising coupling / interaction gates
+        if isinstance(
+            op,
+            (
+                mc.GateRXX,
+                mc.GateRZZ,
+                mc.GateRYY,
+                mc.GateRZX,
+                mc.GateXXplusYY,
+                mc.GateXXminusYY,
+            ),
+        ):
+            return True
+
+        # Additional two-qubit gates with QASM names
+        if isinstance(op, (mc.GateDCX, mc.GateECR, mc.GateISWAP)):
+            return True
+
+        # Additional controlled gates with QASM names
+        if isinstance(op, (mc.GateCS, mc.GateCSDG, mc.GateCSX, mc.GateCSXDG)):
             return True
 
         # Multi-controlled qelib1 gates
@@ -161,6 +179,12 @@ class QASMBasis(DecompositionBasis):
                 return True
             # Controlled U and phase
             if isinstance(inner, (mc.GateU, mc.GateP)):
+                return True
+
+        # CCP = Control(2, GateP) - has a QASM name
+        if isinstance(op, mc.Control) and op.num_controls == 2:
+            inner = op.op
+            if isinstance(inner, mc.GateP):
                 return True
 
         # GateCall (custom gate declarations)

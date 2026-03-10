@@ -247,19 +247,14 @@ def args_to_qasm(gate: mc.Operation) -> List[Any]:
     if isinstance(gate, GateCall):
         return list(gate.arguments)
 
-    # Standard gates
+    # GateU special case: OpenQASM U(theta, phi, lambda) has 3 params,
+    # but GateU._parnames includes gamma. Skip gamma.
     if isinstance(gate, mc.GateU):
         return [gate.theta, gate.phi, gate.lmbda]
-    if isinstance(gate, mc.GateRX):
-        return [gate.theta]
-    if isinstance(gate, mc.GateRY):
-        return [gate.theta]
-    if isinstance(gate, mc.GateRZ):
-        return [gate.lmbda]
-    if isinstance(gate, mc.GateP):
-        return [gate.lmbda]
 
-    return []
+    # Generic: works for all gates including Control subclasses
+    # (GateCRX, GateCU, etc.) where getparams() delegates to inner gate.
+    return list(gate.getparams())
 
 
 def qubits_to_qasm(qubits: Union[int, List[int]], size: int) -> List[QASMExpr]:
@@ -273,48 +268,9 @@ def instruction_to_qasm(
     num_qubits: int,
     decl_names: Dict[GateDecl, str] = None,
     sanitize_names: bool = False,
-    op_cache: Dict = None,
 ) -> QASMExpr:
     op = inst.operation
     qs = inst.qubits
-
-    if isinstance(op, mc.Power) and isinstance(op.op, mc.Inverse):
-        inner = op.op.op
-        if hasattr(inner, "power"):
-            try:
-                new_inner = inner.power(op.exponent)
-                new_op = mc.Inverse(new_inner)
-                return instruction_to_qasm(
-                    mc.Instruction(new_op, qs, inst.bits),
-                    num_qubits,
-                    decl_names,
-                    sanitize_names=sanitize_names,
-                    op_cache=op_cache,
-                )
-            except Exception:
-                pass
-
-    if isinstance(op, (mc.Inverse, mc.Power)):
-        try:
-            subcirc = inst.decompose()
-        except Exception:
-            subcirc = None
-
-        if subcirc is not None and len(subcirc.instructions) > 0:
-            stmts = []
-            for subinst in subcirc.instructions:
-                sub_q = instruction_to_qasm(
-                    subinst,
-                    num_qubits,
-                    decl_names,
-                    sanitize_names=sanitize_names,
-                    op_cache=op_cache,
-                )
-                if isinstance(sub_q, list):
-                    stmts.extend(sub_q)
-                else:
-                    stmts.append(sub_q)
-            return stmts
 
     if isinstance(op, mc.Measure):
         q_expr = qubits_to_qasm(qs[0], num_qubits)[0]
@@ -333,104 +289,16 @@ def instruction_to_qasm(
             raise QASMSerializationError(
                 "GateCall found but no declaration mapping provided", op
             )
-
-        if op.decl not in decl_names:
-            base = op.decl.name
-            if sanitize_names:
-                base = _sanitize_identifier(base)
-            else:
-                _require_valid_identifier(base, "gate declaration name")
-            unique_name = f"{base}_{hex(id(op.decl))[2:]}"
-            decl_names[op.decl] = unique_name
-
         name = decl_names[op.decl]
         gate_args = list(op.arguments)
         q_exprs = qubits_to_qasm(qs, num_qubits)
-
         gate_call = QASMExpr("call", [name] + gate_args)
         return QASMExpr("unitary", [gate_call] + q_exprs)
 
-    try:
-        name = gate_to_qasm(op)
-    except QASMSerializationError as e:
-        if op_cache is not None and op in op_cache:
-            decl = op_cache[op]
-            if decl not in decl_names:
-                base = decl.name
-                if sanitize_names:
-                    base = _sanitize_identifier(base)
-                else:
-                    _require_valid_identifier(base, "gate declaration name")
-                unique_name = f"{base}_{hex(id(decl))[2:]}"
-                decl_names[decl] = unique_name
-
-            name = decl_names[decl]
-            gate_call = QASMExpr("call", [name])
-            targets = qubits_to_qasm(qs, num_qubits)
-            return QASMExpr("unitary", [gate_call] + targets)
-
-        try:
-            decomp_circ = op.decompose()
-            is_trivial = (
-                len(decomp_circ.instructions) == 1
-                and decomp_circ.instructions[0].operation == op
-            )
-
-            if (
-                decomp_circ is not None
-                and len(decomp_circ.instructions) > 0
-                and not is_trivial
-            ):
-                op_name = getattr(op, "name", "gate") or "gate"
-                clean_name = _sanitize_identifier(op_name)
-
-                decl = GateDecl(clean_name, (), decomp_circ)
-
-                if op_cache is not None:
-                    op_cache[op] = decl
-
-                if decl_names is not None:
-                    if decl not in decl_names:
-                        base = clean_name
-                        if sanitize_names:
-                            base = _sanitize_identifier(base)
-                        else:
-                            _require_valid_identifier(base, "gate declaration name")
-                        unique_name = f"{base}_{hex(id(decl))[2:]}"
-                        decl_names[decl] = unique_name
-
-                name = decl_names[decl]
-                gate_call = QASMExpr("call", [name])
-                targets = qubits_to_qasm(qs, num_qubits)
-                return QASMExpr("unitary", [gate_call] + targets)
-        except Exception:
-            pass
-
-        try:
-            subcirc = inst.decompose()
-        except Exception:
-            subcirc = None
-
-        if subcirc is not None and len(subcirc.instructions) > 0:
-            stmts = []
-            for subinst in subcirc.instructions:
-                sub_q = instruction_to_qasm(
-                    subinst,
-                    num_qubits,
-                    decl_names,
-                    sanitize_names=sanitize_names,
-                    op_cache=op_cache,
-                )
-                if isinstance(sub_q, list):
-                    stmts.extend(sub_q)
-                else:
-                    stmts.append(sub_q)
-            return stmts
-        raise
-
+    # Terminal gate
+    name = gate_to_qasm(op)
     gate_args = args_to_qasm(op)
     targets = qubits_to_qasm(qs, num_qubits)
-
     gate_call = QASMExpr("call", [name] + gate_args)
     return QASMExpr("unitary", [gate_call] + targets)
 
@@ -474,8 +342,6 @@ def gatedecl_to_qasm(
     decl: GateDecl,
     decl_names: Dict[GateDecl, str],
     sanitize_names: bool = False,
-    op_cache: Dict = None,
-    emit_cb=None,
 ) -> QASMExpr:
     if not sanitize_names:
         _require_valid_identifier(decl.name, "gate declaration name")
@@ -490,8 +356,6 @@ def gatedecl_to_qasm(
             qubit_names,
             decl_names,
             sanitize_names=sanitize_names,
-            op_cache=op_cache,
-            emit_cb=emit_cb,
         )
         if isinstance(res, list):
             body_statements.extend(res)
@@ -510,142 +374,31 @@ def _instruction_to_qasm_gatedecl(
     qubit_names,
     decl_names,
     sanitize_names: bool = False,
-    op_cache: Dict = None,
-    emit_cb=None,
 ):
     op = inst.operation
     qs = inst.qubits
     target_exprs = [qubit_names[q] for q in qs]
 
     if isinstance(op, GateCall):
-        if op.decl not in decl_names:
-            base = op.decl.name
-            if sanitize_names:
-                base = _sanitize_identifier(base)
-            else:
-                _require_valid_identifier(base, "gate declaration name")
-            unique_name = f"{base}_{hex(id(op.decl))[2:]}"
-            decl_names[op.decl] = unique_name
-
-        if emit_cb:
-            emit_cb(op.decl)
-
         name = decl_names[op.decl]
         gate_args = list(op.arguments)
         gate_call = QASMExpr("call", [name] + gate_args)
         return QASMExpr("unitary", [gate_call] + target_exprs)
 
-    if isinstance(op, (mc.Inverse, mc.Power)):
-        try:
-            subcirc = inst.decompose()
-        except Exception:
-            subcirc = None
-
-        if subcirc is not None and len(subcirc.instructions) > 0:
-            stmts = []
-            for subinst in subcirc.instructions:
-                sub_q = _instruction_to_qasm_gatedecl(
-                    subinst,
-                    qubit_names,
-                    decl_names,
-                    sanitize_names=sanitize_names,
-                    op_cache=op_cache,
-                    emit_cb=emit_cb,
-                )
-                if isinstance(sub_q, list):
-                    stmts.extend(sub_q)
-                else:
-                    stmts.append(sub_q)
-            return stmts
-
-    try:
-        name = gate_to_qasm(op)
-    except QASMSerializationError as e:
-        if op_cache is not None and op in op_cache:
-            decl = op_cache[op]
-            if decl not in decl_names:
-                base = decl.name
-                if sanitize_names:
-                    base = _sanitize_identifier(base)
-                else:
-                    _require_valid_identifier(base, "gate declaration name")
-                unique_name = f"{base}_{hex(id(decl))[2:]}"
-                decl_names[decl] = unique_name
-
-            if emit_cb:
-                emit_cb(decl)
-
-            name = decl_names[decl]
-            gate_call = QASMExpr("call", [name])
-            return QASMExpr("unitary", [gate_call] + target_exprs)
-
-        try:
-            decomp_circ = op.decompose()
-            is_trivial = (
-                len(decomp_circ.instructions) == 1
-                and decomp_circ.instructions[0].operation == op
-            )
-
-            if (
-                decomp_circ is not None
-                and len(decomp_circ.instructions) > 0
-                and not is_trivial
-            ):
-                op_name = getattr(op, "name", "gate") or "gate"
-                clean_name = _sanitize_identifier(op_name)
-
-                decl = GateDecl(clean_name, (), decomp_circ)
-
-                if op_cache is not None:
-                    op_cache[op] = decl
-
-                if decl not in decl_names:
-                    base = clean_name
-                    if sanitize_names:
-                        base = _sanitize_identifier(base)
-                    else:
-                        _require_valid_identifier(base, "gate declaration name")
-                    unique_name = f"{base}_{hex(id(decl))[2:]}"
-                    decl_names[decl] = unique_name
-
-                if emit_cb:
-                    emit_cb(decl)
-
-                name = decl_names[decl]
-                gate_call = QASMExpr("call", [name])
-                return QASMExpr("unitary", [gate_call] + target_exprs)
-        except Exception:
-            pass
-
-        try:
-            subcirc = inst.decompose()
-        except Exception:
-            subcirc = None
-
-        if subcirc is not None and len(subcirc.instructions) > 0:
-            stmts = []
-            for subinst in subcirc.instructions:
-                sub_q = _instruction_to_qasm_gatedecl(
-                    subinst,
-                    qubit_names,
-                    decl_names,
-                    sanitize_names=sanitize_names,
-                    op_cache=op_cache,
-                    emit_cb=emit_cb,
-                )
-                if isinstance(sub_q, list):
-                    stmts.extend(sub_q)
-                else:
-                    stmts.append(sub_q)
-            return stmts
-        raise
-
+    # Terminal gate
+    name = gate_to_qasm(op)
     gate_args = args_to_qasm(op)
     gate_call = QASMExpr("call", [name] + gate_args)
     return QASMExpr("unitary", [gate_call] + target_exprs)
 
 
 def circuit_to_qasm(c: mc.Circuit, sanitize_names: bool = True) -> QASMExpr:
+    from mimiqcircuits.decomposition import decompose
+    from mimiqcircuits.decomposition.basis import QASMBasis
+
+    # Decompose with wrapping: produces only terminal ops + GateCalls
+    c = decompose(c, QASMBasis(), wrap=True)
+
     n_qubits = c.num_qubits()
     n_cbits = c.num_bits()
 
@@ -658,52 +411,26 @@ def circuit_to_qasm(c: mc.Circuit, sanitize_names: bool = True) -> QASMExpr:
     if uses_std_gates(c.instructions):
         statements.append(QASMExpr("include", ["qelib1.inc"]))
 
+    # Collect all GateDecls in dependency order
     decl_names = collect_gatedecls(c, sanitize_names=sanitize_names)
-    op_cache = {}
+
+    # Emit gate declarations (dict preserves insertion order = dependency order)
     gate_statements = []
-    emitted = set()
-    processing = set()
+    for decl in decl_names:
+        gate_statements.append(
+            gatedecl_to_qasm(decl, decl_names, sanitize_names=sanitize_names)
+        )
 
-    def emit_new_decls():
-        def emit_recursive(d):
-            if d in emitted:
-                return
-            if d in processing:
-                return
-
-            processing.add(d)
-
-            expr = gatedecl_to_qasm(
-                d,
-                decl_names,
-                sanitize_names=sanitize_names,
-                op_cache=op_cache,
-                emit_cb=emit_recursive,
-            )
-
-            gate_statements.append(expr)
-            emitted.add(d)
-            processing.remove(d)
-
-        while True:
-            candidates = [k for k in decl_names if k not in emitted]
-            if not candidates:
-                break
-            emit_recursive(candidates[0])
-
-    emit_new_decls()
-
+    # Emit instructions
     instruction_statements = []
     for inst in c.instructions:
         res = instruction_to_qasm(
-            inst, n_qubits, decl_names, sanitize_names=sanitize_names, op_cache=op_cache
+            inst, n_qubits, decl_names, sanitize_names=sanitize_names
         )
         if isinstance(res, list):
             instruction_statements.extend(res)
         else:
             instruction_statements.append(res)
-
-    emit_new_decls()
 
     statements.extend(gate_statements)
     statements.append(QASMExpr("qreg", ["q", n_qubits]))
@@ -838,20 +565,12 @@ def dumps(
 
     Args:
         c (mc.Circuit): The circuit to serialize.
+        decompose_wrappers: Kept for backward compatibility, ignored.
+        sanitize_names: Whether to sanitize gate names for QASM compliance.
 
     Returns:
         str: The OpenQASM 2.0 string representation.
     """
-    # Optionally decompose wrapper operations (Inverse/Power/etc.) into
-    # primitive gates before converting to QASM. This is useful when the
-    # circuit contains high-level wrappers that cannot be directly mapped
-    # to OpenQASM names.
-    if decompose_wrappers:
-        try:
-            c = c.decompose()
-        except Exception:
-            pass
-
     expr = circuit_to_qasm(c, sanitize_names=sanitize_names)
     s = io.StringIO()
     print_qasm_expr(expr, s, level=0)
@@ -869,6 +588,8 @@ def dump(
     Args:
         c (mc.Circuit): The circuit to serialize.
         filename (str): The file path to write to.
+        decompose_wrappers: Kept for backward compatibility, ignored.
+        sanitize_names: Whether to sanitize gate names for QASM compliance.
     """
     with open(filename, "w") as f:
         f.write(

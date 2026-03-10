@@ -43,6 +43,168 @@ def _to_basis(basis: DecompositionBasis | RewriteRule) -> DecompositionBasis:
     return basis
 
 
+def _op_basename(op):
+    """Build a descriptive base name from the wrapper chain.
+
+    Examples:
+        GateRX(0.5)                  -> "RX"
+        Inverse(GateRX(0.5))        -> "RX_inv"
+        Control(2, GateRX(0.5))     -> "C2RX"
+        Control(1, GateH())         -> "CH"
+        Power(GateRX(0.5), 3)       -> "RX_pow"
+        Inverse(Control(2, GateH())) -> "C2H_inv"
+        GateCall(decl, ...)          -> decl.name
+        Inverse(GateCall(decl, ...)) -> decl.name + "_dagger"
+    """
+    import mimiqcircuits as mc
+    from mimiqcircuits.gatedecl import GateCall
+
+    if isinstance(op, GateCall):
+        return op.decl.name
+    if isinstance(op, mc.Control):
+        n = op.num_controls
+        inner = _op_basename(op.op)
+        return f"C{n}{inner}" if n > 1 else f"C{inner}"
+    if isinstance(op, mc.Inverse):
+        inner = _op_basename(op.op)
+        suffix = "_dagger" if isinstance(op.op, GateCall) else "_inv"
+        return f"{inner}{suffix}"
+    if isinstance(op, mc.Power):
+        inner = _op_basename(op.op)
+        return f"{inner}_pow"
+    return getattr(op, "name", type(op).__name__)
+
+
+def _wrapped_decl_name(op):
+    """Generate a GateDecl name for a wrapped (non-terminal) operation."""
+    return f"mimiq_{_op_basename(op)}"
+
+
+def _rebuild_with_symbols(op, symbols):
+    """Rebuild a (possibly wrapped) operation with symbolic parameters.
+
+    Traverses the wrapper chain (Control, Inverse, Power) and reconstructs
+    with symbolic params at the leaf gate. Mirrors Julia's _relax_wrapper_type
+    approach.
+    """
+    import mimiqcircuits as mc
+    from mimiqcircuits.gatedecl import GateCall
+
+    if isinstance(op, mc.Control):
+        inner = _rebuild_with_symbols(op.op, symbols)
+        return mc.Control(op.num_controls, inner)
+    if isinstance(op, mc.Inverse):
+        inner = _rebuild_with_symbols(op.op, symbols)
+        return mc.Inverse(inner)
+    if isinstance(op, mc.Power):
+        inner = _rebuild_with_symbols(op.op, symbols)
+        return mc.Power(inner, op.exponent)
+    if isinstance(op, GateCall):
+        return GateCall(op.decl, symbols)
+    # Leaf gate — reconstruct with symbolic params
+    return type(op)(*symbols)
+
+
+def _get_leaf_parnames(op):
+    """Get parnames from the leaf gate in a wrapper chain.
+
+    Wrappers (Control, Inverse, Power) delegate getparams() to their inner op
+    but may not set _parnames. This traverses to the leaf to find the actual
+    parameter names.
+    """
+    import mimiqcircuits as mc
+    from mimiqcircuits.gatedecl import GateCall
+
+    if isinstance(op, (mc.Control, mc.Inverse, mc.Power)):
+        return _get_leaf_parnames(op.op)
+    if isinstance(op, GateCall):
+        # GateCall params come from decl.arguments, not _parnames
+        return tuple(str(a) for a in op.decl.arguments)
+    return op._parnames
+
+
+def _wrap_decomposition(inst, basis, cache):
+    """Wrap a non-terminal instruction into a GateDecl/GateCall.
+
+    Mirrors Julia's decompose.jl wrap logic: decomposes the operation one step,
+    recursively wraps the result, creates a GateDecl from the wrapped body,
+    and returns a GateCall instruction.
+    """
+    import mimiqcircuits as mc
+    from mimiqcircuits.gatedecl import GateCall, GateDecl
+
+    op = inst.operation
+    qs = inst.qubits
+    bs = inst.bits
+    zs = inst.zvars
+    nq = op.num_qubits
+
+    # Step 1: Canonicalize for parametric reuse.
+    # For GateCall/Inverse(GateCall), use the decl's own symbolic arguments.
+    # For all other parametric ops (including wrappers like Control(2, GateRX(0.5))),
+    # rebuild the op with fresh symbols from the leaf gate's parnames.
+    # Note: Control._parnames is () even when inner gate has params,
+    # so we use _get_leaf_parnames + getparams() to detect parametric ops.
+    if isinstance(op, GateCall):
+        # GateCall(decl, args) -> canonical = GateCall(decl, decl.arguments)
+        symbols = op.decl.arguments
+        concrete_args = op.arguments
+        canonical_op = GateCall(op.decl, symbols) if symbols else op
+    elif isinstance(op, mc.Inverse) and isinstance(op.op, GateCall):
+        # Inverse(GateCall(decl, args)) -> canonical = Inverse(GateCall(decl, decl.arguments))
+        symbols = op.op.decl.arguments
+        concrete_args = op.op.arguments
+        if symbols:
+            canonical_gc = GateCall(op.op.decl, symbols)
+            canonical_op = mc.Inverse(canonical_gc)
+        else:
+            canonical_op = op
+    else:
+        leaf_parnames = _get_leaf_parnames(op)
+        if leaf_parnames:
+            # Parametric op: plain gates (GateRYY(0.5)) AND wrappers
+            # (Control(2, GateRX(0.5)), Inverse(GateRX(0.5)), Power(GateRX(0.5), 3))
+            from symengine import Symbol
+
+            symbols = tuple(Symbol(pn) for pn in leaf_parnames)
+            concrete_args = tuple(op.getparams())
+            try:
+                canonical_op = _rebuild_with_symbols(op, symbols)
+            except Exception:
+                # Fallback: no canonicalization
+                canonical_op = op
+                concrete_args = ()
+                symbols = ()
+        else:
+            # Non-parametric ops (Inverse(GateH), Power(GateX, 3), etc.)
+            canonical_op = op
+            concrete_args = ()
+            symbols = ()
+
+    # Step 2: Check cache
+    if canonical_op in cache:
+        cached_decl = cache[canonical_op]
+        return mc.Instruction(
+            GateCall(cached_decl, concrete_args), qs, bs, zs
+        )
+
+    # Step 3: Decompose one step
+    one_step = basis.decompose(canonical_op, tuple(range(nq)), (), ())
+
+    # Step 4: Recursively wrap results
+    wrapped = mc.Circuit()
+    for sub_inst in DecomposeIterator(one_step, basis, wrap=True, cache=cache):
+        wrapped.push(sub_inst)
+
+    # Step 5: Create GateDecl from wrapped body
+    name = _wrapped_decl_name(op)
+    decl = GateDecl(name, symbols, wrapped)
+
+    # Step 6: Cache and return
+    cache[canonical_op] = decl
+    return mc.Instruction(GateCall(decl, concrete_args), qs, bs, zs)
+
+
 class DecomposeIterator(Iterator["Instruction"]):
     """Iterator that yields instructions from recursive decomposition.
 
@@ -53,6 +215,9 @@ class DecomposeIterator(Iterator["Instruction"]):
     Args:
         source: The source to decompose (Circuit, Instruction, or Operation).
         basis: The target decomposition basis.
+        wrap: If True, wrap non-terminal ops into GateDecl/GateCall instead
+              of flattening.
+        cache: Shared cache dict for wrapped GateDecls (used when wrap=True).
 
     Example:
         >>> from mimiqcircuits import *
@@ -70,10 +235,14 @@ class DecomposeIterator(Iterator["Instruction"]):
         self,
         source: Circuit | Instruction | Operation,
         basis: DecompositionBasis,
+        wrap: bool = False,
+        cache: dict | None = None,
     ):
         import mimiqcircuits as mc
 
         self._basis = basis
+        self._wrap = wrap
+        self._cache = cache if cache is not None else {}
         self._stack: list[mc.Instruction] = []
 
         # Initialize stack based on source type
@@ -108,6 +277,9 @@ class DecomposeIterator(Iterator["Instruction"]):
             if self._basis.isterminal(op):
                 return inst
 
+            if self._wrap:
+                return _wrap_decomposition(inst, self._basis, self._cache)
+
             # Decompose and push onto stack (reversed to maintain order)
             decomposed = self._basis.decompose(
                 op, inst.qubits, inst.bits, inst.zvars
@@ -120,6 +292,7 @@ class DecomposeIterator(Iterator["Instruction"]):
 def decompose(
     source: Circuit | Instruction | Operation,
     basis: DecompositionBasis | RewriteRule | None = None,
+    wrap: bool = False,
 ) -> Circuit:
     """Recursively decompose a circuit to a target basis.
 
@@ -130,9 +303,13 @@ def decompose(
         source: The circuit, instruction, or operation to decompose.
         basis: The target decomposition basis. If a RewriteRule is provided,
                it is wrapped in a RuleBasis. Defaults to CanonicalBasis.
+        wrap: If True, wrap non-terminal ops into GateDecl/GateCall instead
+              of flattening them into primitives. This produces a circuit with
+              only terminal ops and GateCalls.
 
     Returns:
-        A new Circuit containing only terminal operations.
+        A new Circuit containing only terminal operations (and GateCalls
+        if wrap=True).
 
     Example:
         >>> from mimiqcircuits import *
@@ -167,8 +344,9 @@ def decompose(
     else:
         basis = _to_basis(basis)
 
+    cache = {} if wrap else None
     result = mc.Circuit()
-    for inst in DecomposeIterator(source, basis):
+    for inst in DecomposeIterator(source, basis, wrap=wrap, cache=cache):
         result.push(inst)
 
     return result
@@ -253,6 +431,7 @@ def decompose_step(
 def eachdecomposed(
     source: Circuit | Instruction | Operation,
     basis: DecompositionBasis | RewriteRule | None = None,
+    wrap: bool = False,
 ) -> DecomposeIterator:
     """Return an iterator over decomposed instructions.
 
@@ -262,6 +441,7 @@ def eachdecomposed(
     Args:
         source: The circuit, instruction, or operation to decompose.
         basis: The target decomposition basis. Defaults to CanonicalBasis.
+        wrap: If True, wrap non-terminal ops into GateDecl/GateCall.
 
     Returns:
         An iterator yielding decomposed instructions.
@@ -283,7 +463,8 @@ def eachdecomposed(
     else:
         basis = _to_basis(basis)
 
-    return DecomposeIterator(source, basis)
+    cache = {} if wrap else None
+    return DecomposeIterator(source, basis, wrap=wrap, cache=cache)
 
 
 __all__ = [
