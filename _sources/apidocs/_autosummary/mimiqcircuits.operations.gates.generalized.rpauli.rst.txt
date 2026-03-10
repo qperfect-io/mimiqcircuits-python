@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.generalized.rpauli
+=================================================
+
+.. automodule:: mimiqcircuits.operations.gates.generalized.rpauli
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RPauli
+   

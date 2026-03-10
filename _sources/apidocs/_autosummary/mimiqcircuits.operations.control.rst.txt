@@ -1,0 +1,19 @@
+mimiqcircuits.operations.control
+================================
+
+.. automodule:: mimiqcircuits.operations.control
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      canonical_control
+      register_control_decomposition
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Control
+   

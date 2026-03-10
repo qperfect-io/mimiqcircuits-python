@@ -1,0 +1,16 @@
+mimiqcircuits.operations.operators
+==================================
+
+.. automodule:: mimiqcircuits.operations.operators
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   custom
+   diagonals
+   projectors
+   sigmas

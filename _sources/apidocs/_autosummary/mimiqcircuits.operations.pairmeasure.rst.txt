@@ -1,0 +1,14 @@
+mimiqcircuits.operations.pairmeasure
+====================================
+
+.. automodule:: mimiqcircuits.operations.pairmeasure
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MeasureXX
+      MeasureYY
+      MeasureZZ
+   

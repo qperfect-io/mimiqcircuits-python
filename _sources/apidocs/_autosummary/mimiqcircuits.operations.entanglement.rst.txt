@@ -1,0 +1,14 @@
+mimiqcircuits.operations.entanglement
+=====================================
+
+.. automodule:: mimiqcircuits.operations.entanglement
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BondDim
+      SchmidtRank
+      VonNeumannEntropy
+   

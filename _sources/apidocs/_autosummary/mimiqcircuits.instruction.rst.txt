@@ -1,0 +1,12 @@
+﻿mimiqcircuits.instruction
+=========================
+
+.. automodule:: mimiqcircuits.instruction
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Instruction
+   

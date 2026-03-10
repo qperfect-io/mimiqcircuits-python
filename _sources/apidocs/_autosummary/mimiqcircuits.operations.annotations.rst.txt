@@ -1,0 +1,17 @@
+mimiqcircuits.operations.annotations
+====================================
+
+.. automodule:: mimiqcircuits.operations.annotations
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AbstractAnnotation
+      Detector
+      ObservableInclude
+      QubitCoordinates
+      ShiftCoordinates
+      Tick
+   

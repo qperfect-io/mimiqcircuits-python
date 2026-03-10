@@ -1,0 +1,14 @@
+mimiqcircuits.operations.gates.standard.deprecated
+==================================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.deprecated
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateU1
+      GateU2
+      GateU3
+   

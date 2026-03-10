@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.standard.cnp
+===========================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.cnp
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      GateCCP
+   

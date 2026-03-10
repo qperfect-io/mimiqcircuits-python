@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.generalized.qft
+==============================================
+
+.. automodule:: mimiqcircuits.operations.gates.generalized.qft
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      QFT
+   

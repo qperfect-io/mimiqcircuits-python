@@ -1,0 +1,1904 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Symbolic Operations in MIMIQ" href="symbolic_ops.html"><link rel="prev" title="Non-unitary Operations" href="non_unitary_ops.html">
+        <link rel="prefetch" href="../_static/qperfect_logo.png" as="image">
+
+    <!-- Generated with Sphinx 7.4.7 and Furo 2025.12.19 -->
+        <title>Noisy simulations on MIMIQ - MIMIQ Circuits v0.21.3</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=6deec1a2" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #990066;
+  --color-brand-content: #990066;
+  --color-inline-code-background: rgba(153, 0, 102, 0.08);
+  --color-admonition-background: #f8f9fc;
+  --color-api-name: #990066;
+  --color-api-pre-name: #4b5563;
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #d94faa;
+  --color-brand-content: #d94faa;
+  --color-background-primary: #0f1117;
+  --color-background-secondary: #161922;
+  --color-background-border: #2d3548;
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+  --color-sidebar-background: #0d0f14;
+  --color-sidebar-background-border: #1f2937;
+  --color-sidebar-link-text: #e5e7eb;
+  --color-sidebar-link-text--top-level: #ffffff;
+  --color-sidebar-item-background--current: rgba(217, 79, 170, 0.15);
+  --color-sidebar-item-background--hover: rgba(217, 79, 170, 0.08);
+  --color-inline-code-background: rgba(249, 168, 212, 0.15);
+  --color-admonition-background: #1a1f2c;
+  --color-api-background: #1a1f2c;
+  --color-api-name: #d94faa;
+  --color-api-pre-name: #9ca3af;
+  --color-highlight-on-target: rgba(255, 215, 0, 0.15);
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #d94faa;
+  --color-brand-content: #d94faa;
+  --color-background-primary: #0f1117;
+  --color-background-secondary: #161922;
+  --color-background-border: #2d3548;
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+  --color-sidebar-background: #0d0f14;
+  --color-sidebar-background-border: #1f2937;
+  --color-sidebar-link-text: #e5e7eb;
+  --color-sidebar-link-text--top-level: #ffffff;
+  --color-sidebar-item-background--current: rgba(217, 79, 170, 0.15);
+  --color-sidebar-item-background--hover: rgba(217, 79, 170, 0.08);
+  --color-inline-code-background: rgba(249, 168, 212, 0.15);
+  --color-admonition-background: #1a1f2c;
+  --color-api-background: #1a1f2c;
+  --color-api-name: #d94faa;
+  --color-api-pre-name: #9ca3af;
+  --color-highlight-on-target: rgba(255, 215, 0, 0.15);
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     The MIMIQ Update 2026 is out! Update now to the latest <strong>v0.21.3</strong> version. 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MIMIQ Circuits v0.21.3</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/qperfect_logo.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">MIMIQ Circuits v0.21.3</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../mimiq_documentation.html">MIMIQ Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Manual</a><input aria-label="Toggle navigation of Manual" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="getting_started.html">Getting Started</a><input aria-label="Toggle navigation of Getting Started" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html">Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="core_concepts.html">Core Concepts</a><input aria-label="Toggle navigation of Core Concepts" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="circuits.html">Circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hamiltonian.html">Hamiltonians and Time Evolution</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="operations.html">Operations</a><input aria-label="Toggle navigation of Operations" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="unitary_gates.html">Unitary Gates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="classical_ops.html">Classical Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="non_unitary_ops.html">Non-unitary Operations</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">Noisy simulations on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="statistical_ops.html">Statistical Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="special_ops.html">Special Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zops.html">Z-register Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="simulation.html">Simulation &amp; Execution</a><input aria-label="Toggle navigation of Simulation &amp; Execution" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="local_statevector.html">Quantanium</a></li>
+<li class="toctree-l3"><a class="reference internal" href="remote_execution.html">Execution on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="simulation_parameters.html">Simulation Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="advanced.html">Advanced Topics</a><input aria-label="Toggle navigation of Advanced Topics" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="import_export.html">Import and export circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="special_topics.html">Special Topics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="compilation.html">Circuit Compilation &amp; Optimization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../usecases/index.html">Use Cases and Special Workflows</a><input aria-label="Toggle navigation of Use Cases and Special Workflows" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../usecases/vqe.html">Variational Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usecases/circuit_tester.html">Circuit Equivalence Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../apidocs/mimiqcircuits.html">API References</a><input aria-label="Toggle navigation of API References" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.circuit.html">mimiqcircuits.circuit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.hamiltonian.html">mimiqcircuits.hamiltonian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.instruction.html">mimiqcircuits.instruction</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.html">mimiqcircuits.operations</a><input aria-label="Toggle navigation of mimiqcircuits.operations" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.amplitude.html">mimiqcircuits.operations.amplitude</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.annotations.html">mimiqcircuits.operations.annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.barrier.html">mimiqcircuits.operations.barrier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.block.html">mimiqcircuits.operations.block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.control.html">mimiqcircuits.operations.control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.entanglement.html">mimiqcircuits.operations.entanglement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.expectationvalue.html">mimiqcircuits.operations.expectationvalue</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.html">mimiqcircuits.operations.gates</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.custom.html">mimiqcircuits.operations.gates.custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.delay.html">mimiqcircuits.operations.gates.delay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.gate.html">mimiqcircuits.operations.gates.gate</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.html">mimiqcircuits.operations.gates.generalized</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates.generalized" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.diffusion.html">mimiqcircuits.operations.gates.generalized.diffusion</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.paulistring.html">mimiqcircuits.operations.gates.generalized.paulistring</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.phasegradient.html">mimiqcircuits.operations.gates.generalized.phasegradient</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.polynomialoracle.html">mimiqcircuits.operations.gates.generalized.polynomialoracle</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.qft.html">mimiqcircuits.operations.gates.generalized.qft</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.rnz.html">mimiqcircuits.operations.gates.generalized.rnz</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.rpauli.html">mimiqcircuits.operations.gates.generalized.rpauli</a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.html">mimiqcircuits.operations.gates.standard</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates.standard" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.chadamard.html">mimiqcircuits.operations.gates.standard.chadamard</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cnp.html">mimiqcircuits.operations.gates.standard.cnp</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cnx.html">mimiqcircuits.operations.gates.standard.cnx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cpauli.html">mimiqcircuits.operations.gates.standard.cpauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cphase.html">mimiqcircuits.operations.gates.standard.cphase</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.crotations.html">mimiqcircuits.operations.gates.standard.crotations</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cs.html">mimiqcircuits.operations.gates.standard.cs</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cswap.html">mimiqcircuits.operations.gates.standard.cswap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.csx.html">mimiqcircuits.operations.gates.standard.csx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cu.html">mimiqcircuits.operations.gates.standard.cu</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.dcx.html">mimiqcircuits.operations.gates.standard.dcx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.deprecated.html">mimiqcircuits.operations.gates.standard.deprecated</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.ecr.html">mimiqcircuits.operations.gates.standard.ecr</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.hadamard.html">mimiqcircuits.operations.gates.standard.hadamard</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.id.html">mimiqcircuits.operations.gates.standard.id</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.interactions.html">mimiqcircuits.operations.gates.standard.interactions</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.iswap.html">mimiqcircuits.operations.gates.standard.iswap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.pauli.html">mimiqcircuits.operations.gates.standard.pauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.phase.html">mimiqcircuits.operations.gates.standard.phase</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.rotations.html">mimiqcircuits.operations.gates.standard.rotations</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.s.html">mimiqcircuits.operations.gates.standard.s</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.swap.html">mimiqcircuits.operations.gates.standard.swap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.sx.html">mimiqcircuits.operations.gates.standard.sx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.sy.html">mimiqcircuits.operations.gates.standard.sy</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.t.html">mimiqcircuits.operations.gates.standard.t</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.u.html">mimiqcircuits.operations.gates.standard.u</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.generating_list.html">mimiqcircuits.operations.generating_list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.ifstatement.html">mimiqcircuits.operations.ifstatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.inverse.html">mimiqcircuits.operations.inverse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.krauschannel.html">mimiqcircuits.operations.krauschannel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.measure.html">mimiqcircuits.operations.measure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.measurereset.html">mimiqcircuits.operations.measurereset</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.html">mimiqcircuits.operations.noisechannel</a><input aria-label="Toggle navigation of mimiqcircuits.operations.noisechannel" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.kraus.html">mimiqcircuits.operations.noisechannel.kraus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.mixedunitary.html">mimiqcircuits.operations.noisechannel.mixedunitary</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.html">mimiqcircuits.operations.noisechannel.standards</a><input aria-label="Toggle navigation of mimiqcircuits.operations.noisechannel.standards" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.ampdamping.html">mimiqcircuits.operations.noisechannel.standards.ampdamping</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.depolarizing.html">mimiqcircuits.operations.noisechannel.standards.depolarizing</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.pauli.html">mimiqcircuits.operations.noisechannel.standards.pauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping.html">mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.projectivenoise.html">mimiqcircuits.operations.noisechannel.standards.projectivenoise</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operation.html">mimiqcircuits.operations.operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operator.html">mimiqcircuits.operations.operator</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operators.html">mimiqcircuits.operations.operators</a><input aria-label="Toggle navigation of mimiqcircuits.operations.operators" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operators.custom.html">mimiqcircuits.operations.operators.custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operators.diagonals.html">mimiqcircuits.operations.operators.diagonals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operators.projectors.html">mimiqcircuits.operations.operators.projectors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operators.sigmas.html">mimiqcircuits.operations.operators.sigmas</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.pairmeasure.html">mimiqcircuits.operations.pairmeasure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.parallel.html">mimiqcircuits.operations.parallel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.power.html">mimiqcircuits.operations.power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.readouterr.html">mimiqcircuits.operations.readouterr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.repeat.html">mimiqcircuits.operations.repeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.rescaledgates.html">mimiqcircuits.operations.rescaledgates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.reset.html">mimiqcircuits.operations.reset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.utils.html">mimiqcircuits.operations.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.html">mimiqcircuits.classical</a><input aria-label="Toggle navigation of mimiqcircuits.classical" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.abstract_classical.html">mimiqcircuits.classical.abstract_classical</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.and_operation.html">mimiqcircuits.classical.and_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.not_operation.html">mimiqcircuits.classical.not_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.or_operation.html">mimiqcircuits.classical.or_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.paritycheck.html">mimiqcircuits.classical.paritycheck</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.setbits.html">mimiqcircuits.classical.setbits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.classical.xor_operation.html">mimiqcircuits.classical.xor_operation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.noisemodel.html">mimiqcircuits.noisemodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.remote.html">mimiqcircuits.remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.qcsresults.html">mimiqcircuits.qcsresults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.lazy.html">mimiqcircuits.lazy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/qperfect-io/mimiqcircuits-python">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mimiq.qperfect.io/docs/julia/">Julia APIs</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://qperfect.io">QPerfect</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/qperfect-io/mimiqcircuits-python/blob/main/docs/manual/noise.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/qperfect-io/mimiqcircuits-python/edit/main/docs/manual/noise.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="noisy-simulations-on-mimiq">
+<h1>Noisy simulations on MIMIQ<a class="headerlink" href="#noisy-simulations-on-mimiq" title="Link to this heading">¶</a></h1>
+<p>This page provides detailed information on simulating noise in quantum circuits using MIMIQ.</p>
+<section id="summary-of-noise-functionality">
+<h2>Summary of noise functionality<a class="headerlink" href="#summary-of-noise-functionality" title="Link to this heading">¶</a></h2>
+<p id="id1">Custom noise channels:</p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Kraus</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">MixedUnitary</span></code></p></li>
+</ul>
+<p>Specialized noise channels:</p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Depolarizing</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Depolarizing1</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Depolarizing2</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliNoise</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliX</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliY</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">PauliZ</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">AmplitudeDamping</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedAmplitudeDamping</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">PhaseAmplitudeDamping</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermalNoise</span></code></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ProjectiveNoise</span></code></p></li>
+</ul>
+<p>Note that the <code class="xref py py-class docutils literal notranslate"><span class="pre">Reset</span></code> type operations can also be thought of as noisy operations.
+Coherent noise can be added by using any of the supported gates (e.g., <code class="xref py py-class docutils literal notranslate"><span class="pre">Gate</span></code>).</p>
+<p>Noise channels come with the following methods:</p>
+<ul class="simple">
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">krausmatrices()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">krausoperators()</span></code></p></li>
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">unitarymatrices()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">unitarygates()</span></code> (only for mixed-unitary)</p></li>
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">probabilities()</span></code> (only for mixed-unitary)</p></li>
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">ismixedunitary()</span></code></p></li>
+</ul>
+<p>To add noise channels to a circuit, you can use:</p>
+<ul class="simple">
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">push()</span></code> (like gates)</p></li>
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">add_noise()</span></code> (to add noise to every instance of a gate)</p></li>
+</ul>
+<p>To generate one sample of a circuit with mixed unitaries, use:</p>
+<ul class="simple">
+<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">sample_mixedunitaries()</span></code></p></li>
+</ul>
+<p>See below for further information. You can also run help(Circuit().sample_mixedunitaries).</p>
+</section>
+<section id="mathematical-background">
+<h2>Mathematical background<a class="headerlink" href="#mathematical-background" title="Link to this heading">¶</a></h2>
+<section id="kraus-operators">
+<span id="id2"></span><h3>Kraus operators<a class="headerlink" href="#kraus-operators" title="Link to this heading">¶</a></h3>
+<p>Noise in a quantum circuit refers to any kind of unwanted interaction of the qubits with the
+environment (or with itself). Mathematically, this puts us in the framework of open systems
+and the state of the qubits now needs to be described in terms of a density matrix <span class="math notranslate nohighlight">\(\rho\)</span>,
+which fulfills <span class="math notranslate nohighlight">\(\rho = \rho^\dagger\)</span> and <span class="math notranslate nohighlight">\(\mathrm{Tr} (\rho) = 1\)</span>.</p>
+<p>A quantum operation such as noise can then be described using the Kraus operator representation as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k E_k \rho E_k^\dagger.\]</div>
+</div>
+<p>We consider only completely positive and trace-preserving (CPTP) operations.
+In this case, the Kraus operators <span class="math notranslate nohighlight">\(E_k\)</span> can be any matrix as long as they fulfill the completeness relation:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\sum_k E_k^\dagger E_k = I.\]</div>
+</div>
+<p>Note that unitary gates <span class="math notranslate nohighlight">\(U\)</span> just correspond to a single Kraus operator, <span class="math notranslate nohighlight">\(E_1 = U\)</span>.</p>
+<p>When all Kraus operators are proportional to a unitary matrix, <span class="math notranslate nohighlight">\(E_k = \alpha_k U_k\)</span>, this is called a mixed-unitary quantum operation and can be written as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger,\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(p_k = |\alpha_k|^2\)</span>.</p>
+<p>Such operations are easier to implement as we’ll see below.</p>
+<p><strong>Remarks</strong>:</p>
+<ul class="simple">
+<li><p>Unitary gates <span class="math notranslate nohighlight">\(U\)</span> correspond to a single Kraus operator, <span class="math notranslate nohighlight">\(E_1 = U\)</span>.</p></li>
+<li><p>The number of Kraus operators depends on the noise considered.</p></li>
+<li><p>For a given quantum operation <span class="math notranslate nohighlight">\(\mathcal{E}\)</span>, the Kraus operator representation is not unique. One can change the basis of Kraus operators using a unitary matrix <span class="math notranslate nohighlight">\(U\)</span> as <span class="math notranslate nohighlight">\(\tilde{E}_i = \sum_j U_{ij} E_j\)</span>.</p></li>
+</ul>
+<p>We define a noise channel (or Kraus channel)
+as a quantum operation <span class="math notranslate nohighlight">\(\mathcal{E}\)</span> described by a set of Kraus operators as given above.
+A common way of modeling noisy quantum computers is by considering each operation <span class="math notranslate nohighlight">\(O\)</span>
+in the circuit as a noisy quantum operation <span class="math notranslate nohighlight">\(\mathcal{E}_O\)</span>.</p>
+</section>
+<section id="evolution-with-noise">
+<h3>Evolution with noise<a class="headerlink" href="#evolution-with-noise" title="Link to this heading">¶</a></h3>
+<p>There are two common ways to evolve the state of the system when acting with Kraus channels:</p>
+<ol class="arabic">
+<li><p><strong>Density matrix</strong>: If we use a density matrix to describe the qubits, then a Kraus channel can simply be applied by directly performing the matrix multiplications as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k E_k \rho E_k^\dagger.\]</div>
+</div>
+<p>The advantage of this approach is that the density matrix contains the full information of the system and we only need to run the circuit once. The disadvantage is that <span class="math notranslate nohighlight">\(\rho\)</span> requires more memory to be stored (<span class="math notranslate nohighlight">\(2^{2N}\)</span> as opposed to <span class="math notranslate nohighlight">\(2^N\)</span> for a state vector), so we can simulate fewer qubits.</p>
+</li>
+<li><p><strong>Quantum trajectories</strong>: This method consists in simulating the evolution of the state vector <span class="math notranslate nohighlight">\(|\psi_\alpha \rangle\)</span> for a set of iterations <span class="math notranslate nohighlight">\(\alpha = 1, \ldots, n\)</span>. In each iteration, a noise channel is applied by randomly selecting one of the Kraus operators according to some probabilities (see below) and applying that Kraus operator to the state vector. The advantage of this approach is that we need less memory since we work with a state vector. The disadvantage is that we need to run the circuit many times to collect samples (one sample per run).</p></li>
+</ol>
+<p>Currently, MIMIQ only implements the quantum trajectories method.</p>
+<p>The basis for quantum trajectories is that a Kraus channel can be rewritten as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k p_k \tilde{E}_k \rho \tilde{E}_k^\dagger,\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(p_k = \mathrm{Tr}(E_k \rho E_k^\dagger)\)</span> and <span class="math notranslate nohighlight">\(\tilde{E}_k = E_k / \sqrt{p_k}\)</span>.</p>
+<p>The parameters <span class="math notranslate nohighlight">\(p_k\)</span> can be interpreted as probabilities since they fulfill <span class="math notranslate nohighlight">\(0 \leq p_k \leq 1\)</span> and <span class="math notranslate nohighlight">\(\sum_k p_k = 1\)</span>. In this way, the Kraus channel can be viewed as a linear combination of operations with different Kraus operators weighted by the probabilities <span class="math notranslate nohighlight">\(p_k\)</span>.</p>
+<p>Note that the probabilities <span class="math notranslate nohighlight">\(p_k\)</span> generally depend on the state, so they need to be computed at runtime. The exception is mixed-unitary channels, for which the probabilities are fixed (state-independent).</p>
+</section>
+<section id="building-noise-channels">
+<h3>Building noise channels<a class="headerlink" href="#building-noise-channels" title="Link to this heading">¶</a></h3>
+<p id="id3">You can create noise channels using one of the many functions available. Most noise channels take one or more parameters, and custom channels require passing the Kraus matrices and/or probabilities. Here are some examples of how to build noise channels:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="mf">0.1</span>    <span class="c1"># probability</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">PauliX</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="go">PauliX(0.1)</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span>    <span class="c1"># parameters</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">GeneralizedAmplitudeDamping</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+<span class="go">GeneralizedAmplitudeDamping((0.1, 0.2))</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ps</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>    <span class="c1"># probabilities</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">paulis</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;II&quot;</span><span class="p">,</span> <span class="s2">&quot;XX&quot;</span><span class="p">,</span> <span class="s2">&quot;YY&quot;</span><span class="p">]</span>    <span class="c1"># Pauli strings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">PauliNoise</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="n">paulis</span><span class="p">)</span>
+<span class="go">PauliNoise((0.8, pauli&quot;II&quot;), (0.1, pauli&quot;XX&quot;), (0.1, pauli&quot;YY&quot;))</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ps</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]</span>    <span class="c1"># probabilities</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unitaries</span> <span class="o">=</span> <span class="p">[</span><span class="n">Matrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span> <span class="n">Matrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]])]</span>    <span class="c1"># unitary matrices</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">MixedUnitary</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="n">unitaries</span><span class="p">)</span>
+<span class="go">MixedUnitary((0.9, &quot;Custom([1 0; 0 1])&quot;), (0.1, &quot;Custom([1 0; 0 -1])&quot;))</span>
+</pre></div>
+</div>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kmatrices</span> <span class="o">=</span> <span class="p">[</span><span class="n">Matrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.9</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]]),</span> <span class="n">Matrix</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])]</span>    <span class="c1"># Kraus matrices</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Kraus</span><span class="p">(</span><span class="n">kmatrices</span><span class="p">)</span>
+<span class="go">Kraus(Operator([[1, 0], [0, 0.948683298050514]]), Operator([[0, 0.316227766016838], [0, 0]]))</span>
+</pre></div>
+</div>
+<p>Check the documentation for each noise channel to understand the conditions that each parameter needs to fulfill for the noise channel to be valid.</p>
+<p>In MIMIQ, the most important distinction between noise channels is whether they are mixed-unitary or general Kraus channels. You can use <code class="xref py py-func docutils literal notranslate"><span class="pre">ismixedunitary()</span></code> to check if a channel is mixed unitary:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">ismixedunitary</span><span class="p">()</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">ismixedunitary</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>You can retrieve the Kraus matrices/operators used to define a given channel using <code class="xref py py-func docutils literal notranslate"><span class="pre">krausmatrices()</span></code> or <code class="xref py py-func docutils literal notranslate"><span class="pre">krausoperators()</span></code>. For example:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ProjectiveNoise</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">krausmatrices</span><span class="p">()</span>
+<span class="go">[[1.0, 0]</span>
+<span class="go">[0, 0]</span>
+<span class="go">, [0, 0]</span>
+<span class="go">[0, 1.0]</span>
+<span class="go">]</span>
+</pre></div>
+</div>
+<p>For mixed unitary channels, you can obtain the list of probabilities and the list of unitary gates/matrices separately using <code class="xref py py-func docutils literal notranslate"><span class="pre">probabilities()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">unitarymatrices()</span></code>, or <code class="xref py py-func docutils literal notranslate"><span class="pre">unitarygates()</span></code>, respectively:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PauliZ</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">unitarymatrices</span><span class="p">()</span>
+<span class="go">[[1.0, 0]</span>
+<span class="go">[0, 1.0]</span>
+<span class="go">, [1.0, 0]</span>
+<span class="go">[0, -1.0]</span>
+<span class="go">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Depolarizing1</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">unitarygates</span><span class="p">()</span>
+<span class="go">[I, X, Y, Z]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">PauliNoise</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;II&quot;</span><span class="p">,</span> <span class="s2">&quot;ZZ&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">probabilities</span><span class="p">()</span>
+<span class="go">[0.1, 0.9]</span>
+</pre></div>
+</div>
+<p>In MIMIQ, noise channels can be added at any point in a circuit to make any operation noisy. For noisy gates, one would normally add a noise channel after an ideal gate. To model measurement, preparation, and reset errors, noise channels can be added before and/or after the corresponding operation. More information can be found in the next section.</p>
+</section>
+</section>
+<section id="how-to-add-noise">
+<h2>How to add noise<a class="headerlink" href="#how-to-add-noise" title="Link to this heading">¶</a></h2>
+<section id="adding-noise-one-by-one">
+<span id="id4"></span><h3>Adding noise one by one<a class="headerlink" href="#adding-noise-one-by-one" title="Link to this heading">¶</a></h3>
+<p>The simplest and most flexible way to add noise to a circuit is by using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">push()</span></code> method, similar to how gates are added. Here’s an example of how to create a noisy 5-qubit GHZ circuit:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>    <span class="c1"># preparation/reset error since all qubits start in 0</span>
+<span class="go">6-qubit circuit with 5 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">└── PauliX(0.1) @ q[5]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">6-qubit circuit with 6 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">└── H @ q[1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>    <span class="c1"># 1-qubit noise for GateH</span>
+<span class="go">6-qubit circuit with 7 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">└── AmplitudeDamping(0.1) @ q[1]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateCX</span><span class="p">(),</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="go">6-qubit circuit with 11 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">└── CX @ q[1], q[5]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Depolarizing2</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>    <span class="c1"># 2-qubit noise for GateCX</span>
+<span class="go">6-qubit circuit with 15 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,4]</span>
+<span class="go">└── Depolarizing(0.1) @ q[1,5]</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>    <span class="c1"># measurement error. Note it&#39;s added before the measurement</span>
+<span class="go">6-qubit circuit with 20 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,4]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,5]</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">└── PauliX(0.1) @ q[5]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Measure</span><span class="p">(),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="go">6-qubit circuit with 25 instructions:</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,4]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,5]</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── M @ q[1], c[1]</span>
+<span class="go">├── M @ q[2], c[2]</span>
+<span class="go">├── M @ q[3], c[3]</span>
+<span class="go">├── M @ q[4], c[4]</span>
+<span class="go">└── M @ q[5], c[5]</span>
+</pre></div>
+</div>
+<p>Note how bit-flip error (<code class="xref py py-class docutils literal notranslate"><span class="pre">PauliX</span></code>) is added at the beginning for state preparation/reset errors and right before measuring for measurement errors.</p>
+</section>
+<section id="adding-noise-to-all-gates-of-the-same-type">
+<h3>Adding noise to all gates of the same type<a class="headerlink" href="#adding-noise-to-all-gates-of-the-same-type" title="Link to this heading">¶</a></h3>
+<p>Usually, when adding noise to a circuit, the same type of noise is added to each instance of a given gate. Instead of adding noise channels one by one, you can use <code class="xref py py-meth docutils literal notranslate"><span class="pre">add_noise()</span></code>. It takes several parameters:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="go">Circuit().add_noise(gate, kraus, before=False, parallel=False)</span>
+</pre></div>
+</div>
+<p>This function adds the noise channel specified by <cite>kraus</cite> to every instance of the gate <cite>g</cite> in the circuit <cite>circuit</cite>. The optional parameter <cite>before</cite> determines whether to add the noise before or after the operation, and <cite>parallel</cite> determines whether to add the noise in parallel after/before a block of transversal gates.</p>
+<p>Here’s the same noisy GHZ circuit, using <code class="xref py py-meth docutils literal notranslate"><span class="pre">add_noise()</span></code>:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cnoise</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">add_noise</span><span class="p">(</span><span class="n">Reset</span><span class="p">(),</span> <span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cnoise</span><span class="o">.</span><span class="n">add_noise</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.1</span><span class="p">))</span>
+<span class="go">6-qubit, 6-bit circuit with 21 instructions:</span>
+<span class="go">├── Reset @ q[1]</span>
+<span class="go">├── Reset @ q[2]</span>
+<span class="go">├── Reset @ q[3]</span>
+<span class="go">├── Reset @ q[4]</span>
+<span class="go">├── Reset @ q[5]</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">├── M @ q[1], c[1]</span>
+<span class="go">├── M @ q[2], c[2]</span>
+<span class="go">├── M @ q[3], c[3]</span>
+<span class="go">⋮   ⋮</span>
+<span class="go">└── M @ q[5], c[5]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cnoise</span><span class="o">.</span><span class="n">add_noise</span><span class="p">(</span><span class="n">GateCX</span><span class="p">(),</span> <span class="n">Depolarizing2</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">6-qubit, 6-bit circuit with 25 instructions:</span>
+<span class="go">├── Reset @ q[1]</span>
+<span class="go">├── Reset @ q[2]</span>
+<span class="go">├── Reset @ q[3]</span>
+<span class="go">├── Reset @ q[4]</span>
+<span class="go">├── Reset @ q[5]</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">⋮   ⋮</span>
+<span class="go">└── M @ q[5], c[5]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cnoise</span><span class="o">.</span><span class="n">add_noise</span><span class="p">(</span><span class="n">Measure</span><span class="p">(),</span> <span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">before</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">6-qubit, 6-bit circuit with 30 instructions:</span>
+<span class="go">├── Reset @ q[1]</span>
+<span class="go">├── Reset @ q[2]</span>
+<span class="go">├── Reset @ q[3]</span>
+<span class="go">├── Reset @ q[4]</span>
+<span class="go">├── Reset @ q[5]</span>
+<span class="go">├── PauliX(0.1) @ q[1]</span>
+<span class="go">├── PauliX(0.1) @ q[2]</span>
+<span class="go">├── PauliX(0.1) @ q[3]</span>
+<span class="go">├── PauliX(0.1) @ q[4]</span>
+<span class="go">├── PauliX(0.1) @ q[5]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">├── AmplitudeDamping(0.1) @ q[1]</span>
+<span class="go">├── CX @ q[1], q[2]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,2]</span>
+<span class="go">├── CX @ q[1], q[3]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,3]</span>
+<span class="go">├── CX @ q[1], q[4]</span>
+<span class="go">├── Depolarizing(0.1) @ q[1,4]</span>
+<span class="go">├── CX @ q[1], q[5]</span>
+<span class="go">⋮   ⋮</span>
+<span class="go">└── M @ q[5], c[5]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="running-a-noisy-circuit">
+<h2>Running a noisy circuit<a class="headerlink" href="#running-a-noisy-circuit" title="Link to this heading">¶</a></h2>
+<p id="id5">Circuits with noise can be run using the <code class="xref py py-func docutils literal notranslate"><span class="pre">submit()</span></code> function,
+just as with circuits without noise. Currently, noisy simulations are run using the quantum trajectories
+method. In this case, when running a circuit with noise for <cite>n</cite> samples, the circuit will internally be
+run once for each sample, with a different set of random Kraus operators selected based on the
+corresponding probabilities.</p>
+<p>When the noise channel is a mixed-unitary channel, the unitary operators to be applied can be selected
+before applying the operations on the state. Use the <code class="xref py py-func docutils literal notranslate"><span class="pre">sample_mixedunitaries()</span></code>
+function to generate samples of a circuit with mixed-unitary noise:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Depolarizing1</span><span class="p">(</span><span class="mf">0.5</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="go">6-qubit circuit with 5 instructions:</span>
+<span class="go">├── Depolarizing(0.5) @ q[1]</span>
+<span class="go">├── Depolarizing(0.5) @ q[2]</span>
+<span class="go">├── Depolarizing(0.5) @ q[3]</span>
+<span class="go">├── Depolarizing(0.5) @ q[4]</span>
+<span class="go">└── Depolarizing(0.5) @ q[5]</span>
+
+
+<span class="go"># Produce a circuit with either I, X, Y, or Z in place of each depolarizing channel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">sample_mixedunitaries</span><span class="p">(</span><span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">6-qubit circuit with 5 instructions:</span>
+<span class="go">├── X @ q[1]</span>
+<span class="go">├── I @ q[2]</span>
+<span class="go">├── I @ q[3]</span>
+<span class="go">├── I @ q[4]</span>
+<span class="go">└── Y @ q[5]</span>
+</pre></div>
+</div>
+<p>This function is called internally when executing a circuit, but it can also be used separately.</p>
+</section>
+<section id="noise-models">
+<h2>Noise Models<a class="headerlink" href="#noise-models" title="Link to this heading">¶</a></h2>
+<p id="id6">In addition to adding noise directly to the circuit, MIMIQ provides a <strong>Noise Model</strong> framework. A <code class="xref py py-class docutils literal notranslate"><span class="pre">NoiseModel</span></code> is a collection of “noise rules” that define how noise should be applied to a circuit. This allows you to define a noise profile once and apply it to multiple circuits.</p>
+<section id="building-a-noise-model">
+<h3>Building a Noise Model<a class="headerlink" href="#building-a-noise-model" title="Link to this heading">¶</a></h3>
+<p>A noise model is essentially a container for rules. You can create an empty noise model and add rules to it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">NoiseModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;My Noise Model&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The recommended way to add rules is using the helper methods:</p>
+<ul class="simple">
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_operation_noise()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_readout_noise()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_idle_noise()</span></code></p></li>
+</ul>
+<section id="operation-noise">
+<h4>Operation Noise<a class="headerlink" href="#operation-noise" title="Link to this heading">¶</a></h4>
+<p>Use <code class="docutils literal notranslate"><span class="pre">add_operation_noise</span></code> to add noise to specific operations (gates, measurements, resets, etc.). You can specify the operation type (or a symbolic pattern for gates), the noise channel, and optionally specific qubits.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add noise to all Hadamard gates</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">Depolarizing1</span><span class="p">(</span><span class="mf">0.001</span><span class="p">))</span>
+
+<span class="c1"># Add noise to CX gates only on qubits [1, 2]</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">GateCX</span><span class="p">(),</span> <span class="n">Depolarizing2</span><span class="p">(</span><span class="mf">0.01</span><span class="p">),</span> <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Add noise to any CX gate involving qubits in set {1, 2, 3}</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">GateCX</span><span class="p">(),</span> <span class="n">Depolarizing2</span><span class="p">(</span><span class="mf">0.005</span><span class="p">),</span> <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">exact</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Add noise before measurements</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">Measure</span><span class="p">(),</span> <span class="n">PauliX</span><span class="p">(</span><span class="mf">0.02</span><span class="p">),</span> <span class="n">before</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Add noise after resets</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">Reset</span><span class="p">(),</span> <span class="n">Depolarizing1</span><span class="p">(</span><span class="mf">0.01</span><span class="p">))</span>
+
+<span class="c1"># Replace an operation with noise (e.g., replace a gate with a noise channel)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.001</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="readout-noise">
+<h4>Readout Noise<a class="headerlink" href="#readout-noise" title="Link to this heading">¶</a></h4>
+<p>Use <code class="docutils literal notranslate"><span class="pre">add_readout_noise</span></code> to add noise to measurements.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Global readout error</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_readout_noise</span><span class="p">(</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">))</span>
+
+<span class="c1"># Readout error only on qubit 1</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_readout_noise</span><span class="p">(</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span> <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="idle-noise">
+<h4>Idle Noise<a class="headerlink" href="#idle-noise" title="Link to this heading">¶</a></h4>
+<p>Use <code class="docutils literal notranslate"><span class="pre">add_idle_noise</span></code> to add noise to idle qubits (during <code class="docutils literal notranslate"><span class="pre">Delay</span></code> operations).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Constant idle noise</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_idle_noise</span><span class="p">(</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.0001</span><span class="p">))</span>
+
+<span class="c1"># Time-dependent idle noise (using symbolic variable t)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="n">Symbol</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_idle_noise</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">AmplitudeDamping</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="applying-a-noise-model">
+<h3>Applying a Noise Model<a class="headerlink" href="#applying-a-noise-model" title="Link to this heading">¶</a></h3>
+<p>Once you have defined a noise model, you can apply it to a circuit using <code class="xref py py-func docutils literal notranslate"><span class="pre">apply_noise_model()</span></code>. This will return a <em>new</em> circuit with the noise instructions inserted.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">noisy_circuit</span> <span class="o">=</span> <span class="n">apply_noise_model</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="adding-rules-directly">
+<h3>Adding Rules Directly<a class="headerlink" href="#adding-rules-directly" title="Link to this heading">¶</a></h3>
+<p>While helper functions are convenient, you can also add rules directly to the model using <code class="xref py py-meth docutils literal notranslate"><span class="pre">add_rule()</span></code>. This gives you full control over the rule parameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">GlobalReadoutNoise</span><span class="p">(</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)))</span>
+</pre></div>
+</div>
+<section id="available-rules">
+<h4>Available Rules<a class="headerlink" href="#available-rules" title="Link to this heading">¶</a></h4>
+<p>Here is a list of the available noise rules. Each rule matches a specific condition in the circuit.</p>
+<p><strong>Readout Noise</strong></p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">GlobalReadoutNoise</span></code>: Applies noise to <em>all</em> measurements.</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SetQubitReadoutNoise</span></code>: Applies noise to measurements on any qubit in a given set.</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise</span></code>: Applies noise to measurements on a specific sequence of qubits (sensitive to order).</p></li>
+</ul>
+<p><strong>Operation Noise</strong></p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">OperationInstanceNoise</span></code>: Applies noise to all instances of a specific operation type (e.g., all <code class="docutils literal notranslate"><span class="pre">CX</span></code> gates, all measurements, all resets).</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise</span></code>: Applies noise to operations acting on qubits within a given set.</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise</span></code>: Applies noise to operations acting on a specific sequence of qubits.</p></li>
+</ul>
+<p><strong>Idle Noise</strong></p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">IdleNoise</span></code>: Applies noise to idle qubits during <code class="docutils literal notranslate"><span class="pre">Delay</span></code> instructions.</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SetIdleQubitNoise</span></code>: Applies idle noise only to specific qubits.</p></li>
+</ul>
+<p><strong>Custom Rules</strong></p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomNoiseRule</span></code>: User-defined rule with custom matching and noise generation logic. Has the highest priority by default.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Custom rule with user-defined matching and generation functions</span>
+<span class="n">rule</span> <span class="o">=</span> <span class="n">CustomNoiseRule</span><span class="p">(</span>
+    <span class="n">matcher</span><span class="o">=</span><span class="k">lambda</span> <span class="n">inst</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">get_operation</span><span class="p">(),</span> <span class="n">GateH</span><span class="p">),</span>
+    <span class="n">generator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">inst</span><span class="p">:</span> <span class="n">Instruction</span><span class="p">(</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.01</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">get_qubits</span><span class="p">())),</span>
+    <span class="n">priority_val</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># highest priority (default)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="saving-and-loading">
+<h4>Saving and Loading<a class="headerlink" href="#saving-and-loading" title="Link to this heading">¶</a></h4>
+<p>Noise models can be saved to and loaded from disk using the protobuf format. This allows sharing models between Python and Julia.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save to a file</span>
+<span class="n">model</span><span class="o">.</span><span class="n">saveproto</span><span class="p">(</span><span class="s2">&quot;noise_model.pb&quot;</span><span class="p">)</span>
+
+<span class="c1"># Load from a file</span>
+<span class="n">loaded_model</span> <span class="o">=</span> <span class="n">NoiseModel</span><span class="o">.</span><span class="n">loadproto</span><span class="p">(</span><span class="s2">&quot;noise_model.pb&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="reference">
+<h2>Reference<a class="headerlink" href="#reference" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.</span></span><span class="sig-name descname"><span class="pre">NoiseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rules=&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/noisemodel.html#NoiseModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Collection of prioritized noise rules.</p>
+<p>Rules are always kept sorted by <code class="docutils literal notranslate"><span class="pre">priority()</span></code> so more specific rules win over
+generic fallbacks.</p>
+<p>Priority order (lower number = higher priority):
+- <code class="docutils literal notranslate"><span class="pre">CustomNoiseRule</span></code> (default <code class="docutils literal notranslate"><span class="pre">PRIORITY_USER_OVERRIDE</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">ExactOperationInstanceQubitNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_EXACT_OPERATION</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_EXACT_READOUT</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">SetOperationInstanceQubitNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_SET_OPERATION</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_SET_READOUT</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">OperationInstanceNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_GLOBAL_OPERATION</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">GlobalReadoutNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_GLOBAL_READOUT</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">SetIdleQubitNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_SET_IDLE</span></code>)
+- <code class="docutils literal notranslate"><span class="pre">IdleNoise</span></code> (<code class="docutils literal notranslate"><span class="pre">PRIORITY_IDLE</span></code>)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rules</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a><em>[</em><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.noisemodel.html#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><em>AbstractNoiseRule</em></a><em>]</em>) – Initial list of rules.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Optional model name.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition-example admonition">
+<p class="admonition-title">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">pi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">theta</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;theta&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[</span>
+<span class="gp">... </span>        <span class="n">mc</span><span class="o">.</span><span class="n">OperationInstanceNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">pi</span><span class="p">)),</span>
+<span class="gp">... </span>        <span class="n">mc</span><span class="o">.</span><span class="n">ExactOperationInstanceQubitNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCX</span><span class="p">(),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)),</span>
+<span class="gp">... </span>        <span class="n">mc</span><span class="o">.</span><span class="n">GlobalReadoutNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)),</span>
+<span class="gp">... </span>        <span class="n">mc</span><span class="o">.</span><span class="n">IdleNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)),</span>
+<span class="gp">... </span>    <span class="p">],</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;angle-dependent&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">rules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.noisemodel.html#mimiqcircuits.noisemodel.AbstractNoiseRule" title="mimiqcircuits.noisemodel.AbstractNoiseRule"><span class="pre">AbstractNoiseRule</span></a><span class="p"><span class="pre">]</span></span></em></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/noisemodel.html#NoiseModel.add_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Add a rule and keep model rules sorted by priority.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_readout_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/noisemodel.html#NoiseModel.add_readout_noise"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Add a readout-noise rule.</p>
+<p>Behavior:
+- <code class="docutils literal notranslate"><span class="pre">qubits</span> <span class="pre">is</span> <span class="pre">None</span></code>: add <code class="docutils literal notranslate"><span class="pre">GlobalReadoutNoise</span></code>.
+- <code class="docutils literal notranslate"><span class="pre">qubits</span></code> with <code class="docutils literal notranslate"><span class="pre">exact=False</span></code>: add <code class="docutils literal notranslate"><span class="pre">SetQubitReadoutNoise</span></code>.
+- <code class="docutils literal notranslate"><span class="pre">qubits</span></code> with <code class="docutils literal notranslate"><span class="pre">exact=True</span></code>: add <code class="docutils literal notranslate"><span class="pre">ExactQubitReadoutNoise</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noise</strong> (<a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.readouterr.html#mimiqcircuits.operations.readouterr.ReadoutErr" title="mimiqcircuits.operations.readouterr.ReadoutErr"><em>ReadoutErr</em></a>) – Readout error channel.</p></li>
+<li><p><strong>qubits</strong> – Optional qubit targets.</p></li>
+<li><p><strong>exact</strong> – When <code class="docutils literal notranslate"><span class="pre">True</span></code>, qubit order must match exactly.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">self</span></code> (for chaining).</p>
+</dd>
+</dl>
+<div class="admonition-example admonition">
+<p class="admonition-title">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_readout_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">))</span>
+<span class="go">NoiseModel(rules=[GlobalReadoutNoise(noise=RErr(0.01,0.02))], name=&#39;&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_readout_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">),</span> <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">NoiseModel(rules=[SetQubitReadoutNoise(qubits=(0, 2), noise=RErr(0.03,0.04)), GlobalReadoutNoise(noise=RErr(0.01,0.02))], name=&#39;&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_readout_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">),</span> <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">NoiseModel(rules=[ExactQubitReadoutNoise(qubits=(2, 0), noise=RErr(0.05,0.06)), SetQubitReadoutNoise(qubits=(0, 2), noise=RErr(0.03,0.04)), GlobalReadoutNoise(noise=RErr(0.01,0.02))], name=&#39;&#39;)</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_operation_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/noisemodel.html#NoiseModel.add_operation_noise"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Add operation-instance noise.</p>
+<p><code class="docutils literal notranslate"><span class="pre">operation</span></code> can be concrete (exact parameter match) or symbolic (match by
+operation type and substitute parameters into <code class="docutils literal notranslate"><span class="pre">noise</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>operation</strong> – Operation pattern to match.</p></li>
+<li><p><strong>noise</strong> – Noise operation/channel to inject.</p></li>
+<li><p><strong>qubits</strong> – Optional qubit restriction.</p></li>
+<li><p><strong>exact</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, qubits must match the exact ordered tuple.</p></li>
+<li><p><strong>before</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, insert noise before the matched instruction.</p></li>
+<li><p><strong>replace</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, replace the matched instruction with noise.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">self</span></code> (for chaining).</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If operation target is unsupported or arguments are invalid.</p>
+</dd>
+</dl>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">pi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">theta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;theta alpha beta&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.001</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">pi</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">GateU</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">alpha</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">beta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">pi</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">pi</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Measure</span><span class="p">(),</span> <span class="n">mc</span><span class="o">.</span><span class="n">PauliX</span><span class="p">(</span><span class="mf">0.02</span><span class="p">),</span> <span class="n">before</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Reset</span><span class="p">(),</span> <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">add_operation_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.001</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_idle_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/noisemodel.html#NoiseModel.add_idle_noise"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Add idle-noise rule(s) for <code class="docutils literal notranslate"><span class="pre">Delay</span></code> instructions.</p>
+<p><code class="docutils literal notranslate"><span class="pre">noise</span></code> can be a constant operation or a relation tuple
+<code class="docutils literal notranslate"><span class="pre">(time_symbol,</span> <span class="pre">target_operation_expr)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noise</strong> – Idle noise operation or symbolic relation.</p></li>
+<li><p><strong>qubits</strong> – Optional qubit subset where idle noise is allowed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">self</span></code> (for chaining).</p>
+</dd>
+</dl>
+<div class="admonition-example admonition">
+<p class="admonition-title">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="n">symbols</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_idle_noise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">))</span>
+<span class="go">NoiseModel(rules=[IdleNoise(relation=AmplitudeDamping(0.0001))], name=&#39;&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">add_idle_noise</span><span class="p">((</span><span class="n">t</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)),</span> <span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">NoiseModel(rules=[SetIdleQubitNoise(relation=(t, AmplitudeDamping((1/1000)*t)), qubits=frozenset({0, 1, 2})), IdleNoise(relation=AmplitudeDamping(0.0001))], name=&#39;&#39;)</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">apply_noise_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/noisemodel.html#NoiseModel.apply_noise_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Apply this noise model and return a new noisy circuit.</p>
+<p>This is a convenience wrapper around module-level <code class="docutils literal notranslate"><span class="pre">apply_noise_model</span></code>.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/noisemodel.html#NoiseModel.describe"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">saveproto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/noisemodel.html#NoiseModel.saveproto"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">loadproto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/noisemodel.html#NoiseModel.loadproto"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rules=&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em><span class="sig-paren">)</span></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">mimiqcircuits.</span></span><span class="sig-name descname"><span class="pre">apply_noise_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/noisemodel.html#apply_noise_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Apply a noise model to a circuit and return a new circuit.</p>
+<p>Rules are evaluated in priority order. For each instruction, only the first
+matching rule is applied.</p>
+<p>Wrapper operations are traversed recursively:
+<code class="docutils literal notranslate"><span class="pre">Block</span></code>, <code class="docutils literal notranslate"><span class="pre">IfStatement</span></code>, <code class="docutils literal notranslate"><span class="pre">Parallel</span></code>, <code class="docutils literal notranslate"><span class="pre">Repeat</span></code>, and <code class="docutils literal notranslate"><span class="pre">GateCall</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>circuit</strong> (<a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.circuit.html#mimiqcircuits.circuit.Circuit" title="mimiqcircuits.circuit.Circuit"><em>Circuit</em></a>) – Input circuit.</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.noisemodel.html#mimiqcircuits.noisemodel.NoiseModel" title="mimiqcircuits.noisemodel.NoiseModel"><em>NoiseModel</em></a>) – Noise model to apply.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new circuit with injected noise.</p>
+</dd>
+</dl>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">symengine</span><span class="w"> </span><span class="kn">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">pi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">theta</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;theta&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="mf">0.4</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 1 instruction:</span>
+<span class="go">└── RX(0.4) @ q[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="mf">0.8</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit circuit with 2 instructions:</span>
+<span class="go">├── RX(0.4) @ q[0]</span>
+<span class="go">└── RX(0.8) @ q[1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Measure</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">2-qubit, 1-bit circuit with 3 instructions:</span>
+<span class="go">├── RX(0.4) @ q[0]</span>
+<span class="go">├── RX(0.8) @ q[1]</span>
+<span class="go">└── M @ q[0], c[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Measure</span><span class="p">(),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit, 2-bit circuit with 4 instructions:</span>
+<span class="go">├── RX(0.4) @ q[0]</span>
+<span class="go">├── RX(0.8) @ q[1]</span>
+<span class="go">├── M @ q[0], c[0]</span>
+<span class="go">└── M @ q[1], c[1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">([</span><span class="n">mc</span><span class="o">.</span><span class="n">OperationInstanceNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateRX</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">mc</span><span class="o">.</span><span class="n">Depolarizing</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">pi</span><span class="p">)),</span>
+<span class="gp">... </span>        <span class="n">mc</span><span class="o">.</span><span class="n">GlobalReadoutNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)),])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<dl>
+<dt>Recursive wrapper examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">NoiseModel</span><span class="p">([</span><span class="n">mc</span><span class="o">.</span><span class="n">OperationInstanceNoise</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">mc</span><span class="o">.</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.01</span><span class="p">))])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inner</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_block</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Block</span><span class="p">(</span><span class="n">inner</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_block</span><span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_block</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_block</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">1-qubit circuit with 2 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decl</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GateDecl</span><span class="p">(</span><span class="s2">&quot;local_h&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="n">inner</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_call</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCall</span><span class="p">(</span><span class="n">decl</span><span class="p">,</span> <span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_call</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_call</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_call</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">1-qubit circuit with 2 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_parallel</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Parallel</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">()),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_parallel</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_parallel</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_parallel</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">2-qubit circuit with 4 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── AmplitudeDamping(0.01) @ q[0]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_repeat</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">Repeat</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_repeat</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_repeat</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_repeat</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">1-qubit circuit with 4 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── AmplitudeDamping(0.01) @ q[0]</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[0]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_if</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">IfStatement</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">mc</span><span class="o">.</span><span class="n">BitString</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">)),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_if</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_if</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_if</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">1-qubit, 1-bit circuit with 2 instructions:</span>
+<span class="go">├── IF(c==1) H @ q[0], condition[0]</span>
+<span class="go">└── IF(c==1) AmplitudeDamping(0.01) @ q[0], condition[0]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">decl_inner</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GateDecl</span><span class="p">(</span><span class="s2">&quot;inner_h&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="n">inner</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">middle</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCall</span><span class="p">(</span><span class="n">decl_inner</span><span class="p">,</span> <span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decl_outer</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">GateDecl</span><span class="p">(</span><span class="s2">&quot;outer_call&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="n">middle</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_nested</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCall</span><span class="p">(</span><span class="n">decl_outer</span><span class="p">,</span> <span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_nested</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_nested</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_nested</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">1-qubit circuit with 2 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[0]</span>
+</pre></div>
+</div>
+</dd>
+<dt>Recursive wrapper examples deeply nested:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c_nested2</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">Circuit</span><span class="p">()</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCall</span><span class="p">(</span><span class="n">decl_outer</span><span class="p">,</span> <span class="p">()),</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">GateCall</span><span class="p">(</span><span class="n">decl_outer</span><span class="p">,</span> <span class="p">()),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_nested2</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">2-qubit circuit with 2 instructions:</span>
+<span class="go">├── inner_h() @ q[0]</span>
+<span class="go">└── inner_h() @ q[1]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_nested2</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">apply_noise_model</span><span class="p">(</span><span class="n">c_nested2</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noisy_nested2</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+<span class="go">2-qubit circuit with 4 instructions:</span>
+<span class="go">├── H @ q[0]</span>
+<span class="go">├── AmplitudeDamping(0.01) @ q[0]</span>
+<span class="go">├── H @ q[1]</span>
+<span class="go">└── AmplitudeDamping(0.01) @ q[1]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.</span></span><span class="sig-name descname"><span class="pre">Depolarizing1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/depolarizing.html#Depolarizing1"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">krauschannel</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.</span></span><span class="sig-name descname"><span class="pre">Depolarizing2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/depolarizing.html#Depolarizing2"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">krauschannel</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.</span></span><span class="sig-name descname"><span class="pre">AmplitudeDamping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/ampdamping.html#AmplitudeDamping"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">krauschannel</span></code></p>
+<p>One-qubit amplitude damping noise channel.</p>
+<p>The amplitude damping channel is defined by the Kraus operators
+.. seealso:: <code class="xref py py-func docutils literal notranslate"><span class="pre">GeneralizedAmplitudeDamping()</span></code></p>
+<p><strong>Kraus Matrices representation:</strong></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\operatorname E_1 =
+\begin{pmatrix}
+    1 &amp; 0 \\
+    0 &amp; \sqrt{1-\gamma}
+\end{pmatrix}
+,\quad
+\operatorname E_2 =
+\begin{pmatrix}
+    0 &amp; \sqrt{\gamma} \\
+    0 &amp; 0
+\end{pmatrix},\end{split}\]</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gamma</strong> – <code class="docutils literal notranslate"><span class="pre">gamma</span> <span class="pre">in</span> <span class="pre">[0,1]</span></code>.</p>
+</dd>
+</dl>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">1-qubit circuit with 1 instruction:</span>
+<span class="go">└── AmplitudeDamping(0.1) @ q[0]</span>
+</pre></div>
+</div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/ampdamping.html#AmplitudeDamping.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/ampdamping.html#AmplitudeDamping.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">krausoperators</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/ampdamping.html#AmplitudeDamping.krausoperators"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Returns the Kraus operators associated with the given Kraus channel.</p>
+<p>This should be implemented for each specific channel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of matrices representing the Kraus operators.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">krausmatrices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/ampdamping.html#AmplitudeDamping.krausmatrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Returns the Kraus matrices associated with the given Kraus channel.</p>
+<p>A mixed unitary channel is written as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger,\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(U_k\)</span> are the unitary matrices returned by this function.</p>
+<p>If the Kraus channel is parametric, the matrix elements are wrapped in a
+symengine or sympy object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of symengine matrices representing the Kraus operators.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">iswrapper</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/ampdamping.html#AmplitudeDamping.iswrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">opname</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parnames</span></span></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.</span></span><span class="sig-name descname"><span class="pre">PauliNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paulistr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">krauschannel</span></code></p>
+<p>N-qubit Pauli noise channel specified by a list of probabilities and Pauli
+gates.</p>
+<p>A Pauli channel is defined by:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k p_k P_k \rho P_k,\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(0 \leq p_k \leq 1\)</span> and <span class="math notranslate nohighlight">\(P_k\)</span> are Pauli string operators,
+defined as tensor products of one-qubit Pauli operators. The probabilities must fulfill
+<span class="math notranslate nohighlight">\(\sum_k p_k = 1\)</span>.</p>
+<p>This channel is a mixed unitary channel (see <code class="xref py py-func docutils literal notranslate"><span class="pre">ismixedunitary()</span></code>).</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">Depolarizing</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">PauliX</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">PauliY</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">PauliZ</span></code>,
+which are special cases of PauliNoise.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – List of probabilities that must add up to 1.</p></li>
+<li><p><strong>paulistrings</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – List of strings, each of length <span class="math notranslate nohighlight">\(N\)</span>, with each character
+being either <cite>“I”</cite>, <cite>“X”</cite>, <cite>“Y”</cite>, or <cite>“Z”</cite>. The number of qubits is equal to <span class="math notranslate nohighlight">\(N\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>The lengths of <cite>p</cite> and <cite>paulistrings</cite> must be the same.</p>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<p>PauliNoise channels can be defined for any number of qubits,
+and for any number of Pauli strings:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">PauliNoise</span><span class="p">([</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">]),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">2-qubit circuit with 1 instruction:</span>
+<span class="go">└── PauliNoise((0.8, pauli&quot;I&quot;), (0.1, pauli&quot;X&quot;), (0.1, pauli&quot;Y&quot;)) @ q[1]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">PauliNoise</span><span class="p">([</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;XY&quot;</span><span class="p">,</span> <span class="s2">&quot;II&quot;</span><span class="p">]),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">3-qubit circuit with 2 instructions:</span>
+<span class="go">├── PauliNoise((0.8, pauli&quot;I&quot;), (0.1, pauli&quot;X&quot;), (0.1, pauli&quot;Y&quot;)) @ q[1]</span>
+<span class="go">└── PauliNoise((0.9, pauli&quot;XY&quot;), (0.1, pauli&quot;II&quot;)) @ q[1]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">PauliNoise</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;IXIX&quot;</span><span class="p">,</span> <span class="s2">&quot;XYXY&quot;</span><span class="p">,</span> <span class="s2">&quot;ZZZZ&quot;</span><span class="p">,</span> <span class="s2">&quot;IXYZ&quot;</span><span class="p">]),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">5-qubit circuit with 3 instructions:</span>
+<span class="go">├── PauliNoise((0.8, pauli&quot;I&quot;), (0.1, pauli&quot;X&quot;), (0.1, pauli&quot;Y&quot;)) @ q[1]</span>
+<span class="go">├── PauliNoise((0.9, pauli&quot;XY&quot;), (0.1, pauli&quot;II&quot;)) @ q[1]</span>
+<span class="go">└── PauliNoise((0.5, pauli&quot;IXIX&quot;), (0.2, pauli&quot;XYXY&quot;), (0.2, pauli&quot;ZZZZ&quot;), (0.1, pauli&quot;IXYZ&quot;)) @ q[1]</span>
+</pre></div>
+</div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paulistr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_qubits</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parnames</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">krausmatrices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise.krausmatrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Returns the Kraus matrices associated with the given Kraus channel.</p>
+<p>A mixed unitary channel is written as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger,\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(U_k\)</span> are the unitary matrices returned by this function.</p>
+<p>If the Kraus channel is parametric, the matrix elements are wrapped in a
+symengine or sympy object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of symengine matrices representing the Kraus operators.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">krausoperators</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise.krausoperators"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Returns the Kraus operators associated with the given Kraus channel.</p>
+<p>This should be implemented for each specific channel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of matrices representing the Kraus operators.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">probabilities</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise.probabilities"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Returns the probabilities for each Kraus operator in a mixed unitary channel.</p>
+<p>A mixed unitary channel is written as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger,\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(p_k\)</span> are the probabilities.</p>
+<p>This method is valid only for mixed unitary channels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of probabilities for each Kraus operator.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">unitarymatrices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise.unitarymatrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Unitary matrices associated with the given mixed unitary Kraus channel.</p>
+<p>A mixed unitary channel is written as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger,\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(U_k\)</span> are the unitary matrices.</p>
+<p>An error is raised if the channel is not mixed unitary (i.e., <cite>ismixedunitary(self)==False</cite>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the Kraus channel is parametric, the matrix elements are wrapped in a
+symbolic object (e.g., from sympy or symengine). To manipulate expressions,
+use the appropriate symbolic manipulation libraries.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">ismixedunitary()</span></code>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">probabilities()</span></code>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">krausmatrices()</span></code></p>
+</div>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">PauliX</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span><span class="o">.</span><span class="n">unitarymatrices</span><span class="p">()</span>
+<span class="go">[[1.0, 0]</span>
+<span class="go">[0, 1.0]</span>
+<span class="go">, [0, 1.0]</span>
+<span class="go">[1.0, 0]</span>
+<span class="go">]</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">unitarygates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise.unitarygates"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Returns the unitary gates associated with the given mixed unitary Kraus channel.</p>
+<p>A mixed unitary channel is written as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\sum_k p_k U_k \rho U_k^\dagger,\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(U_k\)</span> are the unitary operators.</p>
+<p>This method is valid only for mixed unitary channels.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ismixedunitary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise.ismixedunitary"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Determine whether the quantum operation is a mixed unitary channel.</p>
+<p>A channel is considered mixed unitary if all the Kraus operators <span class="math notranslate nohighlight">\(E_k\)</span> are proportional
+to a unitary matrix <span class="math notranslate nohighlight">\(U_k\)</span>, i.e.,</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger,\]</div>
+</div>
+<p>with some probabilities <span class="math notranslate nohighlight">\(0 \leq p_k \leq 1\)</span> that add up to 1, and <span class="math notranslate nohighlight">\(U_k^\dagger U_k = I\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>krauschannel</strong> – The Kraus channel to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><cite>True</cite> if the channel is a mixed unitary channel, <cite>False</cite> otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">PauliX</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">ismixedunitary</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">AmplitudeDamping</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">ismixedunitary</span><span class="p">()</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">iswrapper</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise.iswrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">unwrappedkrausmatrices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/noisechannel/standards/pauli.html#PauliNoise.unwrappedkrausmatrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Returns the unitary Kraus matrices associated to the mixed unitary Kraus channel
+without symbolic wrapper.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">unitarymatrices()</span></code></p>
+</div>
+<div class="admonition-example admonition">
+<p class="admonition-title">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">op</span> <span class="o">=</span> <span class="n">PauliX</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">op</span><span class="o">.</span><span class="n">unwrappedkrausmatrices</span><span class="p">()</span>
+<span class="go">[[0.894427190999916, 0]</span>
+<span class="go">[0, 0.894427190999916]</span>
+<span class="go">, [0, 0.447213595499958]</span>
+<span class="go">[0.447213595499958, 0]</span>
+<span class="go">]</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mimiqcircuits.</span></span><span class="sig-name descname"><span class="pre">ReadoutErr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/readouterr.html#ReadoutErr"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../apidocs/_autosummary/mimiqcircuits.operations.operation.html#mimiqcircuits.operations.operation.Operation" title="mimiqcircuits.operations.operation.Operation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Operation</span></code></a></p>
+<p>Represents a classical readout error applied immediately after a measurement.</p>
+<p>The readout error is modeled by a 2×2 <em>confusion matrix</em>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{pmatrix}
+    P(\text{report } 0 | \text{true } 0) &amp;
+    P(\text{report } 1 | \text{true } 0) = p_0 \\
+    P(\text{report } 0 | \text{true } 1) = p_1 &amp;
+    P(\text{report } 1 | \text{true } 1)
+\end{pmatrix}\end{split}\]</div>
+</div>
+<p>Can be initialized either from the error probabilities <code class="docutils literal notranslate"><span class="pre">p0</span></code>, <code class="docutils literal notranslate"><span class="pre">p1</span></code> or
+directly from a 2×2 confusion matrix. Accepts NumPy, SymPy, or SymEngine matrices.</p>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">)</span>
+<span class="go">RErr(0.02,0.03)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ReadoutErr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.98</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">],</span>
+<span class="gp">... </span>                     <span class="p">[</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.97</span><span class="p">]]))</span>
+<span class="go">RErr(0.02,0.03)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">ReadoutErr</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">),</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">1-bit circuit with 1 instruction:</span>
+<span class="go">└── RErr(0.01, 0.02) @ c[0]</span>
+</pre></div>
+</div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/readouterr.html#ReadoutErr.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/readouterr.html#ReadoutErr.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Evaluate symbolic parameters numerically.
+Returns a new ReadoutErr instance with evaluated parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/readouterr.html#ReadoutErr.matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Return the confusion matrix as a symengine.Matrix.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">opname</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parnames</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">iswrapper</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mimiqcircuits/operations/readouterr.html#ReadoutErr.iswrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="symbolic_ops.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Symbolic Operations in MIMIQ</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="non_unitary_ops.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Non-unitary Operations</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023-2026, QPerfect
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/qperfect-io/mimiqcircuits-python" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              <a class="muted-link " href="https://qperfect.io" aria-label="QPerfect">
+                <svg stroke="currentColor" fill="none" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Noisy simulations on MIMIQ</a><ul>
+<li><a class="reference internal" href="#summary-of-noise-functionality">Summary of noise functionality</a></li>
+<li><a class="reference internal" href="#mathematical-background">Mathematical background</a><ul>
+<li><a class="reference internal" href="#kraus-operators">Kraus operators</a></li>
+<li><a class="reference internal" href="#evolution-with-noise">Evolution with noise</a></li>
+<li><a class="reference internal" href="#building-noise-channels">Building noise channels</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-add-noise">How to add noise</a><ul>
+<li><a class="reference internal" href="#adding-noise-one-by-one">Adding noise one by one</a></li>
+<li><a class="reference internal" href="#adding-noise-to-all-gates-of-the-same-type">Adding noise to all gates of the same type</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-a-noisy-circuit">Running a noisy circuit</a></li>
+<li><a class="reference internal" href="#noise-models">Noise Models</a><ul>
+<li><a class="reference internal" href="#building-a-noise-model">Building a Noise Model</a><ul>
+<li><a class="reference internal" href="#operation-noise">Operation Noise</a></li>
+<li><a class="reference internal" href="#readout-noise">Readout Noise</a></li>
+<li><a class="reference internal" href="#idle-noise">Idle Noise</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#applying-a-noise-model">Applying a Noise Model</a></li>
+<li><a class="reference internal" href="#adding-rules-directly">Adding Rules Directly</a><ul>
+<li><a class="reference internal" href="#available-rules">Available Rules</a></li>
+<li><a class="reference internal" href="#saving-and-loading">Saving and Loading</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reference">Reference</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=a8555a2b"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>
