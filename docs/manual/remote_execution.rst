@@ -551,61 +551,109 @@ Check job status
 ~~~~~~~~~~~~~~~~
 .. _check-job-status:
 
-You can check the status of jobs using 
-[:meth:`~mimiqcircuits.MimiqConnection.isJobDone`], [:meth:`~mimiqcircuits.MimiqConnection.isJobFailed`,] [:meth:`~mimiqcircuits.MimiqConnection.isJobCanceled`], [:meth:`~mimiqcircuits.MimiqConnection.isJobStarted`]. These functions check whether the job's status is `DONE`, `ERROR`, `CANCELED` or `RUNNING`, respectively, and return a boolean.
+You can check the status of jobs using
+:meth:`~mimiqcircuits.MimiqConnection.isJobDone`, :meth:`~mimiqcircuits.MimiqConnection.isJobFailed`, :meth:`~mimiqcircuits.MimiqConnection.isJobCanceled`, :meth:`~mimiqcircuits.MimiqConnection.isJobStarted`. These functions check whether the job's status is ``DONE``/``ERROR``/``CANCELED``, ``ERROR``, ``CANCELED``, or not ``NEW``, respectively, and return a boolean.
 
-You can find this information also in the cloud server, but doing it from within the 
-Python session allows you to perform different actions depending on job status. 
-It is particularly useful to avoid a call to `get_results` to take too 
-long because a job has not finished yet (check [:ref:`results <results>`] section).
+You can find this information also in the cloud server, but doing it from within the
+Python session allows you to perform different actions depending on job status.
+It is particularly useful to avoid a call to ``get_results`` to take too
+long because a job has not finished yet (check :ref:`results <results>` section).
 
 To call them, we simply do:
 
-.. code-block::
+.. code-block:: python
 
     connection.isJobDone(job)
     connection.isJobFailed(job)
     connection.isJobCanceled(job)
-    connection.conn.isJobStarted(job)
+    connection.isJobStarted(job)
+
+You can also get detailed information about a job using :meth:`~mimiqcircuits.MimiqConnection.requestInfo`:
+
+.. code-block:: python
+
+    info = connection.requestInfo(job)
+
+This returns a ``RequestInfo`` object containing full execution details such as ``status``, ``name``, ``label``, ``creation_date``, ``running_date``, ``done_date``, and file metadata.
+
+Cancel a job
+~~~~~~~~~~~~
+.. _cancel-a-job:
+
+You can cancel a running or pending job using :meth:`~mimiqcircuits.MimiqConnection.stopExecution`:
+
+.. code-block:: python
+
+    connection.stopExecution(job)
+
+If the job is ``NEW``, it will be immediately canceled. If it is ``RUNNING``, a stop signal will be sent to the executor.
+
+Delete job files
+~~~~~~~~~~~~~~~~
+.. _delete-job-files:
+
+You can delete the uploaded and result files associated with a job using :meth:`~mimiqcircuits.MimiqConnection.deleteFiles`:
+
+.. code-block:: python
+
+    connection.deleteFiles(job)
 
 List all jobs
 ~~~~~~~~~~~~~
 .. _list-all-jobs:
 
-You can get a list of all job requests sent to MIMIQ's cloud 
-server using [:meth:`~mimiqcircuits.MimiqConnection.requests`]. This can be useful for monitoring job history and active requests.
+You can get a list of all job requests sent to MIMIQ's cloud
+server using :meth:`~mimiqcircuits.MimiqConnection.requests`. This can be useful for monitoring job history and active requests.
 
-This function accepts several options, which you can use to filter 
-by `status` (i.e. `"NEW"`, `"RUNNING"`, `"ERROR"`, `"CANCELED"`, `"DONE"`) or by `Email`. 
-You can also change the limit for the amount of requests retrieved using `limit`.
+This function accepts several options, which you can use to filter
+by ``status`` (i.e. ``"NEW"``, ``"RUNNING"``, ``"ERROR"``, ``"CANCELED"``, ``"DONE"``) or by ``userEmail``.
+You can also change the limit for the amount of requests retrieved using ``limit``.
 
 Here's an example to get the last 100 new jobs:
 
-.. code-block::
+.. code-block:: python
 
-    connection.requests(status = "NEW", limit = 100)
-    conn.requests(Email = "useremail", limit = 100)
+    connection.requests(status="NEW", limit=100)
+    connection.requests(userEmail="useremail", limit=100)
 
+Download files
+~~~~~~~~~~~~~~
+.. _download-files:
+
+You can download the input files or results of a job directly using :meth:`~mimiqcircuits.MimiqConnection.downloadJobFiles` and :meth:`~mimiqcircuits.MimiqConnection.downloadResults`:
+
+.. code-block:: python
+
+    # Download input files
+    connection.downloadJobFiles(job)
+    connection.downloadJobFiles(job, destdir="my_directory/")
+
+    # Download result files
+    connection.downloadResults(job)
+    connection.downloadResults(job, destdir="my_directory/")
+
+Both return a list of downloaded filenames. Files are saved to ``./{execution_id}/`` by default.
+
+.. note::
+    For most use cases, :meth:`~mimiqcircuits.MimiqConnection.get_results` and :meth:`~mimiqcircuits.MimiqConnection.get_inputs` are more convenient as they download, parse, and return the results/circuits directly.
 
 Get inputs
 ~~~~~~~~~~
 .. _get-inputs:
 
-every job using [:meth:`~mimiqcircuits.MimiqConnection.get_input`] or [:meth:`~mimiqcircuits.MimiqConnection.get_inputs`]. 
-The former fetches the data of the first circuit in the job, whereas the latter retrieves all inputs 
+You can retrieve the input circuits and parameter files for every job using :meth:`~mimiqcircuits.MimiqConnection.get_input` or :meth:`~mimiqcircuits.MimiqConnection.get_inputs`.
+The former fetches the data of the first circuit in the job, whereas the latter retrieves all inputs
 from all circuits in the job (useful in batch mode). This is similar to :meth:`~mimiqcircuits.MimiqConnection.get_result` vs :meth:`~mimiqcircuits.MimiqConnection.get_results`.
 
-.. code-block::
-    
+.. code-block:: python
+
     circuits, parameters = connection.get_inputs(job)
 
 Reference
 ---------
 
 .. autoclass:: mimiqcircuits.MimiqConnection
-.. autoclass:: mimiqcircuits.MimiqConnection
-    :noindex:
-    :members: connect, submit, get_results, get_result
+    :members: connect, submit, get_results, get_result, get_inputs, get_input, isJobDone, isJobFailed, isJobCanceled, isJobStarted, requestInfo, stopExecution, deleteFiles, requests, downloadResults, downloadJobFiles
 .. autoclass:: mimiqcircuits.QCSResults
     :noindex:
     :members: loadproto, saveproto
