@@ -75,21 +75,42 @@ Connecting to server for sending jobs
 
 In order to execute a circuit in the remote, you first need to connect to it, see also :doc:`quickstart </quick_start>` page.
 
-Credentials
-~~~~~~~~~~~
-.. _credentials:
+Connection methods
+~~~~~~~~~~~~~~~~~~
+.. _connection-methods:
 
-You can connect to the MIMIQ server using the [:meth:`~mimiqcircuits.MimiqConnection.connect`] method and providing your credentials (username and password). If you do not supply your credentials directly in the function call, you will be redirected to a localhost page where you can securely enter your credentials. This method is preferred for better security, as it avoids storing your username and password in the script.
+The :meth:`~mimiqcircuits.MimiqConnection.connect` method supports three calling conventions:
 
+- ``connect()`` — opens a browser-based login page (**recommended**).
+- ``connect(token)`` — authenticates with a saved refresh token.
+- ``connect(email, password)`` — authenticates directly with credentials.
 
-**Example**:
+Internally these delegate to ``connectWeb()``, ``connectToken(token)``, and ``connectUser(email, password)`` respectively, which can also be called directly.
+
+Browser login (recommended)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _browser-login:
+
+When called with no arguments, ``connect()`` opens a local login page in your default browser where you can securely enter your email and password. This is the recommended method, as it avoids storing credentials as plain text in your scripts or notebooks.
 
 .. code-block:: python
 
-    
-    conn = MimiqConnection(url = QPERFECT_CLOUD)
+    conn = MimiqConnection(QPERFECT_CLOUD)
+    conn.connect()
 
-    conn.connect("username", "password")
+Credential-based login
+^^^^^^^^^^^^^^^^^^^^^^
+.. _credential-login:
+
+You can also pass your email and password directly:
+
+.. code-block:: python
+
+    conn = MimiqConnection(QPERFECT_CLOUD)
+    conn.connect("john.doe@example.com", "password")
+
+.. warning::
+    This method stores your password in plain text in your script. Prefer browser login or token-based login for better security.
 
 Tokens
 ~~~~~~
@@ -101,11 +122,9 @@ Instead of using your credentials every time you connect to the MIMIQ services, 
 
 - First Authentication: You log in once using your credentials (via browser or directly), and the token is generated.
 
-- Saving the Token: You can save this token in a JSON file using the savetoken method.
+- Saving the Token: You can save this token in a JSON file using the ``savetoken`` method.
 
-- Loading the Token: Later, you can load the saved token with the loadtoken method to reconnect without providing your credentials again.
-
-This is a safer method, as it avoids hardcoding sensitive information like passwords in your scripts.
+- Loading the Token: Later, you can load the saved token with the ``loadtoken`` method to reconnect without providing your credentials again.
 
 After authentication, this is how it looks:
 
@@ -116,9 +135,15 @@ After authentication, this is how it looks:
 
     # Load the token from a saved file to reconnect
     conn.loadtoken("example_token.json")
-    
 
-You can also accomplish all at once (connecting through a token if possible, otherwise connecting via the browser and then saving the token) using this code block:
+You can also connect via a token directly:
+
+.. code-block:: python
+
+    conn = MimiqConnection(QPERFECT_CLOUD)
+    conn.connect("my_refresh_token")
+
+You can accomplish all at once (connecting through a token if possible, otherwise connecting via the browser and then saving the token) using this code block:
 
 .. code-block:: python
 
@@ -127,10 +152,9 @@ You can also accomplish all at once (connecting through a token if possible, oth
     try:
         conn = conn.loadtoken()
     except Exception:
+        conn.connect()
         conn.savetoken()
-        conn = conn.loadtoken()
 
-    
 .. Note::
       Tokens stay valid only for one day.
 
