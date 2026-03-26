@@ -286,7 +286,7 @@ class Lexer:
         self.readon(c)
         while True:
             pc = self.peekchar()
-            if pc.isidentifier() or pc.isdigit() or pc == "_" or pc == "/" or pc == "!":
+            if pc.isidentifier() or pc.isdigit() or pc == "_":
                 self.readchar()
             else:
                 break

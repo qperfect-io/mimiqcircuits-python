@@ -252,6 +252,7 @@ from mimiqcircuits.noisemodel import (
     GlobalReadoutNoise,
 )
 from mimiqcircuits.circuit_extras import remove_unused, remove_swaps
+from mimiqcircuits.symbolics import unwrapvalue, listsymbols, UndefinedValue
 
 from mimiqcircuits.circuittester import CircuitTesterExperiment
 
@@ -541,6 +542,9 @@ __all__ = [
     "CLASSICALOPERATIONS",
     "remove_unused",
     "remove_swaps",
+    "unwrapvalue",
+    "listsymbols",
+    "UndefinedValue",
     # Decomposition framework
     "RewriteRule",
     "DecompositionBasis",

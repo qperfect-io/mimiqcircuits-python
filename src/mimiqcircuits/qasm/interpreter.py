@@ -1,11 +1,10 @@
 # Copyright (C) 2023 QPerfect. All Rights Reserved.
 # Proprietary and confidential.
 #
-import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Set, Union
 
-from symengine import Symbol
+import symengine as se
 
 import mimiqcircuits as mc
 from mimiqcircuits.gatedecl import GateDecl
@@ -121,16 +120,16 @@ SPECIAL_FACTORIES = {
 
 OPERATIONS = {
     "+": lambda x, y: x + y,
-    "-": lambda x, y: x - y,  # Unary handled differently? Julia uses same dict.
+    "-": lambda x, y: x - y,
     "*": lambda x, y: x * y,
     "/": lambda x, y: x / y,
     "^": lambda x, y: x**y,
-    "sin": math.sin,
-    "cos": math.cos,
-    "tan": math.tan,
-    "exp": math.exp,
-    "log": math.log,
-    "sqrt": math.sqrt,
+    "sin": se.sin,
+    "cos": se.cos,
+    "tan": se.tan,
+    "exp": se.exp,
+    "log": se.log,
+    "sqrt": se.sqrt,
 }
 
 
@@ -139,10 +138,10 @@ def interpret_expression(istate: InterpreterState, expr: Any):
         return expr
     if isinstance(expr, str):
         if expr == "pi":
-            return math.pi
+            return se.pi
         if expr in istate.vars_map:
             return istate.vars_map[expr]
-        return Symbol(expr)
+        return se.Symbol(expr)
 
     if isinstance(expr, QASMExpr):
         if expr.head == "call":
@@ -326,7 +325,7 @@ def interpret_gatedecl(istate: InterpreterState, expr: QASMExpr):
     decl_targets = [token_val_to_str(t) for t in unitary.args[1:]]
 
     # Create new context
-    new_vars = {p: Symbol(p) for p in decl_params}
+    new_vars = {p: se.Symbol(p) for p in decl_params}
 
     # Map targets to unique indices
     target_mapping = {name: range(i, i + 1) for i, name in enumerate(decl_targets)}
@@ -347,7 +346,7 @@ def interpret_gatedecl(istate: InterpreterState, expr: QASMExpr):
         interpret_gop(sub_istate, stmt)
 
     istate.gates[decl_name] = GateDecl(
-        decl_name, tuple(Symbol(p) for p in decl_params), sub_istate.circuit
+        decl_name, tuple(se.Symbol(p) for p in decl_params), sub_istate.circuit
     )
 
 
