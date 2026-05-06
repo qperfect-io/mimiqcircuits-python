@@ -124,7 +124,7 @@ def get_results(self, execution, interval=1):
         interval (int): The interval (in seconds) for checking job status (default: 1).
 
     Returns:
-        List[QCSResults | OptimizationRun | OptimizationResults]: A list of result instances.
+        List[QCSResults | OptimizationResults]: A list of result instances.
 
     Raises:
         RuntimeError: If the remote job encounters an error.
@@ -161,15 +161,9 @@ def get_results(self, execution, interval=1):
                 if not os.path.isfile(fname):
                     raise RuntimeError(f"Missing result file {fname}")
                 if "optresult" in os.path.basename(fname):
-                    from mimiqcircuits.optimization import (
-                        OptimizationResults,
-                        OptimizationRun,
-                    )
+                    from mimiqcircuits.optimization import OptimizationResults
 
-                    if result.get("history", False):
-                        results.append(OptimizationResults.loadproto(fname))
-                    else:
-                        results.append(OptimizationRun.loadproto(fname))
+                    results.append(OptimizationResults.loadproto(fname))
                 else:
                     results.append(QCSResults.loadproto(fname))
 
@@ -184,7 +178,7 @@ def get_result(self, execution, **kwargs):
         **kwargs: Additional keyword arguments for result retrieval.
 
     Returns:
-        QCSResults | OptimizationRun | OptimizationResults: The first result found.
+        QCSResults | OptimizationResults: The first result found.
 
     Raises:
         RuntimeWarning: If multiple results are found.
