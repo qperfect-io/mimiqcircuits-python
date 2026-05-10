@@ -73,6 +73,10 @@ class Parallel(Gate):
         op_matrix = self.op.matrix()
         return reduce(np.kron, [op_matrix] * (self._num_repeats))
 
+    def _matrix_numeric(self, *params):
+        op_matrix = self.op.unwrappedmatrix()
+        return reduce(np.kron, [op_matrix] * self._num_repeats)
+
     @property
     def num_repeats(self):
         return self._num_repeats

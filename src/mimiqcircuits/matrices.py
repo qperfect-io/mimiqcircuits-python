@@ -15,19 +15,23 @@
 # limitations under the License.
 #
 
-from symengine import I, cos, sin, pi, eye, Matrix
+from symengine import I, cos, sin, exp, pi, eye, Matrix
 import symengine as se
 import numpy as np
 import mimiqcircuits as mc
 import sympy as sp
 
 
+# Writing ``cis(x)`` as ``exp(I*x)`` (rather than ``cos(x) + I*sin(x)``) keeps
+# the symbolic display compact — previously ``sp.simplify`` recognized the
+# trig form and collapsed it; doing it at construction time lets us keep the
+# nice output without paying for SymPy.
 def cis(x):
-    return cos(x) + I * sin(x)
+    return exp(I * x)
 
 
 def cispi(x):
-    return cos(pi * x) + I * sin(pi * x)
+    return exp(I * pi * x)
 
 
 def cospi(x):
@@ -47,22 +51,20 @@ def pmatrix(lmbda):
 
 
 def ctrl(mat):
-    """
-    Returns the controlled version of a given 2x2 matrix.
+    """Single-control version of ``mat``.
 
-    Args:
-        mat (numpy.ndarray): A nxn matrix to be controlled.
-
-    Returns:
-        numpy.ndarray: A 2n x 2n controlled matrix.
+    Dispatches on the input type: ``numpy.ndarray`` in, ``numpy.ndarray``
+    out (fast path); SymEngine matrix in, SymEngine matrix out.
     """
-    dim = mat.shape[0]
+    if isinstance(mat, np.ndarray):
+        dim = mat.shape[0]
+        out = np.eye(2 * dim, dtype=mat.dtype)
+        out[dim:, dim:] = mat
+        return out
+
+    dim = mat.nrows()
     m = eye(2 * dim)
-
-    # TODO: can it be done via slicing?
-    for i in range(dim):
-        for j in range(dim):
-            m[i + dim, j + dim] = mat[i, j]
+    m[dim:, dim:] = mat
     return m
 
 
@@ -74,7 +76,10 @@ def gphasepi(lmbda):
     return cispi(lmbda)
 
 
-def umatrix(theta, phi, lmbda, gamma=0.0):
+def umatrix(theta, phi, lmbda, gamma=0):
+    # ``gamma`` defaults to the integer ``0`` (not ``0.0``): ``exp(I*0)``
+    # collapses to the integer ``1`` in SymEngine, whereas ``exp(I*0.0)``
+    # stays as ``1.0 + 0.0*I`` and litters the symbolic display.
     costheta2 = cos(theta / 2)
     sintheta2 = sin(theta / 2)
     return Matrix(
@@ -158,23 +163,23 @@ def reorder_qubits_matrix(M, qubits, nq=None):
 
 
 def kronecker(A, B):
+    """Kronecker product ``A ⊗ B``.
+
+    Dispatches on the input types: two ``numpy.ndarray`` inputs use
+    :func:`numpy.kron` (fast path); otherwise builds a SymEngine matrix.
     """
-    Kronecker product of two SymEngine matrices A ⊗ B.
-    Returns a new SymEngine Matrix.
-    """
-    import symengine as se
+    if isinstance(A, np.ndarray) and isinstance(B, np.ndarray):
+        return np.kron(A, B)
 
     rows_A, cols_A = A.nrows(), A.ncols()
     rows_B, cols_B = B.nrows(), B.ncols()
 
     result = se.zeros(rows_A * rows_B, cols_A * cols_B)
-
     for i in range(rows_A):
         for j in range(cols_A):
             for k in range(rows_B):
                 for l in range(cols_B):
                     result[i * rows_B + k, j * cols_B + l] = A[i, j] * B[k, l]
-
     return result
 
 

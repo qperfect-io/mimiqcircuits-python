@@ -20,6 +20,7 @@ import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.standard.deprecated import GateU3
 from mimiqcircuits.operations.utils import control_one_defined
+from mimiqcircuits import numerics as _nm
 import mimiqcircuits as mc
 from symengine import pi, Matrix, cos, sin, I, exp
 
@@ -78,6 +79,9 @@ class GateRX(mcg.Gate):
                 [-I * sin(self.theta / 2), cos(self.theta / 2)],
             ]
         )
+
+    def _matrix_numeric(self, theta):
+        return _nm.rxmatrix(theta)
 
     def inverse(self):
         return GateRX(-self.theta)
@@ -154,6 +158,9 @@ class GateRY(mcg.Gate):
             ]
         )
 
+    def _matrix_numeric(self, theta):
+        return _nm.rymatrix(theta)
+
     def inverse(self):
         return GateRY(-self.theta)
 
@@ -223,6 +230,9 @@ class GateRZ(mcg.Gate):
 
     def _matrix(self):
         return Matrix([[exp(-I * self.lmbda / 2), 0], [0, exp(I * self.lmbda / 2)]])
+
+    def _matrix_numeric(self, lmbda):
+        return _nm.rzmatrix(lmbda)
 
     def inverse(self):
         return GateRZ(-self.lmbda)
@@ -296,6 +306,9 @@ class GateR(mcg.Gate):
                 [-I * exp(I * self.phi) * sin(self.theta / 2), cos(self.theta / 2)],
             ]
         )
+
+    def _matrix_numeric(self, theta, phi):
+        return _nm.rmatrix(theta, phi)
 
     def inverse(self):
         return GateR(-self.theta, self.phi)

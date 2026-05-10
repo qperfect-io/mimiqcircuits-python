@@ -109,8 +109,8 @@ class GateU2(mcg.Gate):
         >>> GateU2(phi, lmbda)
         U2(phi, lambda)
         >>> GateU2(phi, lmbda).matrix()
-        [0.707106781186548, -0.707106781186548*exp(I*lambda)]
-        [0.707106781186548*exp(I*phi), 0.707106781186548*exp(I*(lambda + phi))]
+        [0.707106781186548, (-1/2)*sqrt(2)*exp(I*lambda)]
+        [(1/2)*sqrt(2)*exp(I*phi), (1/2)*sqrt(2)*exp(I*(lambda + phi))]
         <BLANKLINE>
         >>> c = Circuit().push(GateU2(phi, lmbda), 0)
         >>> c
@@ -174,7 +174,7 @@ class GateU3(mcg.Gate):
         >>> GateU3(theta, phi, lmbda)
         U3(theta, phi, lambda)
         >>> GateU3(theta, phi, lmbda).matrix()
-        [1.0*cos((1/2)*theta), -exp(I*lambda)*sin((1/2)*theta)]
+        [cos((1/2)*theta), -exp(I*lambda)*sin((1/2)*theta)]
         [exp(I*phi)*sin((1/2)*theta), exp(I*(lambda + phi))*cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateU3(theta, phi, lmbda), 0)

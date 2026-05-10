@@ -302,6 +302,10 @@ enum OperationType {
     Pow = 13;
     SetBit0 = 14;
     SetBit1 = 15;
+    QubitLoss = 16;
+    QubitReload = 17;
+    CheckLoss = 18;
+    MeasureCheckLoss = 19;
 }
 
 message SimpleOperation {
@@ -376,6 +380,10 @@ message ReadoutErr {
   Arg p1 = 2;
 }
 
+message LossErr {
+  Arg p = 1;
+}
+
 message Operation {
     oneof operation {
         SimpleGate simplegate = 1;
@@ -407,6 +415,7 @@ message Operation {
         Repeat repeat = 27;
         Block block = 28;
         ReadoutErr readouterr = 29;
+        LossErr losserr = 30;
     }
 }
 

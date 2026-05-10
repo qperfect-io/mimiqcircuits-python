@@ -16,8 +16,8 @@
 #
 """Control operation."""
 
+import numpy as np
 import symengine as se
-import sympy as sp
 
 import mimiqcircuits as mc
 import mimiqcircuits.lazy as lz
@@ -206,23 +206,25 @@ class Control(Gate):
         self._num_qregs = len(self._qregsizes)
 
     def _matrix(self):
-        """Compute the matrix representation of the controlled gate.
-
-        Returns:
-            symengine.Matrix: Matrix representation of the controlled gate
-        """
+        """SymEngine matrix representation of the controlled gate."""
         target_dim = 2**self.op.num_qubits
         total_dim = 2 ** (self.op.num_qubits + self.num_controls)
 
-        # Create identity matrix with target operation in bottom-right corner
-        matrix = se.zeros(total_dim, total_dim)
-        matrix[total_dim - target_dim :, total_dim - target_dim :] = self.op.matrix()
+        full = se.zeros(total_dim, total_dim)
+        for i in range(total_dim - target_dim):
+            full[i, i] = 1
+        full[total_dim - target_dim :, total_dim - target_dim :] = self.op.matrix()
+        return full
 
-        # Set diagonal elements to 1 for the identity part
-        for i in range(0, total_dim - target_dim):
-            matrix[i, i] = 1
-
-        return se.Matrix(sp.simplify(sp.Matrix(matrix).evalf()))
+    def _matrix_numeric(self, *params):
+        """NumPy fast path — combine the inner op's numeric matrix with an
+        identity in the control subspace without touching SymEngine."""
+        inner = self.op.unwrappedmatrix()
+        target_dim = inner.shape[0]
+        total_dim = 2**self.num_controls * target_dim
+        out = np.eye(total_dim, dtype=np.complex128)
+        out[total_dim - target_dim :, total_dim - target_dim :] = inner
+        return out
 
     @property
     def num_controls(self) -> int:

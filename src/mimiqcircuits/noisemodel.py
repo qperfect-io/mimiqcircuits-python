@@ -25,6 +25,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Iterable, List, Sequence, Set, Union
 
 import mimiqcircuits as mc
+from mimiqcircuits.circuitrules import AbstractCircuitRule
 from mimiqcircuits.symbolics import (
     _extract_variables,
     _validate_rule_gate_params,
@@ -108,26 +109,8 @@ def _resolve_noise_for_operation_match(
     return applyparams(op_instance, (variables, noise_pattern))
 
 
-class AbstractNoiseRule:
+class AbstractNoiseRule(AbstractCircuitRule):
     """Abstract base class for all noise rules."""
-
-    def priority(self):
-        """Lower = higher priority."""
-        return 100
-
-    def before(self):
-        """If True, apply noise before the operation."""
-        return False
-
-    def replaces(self):
-        """If True, noise instruction replaces the original instruction."""
-        return False
-
-    def matches(self, inst: mc.Instruction):
-        raise NotImplementedError
-
-    def apply_rule(self, inst: mc.Instruction):
-        raise NotImplementedError
 
 
 @dataclass(frozen=True)
@@ -967,7 +950,7 @@ def apply_noise_model(circuit: mc.Circuit, model: NoiseModel):
         >>> inner = mc.Circuit().push(mc.GateH(), 0)
         >>> c_block = mc.Circuit().push(mc.Block(inner), 0)
         >>> noisy_block= mc.apply_noise_model(c_block, model)
-        >>> noisy_block.decompose()
+        >>> noisy_block.decompose_step()
         1-qubit circuit with 2 instructions:
         ├── H @ q[0]
         └── AmplitudeDamping(0.01) @ q[0]
@@ -975,14 +958,14 @@ def apply_noise_model(circuit: mc.Circuit, model: NoiseModel):
         >>> decl = mc.GateDecl("local_h", (), inner)
         >>> c_call = mc.Circuit().push(mc.GateCall(decl, ()), 0)
         >>> noisy_call = mc.apply_noise_model(c_call, model)
-        >>> noisy_call.decompose()
+        >>> noisy_call.decompose_step()
         1-qubit circuit with 2 instructions:
         ├── H @ q[0]
         └── AmplitudeDamping(0.01) @ q[0]
         <BLANKLINE>
         >>> c_parallel = mc.Circuit().push(mc.Parallel(2, mc.GateH()), 0, 1)
         >>> noisy_parallel = mc.apply_noise_model(c_parallel, model)
-        >>> noisy_parallel.decompose()
+        >>> noisy_parallel.decompose_step()
         2-qubit circuit with 4 instructions:
         ├── H @ q[0]
         ├── AmplitudeDamping(0.01) @ q[0]
@@ -991,7 +974,7 @@ def apply_noise_model(circuit: mc.Circuit, model: NoiseModel):
         <BLANKLINE>
         >>> c_repeat = mc.Circuit().push(mc.Repeat(2, mc.GateH()), 0)
         >>> noisy_repeat = mc.apply_noise_model(c_repeat, model)
-        >>> noisy_repeat.decompose()
+        >>> noisy_repeat.decompose_step()
         1-qubit circuit with 4 instructions:
         ├── H @ q[0]
         ├── AmplitudeDamping(0.01) @ q[0]
@@ -1000,7 +983,7 @@ def apply_noise_model(circuit: mc.Circuit, model: NoiseModel):
         <BLANKLINE>
         >>> c_if = mc.Circuit().push(mc.IfStatement(mc.GateH(), mc.BitString("1")), 0, 0)
         >>> noisy_if = mc.apply_noise_model(c_if, model)
-        >>> noisy_if.decompose()
+        >>> noisy_if.decompose_step()
         1-qubit, 1-bit circuit with 2 instructions:
         ├── IF(c==1) H @ q[0], condition[0]
         └── IF(c==1) AmplitudeDamping(0.01) @ q[0], condition[0]
@@ -1011,7 +994,7 @@ def apply_noise_model(circuit: mc.Circuit, model: NoiseModel):
         >>> decl_outer = mc.GateDecl("outer_call", (), middle)
         >>> c_nested = mc.Circuit().push(mc.GateCall(decl_outer, ()), 0)
         >>> noisy_nested = mc.apply_noise_model(c_nested, model)
-        >>> noisy_nested.decompose().decompose()
+        >>> noisy_nested.decompose_step().decompose_step()
         1-qubit circuit with 2 instructions:
         ├── H @ q[0]
         └── AmplitudeDamping(0.01) @ q[0]
@@ -1019,13 +1002,13 @@ def apply_noise_model(circuit: mc.Circuit, model: NoiseModel):
         
     Recursive wrapper examples deeply nested:
         >>> c_nested2 = mc.Circuit().push(mc.GateCall(decl_outer, ()), 0).push(mc.GateCall(decl_outer, ()), 1)
-        >>> c_nested2.decompose()
+        >>> c_nested2.decompose_step()
         2-qubit circuit with 2 instructions:
         ├── inner_h() @ q[0]
         └── inner_h() @ q[1]
         <BLANKLINE>
         >>> noisy_nested2 = mc.apply_noise_model(c_nested2, model)
-        >>> noisy_nested2.decompose().decompose()
+        >>> noisy_nested2.decompose_step().decompose_step()
         2-qubit circuit with 4 instructions:
         ├── H @ q[0]
         ├── AmplitudeDamping(0.01) @ q[0]

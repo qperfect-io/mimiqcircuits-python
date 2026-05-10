@@ -18,6 +18,7 @@
 
 import mimiqcircuits as mc
 from mimiqcircuits.matrices import pmatrix
+from mimiqcircuits import numerics as _nm
 from mimiqcircuits.operations.utils import control_one_defined
 
 
@@ -72,6 +73,9 @@ class GateP(mc.Gate):
 
     def _matrix(self):
         return pmatrix(self.lmbda)
+
+    def _matrix_numeric(self, lmbda):
+        return _nm.pmatrix(lmbda)
 
     def inverse(self):
         return GateP(-self.lmbda)

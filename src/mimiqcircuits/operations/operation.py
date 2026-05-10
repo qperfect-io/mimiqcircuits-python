@@ -128,10 +128,12 @@ class Operation(ABC):
         return [getattr(self, pn) for pn in self._parnames]
 
     def is_symbolic(self):
-        return any(
-            isinstance(param, (se.Basic, sp.Basic)) and not param.evalf().is_number
-            for param in self.getparams()
-        )
+        for param in self.getparams():
+            if isinstance(param, (int, float, complex)):
+                continue
+            if isinstance(param, (se.Basic, sp.Basic)) and param.free_symbols:
+                return True
+        return False
 
     def getparam(self, pn):
         if pn not in self.parnames:

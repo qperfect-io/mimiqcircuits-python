@@ -223,6 +223,11 @@ class Inverse(Gate):
     def _matrix(self):
         return self.op.matrix().inv()
 
+    def _matrix_numeric(self, *params):
+        import numpy as np
+
+        return np.linalg.inv(self.op.unwrappedmatrix())
+
     def evaluate(self, d):
         return self.op.evaluate(d).inverse()
 

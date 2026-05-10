@@ -77,6 +77,21 @@ class TestRewriteRules:
         assert len(circ) == 1
         assert isinstance(circ[0].operation, mc.GateU)
 
+    @pytest.mark.parametrize(
+        "op",
+        [
+            mc.QubitLoss(),
+            mc.QubitReload(),
+            mc.LossErr(0.5),
+            mc.CheckLoss(),
+            mc.MeasureCheckLoss(),
+        ],
+    )
+    def test_canonical_rewrite_does_not_match_loss_operations(self, op):
+        """CanonicalRewrite should treat loss operations as terminal."""
+        rule = CanonicalRewrite()
+        assert not rule.matches(op)
+
     def test_zyz_rewrite_matches_gateu(self):
         """ZYZRewrite should match GateU (except identity)."""
         rule = ZYZRewrite()
@@ -179,6 +194,21 @@ class TestDecompositionBases:
         assert basis.isterminal(Reset())
         assert basis.isterminal(Barrier(2))
 
+    @pytest.mark.parametrize(
+        "op",
+        [
+            mc.QubitLoss(),
+            mc.QubitReload(),
+            mc.LossErr(0.5),
+            mc.CheckLoss(),
+            mc.MeasureCheckLoss(),
+        ],
+    )
+    def test_canonical_basis_terminal_loss_operations(self, op):
+        """CanonicalBasis should keep loss operations as terminal primitives."""
+        basis = CanonicalBasis()
+        assert basis.isterminal(op)
+
     def test_canonical_basis_non_terminal_gates(self):
         """CanonicalBasis should have other gates as non-terminal."""
         basis = CanonicalBasis()
@@ -257,6 +287,19 @@ class TestDecomposeFunction:
         decomposed = decompose(c)
         # Should be unchanged (all terminal)
         assert len(decomposed) == 3
+
+    def test_decompose_preserves_loss_operations(self):
+        """decompose should preserve terminal loss operations unchanged."""
+        c = Circuit()
+        c.push(mc.LossErr(0.5), 0)
+        c.push(mc.QubitLoss(), 1)
+        c.push(mc.CheckLoss(), 0, 0)
+        c.push(mc.MeasureCheckLoss(), 1, 1, 2)
+        c.push(mc.QubitReload(), 1)
+
+        decomposed = decompose(c)
+
+        assert decomposed == c
 
     def test_decompose_with_clifford_t_basis(self):
         """decompose should work with CliffordTBasis."""
@@ -365,6 +408,30 @@ class TestDecomposeStep:
         stepped = decompose_step(c, ZYZRewrite())
         # H should be preserved, U should be decomposed
         assert any(isinstance(inst.operation, mc.GateH) for inst in stepped)
+
+    def test_circuit_decompose_step_uses_default_rule(self):
+        """Circuit.decompose_step() should default to CanonicalRewrite."""
+        c = Circuit()
+        c.push(GateH(), 0)
+
+        stepped = c.decompose_step()
+
+        assert stepped == decompose_step(c)
+        assert len(stepped) == 1
+        assert isinstance(stepped[0].operation, mc.GateU)
+
+    def test_circuit_decompose_step_accepts_rule(self):
+        """Circuit.decompose_step(rule) should forward to the module helper."""
+        c = Circuit()
+        c.push(GateU(pi / 2, pi / 4, pi / 3), 0)
+
+        stepped = c.decompose_step(ZYZRewrite())
+
+        assert stepped == decompose_step(c, ZYZRewrite())
+        assert all(
+            isinstance(inst.operation, (mc.GateRZ, mc.GateRY, mc.GateU, mc.GateH))
+            for inst in stepped
+        )
 
 
 class TestEachDecomposed:

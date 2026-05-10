@@ -663,6 +663,55 @@ class Circuit:
 
         return decompose(self, basis)
 
+    def decompose_step(self, rule=None):
+        """Apply a single decomposition step to all matching operations.
+
+        Unlike :meth:`decompose`, this method is non-recursive. Matching
+        operations are rewritten once and the resulting instructions are kept
+        as-is, even if they are still non-terminal in the canonical basis.
+
+        Args:
+            rule: The rewrite rule to apply. Defaults to
+                  :class:`CanonicalRewrite`.
+
+        Returns:
+            Circuit: A new circuit with one decomposition step applied.
+
+        Examples:
+            Apply the default canonical rewrite once:
+
+            >>> from mimiqcircuits import *
+            >>> c = Circuit()
+            >>> c.push(GateH(), 0)
+            1-qubit circuit with 1 instruction:
+            └── H @ q[0]
+            <BLANKLINE>
+            >>> c.decompose_step()
+            1-qubit circuit with 1 instruction:
+            └── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+            <BLANKLINE>
+
+            Apply a specific rewrite rule once:
+
+            >>> from symengine import pi
+            >>> from mimiqcircuits import ZYZRewrite
+            >>> c = Circuit().push(GateU(pi / 2, pi / 4, pi / 3), 0)
+            >>> c.decompose_step(ZYZRewrite())
+            1-qubit circuit with 3 instructions:
+            ├── RZ((1/3)*pi) @ q[0]
+            ├── RY((1/2)*pi) @ q[0]
+            └── RZ((1/4)*pi) @ q[0]
+            <BLANKLINE>
+
+        See Also:
+            :func:`mimiqcircuits.decompose_step`: Module-level single-step
+            decomposition function
+            :meth:`decompose`: Recursive decomposition to a target basis
+        """
+        from mimiqcircuits.decomposition import decompose_step
+
+        return decompose_step(self, rule)
+
     def evaluate(self, d):
         c = Circuit()
 
@@ -1543,6 +1592,250 @@ class Circuit:
 
         return scirc
 
+    def sample_losses(self, rng=None, lossmodel=None):
+        """
+            sample_losses(rng=None, lossmodel=None)
+
+        Sample qubit-loss events and apply a loss model.
+
+        This is a convenience wrapper around :func:`mimiqcircuits.sample_losses`.
+
+        Args:
+            rng (optional): Random number generator used to sample ``LossErr`` events.
+            lossmodel (optional): A :class:`LossModel` describing how to rewrite gates
+                touching lost qubits.
+
+        Returns:
+            Circuit: A new circuit where loss events are sampled and the corresponding
+            loss rules are applied.
+
+        Examples:
+            Deterministic loss removes later gates on the same qubit:
+
+            >>> from mimiqcircuits import *
+            >>> c = Circuit()
+            >>> c.push(LossErr(1.0), 1)
+            2-qubit circuit with 1 instruction:
+            └── LossErr(1.0) @ q[1]
+            <BLANKLINE>
+            >>> c.push(GateRX(1), 1)
+            2-qubit circuit with 2 instructions:
+            ├── LossErr(1.0) @ q[1]
+            └── RX(1) @ q[1]
+            <BLANKLINE>
+            >>> c.sample_losses()
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+
+            If only some qubits of a gate are lost and no rule matches, the gate is dropped:
+
+            >>> c = Circuit()
+            >>> c.push(QubitLoss(), 1)
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+            >>> c.push(GateCX(), 0, 1)
+            2-qubit circuit with 2 instructions:
+            ├── QubitLoss @ q[1]
+            └── CX @ q[0], q[1]
+            <BLANKLINE>
+            >>> c.sample_losses()
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+
+            A lost qubit can be reloaded and used again:
+
+            >>> c = Circuit()
+            >>> c.push(QubitLoss(), 1)
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+            >>> c.push(GateH(), 1)
+            2-qubit circuit with 2 instructions:
+            ├── QubitLoss @ q[1]
+            └── H @ q[1]
+            <BLANKLINE>
+            >>> c.push(QubitReload(), 1)
+            2-qubit circuit with 3 instructions:
+            ├── QubitLoss @ q[1]
+            ├── H @ q[1]
+            └── QubitReload @ q[1]
+            <BLANKLINE>
+            >>> c.push(GateH(), 1)
+            2-qubit circuit with 4 instructions:
+            ├── QubitLoss @ q[1]
+            ├── H @ q[1]
+            ├── QubitReload @ q[1]
+            └── H @ q[1]
+            <BLANKLINE>
+            >>> c.sample_losses()
+            2-qubit circuit with 3 instructions:
+            ├── QubitLoss @ q[1]
+            ├── QubitReload @ q[1]
+            └── H @ q[1]
+            <BLANKLINE>
+
+            Loss checks are always kept in the sampled circuit:
+
+            >>> c = Circuit()
+            >>> c.push(QubitLoss(), 1)
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+            >>> c.push(CheckLoss(), 1, 0)
+            2-qubit, 1-bit circuit with 2 instructions:
+            ├── QubitLoss @ q[1]
+            └── CL @ q[1], c[0]
+            <BLANKLINE>
+            >>> c.push(MeasureCheckLoss(), 1, 1, 2)
+            2-qubit, 3-bit circuit with 3 instructions:
+            ├── QubitLoss @ q[1]
+            ├── CL @ q[1], c[0]
+            └── MCL @ q[1], c[1:2]
+            <BLANKLINE>
+            >>> c.sample_losses()
+            2-qubit, 3-bit circuit with 3 instructions:
+            ├── QubitLoss @ q[1]
+            ├── CL @ q[1], c[0]
+            └── MCL @ q[1], c[1:2]
+            <BLANKLINE>
+
+            Seeded sampling makes stochastic loss reproducible:
+
+            >>> import random
+            >>> c = Circuit()
+            >>> c.push(LossErr(0.5), 1)
+            2-qubit circuit with 1 instruction:
+            └── LossErr(0.5) @ q[1]
+            <BLANKLINE>
+            >>> c.push(GateH(), 1)
+            2-qubit circuit with 2 instructions:
+            ├── LossErr(0.5) @ q[1]
+            └── H @ q[1]
+            <BLANKLINE>
+            >>> c.sample_losses(random.Random(0))
+            2-qubit circuit with 1 instruction:
+            └── H @ q[1]
+            <BLANKLINE>
+            >>> c.sample_losses(random.Random(7))
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+
+            Reusing the same seeded RNG advances its state, so each call consumes the
+            next sample from a reproducible sequence:
+
+            >>> rng = random.Random(70)
+            >>> c.sample_losses(rng=rng)
+            2-qubit circuit with 1 instruction:
+            └── H @ q[1]
+            <BLANKLINE>
+            >>> c.sample_losses(rng=rng)
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+
+            Creating a fresh RNG with the same seed for each call repeats the same sample:
+
+            >>> c.sample_losses(random.Random(20))
+            2-qubit circuit with 1 instruction:
+            └── H @ q[1]
+            <BLANKLINE>
+            >>> c.sample_losses(random.Random(20))
+            2-qubit circuit with 1 instruction:
+            └── H @ q[1]
+            <BLANKLINE>
+
+            Symbolic ``LossErr`` must be evaluated before sampling:
+
+            >>> from symengine import Symbol
+            >>> p = Symbol("p")
+            >>> c = Circuit()
+            >>> c.push(LossErr(p), 0)
+            1-qubit circuit with 1 instruction:
+            └── LossErr(p) @ q[0]
+            <BLANKLINE>
+            >>> try:
+            ...     c.sample_losses()
+            ... except ValueError as err:
+            ...     print(err)
+            LossErr probability must be numeric for sampling. Use evaluate() to substitute symbolic parameters first.
+            >>> c = c.evaluate({p: 0.5})
+            >>> c.sample_losses(random.Random(7))
+            1-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[0]
+            <BLANKLINE>
+
+            A loss model can salvage gates acting on surviving qubits. It can be
+            passed either positionally or by keyword:
+
+            >>> c = Circuit()
+            >>> c.push(QubitLoss(), 1)
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+            >>> c.push(GateCX(), 0, 1)
+            2-qubit circuit with 2 instructions:
+            ├── QubitLoss @ q[1]
+            └── CX @ q[0], q[1]
+            <BLANKLINE>
+            >>> lm = LossModel().add_replace(GateCX(), Depolarizing1(0.2))
+            >>> c.sample_losses(lm)
+            2-qubit circuit with 2 instructions:
+            ├── QubitLoss @ q[1]
+            └── Depolarizing(0.2) @ q[0]
+            <BLANKLINE>
+            >>> c.sample_losses(lossmodel=lm)
+            2-qubit circuit with 2 instructions:
+            ├── QubitLoss @ q[1]
+            └── Depolarizing(0.2) @ q[0]
+            <BLANKLINE>
+
+            Decoration rules keep only the part acting on surviving qubits:
+
+            >>> c = Circuit()
+            >>> c.push(QubitLoss(), 1)
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+            >>> c.push(GateCZ(), 0, 1)
+            2-qubit circuit with 2 instructions:
+            ├── QubitLoss @ q[1]
+            └── CZ @ q[0], q[1]
+            <BLANKLINE>
+            >>> lm = LossModel().add_decorate(GateCZ(), GateX(), before=True)
+            >>> c.sample_losses(lm)
+            2-qubit circuit with 2 instructions:
+            ├── QubitLoss @ q[1]
+            └── X @ q[0]
+            <BLANKLINE>
+
+            If several rules match, the highest-priority rule wins. ``DropRule`` runs
+            before ``ReplaceRule``:
+
+            >>> c = Circuit()
+            >>> c.push(QubitLoss(), 1)
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+            >>> c.push(GateCX(), 0, 1)
+            2-qubit circuit with 2 instructions:
+            ├── QubitLoss @ q[1]
+            └── CX @ q[0], q[1]
+            <BLANKLINE>
+            >>> lm = LossModel([ReplaceRule(GateCX(), GateX()), DropRule(GateCX())])
+            >>> c.sample_losses(lm)
+            2-qubit circuit with 1 instruction:
+            └── QubitLoss @ q[1]
+            <BLANKLINE>
+            
+        """
+        from mimiqcircuits.lossmodel import sample_losses
+
+        return sample_losses(self, rng=rng, lossmodel=lossmodel)
+
     def remove_unused(self):
         """
         Removes unused qubits, bits, and zvars from the given circuit.
@@ -1650,8 +1943,9 @@ class Circuit:
             <BLANKLINE>
             >>> new_c2, perm2 = c2.remove_swaps()
             >>> new_c2
-            3-qubit circuit with 1 instruction:
-            └── CX @ q[2], q[1]
+            4-qubit circuit with 2 instructions:
+            ├── CX @ q[2], q[1]
+            └── ID @ q[3]
             <BLANKLINE>
             >>> perm2
             [0, 2, 3, 1]

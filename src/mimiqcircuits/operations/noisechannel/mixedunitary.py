@@ -87,7 +87,7 @@ class MixedUnitary(krauschannel):
         >>> c.push(MixedUnitary([0.8, 0.2], [Matrix(GateID().matrix()), Matrix(GateRX(0.2).matrix())]), 1)
         2-qubit circuit with 2 instructions:
         ├── MixedUnitary((0.9, "Custom([1 0; 0 1])"),(0.1, "Custom([0 1; 1 0])")) @ q[0]
-        └── MixedUnitary((0.8, "Custom([1.0 0; 0 1.0])"),(0.2, "Custom([0.995004165278026 -0.0 - 0.0998334166468282*I; -0.0 - 0.0998334166468282*I 0.995004165278026])")) @ q[1]
+        └── MixedUnitary((0.8, "Custom([1.0 0; 0 1.0])"),(0.2, "Custom([0.995004165278026 0.0 - 0.0998334166468282*I; 0.0 - 0.0998334166468282*I 0.995004165278026])")) @ q[1]
         <BLANKLINE>
 
         RescaleGate
@@ -106,7 +106,7 @@ class MixedUnitary(krauschannel):
         >>> c.push(op,1)
         2-qubit circuit with 3 instructions:
         ├── MixedUnitary((0.9, "Custom([1 0; 0 1])"),(0.1, "Custom([0 1; 1 0])")) @ q[0]
-        ├── MixedUnitary((0.8, "Custom([1.0 0; 0 1.0])"),(0.2, "Custom([0.995004165278026 -0.0 - 0.0998334166468282*I; -0.0 - 0.0998334166468282*I 0.995004165278026])")) @ q[1]
+        ├── MixedUnitary((0.8, "Custom([1.0 0; 0 1.0])"),(0.2, "Custom([0.995004165278026 0.0 - 0.0998334166468282*I; 0.0 - 0.0998334166468282*I 0.995004165278026])")) @ q[1]
         └── MixedUnitary((0.2, "Custom([1 0; 0 1])"),(0.8, "Custom([0 1; 1 0])")) @ q[1]
         <BLANKLINE>
     """

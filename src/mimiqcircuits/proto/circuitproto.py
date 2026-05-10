@@ -167,6 +167,10 @@ OPERATIONMAP = {
     mc.Pow: circuit_pb2.OperationType.Pow,
     mc.SetBit0: circuit_pb2.OperationType.SetBit0,
     mc.SetBit1: circuit_pb2.OperationType.SetBit1,
+    mc.QubitLoss: circuit_pb2.OperationType.QubitLoss,
+    mc.QubitReload: circuit_pb2.OperationType.QubitReload,
+    mc.CheckLoss: circuit_pb2.OperationType.CheckLoss,
+    mc.MeasureCheckLoss: circuit_pb2.OperationType.MeasureCheckLoss,
 }
 
 # Reverse operation mapping: protobuf -> mimiqcircuits
@@ -1431,6 +1435,20 @@ def fromproto_readouterr(readouterr_proto, declcache=None):
         fromproto_arg(readouterr_proto.p0),
         fromproto_arg(readouterr_proto.p1),
     )
+
+
+@operation_registry.register_toproto(mc.LossErr)
+def toproto_losserr(operation, declcache=None):
+    """Convert a LossErr operation to protobuf format."""
+    msg = circuit_pb2.Operation()
+    msg.losserr.p.CopyFrom(toproto_arg(operation.p))
+    return msg
+
+
+@operation_registry.register_fromproto("losserr")
+def fromproto_losserr(losserr_proto, declcache=None):
+    """Convert protobuf LossErr to mimiqcircuits LossErr."""
+    return mc.LossErr(fromproto_arg(losserr_proto.p))
 
 
 # ------------ Block & Repeat -----------

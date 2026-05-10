@@ -66,7 +66,7 @@ class Block(Operation):
 
         >>> block = Block(c)
         >>> block
-        4-qubit, 2-bit block 700db35cc170 with 3 instructions:
+        4-qubit, 2-bit block 701215ac8290 with 3 instructions:
         ├── CX @ q[1], q[2]
         ├── CX @ q[1], q[3]
         └── MZZ @ q[1:2], c[1]
@@ -74,7 +74,7 @@ class Block(Operation):
         >>> main = Circuit()
         >>> main.push(block, 0, 1, 2, 3, 0, 1)
         4-qubit, 2-bit circuit with 1 instruction:
-        └── block 700db35cc170 @ q[0,1,2,3], c[0,1]
+        └── block 701215ac8290 @ q[0,1,2,3], c[0,1]
         <BLANKLINE>
 
         >>> main.decompose()

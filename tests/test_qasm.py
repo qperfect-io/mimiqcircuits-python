@@ -454,10 +454,6 @@ def test_all_qelib1_gates_roundtrip():
             roundtrippable[gate_type] = qasm_name
 
     for gate_type, qasm_name in roundtrippable.items():
-        # Skip GateCCP since it's a factory function, not a class
-        if gate_type is mc.GateCCP:
-            continue
-
         try:
             # Try to construct with no args first
             gate = gate_type()

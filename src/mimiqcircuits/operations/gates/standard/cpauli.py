@@ -102,7 +102,7 @@ class GateCY(mc.Control):
         >>> GateCY().matrix()
         [1.0, 0, 0, 0]
         [0, 1.0, 0, 0]
-        [0, 0, 0, -0.0 - 1.0*I]
+        [0, 0, 0, 0.0 - 1.0*I]
         [0, 0, 0.0 + 1.0*I, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateCY(), 0, 1)

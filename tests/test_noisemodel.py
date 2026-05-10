@@ -8,6 +8,7 @@ def test_abstract_noise_rule_interface():
         pass
 
     dummy = DummyRule()
+    assert isinstance(dummy, AbstractCircuitRule)
     assert dummy.priority() == 100
     assert dummy.before() is False
 

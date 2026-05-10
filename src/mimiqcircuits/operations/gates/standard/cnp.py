@@ -16,10 +16,12 @@
 #
 """Controlled-Controlled-Phase (CCP) gate."""
 
+from mimiqcircuits.operations.gates.standard.phase import GateP
 import mimiqcircuits as mc
 
 
-def GateCCP(lmbda):
+@mc.canonical_control(2, GateP)
+class GateCCP(mc.Control):
     r"""Three qubit Controlled-Controlled-Phase gate.
 
     By convention, the first two qubits are the controls and the third is the
@@ -60,7 +62,27 @@ def GateCCP(lmbda):
         └── CP((1/2)*lmbda) @ q[0], q[2]
         <BLANKLINE>
     """
-    return mc.Control(2, mc.GateP(lmbda))
+
+    def __init__(
+        self, lmbda_or_num_controls, num_controls_or_operation=None, operation=None
+    ):
+        """Initialize a CCP gate.
+
+        Args:
+            lmbda_or_num_controls: Phase angle in radians when called directly,
+                or num_controls when called from Control's canonical creation.
+            num_controls_or_operation: Ignored when called directly, or the GateP
+                operation when called from Control's canonical creation.
+            operation: Ignored (for compatibility).
+        """
+        # Detect if called from Control's canonical creation: Control(2, GateP(lmbda))
+        if isinstance(lmbda_or_num_controls, int) and isinstance(
+            num_controls_or_operation, GateP
+        ):
+            lmbda = num_controls_or_operation.lmbda
+        else:
+            lmbda = lmbda_or_num_controls
+        super().__init__(2, GateP(lmbda))
 
 
 @mc.register_control_decomposition(2, mc.GateP)

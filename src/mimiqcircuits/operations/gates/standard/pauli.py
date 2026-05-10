@@ -107,7 +107,7 @@ class GateY(mcg.Gate):
         >>> GateY()
         Y
         >>> GateY().matrix()
-        [0, -0.0 - 1.0*I]
+        [0, 0.0 - 1.0*I]
         [0.0 + 1.0*I, 0]
         <BLANKLINE>
         >>> c = Circuit().push(GateY(), 0)

@@ -81,10 +81,19 @@ class CanonicalBasis(DecompositionBasis):
         if isinstance(op, mc.GateCX):
             return True
 
-        # Measurement and reset operations
-        if isinstance(op, (mc.AbstractMeasurement, mc.Reset)):
-            return True
-        if isinstance(op, (mc.MeasureReset,)):
+        # Measurement, reset and Loss operations
+        if isinstance(
+            op,
+            (
+                mc.Measure,
+                mc.Reset,
+                mc.QubitLoss,
+                mc.QubitReload,
+                mc.LossErr,
+                mc.CheckLoss,
+                mc.MeasureCheckLoss,
+            ),
+        ):
             return True
 
         # Control flow

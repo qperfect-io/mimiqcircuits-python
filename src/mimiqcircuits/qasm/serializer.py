@@ -434,7 +434,8 @@ def circuit_to_qasm(c: mc.Circuit, sanitize_names: bool = True) -> QASMExpr:
 
     statements.extend(gate_statements)
     statements.append(QASMExpr("qreg", ["q", n_qubits]))
-    statements.append(QASMExpr("creg", ["c", n_cbits]))
+    if n_cbits > 0:
+        statements.append(QASMExpr("creg", ["c", n_cbits]))
     statements.extend(instruction_statements)
 
     return QASMExpr("program", [2.0] + statements)

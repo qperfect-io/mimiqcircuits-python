@@ -262,6 +262,17 @@ class Power(Gate):
         pow_matrix = matrix ** (self.exponent)
         return pow_matrix
 
+    def _matrix_numeric(self, *params):
+        from scipy.linalg import fractional_matrix_power
+
+        inner = self.op.unwrappedmatrix()
+        exp = self.exponent
+        if isinstance(exp, (int, np.integer)) or (
+            isinstance(exp, float) and exp.is_integer()
+        ):
+            return np.linalg.matrix_power(inner, int(exp))
+        return np.asarray(fractional_matrix_power(inner, float(exp)), dtype=np.complex128)
+
     def getparams(self):
         return self.op.getparams()
 

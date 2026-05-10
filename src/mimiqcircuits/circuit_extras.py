@@ -163,8 +163,9 @@ def remove_swaps(circuit, recursive=False, cache=None):
         <BLANKLINE>
         >>> new_c, perm = remove_swaps(c)
         >>> new_c
-        3-qubit circuit with 1 instruction:
-        └── CX @ q[2], q[1]
+        4-qubit circuit with 2 instructions:
+        ├── CX @ q[2], q[1]
+        └── ID @ q[3]
         <BLANKLINE>
         >>> perm
         [0, 2, 3, 1]

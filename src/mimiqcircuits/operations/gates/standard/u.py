@@ -18,6 +18,7 @@
 
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.matrices import umatrix
+from mimiqcircuits import numerics as _nm
 from mimiqcircuits.operations.utils import control_one_defined
 import mimiqcircuits as mc
 from sympy import I, pi, sin, cos, acos, Abs, simplify, exp, Expr, log, Matrix
@@ -96,6 +97,9 @@ class GateU(mcg.Gate):
 
     def _matrix(self):
         return umatrix(self.theta, self.phi, self.lmbda, self.gamma)
+
+    def _matrix_numeric(self, theta, phi, lmbda, gamma):
+        return _nm.umatrix(theta, phi, lmbda, gamma)
 
     def inverse(self):
         return GateU(-self.theta, -self.lmbda, -self.phi, -self.gamma)

@@ -39,7 +39,11 @@ from mimiqcircuits.proto.noisemodelproto import (
     toproto_noisemodel,
     fromproto_noisemodel,
 )
-from mimiqcircuits.proto import noisemodel_pb2
+from mimiqcircuits.proto.circuitrulesproto import (
+    toproto_lossmodel,
+    fromproto_lossmodel,
+)
+from mimiqcircuits.proto import noisemodel_pb2, circuitrules_pb2
 
 
 # Mapping for serialization
@@ -55,6 +59,7 @@ SAVEPROTO_MAP = {
     ).SerializeToString(),
     mc.QCSResults: lambda obj: toproto_qcsr(obj).SerializeToString(),
     mc.NoiseModel: lambda obj: toproto_noisemodel(obj).SerializeToString(),
+    mc.LossModel: lambda obj: toproto_lossmodel(obj).SerializeToString(),
 }
 
 # Mapping for deserialization
@@ -72,6 +77,7 @@ LOADPROTO_MAP = {
     ),
     mc.QCSResults: (qcsresults_pb2.QCSResults, fromproto_qcsr),
     mc.NoiseModel: (noisemodel_pb2.NoiseModel, fromproto_noisemodel),
+    mc.LossModel: (circuitrules_pb2.LossModel, fromproto_lossmodel),
 }
 
 

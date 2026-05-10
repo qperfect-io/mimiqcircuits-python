@@ -18,6 +18,8 @@
 
 import mimiqcircuits as mc
 from mimiqcircuits.matrices import cis
+from mimiqcircuits import numerics as _nm
+import numpy as np
 from symengine import I, Matrix, cos, sin, pi
 
 
@@ -92,6 +94,17 @@ class GateRXX(mc.Gate):
                 [0, -I * sin2, cos2, 0],
                 [-I * sin2, 0, 0, cos2],
             ]
+        )
+
+    def _matrix_numeric(self, theta):
+        import math
+
+        half = theta / 2.0 / math.pi
+        c = _nm.cospi(half)
+        s = -1j * _nm.sinpi(half)
+        return np.array(
+            [[c, 0, 0, s], [0, c, s, 0], [0, s, c, 0], [s, 0, 0, c]],
+            dtype=np.complex128,
         )
 
     def inverse(self):
@@ -183,6 +196,22 @@ class GateRYY(mc.Gate):
             ]
         )
 
+    def _matrix_numeric(self, theta):
+        import math
+
+        half = theta / 2.0 / math.pi
+        c = _nm.cospi(half)
+        s = _nm.sinpi(half)
+        return np.array(
+            [
+                [c, 0, 0, 1j * s],
+                [0, c, -1j * s, 0],
+                [0, -1j * s, c, 0],
+                [1j * s, 0, 0, c],
+            ],
+            dtype=np.complex128,
+        )
+
     def inverse(self):
         return GateRYY(-self.theta)
 
@@ -261,6 +290,21 @@ class GateRZZ(mc.Gate):
                 [0, 0, cis(self.theta / 2), 0],
                 [0, 0, 0, cis(-self.theta / 2)],
             ]
+        )
+
+    def _matrix_numeric(self, theta):
+        import math
+
+        e_plus = _nm.cispi(theta / 2.0 / math.pi)
+        e_minus = e_plus.conjugate()
+        return np.array(
+            [
+                [e_minus, 0, 0, 0],
+                [0, e_plus, 0, 0],
+                [0, 0, e_plus, 0],
+                [0, 0, 0, e_minus],
+            ],
+            dtype=np.complex128,
         )
 
     def inverse(self):
@@ -344,6 +388,22 @@ class GateRZX(mc.Gate):
             ]
         )
 
+    def _matrix_numeric(self, theta):
+        import math
+
+        half = theta / 2.0 / math.pi
+        c = _nm.cospi(half)
+        s = _nm.sinpi(half)
+        return np.array(
+            [
+                [c, -1j * s, 0, 0],
+                [-1j * s, c, 0, 0],
+                [0, 0, c, 1j * s],
+                [0, 0, 1j * s, c],
+            ],
+            dtype=np.complex128,
+        )
+
     def inverse(self):
         return GateRZX(-self.theta)
 
@@ -385,8 +445,8 @@ class GateXXplusYY(mc.Gate):
         XXplusYY(theta, beta)
         >>> GateXXplusYY(theta, beta).matrix()
         [1.0, 0, 0, 0]
-        [0, cos((1/2)*theta), (sin(beta) - I*cos(beta))*sin((1/2)*theta), 0]
-        [0, I*(I*sin(beta) - cos(beta))*sin((1/2)*theta), cos((1/2)*theta), 0]
+        [0, cos((1/2)*theta), -I*exp(I*beta)*sin((1/2)*theta), 0]
+        [0, -I*exp(-I*beta)*sin((1/2)*theta), cos((1/2)*theta), 0]
         [0, 0, 0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateXXplusYY(theta, beta), 0, 1)
@@ -439,6 +499,23 @@ class GateXXplusYY(mc.Gate):
             ]
         )
 
+    def _matrix_numeric(self, theta, beta):
+        import math
+
+        half = theta / 2.0 / math.pi
+        c = _nm.cospi(half)
+        s = _nm.sinpi(half)
+        e = _nm.cis(beta)
+        return np.array(
+            [
+                [1, 0, 0, 0],
+                [0, c, -1j * s * e, 0],
+                [0, -1j * s * e.conjugate(), c, 0],
+                [0, 0, 0, 1],
+            ],
+            dtype=np.complex128,
+        )
+
     def inverse(self):
         return GateXXplusYY(-self.theta, self.beta)
 
@@ -489,10 +566,10 @@ class GateXXminusYY(mc.Gate):
         >>> GateXXminusYY(theta, beta)
         XXminusYY(theta, beta)
         >>> GateXXminusYY(theta, beta).matrix()
-        [cos((1/2)*theta), 0, 0, I*(I*sin(beta) - cos(beta))*sin((1/2)*theta)]
+        [cos((1/2)*theta), 0, 0, -I*exp(-I*beta)*sin((1/2)*theta)]
         [0, 1.0, 0, 0]
         [0, 0, 1.0, 0]
-        [(sin(beta) - I*cos(beta))*sin((1/2)*theta), 0, 0, cos((1/2)*theta)]
+        [-I*exp(I*beta)*sin((1/2)*theta), 0, 0, cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateXXminusYY(theta, beta), 0, 1)
         >>> c
@@ -542,6 +619,23 @@ class GateXXminusYY(mc.Gate):
                 [0, 0, 1, 0],
                 [-I * sin2 * cis(beta), 0, 0, cos2],
             ]
+        )
+
+    def _matrix_numeric(self, theta, beta):
+        import math
+
+        half = theta / 2.0 / math.pi
+        c = _nm.cospi(half)
+        s = _nm.sinpi(half)
+        e = _nm.cis(beta)
+        return np.array(
+            [
+                [c, 0, 0, -1j * s * e.conjugate()],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [-1j * s * e, 0, 0, c],
+            ],
+            dtype=np.complex128,
         )
 
     def inverse(self):

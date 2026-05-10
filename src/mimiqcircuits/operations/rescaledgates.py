@@ -92,6 +92,12 @@ class RescaledGate(AbstractOperator, Generic[T]):
     def __repr__(self):
         return self.__str__()
 
+    def iswrapper(self):
+        return True
+
+    def getparams(self):
+        return [self.p, *self.gate.getparams()]
+
     def get_operation(self):
         return self.gate
 
@@ -102,6 +108,9 @@ class RescaledGate(AbstractOperator, Generic[T]):
 
     def _matrix(self, *args):
         return self.p * self.gate._matrix(*args)
+
+    def _matrix_numeric(self, *params):
+        return complex(self.p) * self.gate.unwrappedmatrix()
 
     def get_scale(self):
         return self.p

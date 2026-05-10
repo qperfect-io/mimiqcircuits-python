@@ -52,6 +52,13 @@ from mimiqcircuits.operations.measure import (
     MeasureZ,
 )
 from mimiqcircuits.operations.reset import Reset, ResetX, ResetY, ResetZ
+from mimiqcircuits.operations.losschannel import (
+    QubitLoss,
+    QubitReload,
+    LossErr,
+    CheckLoss,
+    MeasureCheckLoss,
+)
 from mimiqcircuits.operations.gates.gate import Gate
 
 from mimiqcircuits.operations.gates.custom import GateCustom
@@ -237,6 +244,7 @@ from mimiqcircuits.operations.generating_list import (
     _rst_fenced,
 )
 from mimiqcircuits.operations.readouterr import ReadoutErr
+from mimiqcircuits.circuitrules import AbstractCircuitRule
 from mimiqcircuits.noisemodel import (
     AbstractNoiseRule,
     ExactQubitReadoutNoise,
@@ -250,6 +258,14 @@ from mimiqcircuits.noisemodel import (
     SetOperationInstanceQubitNoise,
     SetIdleQubitNoise,
     GlobalReadoutNoise,
+)
+from mimiqcircuits.lossmodel import (
+    DropRule,
+    DecorateRule,
+    ReplaceRule,
+    CustomRule,
+    LossModel,
+    sample_losses,
 )
 from mimiqcircuits.circuit_extras import remove_unused, remove_swaps
 from mimiqcircuits.symbolics import unwrapvalue, listsymbols, UndefinedValue
@@ -357,6 +373,11 @@ __all__ = [
     "ResetX",
     "ResetY",
     "ResetZ",
+    "QubitLoss",
+    "QubitReload",
+    "LossErr",
+    "CheckLoss",
+    "MeasureCheckLoss",
     "MeasureReset",
     "MeasureResetX",
     "MeasureResetY",
@@ -531,6 +552,13 @@ __all__ = [
     "ExactOperationInstanceQubitNoise",
     "SetOperationInstanceQubitNoise",
     "SetIdleQubitNoise",
+    "AbstractCircuitRule",
+    "DropRule",
+    "DecorateRule",
+    "ReplaceRule",
+    "CustomRule",
+    "LossModel",
+    "sample_losses",
     "SetBit1",
     "SetBit0",
     "And",

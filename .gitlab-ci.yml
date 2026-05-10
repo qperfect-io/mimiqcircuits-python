@@ -1,0 +1,59 @@
+stages:
+  - test
+  - deploy
+
+default:
+  image: python:3.13
+
+variables:
+  # Pin mimiqlink-python to a specific commit so CI does not break when its
+  # default branch advances ahead of the next tagged release.
+  # Use scripts/bump-mimiqlink.sh to update.
+  MIMIQLINK_REF: "f62014225ccdfcac356ce94efebd67600babd37d"
+
+.add-mimiqlink: &add-mimiqlink
+  - uv add "mimiqlink @ git+https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.qperfect.io/development/mimiq/mimiqlink-python.git@${MIMIQLINK_REF}"
+
+test:
+  stage: test
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "devel"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  before_script:
+    - pip install uv
+    - *add-mimiqlink
+  script:
+    - apt-get update -qq && apt-get install -y -qq build-essential gfortran libopenblas-dev
+    - uv sync
+    - uv run pytest -sxv
+
+pages:
+  stage: deploy
+  image: python:3.13
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
+      variables:
+        DOCS_VERSION: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == "main"
+      variables:
+        DOCS_VERSION: "dev"
+    - if: $CI_COMMIT_BRANCH == "devel"
+      variables:
+        DOCS_VERSION: "devel"
+  before_script:
+    - pip install uv
+    - *add-mimiqlink
+  script:
+    - apt-get update -qq && apt-get install -y -qq build-essential gfortran libopenblas-dev
+    - uv sync --group docs
+    - uv run sphinx-build docs public
+  artifacts:
+    paths:
+      - public
+  publish: public
+  pages:
+    path_prefix: $DOCS_VERSION
+  environment:
+    name: pages/$DOCS_VERSION
+    url: $CI_PAGES_URL/$DOCS_VERSION
+  resource_group: pages-deploy

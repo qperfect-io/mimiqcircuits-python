@@ -171,10 +171,10 @@ class ProjectiveNoise(krauschannel):
         ]
 
         >>> ProjectiveNoise("Y").krausmatrices()
-        [[0.5, -0.0 - 0.5*I]
+        [[0.5, 0.0 - 0.5*I]
         [0.0 + 0.5*I, 0.5]
         , [0.5, 0.0 + 0.5*I]
-        [-0.0 - 0.5*I, 0.5]
+        [0.0 - 0.5*I, 0.5]
         ]
 
         >>> ProjectiveNoise("Z").krausmatrices()

@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+import "circuit.proto";
+
+// ===============================
+//  Circuit Rules & Loss Model
+//  Copyright © 2023–2025 QPerfect.
+//  All Rights Reserved.
+// ===============================
+
+message LossModel {
+  string name = 1;
+  repeated CircuitRule rules = 2;
+}
+
+message CircuitRule {
+  oneof kind {
+    DropRuleMsg drop_rule = 1;
+    DecorateRuleMsg decorate_rule = 2;
+    ReplaceRuleMsg replace_rule = 3;
+    // CustomRule not serializable
+  }
+}
+
+message DropRuleMsg {
+  optional Operation operation = 1;
+}
+
+message DecorateRuleMsg {
+  Operation operation = 1;
+  Operation decoration = 2;
+  bool before = 3;
+}
+
+message ReplaceRuleMsg {
+  Operation operation = 1;
+  Operation replacement = 2;
+}
