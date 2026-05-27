@@ -209,6 +209,27 @@ class TestGateConversion:
         assert restored_gate.pauli == gate.pauli
         assert restored_gate.num_qubits == gate.num_qubits
 
+
+class TestOperatorConversion:
+    def test_lossy_operator_conversion(self):
+        op = mc.LossyOperator(np.array([[0, 0], [0, np.sqrt(0.2)]], dtype=np.complex128))
+        proto_op = toproto_operator(op)
+        restored_op = fromproto_operator(proto_op)
+
+        assert isinstance(restored_op, mc.LossyOperator)
+        assert restored_op.lossyqubits() == (1,)
+        assert restored_op == op
+
+    def test_lossy_operator_operation_conversion(self):
+        op = mc.LossyOperator(np.array([[0, 0], [0, np.sqrt(0.2)]], dtype=np.complex128))
+        proto_op = toproto_operation(op)
+        restored_op = fromproto_operation(proto_op)
+
+        assert proto_op.WhichOneof("operation") == "lossyoperator"
+        assert isinstance(restored_op, mc.LossyOperator)
+        assert restored_op.lossyqubits() == (1,)
+        assert restored_op == op
+
     def test_gatedecl_gatecall_conversion(self):
         """Test conversion of GateDecl and GateCall."""
         # Create a GateDecl with a parameterized circuit

@@ -31,6 +31,59 @@ import numpy as np
 from mimiqcircuits.push import push_instruction_container
 
 
+def _reorder_op_internals(op, perm):
+    """Return a copy of ``op`` with any embedded qubit-index data
+    rewritten through ``perm``. Most operations don't embed qubit
+    indices outside ``inst.qubits``, so they are returned unchanged.
+
+    :class:`Amplitude` is the leaf case: its :attr:`bs` encodes a
+    computational-basis state keyed by qubit index, so after a qubit
+    permutation the bit at position ``perm[q]`` in the new ``bs``
+    must equal the bit at position ``q`` in the old one. That keeps
+    the rewritten ``Amplitude`` reading the same amplitude of the
+    same quantum-state component as the original.
+
+    The general-operation wrappers (:class:`IfStatement`,
+    :class:`Repeat`, :class:`Block`) forward the permutation to their
+    inner op(s) so a wrapped :class:`Amplitude` is rewritten in the
+    new qubit frame. Classical-bit conditions on :class:`IfStatement`
+    are qubit-independent and stay unchanged. :class:`Block` is
+    treated as transparent — its inner instructions' qubit / bit /
+    zvar targets stay in the block's local frame, only embedded
+    payload (e.g. ``Amplitude.bs``) is rewritten. Gate-only wrappers
+    (:class:`Control`, :class:`Inverse`, :class:`Power`,
+    :class:`Parallel`) constrain the inner type to :class:`Gate`, so
+    they cannot wrap :class:`Amplitude` and no override is needed.
+    """
+    # Local imports to avoid a top-of-module cycle through `mc`.
+    from mimiqcircuits.operations.amplitude import Amplitude
+    from mimiqcircuits.operations.ifstatement import IfStatement
+    from mimiqcircuits.operations.repeat import Repeat
+    from mimiqcircuits.operations.block import Block
+    from mimiqcircuits.instruction import Instruction
+
+    if isinstance(op, Amplitude):
+        old_bs = op.bs
+        nq = len(old_bs)
+        new_bits = [0] * nq
+        for q in range(nq):
+            new_bits[perm[q]] = int(old_bs[q])
+        return Amplitude(mc.BitString(new_bits))
+    if isinstance(op, IfStatement):
+        new_inner = _reorder_op_internals(op.get_operation(), perm)
+        return IfStatement(new_inner, op.bitstring)
+    if isinstance(op, Repeat):
+        new_inner = _reorder_op_internals(op.op, perm)
+        return Repeat(op.repeats, new_inner)
+    if isinstance(op, Block):
+        new_insts = []
+        for inst in op.instructions:
+            new_op = _reorder_op_internals(inst.operation, perm)
+            new_insts.append(Instruction(new_op, inst.qubits, inst.bits, inst.zvars))
+        return Block(op.num_qubits, op.num_bits, op.num_zvars, new_insts)
+    return op
+
+
 class Circuit:
     """Representation of a quantum circuit.
 
@@ -845,6 +898,45 @@ class Circuit:
             Circuit: A new Circuit object containing references to the same attributes as the original circuit
         """
         return copy.copy(self)
+
+    def reorder_qubits(self, perm):
+        """Return a new :class:`Circuit` with every qubit index
+        rewritten through ``perm``.
+
+        ``perm[q] = new_position``: a 1-qubit gate previously acting
+        on qubit ``q`` will act on qubit ``perm[q]`` in the result.
+
+        The permutation is also folded into any operation that
+        embeds qubit references *outside* ``inst.qubits``:
+
+        - :class:`Amplitude` carries a target bitstring keyed by
+          qubit index; its bits are rearranged so the rewritten
+          ``Amplitude`` reads the same amplitude of the same
+          quantum-state component.
+
+        Classical-bit (``inst.bits``) and z-register
+        (``inst.zvars``) indices are left alone — they index a
+        side register that the qubit permutation does not touch.
+        The output circuit is therefore equivalent to ``self``
+        from the point of view of the post-execution ``cstate`` /
+        ``zstate``; only the internal qubit ordering changes.
+
+        Raises ``ValueError`` if ``perm`` is not a permutation of
+        ``range(self.num_qubits())``.
+        """
+        nq = self.num_qubits()
+        if sorted(perm) != list(range(nq)):
+            raise ValueError(
+                f"perm must be a permutation of range({nq}); "
+                f"got {perm!r}"
+            )
+        out = Circuit()
+        for inst in self.instructions:
+            op = inst.operation
+            new_qubits = tuple(perm[q] for q in inst.qubits)
+            new_op = _reorder_op_internals(op, perm)
+            out.push(new_op, *new_qubits, *inst.bits, *inst.zvars)
+        return out
 
     def deepcopy(self):
         """Creates a copy of the object and for all its attributes

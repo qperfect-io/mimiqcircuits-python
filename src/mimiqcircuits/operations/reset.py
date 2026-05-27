@@ -137,6 +137,9 @@ class ResetX(krauschannel):
     def iswrapper(self):
         return False
 
+    def supports_canonical_rewrite(self):
+        return True
+
     def _matrix(self):
         raise AttributeError("ResetX has no attribute 'matrix'.")
 
@@ -193,6 +196,9 @@ class ResetY(krauschannel):
 
     def iswrapper(self):
         return False
+
+    def supports_canonical_rewrite(self):
+        return True
 
     def _matrix(self):
         raise AttributeError("ResetY has no attribute 'matrix'.")

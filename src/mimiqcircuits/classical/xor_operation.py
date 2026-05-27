@@ -55,6 +55,7 @@ class Xor(AbstractClassical):
     _cregsizes = []
     _zregsizes = []
     _parnames = ()
+    _allow_bit_aliasing = True
 
     def __init__(self, N=3):
         """

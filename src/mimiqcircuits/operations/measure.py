@@ -26,6 +26,9 @@ class AbstractMeasurement(Operation):
     def iswrapper(self):
         return False
 
+    def supports_canonical_rewrite(self):
+        return True
+
     def __str__(self):
         return self._name
 

@@ -24,6 +24,12 @@ Take your quantum programming to the next level with advanced features. Learn ho
 
         Deep dive into specialized features like the :class:`~mimiqcircuits.BitString` class for classical register manipulation.
 
+    .. grid-item-card:: :octicon:`plug` Implementing Backends
+        :link: implementing_backends
+        :link-type: doc
+
+        Write a custom simulator that plugs into MIMIQ's unified backend API. Step-by-step guide with examples for local and remote backends, plus a conformance checklist.
+
 
 .. toctree::
     :maxdepth: 2
@@ -32,3 +38,4 @@ Take your quantum programming to the next level with advanced features. Learn ho
     import_export
     special_topics
     compilation
+    implementing_backends

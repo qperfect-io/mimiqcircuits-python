@@ -59,11 +59,23 @@ class Kraus(krauschannel):
     For 1 qubit, we have :math:`|0\rangle`, :math:`|1\rangle`.
     For 2 qubits, we have :math:`|00\rangle`, :math:`|01\rangle`, :math:`|10\rangle`, :math:`|11\rangle`.
 
-    **Note:** Currently, only 1 and 2-qubit custom Kraus channels are supported.
+    .. note::
+        Currently, only 1 and 2-qubit custom Kraus channels are supported.
+
+    A `Kraus` channel becomes loss-aware simply by including one or more
+    :class:`LossyOperator` branches in ``E``. In that case, :meth:`hasloss`
+    returns ``True`` and :meth:`lossoperators`, :meth:`survivaloperators`, and
+    :meth:`losseffect` can be used to inspect the leakage structure.
+
+    The entries of a :class:`LossyOperator` are amplitudes, not probabilities.
+    The corresponding loss probabilities appear in :meth:`losseffect`, which
+    sums :math:`L_k^\dagger L_k` over all lossy branches :math:`L_k`.
 
     See Also:
         :class:`MixedUnitary`
         :class:`GateCustom`
+        :class:`LossyOperator`
+        :class:`Operator`
 
     Parameters:
         kmatrices (list): List of :math:`2^N \times 2^N` complex matrices. The number of qubits is equal to :math:`N`.
@@ -102,6 +114,35 @@ class Kraus(krauschannel):
         1-qubit circuit with 1 instruction:
         └── Kraus(Operator([[1, 0], [0, 0]]), P₁(1)) @ q[0]
         <BLANKLINE>
+
+        # Example 4: Loss-aware Kraus with a LossyOperator branch
+
+        >>> lossy = LossyOperator(Matrix([[0, 0], [0, sqrt(0.2)]]))
+        >>> survival = Operator(Matrix([[1, 0], [0, sqrt(0.8)]]))
+        >>> lk = Kraus([survival, lossy])
+        >>> lk.hasloss()
+        True
+        >>> lk.lossoperators()
+        [1-qubit LossyOperator (lossy=(1,)):
+        ├── 0 0
+        └── 0 0.447213595499958]
+        >>> lk.survivaloperators()
+        [1-qubit Operator:
+        ├── 1 0
+        └── 0 0.894427190999916]
+        >>> lk.losseffect()
+        1-qubit Operator:
+        ├── 0.0 + 0.0*I 0.0 + 0.0*I
+        └── 0.0 + 0.0*I 0.2 + 0.0*I
+        
+        # Example 5: Symbolic Kraus evaluation
+
+        >>> x = Symbol("x")
+        >>> g = Kraus([Projector0(), Projector1(x)])
+        >>> g
+        Kraus(P₀(1), P₁(x))
+        >>> g.evaluate({x: 1})
+        Kraus(P₀(1), P₁(1))
     """
 
     _name = "Kraus"
@@ -216,6 +257,79 @@ class Kraus(krauschannel):
     def krausoperators(self):
         """Returns the Kraus operators."""
         return self.E
+
+    def hasloss(self):
+        """Return True when the channel contains any LossyOperator branch."""
+        return any(isinstance(op, mc.LossyOperator) for op in self.E)
+
+    def lossoperators(self):
+        """Return the LossyOperator branches of the channel."""
+        return [op for op in self.E if isinstance(op, mc.LossyOperator)]
+
+    def survivaloperators(self):
+        """Return the non-lossy branches of the channel."""
+        return [op for op in self.E if not isinstance(op, mc.LossyOperator)]
+
+    def losseffect(self, tol=1e-12):
+        r"""Compute the loss-probability operator over all lossy branches.
+
+        This returns the operator
+
+        .. math::
+            \Lambda = \sum_k L_k^\dagger L_k,
+
+        where :math:`L_k` runs over the :class:`LossyOperator` branches of the
+        channel.
+
+        :math:`\Lambda` is a positive semidefinite operator whose diagonal
+        entries give the loss probabilities for each computational basis state.
+        For a basis state :math:`|i\rangle`,
+
+        .. math::
+            \langle i|\Lambda|i\rangle
+
+        is the probability that :math:`|i\rangle` leaks out of the
+        computational subspace. For a general state :math:`|\psi\rangle`, the
+        total loss probability is :math:`\langle\psi|\Lambda|\psi\rangle`.
+
+        .. Note::
+            The entries of :class:`LossyOperator` are amplitudes, not
+            probabilities. ``losseffect()`` converts them into probabilities by
+            summing :math:`L_k^\dagger L_k`.
+
+        The survival and lossy operators together satisfy
+
+        .. math::
+            \sum_k S_k^\dagger S_k + \Lambda = I,
+
+        where :math:`S_k` are the non-lossy branches.
+
+        If the channel has no lossy operators, the zero matrix is returned.
+
+        See Also:
+            :class:`Kraus`, :meth:`lossoperators`, :meth:`survivaloperators`
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> from symengine import Matrix, sqrt
+            >>> g = Kraus([Matrix([[1, 0], [0, sqrt(0.9)]]),
+            ...            LossyOperator(Matrix([[0, 0], [0, sqrt(0.1)]]))])
+            >>> g.losseffect()
+            1-qubit Operator:
+            ├── 0.0 + 0.0*I 0.0 + 0.0*I
+            └── 0.0 + 0.0*I 0.1 + 0.0*I
+        """
+        M = 1 << self.N
+        loss_ops = self.lossoperators()
+        if not loss_ops:
+            return mc.Operator(np.zeros((M, M), dtype=np.complex128))
+
+        effect = np.zeros((M, M), dtype=np.complex128)
+        for op in loss_ops:
+            effect += np.array(op.opsquared().matrix().tolist(), dtype=np.complex128)
+
+        effect[np.abs(effect) < tol] = 0
+        return mc.Operator(effect)
 
     def __str__(self):
         """String representation, listing either AbstractOperators or matrix slices."""

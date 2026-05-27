@@ -184,6 +184,74 @@ To add an :class:`~mimiqcircuits.IfStatement` to a circuit use the :meth:`~mimiq
 
 Here, an `X` gate will be applied to qubit 1, if classical registers 2 and 4 are `1`, and classical register 3 is `0`. Of course, if the gate targets more than 1 qubit, then all qubit indices will be specified before the classical registers, as usual (see :doc:`circuit <circuits>` page).
 
+The body of an :class:`~mimiqcircuits.IfStatement` is allowed to write to one of the bits used in the condition. The classical-target layout is ``[op_bits..., condition_bits...]``, so when the body and the condition share a bit you simply repeat that bit index in the :meth:`~mimiqcircuits.Circuit.push` call. See the :ref:`Target aliasing` section below for the rules.
+
+While statements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A *while* statement applies an operation repeatedly while a classical register matches a given pattern. It is the loop counterpart of :class:`~mimiqcircuits.IfStatement` and resembles a classical ``while`` loop.
+
+In MIMIQ you can implement it using :class:`~mimiqcircuits.WhileStatement`, which takes the same two arguments as :class:`~mimiqcircuits.IfStatement`: an operation to apply each iteration and a :class:`~mimiqcircuits.BitString` acting as the loop condition.
+
+.. doctest:: non_unitary
+
+    >>> WhileStatement(Not(), BitString('1'))
+    WHILE(c==1) !
+
+:class:`~mimiqcircuits.WhileStatement` is added to a circuit with :meth:`~mimiqcircuits.Circuit.push` using the same target layout as :class:`~mimiqcircuits.IfStatement`: quantum targets first, then the body's classical bits, then the condition bits. For example, the loop below decrements ``c[0]`` while it is set:
+
+.. doctest:: non_unitary
+
+    >>> circuit = Circuit()
+    >>> circuit.push(WhileStatement(Not(), BitString('1')), 0, 0)
+    1-bit circuit with 1 instruction:
+    └── WHILE(c==1) ! @ c[0], condition[0]
+    <BLANKLINE>
+
+For the loop to make progress, the body **must** mutate at least one bit that appears in the condition — otherwise the register never changes and the loop runs forever. Because of this, :class:`~mimiqcircuits.WhileStatement` explicitly allows the body's bit targets to overlap (alias) the condition's bit targets, even though most operations forbid repeated bit targets (see :ref:`Target aliasing` below).
+
+.. warning::
+
+    There is no built-in iteration cap: a non-terminating circuit is the user's responsibility, exactly as in any classical language. Make sure the body can falsify the condition.
+
+.. note::
+
+    As with :class:`~mimiqcircuits.IfStatement`, the inner operation must currently be unitary.
+
+.. _Target aliasing:
+
+Target aliasing
+------------------------------------------------------------------
+
+Most operations require their qubit, classical-bit, and z-variable targets to be all distinct within a single instruction — pushing the same index twice raises an error. Two exceptions:
+
+- **Qubits** are *always* required to be unique. This reflects the no-cloning theorem and is never relaxed.
+- **Bits and z-variables** can be reused by operations that opt in via the ``allow_bit_aliasing()`` and ``allow_zvar_aliasing()`` class-level flags.
+
+Operations that opt into bit aliasing today are :class:`~mimiqcircuits.And`, :class:`~mimiqcircuits.Or`, :class:`~mimiqcircuits.Xor`, :class:`~mimiqcircuits.IfStatement`, and :class:`~mimiqcircuits.WhileStatement`. For example, you can read and write the same bit in a single classical operation:
+
+.. doctest:: non_unitary
+
+    >>> circuit = Circuit()
+    >>> # c[0] = c[0] AND c[1]
+    >>> circuit.push(And(), 0, 0, 1)
+    2-bit circuit with 1 instruction:
+    └── c[0] = c[0] & c[1]
+    <BLANKLINE>
+
+Or use a bit both as the condition and as the body's target inside an :class:`~mimiqcircuits.IfStatement`:
+
+.. doctest:: non_unitary
+
+    >>> circuit = Circuit()
+    >>> # Toggle c[0] when c[0] == 1 (the condition bit is also the body's target).
+    >>> circuit.push(IfStatement(Not(), BitString('1')), 0, 0)
+    1-bit circuit with 1 instruction:
+    └── IF(c==1) ! @ c[0], condition[0]
+    <BLANKLINE>
+
+Operations that opt into z-variable aliasing today are :class:`~mimiqcircuits.Add`, :class:`~mimiqcircuits.Multiply`, and :class:`~mimiqcircuits.Pow` — see the :doc:`Z-register operations <zops>` page for examples like ``z[0] += z[0] + z[1]``.
+
 .. _Operators:
 
 Operators
@@ -272,6 +340,8 @@ Reference
 .. autoclass:: mimiqcircuits.MeasureReset
     :noindex:
 .. autoclass:: mimiqcircuits.IfStatement
+    :noindex:
+.. autoclass:: mimiqcircuits.WhileStatement
     :noindex:
 .. autoclass:: mimiqcircuits.Operator
     :noindex:

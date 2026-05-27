@@ -89,10 +89,10 @@ class Instruction:
         if not _allunique(qubits):
             raise ValueError("Duplicated qubit target in instruction")
 
-        if not _allunique(bits):
+        if not operation.allow_bit_aliasing() and not _allunique(bits):
             raise ValueError("Duplicated classical bit target in instruction")
 
-        if not _allunique(zvars):
+        if not operation.allow_zvar_aliasing() and not _allunique(zvars):
             raise ValueError("Duplicated z-variables target in instruction")
 
         for qi in qubits:

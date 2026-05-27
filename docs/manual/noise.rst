@@ -52,6 +52,8 @@ Mathematical background
 -----------------------
 .. _mathematical-background:
 
+.. _kraus-operators:
+
 Kraus operators
 ~~~~~~~~~~~~~~~
 
@@ -169,6 +171,12 @@ You can create noise channels using one of the many functions available. Most no
     >>> kmatrices = [Matrix([[1, 0], [0, (0.9)**0.5]]), Matrix([[0, (0.1)**0.5], [0, 0]])]    # Kraus matrices
     >>> Kraus(kmatrices)
     Kraus(Operator([[1, 0], [0, 0.948683298050514]]), Operator([[0, 0.316227766016838], [0, 0]]))
+
+Custom :class:`~mimiqcircuits.operations.noisechannel.kraus.Kraus` channels
+also support
+:class:`~mimiqcircuits.operations.operators.lossyoperator.LossyOperator`
+branches, which makes them loss-aware Kraus channels. For more information, see
+:ref:`loss-aware-kraus-channels`.
 
 Check the documentation for each noise channel to understand the conditions that each parameter needs to fulfill for the noise channel to be valid.
 

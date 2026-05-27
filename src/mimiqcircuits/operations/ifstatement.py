@@ -49,6 +49,12 @@ class IfStatement(Operation):
     _op = None
     _bitstring = None
 
+    # IfStatement's classical-target layout is [op_bits..., condition_bits...];
+    # the body operation may read or write a bit it tests against (for example
+    # ``IfStatement(Not(), bs"1")`` toggling the same bit).
+    _allow_bit_aliasing = True
+    _allow_zvar_aliasing = True
+
     def __init__(self, operation, bitstring: mc.BitString):
         if isinstance(operation, type) and issubclass(operation, Operation):
             op = operation()
@@ -88,6 +94,9 @@ class IfStatement(Operation):
         return self._bitstring
 
     def iswrapper(self):
+        return True
+
+    def supports_canonical_rewrite(self):
         return True
 
     def getparams(self):

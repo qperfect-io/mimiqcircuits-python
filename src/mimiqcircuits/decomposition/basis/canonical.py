@@ -104,6 +104,10 @@ class CanonicalBasis(DecompositionBasis):
         if isinstance(op, mc.IfStatement):
             return self.isterminal(op.get_operation())
 
+        # WhileStatement: terminal if inner operation is terminal
+        if isinstance(op, mc.WhileStatement):
+            return self.isterminal(op.get_operation())
+
         # Classical operations
         if isinstance(op, mc.AbstractClassical):
             return True

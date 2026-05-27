@@ -17,6 +17,7 @@
 from mimiqcircuits.proto.qcsrproto import toproto_qcsr, fromproto_qcsr
 
 from mimiqcircuits.bitstrings import bitvec_to_int
+import math
 from statistics import mean, median, stdev
 
 
@@ -76,6 +77,17 @@ def _get_sorted_timings(timings):
     return valid_timings
 
 
+def _display_stdev(values):
+    """Return a display-safe standard deviation.
+
+    `statistics.stdev` raises on `nan`/`inf` inputs; for display we
+    prefer surfacing `nan` rather than crashing repr/html rendering.
+    """
+    if len(values) < 2 or any(not math.isfinite(v) for v in values):
+        return math.nan
+    return stdev(values)
+
+
 class QCSResults:
     """
     Represents the results of quantum computations obtained from quantum cloud services (QCS).
@@ -130,19 +142,25 @@ class QCSResults:
             result_str += f"│    └── {key} time: {_format_duration(value)}\n"
 
         if len(self.fidelities) == 1:
-            result_str += f"├── fidelity estimate: {self.fidelities[0]:.3g}\n"
+            from mimiqcircuits.backends.fidelity import as_lower_bound, _to_fidelity
+            fid = as_lower_bound(_to_fidelity(self.fidelities[0]))
+            result_str += f"├── fidelity estimate: {fid:.3g}\n"
             result_str += f"├── average multi-qubit gate error estimate: {self.avggateerrors[0]:.3g}\n"
         elif len(self.fidelities) != 0:
+            from mimiqcircuits.backends.fidelity import as_lower_bound, _to_fidelity
+            fidelity_values = [
+                as_lower_bound(_to_fidelity(f)) for f in self.fidelities
+            ]
             result_str += "├── fidelity estimate:\n"
-            result_str += f"│    ├── min, max: {min(self.fidelities):.3g}, {max(self.fidelities):.3g}\n"
-            result_str += f"│    ├── mean: {mean(self.fidelities):.3g}\n"
-            result_str += f"│    ├── median: {median(self.fidelities):.3g}\n"
-            result_str += f"│    └── std: {stdev(self.fidelities):.3g}\n"
+            result_str += f"│    ├── min, max: {min(fidelity_values):.3g}, {max(fidelity_values):.3g}\n"
+            result_str += f"│    ├── mean: {mean(fidelity_values):.3g}\n"
+            result_str += f"│    ├── median: {median(fidelity_values):.3g}\n"
+            result_str += f"│    └── std: {_display_stdev(fidelity_values):.3g}\n"
             result_str += "├── average multi-qubit gate error estimate:\n"
             result_str += f"│    ├── min, max: {min(self.avggateerrors):.3g}, {max(self.avggateerrors):.3g}\n"
             result_str += f"│    ├── mean: {mean(self.avggateerrors):.3g}\n"
             result_str += f"│    ├── median: {median(self.avggateerrors):.3g}\n"
-            result_str += f"│    └── std: {stdev(self.avggateerrors):.3g}\n"
+            result_str += f"│    └── std: {_display_stdev(self.avggateerrors):.3g}\n"
 
         if len(self.cstates) != 0:
             hist = self.histogram()
@@ -188,14 +206,21 @@ class QCSResults:
 
         # Fidelity Estimates
         if self.fidelities:
+            from mimiqcircuits.backends.fidelity import as_lower_bound, _to_fidelity
             html_output += "<tr><td colspan=2></td></tr>"
             html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Fidelity estimate</strong></td></tr>'
             if len(self.fidelities) == 1:
-                html_output += f'<tr><td style="text-align:left;">Single run value</td><td>{round(self.fidelities[0], 3)}</td></tr>'
+                fidelity_values = [
+                    as_lower_bound(_to_fidelity(self.fidelities[0]))
+                ]
+                html_output += f'<tr><td style="text-align:left;">Single run value</td><td>{round(fidelity_values[0], 3)}</td></tr>'
             else:
-                html_output += f'<tr><td style="text-align:left;">Mean</td><td>{round(mean(self.fidelities), 3)}</td></tr>'
-                html_output += f'<tr><td style="text-align:left;">Median</td><td>{round(median(self.fidelities), 3)}</td></tr>'
-                html_output += f'<tr><td style="text-align:left;">Standard Deviation</td><td>{round(stdev(self.fidelities), 3)}</td></tr>'
+                fidelity_values = [
+                    as_lower_bound(_to_fidelity(f)) for f in self.fidelities
+                ]
+                html_output += f'<tr><td style="text-align:left;">Mean</td><td>{round(mean(fidelity_values), 3)}</td></tr>'
+                html_output += f'<tr><td style="text-align:left;">Median</td><td>{round(median(fidelity_values), 3)}</td></tr>'
+                html_output += f'<tr><td style="text-align:left;">Standard Deviation</td><td>{round(_display_stdev(fidelity_values), 3)}</td></tr>'
             html_output += "<tr><td colspan=2><hr></td></tr>"
 
         # Average Multiqubit Error Estimates
@@ -207,7 +232,7 @@ class QCSResults:
             else:
                 html_output += f'<tr><td style="text-align:left;">Mean</td><td>{round(mean(self.avggateerrors), 3)}</td></tr>'
                 html_output += f'<tr><td style="text-align:left;">Median</td><td>{round(median(self.avggateerrors), 3)}</td></tr>'
-                html_output += f'<tr><td style="text-align:left;">Standard Deviation</td><td>{round(stdev(self.avggateerrors), 3)}</td></tr>'
+                html_output += f'<tr><td style="text-align:left;">Standard Deviation</td><td>{round(_display_stdev(self.avggateerrors), 3)}</td></tr>'
             html_output += "<tr><td colspan=2><hr></td></tr>"
 
         # Statistics

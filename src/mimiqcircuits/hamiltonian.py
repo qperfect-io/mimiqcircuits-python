@@ -281,8 +281,8 @@ def push_expval(self, hamiltonian: Hamiltonian, *qubits: int, firstzvar=None):
         >>> c.push_expval(h, 1, 2)
         3-qubit, 1-zvar circuit with 3 instructions:
         ├── ⟨ZZ⟩ @ q[1:2], z[0]
-        ├── z[0] *= 1.0
-        └── z[0] += 0.0
+        ├── z[0] = 1.0 * z[0]
+        └── z[0] = 0.0 + z[0]
         <BLANKLINE>
 
     See Also:
@@ -303,10 +303,15 @@ def push_expval(self, hamiltonian: Hamiltonian, *qubits: int, firstzvar=None):
             *[qubits[i] for i in term.get_qubits()],
             zvar,
         )
-        self.push(mc.Multiply(1, c=term.get_coefficient()), zvar)
+        # In-place scale: z[zvar] = coeff * z[zvar]. Aliasing the destination
+        # as the only input recovers the previous `*=` semantics.
+        self.push(mc.Multiply(2, c=term.get_coefficient()), zvar, zvar)
         zvar += 1
 
-    self.push(mc.Add(zvar - firstzvar), *range(firstzvar, zvar))
+    # In-place sum: z[firstzvar] = z[firstzvar] + z[firstzvar+1] + ... +
+    # z[zvar-1]. Aliasing the destination as the first input keeps the
+    # destination's existing value in the sum (recovering the old `+=`).
+    self.push(mc.Add(zvar - firstzvar + 1), firstzvar, *range(firstzvar, zvar))
     return self
 
 

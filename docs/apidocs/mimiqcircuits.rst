@@ -12,8 +12,10 @@ API Reference
    mimiqcircuits.instruction
    mimiqcircuits.operations
    mimiqcircuits.classical
+   mimiqcircuits.lossmodel
    mimiqcircuits.noisemodel
    mimiqcircuits.remote
    mimiqcircuits.qcsresults
    mimiqcircuits.lazy
    mimiqcircuits.visualization
+   mimiqcircuits.backends

@@ -21,6 +21,7 @@ import os
 import shutil
 import atexit
 from mimiqcircuits.__version__ import __version__
+from mimiqcircuits.proto import WIRE_FORMAT_VERSION
 import numpy as np
 from time import sleep
 import mimiqcircuits as mc
@@ -201,6 +202,7 @@ def optimize_impl(
         "apilang": "python",
         "apiversion": __version__,
         "circuitsapiversion": __version__,
+        "wireformatversion": WIRE_FORMAT_VERSION,
     }
 
     req_file = os.path.join(tmpdir, "request.json")

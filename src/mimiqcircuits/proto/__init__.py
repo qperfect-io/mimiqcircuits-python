@@ -14,3 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+WIRE_FORMAT_VERSION = "1.0.0"
+"""
+Version of the MIMIQ wire format (protobuf schemas + JSON
+request/response envelope) spoken by this build. Versioned independently
+of the package release so API-only changes do not force client/executor
+incompatibility. Must match ``MimiqCircuitsBase.WIRE_FORMAT_VERSION`` on
+the Julia side. See ``WIRE_FORMAT.md`` in ``MimiqCircuitsBase.jl/`` for
+the surface and bump rules.
+"""

@@ -17,6 +17,7 @@
 """AbstractOperator base class."""
 
 from abc import abstractmethod
+import numbers
 
 import numpy as np
 import sympy as sp
@@ -46,8 +47,12 @@ def _try_unwrap(p):
     """
     if isinstance(p, bool):
         return int(p), True
-    if isinstance(p, (int, float, complex)):
-        return p, True
+    if isinstance(p, numbers.Integral):
+        return int(p), True
+    if isinstance(p, numbers.Real):
+        return float(p), True
+    if isinstance(p, numbers.Complex):
+        return complex(p), True
     if isinstance(p, np.generic):
         return p.item(), True
     if isinstance(p, (se.Basic, sp.Basic)):
@@ -189,6 +194,12 @@ class AbstractOperator(Operation):
         By default, this method returns `False` unless explicitly overridden in a subclass.
         """
         return False
+
+    def supports_canonical_rewrite(self):
+        """Only gate-like operators participate in canonical rewrite by default."""
+        import mimiqcircuits as mc
+
+        return isinstance(self, mc.Gate)
 
     def matrix(self):
         """Return the SymEngine matrix representation of the operator.

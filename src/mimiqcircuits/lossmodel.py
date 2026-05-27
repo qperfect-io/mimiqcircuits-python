@@ -13,7 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Loss model definitions and qubit-loss sampling."""
+"""Loss model definitions and qubit-loss sampling.
+
+This module provides the rule system used by :func:`sample_losses` when a
+circuit instruction touches both lost and surviving qubits. A
+:class:`LossModel` lets users decide whether such an instruction should be
+dropped, replaced, decorated, or handled by custom logic.
+
+Examples:
+    >>> from mimiqcircuits import *
+    >>> circuit = Circuit()
+    >>> circuit.push(QubitLoss(), 1)
+    2-qubit circuit with 1 instruction:
+    └── QubitLoss @ q[1]
+    <BLANKLINE>
+    >>> circuit.push(GateCX(), 0, 1)
+    2-qubit circuit with 2 instructions:
+    ├── QubitLoss @ q[1]
+    └── CX @ q[0], q[1]
+    <BLANKLINE>
+    >>> model = LossModel().add_replace(GateCX(), Depolarizing1(0.2))
+    >>> sample_losses(circuit, lossmodel=model)
+    2-qubit circuit with 2 instructions:
+    ├── QubitLoss @ q[1]
+    └── Depolarizing(0.2) @ q[0]
+    <BLANKLINE>
+"""
 
 from __future__ import annotations
 
@@ -193,7 +218,38 @@ def _call_custom_generator(generator, inst, lost, rng):
 
 
 class DropRule(AbstractCircuitRule):
-    """Drop matched instructions."""
+    """Drop matched instructions that touch lost qubits.
+
+    A ``DropRule`` is useful when a partially affected operation should not be
+    salvaged. If ``operation`` is omitted, the rule matches any operation that
+    reaches the loss model.
+
+    Args:
+        operation (optional): Operation pattern to drop. If omitted, the rule
+            is a catch-all rule.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> model = LossModel().add_drop(GateCX())
+        >>> model
+        LossModel (unnamed, 1 rules)
+        └── DropRule(CX)
+
+        >>> circuit = Circuit()
+        >>> circuit.push(QubitLoss(), 1)
+        2-qubit circuit with 1 instruction:
+        └── QubitLoss @ q[1]
+        <BLANKLINE>
+        >>> circuit.push(GateCX(), 0, 1)
+        2-qubit circuit with 2 instructions:
+        ├── QubitLoss @ q[1]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
+        >>> circuit.sample_losses(lossmodel=model)
+        2-qubit circuit with 1 instruction:
+        └── QubitLoss @ q[1]
+        <BLANKLINE>
+    """
 
     def __init__(self, operation: Optional[mc.Operation] = None):
         if operation is not None:
@@ -227,7 +283,42 @@ class DropRule(AbstractCircuitRule):
 
 
 class DecorateRule(AbstractCircuitRule):
-    """Keep a matched instruction and add a decoration around it."""
+    """Add a decoration before or after a matched instruction.
+
+    During loss sampling, any generated instruction that still touches a lost
+    qubit is filtered out. This makes ``DecorateRule`` useful for modeling a
+    side effect on surviving qubits when an operation was attempted but one of
+    its qubits was missing.
+
+    Args:
+        operation: Operation pattern to match.
+        decoration: Operation or instruction sequence to add.
+        before (bool): If ``True``, add the decoration before the matched
+            instruction. Otherwise, add it after.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> model = LossModel().add_decorate(GateCZ(), Depolarizing1(0.01), before=True)
+        >>> model
+        LossModel (unnamed, 1 rules)
+        └── DecorateRule(CZ, Depolarizing(0.01), before)
+
+        >>> circuit = Circuit()
+        >>> circuit.push(QubitLoss(), 1)
+        2-qubit circuit with 1 instruction:
+        └── QubitLoss @ q[1]
+        <BLANKLINE>
+        >>> circuit.push(GateCZ(), 0, 1)
+        2-qubit circuit with 2 instructions:
+        ├── QubitLoss @ q[1]
+        └── CZ @ q[0], q[1]
+        <BLANKLINE>
+        >>> circuit.sample_losses(lossmodel=model)
+        2-qubit circuit with 2 instructions:
+        ├── QubitLoss @ q[1]
+        └── Depolarizing(0.01) @ q[0]
+        <BLANKLINE>
+    """
 
     def __init__(self, operation, decoration=None, *, before=False):
         if decoration is None:
@@ -278,7 +369,40 @@ class DecorateRule(AbstractCircuitRule):
 
 
 class ReplaceRule(AbstractCircuitRule):
-    """Replace a matched instruction with new instructions."""
+    """Replace a matched instruction with new instructions.
+
+    Use ``ReplaceRule`` when a partially affected operation should be removed
+    and replaced by another operation on surviving qubits. A one-qubit
+    replacement is broadcast to each target of the matched instruction, and
+    copies on lost qubits are filtered out.
+
+    Args:
+        operation: Operation pattern to match.
+        replacement: Replacement operation or instruction sequence.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> model = LossModel().add_replace(GateCX(), Depolarizing1(0.2))
+        >>> model
+        LossModel (unnamed, 1 rules)
+        └── ReplaceRule(CX => Depolarizing(0.2))
+
+        >>> circuit = Circuit()
+        >>> circuit.push(QubitLoss(), 1)
+        2-qubit circuit with 1 instruction:
+        └── QubitLoss @ q[1]
+        <BLANKLINE>
+        >>> circuit.push(GateCX(), 0, 1)
+        2-qubit circuit with 2 instructions:
+        ├── QubitLoss @ q[1]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
+        >>> circuit.sample_losses(lossmodel=model)
+        2-qubit circuit with 2 instructions:
+        ├── QubitLoss @ q[1]
+        └── Depolarizing(0.2) @ q[0]
+        <BLANKLINE>
+    """
 
     def __init__(self, operation, replacement=None):
         if replacement is None:
@@ -322,7 +446,80 @@ class ReplaceRule(AbstractCircuitRule):
 
 
 class CustomRule(AbstractCircuitRule):
-    """User-defined loss rule."""
+    """User-defined loss rule.
+
+    ``CustomRule`` is the escape hatch for loss policies that cannot be
+    expressed with :class:`DropRule`, :class:`ReplaceRule`, or
+    :class:`DecorateRule`. The matcher decides whether the rule applies. The
+    generator returns ``None`` to drop the instruction, one
+    :class:`Instruction`, or a sequence of instructions.
+
+    The generator may accept ``(inst)``, ``(inst, lost)``, or
+    ``(inst, lost, rng)``. It may also accept ``rng`` as a keyword argument.
+
+    Args:
+        matcher: Callable that receives an instruction and returns ``True`` if
+            the rule should apply.
+        generator: Callable that generates replacement instructions.
+
+    Examples:
+        Define a custom fallback for a partially lost ``CX``. If the control
+        qubit survives, replace the failed ``CX`` by ``X`` on the control. If
+        the control is lost, return ``None`` to drop the instruction.
+
+        >>> from mimiqcircuits import *
+        >>> def cx_control_fallback(inst, lost):
+        ...     control = inst.get_qubits()[0]
+        ...     if lost.get(control, False):
+        ...         return None
+        ...     return Instruction(GateX(), (control,))
+        ...
+        >>> model = LossModel([
+        ...     CustomRule(
+        ...         lambda inst: isinstance(inst.get_operation(), GateCX),
+        ...         cx_control_fallback,
+        ...     )
+        ... ])
+        >>> model
+        LossModel (unnamed, 1 rules)
+        └── CustomRule(<callable>)
+
+        >>> circuit = Circuit()
+        >>> circuit.push(QubitLoss(), 1)
+        2-qubit circuit with 1 instruction:
+        └── QubitLoss @ q[1]
+        <BLANKLINE>
+        >>> circuit.push(GateCX(), 0, 1)
+        2-qubit circuit with 2 instructions:
+        ├── QubitLoss @ q[1]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
+        >>> circuit.sample_losses(lossmodel=model)
+        2-qubit circuit with 2 instructions:
+        ├── QubitLoss @ q[1]
+        └── X @ q[0]
+        <BLANKLINE>
+
+        Another custom rule can generate one instruction for each surviving
+        qubit. Here a partially lost ``CX`` becomes ``Z`` on every qubit that
+        is still present:
+
+        >>> model = LossModel([
+        ...     CustomRule(
+        ...         lambda inst: isinstance(inst.get_operation(), GateCX),
+        ...         lambda inst, lost: [
+        ...             Instruction(GateZ(), (q,))
+        ...             for q in inst.get_qubits()
+        ...             if not lost.get(q, False)
+        ...         ],
+        ...     )
+        ... ])
+        >>> circuit.sample_losses(lossmodel=model)
+        2-qubit circuit with 2 instructions:
+        ├── QubitLoss @ q[1]
+        └── Z @ q[0]
+        <BLANKLINE>
+    """
 
     def __init__(self, matcher, generator):
         self.matcher = matcher
@@ -348,7 +545,46 @@ class CustomRule(AbstractCircuitRule):
 
 
 class LossModel:
-    """Collection of prioritized loss rules."""
+    """Collection of prioritized loss rules.
+
+    A ``LossModel`` tells :func:`sample_losses` what to do when an instruction
+    touches both lost and surviving qubits. With no rules, the conservative
+    behavior is used: instructions touching lost qubits are dropped.
+
+    Args:
+        rules (optional): Iterable of loss rules.
+        name (str): Optional model name used in display output.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> model = LossModel(name="My Loss Model")
+        >>> model
+        LossModel (My Loss Model, 0 rules)
+
+        Rules can be added incrementally:
+
+        >>> model.add_replace(GateCX(), Depolarizing1(0.2))
+        LossModel (My Loss Model, 1 rules)
+        └── ReplaceRule(CX => Depolarizing(0.2))
+
+        The model can then be passed to ``sample_losses``:
+
+        >>> circuit = Circuit()
+        >>> circuit.push(QubitLoss(), 1)
+        2-qubit circuit with 1 instruction:
+        └── QubitLoss @ q[1]
+        <BLANKLINE>
+        >>> circuit.push(GateCX(), 0, 1)
+        2-qubit circuit with 2 instructions:
+        ├── QubitLoss @ q[1]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
+        >>> circuit.sample_losses(lossmodel=model)
+        2-qubit circuit with 2 instructions:
+        ├── QubitLoss @ q[1]
+        └── Depolarizing(0.2) @ q[0]
+        <BLANKLINE>
+    """
 
     def __init__(self, rules: Optional[Iterable[AbstractCircuitRule]] = None, name=""):
         self.rules = list(rules or [])

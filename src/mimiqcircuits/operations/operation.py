@@ -44,6 +44,27 @@ class Operation(ABC):
 
     _parnames = ()
 
+    # Whether this operation accepts repeated classical-bit targets in a single
+    # instruction. Defaults to False. Operations that read and write the same
+    # bit (e.g. ``c[1] = c[1] & c[2]``), or wrappers whose layout exposes
+    # condition bits alongside body bits (``IfStatement``, ``WhileStatement``),
+    # opt in. Qubit uniqueness is a physical constraint (no-cloning) and is
+    # never relaxed.
+    _allow_bit_aliasing = False
+
+    # Whether this operation accepts repeated z-variable targets in a single
+    # instruction. Defaults to False. ``Add``, ``Multiply``, ``Pow`` whose
+    # output may also appear as an input opt in.
+    _allow_zvar_aliasing = False
+
+    @classmethod
+    def allow_bit_aliasing(cls):
+        return cls._allow_bit_aliasing
+
+    @classmethod
+    def allow_zvar_aliasing(cls):
+        return cls._allow_zvar_aliasing
+
     @property
     def num_qubits(self):
         return self._num_qubits
@@ -186,6 +207,14 @@ class Operation(ABC):
         pass
 
     def isopalias(self):
+        return False
+
+    def supports_canonical_rewrite(self):
+        """Whether CanonicalRewrite may decompose this operation.
+
+        Default is conservative: unsupported operations must opt in.
+        This keeps "non-terminal" separate from "canonically rewriteable".
+        """
         return False
 
     def numparams(self):

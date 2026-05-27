@@ -44,6 +44,7 @@ class Pow(Operation):
     _cregsizes = []
     _zregsizes = [1]
     _parnames = ("exponent",)
+    _allow_zvar_aliasing = True
 
     def __init__(self, exponent):
         if exponent == 1:
@@ -76,23 +77,33 @@ class Pow(Operation):
 
 class Add(Operation):
     """
-    Add several z-register variables between them and optionally a constant.
-    The result is strored in the first z-register variable given.
+    Sum several z-register variables (and optionally a constant) and **assign**
+    the result to the first z-register variable given. The first target is the
+    destination; the remaining ``N-1`` targets are the inputs.
+
+    To accumulate into the destination instead of overwriting it, alias the
+    destination as one of the inputs (z-variable aliasing is allowed for
+    ``Add``), e.g. ``c.push(Add(3), 0, 0, 1)`` evaluates ``z[0] = z[0] + z[1]``.
 
     Examples:
         >>> from mimiqcircuits import *
         >>> Add(1)
-        z[?0] += 0.0
+        z[?0] = 0.0
         >>> Add(1,c=1)
-        z[?0] += 1
+        z[?0] = 1
         >>> Add(3,1)
-        z[?0] += 1 + z[?1] + z[?2]
+        z[?0] = 1 + z[?1] + z[?2]
         >>> Add(4, c=3)
-        z[?0] += 3 + z[?1] + z[?2] + z[?3]
+        z[?0] = 3 + z[?1] + z[?2] + z[?3]
         >>> c = Circuit()
         >>> c.push(Add(2), 1, 2)
         3-zvar circuit with 1 instruction:
-        └── z[1] += 0.0 + z[2]
+        └── z[1] = 0.0 + z[2]
+        <BLANKLINE>
+        >>> c = Circuit()
+        >>> c.push(Add(3), 0, 0, 1)  # accumulate via aliasing
+        2-zvar circuit with 1 instruction:
+        └── z[0] = 0.0 + z[0] + z[1]
         <BLANKLINE>
     """
 
@@ -104,12 +115,11 @@ class Add(Operation):
     _qregsizes = []
     _cregsizes = []
     _parnames = ("term",)
+    _allow_zvar_aliasing = True
 
     def __init__(self, N=1, c=0.0):
         if N < 1:
             raise ValueError("Add requires at least one z-variable.")
-        if N == 1 and c == 0.0:
-            warnings.warn("Add(1; c=0.0) will be equivalent to a no-op.", stacklevel=2)
 
         super().__init__()
         self._num_zvars = N
@@ -121,7 +131,7 @@ class Add(Operation):
         return False
 
     def __repr__(self):
-        repr = "z[?0] +="
+        repr = "z[?0] ="
         parts = [str(self.term)]
         for i in range(1, self._num_zvars):
             parts.append(f"z[?{i}]")
@@ -132,7 +142,7 @@ class Add(Operation):
         return f"{self._name}({self._num_zvars}, c={self.term})"
 
     def format_with_targets(self, qubits, bits, zvars):
-        head = f"z[{zvars[0]}] +="
+        head = f"z[{zvars[0]}] ="
         terms = [str(self.term)]
         terms.extend(f"z[{z}]" for z in zvars[1:])
         return f"{head} {' + '.join(terms)}"
@@ -140,23 +150,34 @@ class Add(Operation):
 
 class Multiply(Operation):
     """
-    Multiply several z-register variables between them and optionally a constant.
-    The result is strored in the first z-register variable given.
+    Multiply several z-register variables (and optionally a constant) and
+    **assign** the result to the first z-register variable given. The first
+    target is the destination; the remaining ``N-1`` targets are the inputs.
+
+    To accumulate into the destination instead of overwriting it, alias the
+    destination as one of the inputs (z-variable aliasing is allowed for
+    ``Multiply``), e.g. ``c.push(Multiply(3), 0, 0, 1)`` evaluates
+    ``z[0] = z[0] * z[1]``.
 
     Examples:
         >>> from mimiqcircuits import *
         >>> Multiply(1)
-        z[?0] *= 1.0
+        z[?0] = 1.0
         >>> Multiply(3)
-        z[?0] *= 1.0 * z[?1] * z[?2]
+        z[?0] = 1.0 * z[?1] * z[?2]
         >>> Multiply(3, c=2)
-        z[?0] *= 2 * z[?1] * z[?2]
+        z[?0] = 2 * z[?1] * z[?2]
         >>> Multiply(2,2)
-        z[?0] *= 2 * z[?1]
+        z[?0] = 2 * z[?1]
         >>> c = Circuit()
         >>> c.push(Multiply(2), 1, 2)
         3-zvar circuit with 1 instruction:
-        └── z[1] *= 1.0 * z[2]
+        └── z[1] = 1.0 * z[2]
+        <BLANKLINE>
+        >>> c = Circuit()
+        >>> c.push(Multiply(3), 0, 0, 1)  # accumulate via aliasing
+        2-zvar circuit with 1 instruction:
+        └── z[0] = 1.0 * z[0] * z[1]
         <BLANKLINE>
     """
 
@@ -168,22 +189,11 @@ class Multiply(Operation):
     _qregsizes = []
     _cregsizes = []
     _parnames = ("factor",)
+    _allow_zvar_aliasing = True
 
     def __init__(self, N=1, c=1.0):
         if N < 1:
             raise ValueError("Multiply requires at least one z-variable.")
-        if N == 1 and c == 1.0:
-            warnings.warn(
-                "Multiply(1; c=1.0) will be equivalent to a no-op.", stacklevel=2
-            )
-
-    def __init__(self, N=1, c=1.0):
-        if N < 1:
-            raise ValueError("Multiply requires at least one z-variable.")
-        if N == 1 and c == 1.0:
-            warnings.warn(
-                "Multiply(1; c=1.0) will be equivalent to a no-op.", stacklevel=2
-            )
 
         super().__init__()
         self._num_zvars = N
@@ -195,7 +205,7 @@ class Multiply(Operation):
         return False
 
     def __repr__(self):
-        repr = "z[?0] *="
+        repr = "z[?0] ="
         parts = [str(self.factor)]
         for i in range(1, self._num_zvars):
             parts.append(f"z[?{i}]")
@@ -206,7 +216,7 @@ class Multiply(Operation):
         return f"{self._name}({self.num_zvars}, c={self.factor})"
 
     def format_with_targets(self, qubits, bits, zvars):
-        head = f"z[{zvars[0]}] *="
+        head = f"z[{zvars[0]}] ="
         terms = [str(self.factor)]
         terms.extend(f"z[{z}]" for z in zvars[1:])
         return f"{head} {' * '.join(terms)}"

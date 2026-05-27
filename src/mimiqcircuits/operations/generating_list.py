@@ -62,6 +62,7 @@ class InheritanceTree:
             :class:`Gate`
                 :class:`Control`
                     :class:`GateC3X`
+                    :class:`GateCCP`
                     :class:`GateCCX`
                     :class:`GateCH`
                     :class:`GateCP`
@@ -126,6 +127,7 @@ class InheritanceTree:
                     :class:`GateT`
                 :class:`QFT`
                 :class:`RPauli`
+            :class:`LossyOperator`
             :class:`Operator`
             :class:`Projector0`
             :class:`Projector00`

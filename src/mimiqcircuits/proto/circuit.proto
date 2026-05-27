@@ -206,6 +206,12 @@ message CustomOperator {
     repeated ComplexArg matrix = 2;
 }
 
+message LossyOperator {
+    int64 numqubits = 1;
+    repeated ComplexArg matrix = 2;
+    repeated int64 lossy = 3;
+}
+
 message RescaledGate {
     Gate operation = 1;
     Arg scale = 2;
@@ -227,6 +233,7 @@ message Operator {
         RescaledGate rescaledgate = 12;
         CachedGateCall cachedgatecall = 13;
         RPauli rpauli = 14;
+        LossyOperator lossyoperator = 15;
     }
 }
 
@@ -336,6 +343,11 @@ message IfStatement {
     BitVector bitstring = 2;
 }
 
+message WhileStatement {
+    Operation operation = 1;
+    BitVector bitstring = 2;
+}
+
 message Amplitude {
     BitVector bs = 1;
 }
@@ -416,6 +428,8 @@ message Operation {
         Block block = 28;
         ReadoutErr readouterr = 29;
         LossErr losserr = 30;
+        LossyOperator lossyoperator = 31;
+        WhileStatement whilestatement = 32;
     }
 }
 

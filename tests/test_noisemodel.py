@@ -264,6 +264,23 @@ def test_apply_noise_model_recurses_into_ifstatement():
     assert isinstance(inner.instructions[1].get_operation(), AmplitudeDamping)
 
 
+def test_apply_noise_model_recurses_into_whilestatement():
+    c = Circuit()
+    c.push(WhileStatement(GateH(), BitString("1")), 0, 0)
+
+    model = NoiseModel([OperationInstanceNoise(GateH(), AmplitudeDamping(0.01))])
+    noisy = apply_noise_model(c, model)
+
+    assert len(noisy.instructions) == 1
+    wrapped = noisy.instructions[0].get_operation()
+    assert isinstance(wrapped, WhileStatement)
+    inner = wrapped.get_operation()
+    assert isinstance(inner, Block)
+    assert len(inner.instructions) == 2
+    assert isinstance(inner.instructions[0].get_operation(), GateH)
+    assert isinstance(inner.instructions[1].get_operation(), AmplitudeDamping)
+
+
 def test_apply_noise_model_recurses_into_gatecall():
     inner = Circuit()
     inner.push(GateH(), 0)
@@ -313,6 +330,12 @@ def test_operation_instance_noise_construction_validation():
     assert isinstance(
         OperationInstanceNoise(
             IfStatement(GateH(), BitString("1")), AmplitudeDamping(0.01)
+        ),
+        OperationInstanceNoise,
+    )
+    assert isinstance(
+        OperationInstanceNoise(
+            WhileStatement(GateH(), BitString("1")), AmplitudeDamping(0.01)
         ),
         OperationInstanceNoise,
     )

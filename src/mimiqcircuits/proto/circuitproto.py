@@ -33,12 +33,18 @@ from mimiqcircuits.operations.gates.generalized.rpauli import RPauli
 # ---------------------- Registry Pattern for Conversions ----------------------
 
 
+_MISSING_CONVERTER = object()
+
+
 class ProtoRegistry:
     """Registry for proto conversion functions based on type."""
 
     def __init__(self):
         self.toproto_registry = {}
         self.fromproto_registry = {}
+        # Memoizes get_toproto_converter results (including MRO misses) so
+        # repeated lookups for the same type skip the MRO walk.
+        self._toproto_cache = {}
 
     def register_toproto(self, mc_type):
         """Register a function to convert from mimiqcircuits to protobuf.
@@ -51,6 +57,7 @@ class ProtoRegistry:
 
         def decorator(converter_func):
             self.toproto_registry[mc_type] = converter_func
+            self._toproto_cache.clear()
             return converter_func
 
         return decorator
@@ -58,6 +65,7 @@ class ProtoRegistry:
     def register_toproto_direct(self, mc_type, converter_func):
         """Register a function to convert from mimiqcircuits to protobuf."""
         self.toproto_registry[mc_type] = converter_func
+        self._toproto_cache.clear()
 
     def register_fromproto(self, proto_field):
         """Register a function to convert from protobuf to mimiqcircuits.
@@ -81,22 +89,25 @@ class ProtoRegistry:
     def get_toproto_converter(self, obj_type: Type) -> Optional[Callable]:
         """Get converter for a specific mimiqcircuits type.
 
-        This method traverses the type's MRO (method resolution order) to find
-        a converter. This allows canonical subclasses (e.g., GateCH which is a
-        subclass of Control) to use the parent class's converter.
+        Traverses the type's MRO to find a converter, so canonical subclasses
+        (e.g., GateCH, a subclass of Control) use the parent class's converter.
+        Results — including misses — are cached; the cache is cleared whenever a
+        new converter is registered.
         """
-        # First try exact type match
+        cache = self._toproto_cache
+        cached = cache.get(obj_type, _MISSING_CONVERTER)
+        if cached is not _MISSING_CONVERTER:
+            return cached
+
         converter = self.toproto_registry.get(obj_type)
-        if converter:
-            return converter
+        if converter is None:
+            for parent_type in obj_type.__mro__[1:]:
+                converter = self.toproto_registry.get(parent_type)
+                if converter is not None:
+                    break
 
-        # Traverse MRO to find a converter for a parent class
-        for parent_type in obj_type.__mro__[1:]:
-            converter = self.toproto_registry.get(parent_type)
-            if converter:
-                return converter
-
-        return None
+        cache[obj_type] = converter
+        return converter
 
     def get_fromproto_converter(self, proto_field: str) -> Optional[Callable]:
         """Get converter for a specific protobuf field."""
@@ -295,70 +306,6 @@ def safe_convert(value):
     return value
 
 
-def toproto_arg(param):
-    """Convert a parameter to protocol buffer format."""
-    # Dispatcher dictionary for different parameter types
-    type_handlers = {
-        int: lambda p: circuit_pb2.Arg(
-            argvalue_value=circuit_pb2.ArgValue(integer_value=p)
-        ),
-        float: lambda p: handle_float(p),
-        se.Integer: lambda p: circuit_pb2.Arg(
-            argvalue_value=circuit_pb2.ArgValue(integer_value=p.p)
-        ),
-        se.Rational: lambda p: handle_numeric(float(p)),
-        se.Float: lambda p: handle_numeric(float(p)),
-        se.RealDouble: lambda p: circuit_pb2.Arg(
-            argvalue_value=circuit_pb2.ArgValue(double_value=p.real)
-        ),
-        se.Symbol: lambda p: circuit_pb2.Arg(
-            symbol_value=circuit_pb2.Symbol(value=p.name)
-        ),
-        complex: lambda p: handle_complex(p),
-        se.ComplexDouble: lambda p: handle_complex(p.evalf()),
-        str: lambda p: circuit_pb2.Arg(symbol_value=circuit_pb2.Symbol(value=p)),
-        seZero: lambda p: toproto_arg(0),
-        seOne: lambda p: toproto_arg(1),
-        seNegativeOne: lambda p: toproto_arg(-1),
-    }
-
-    # Special case for irrational numbers
-    if param in IRRATIONALSYMENGINE:
-        arg = circuit_pb2.Arg()
-        arg.irrational_value = IRRATIONALSYMENGINE[param]
-        return arg
-
-    # Special case for symengine expressions
-    if type(param) in EXPRSYMENGINE:
-        arg = circuit_pb2.Arg()
-        arg.argfunction_value.mtype = EXPRSYMENGINE[type(param)]
-        for a in param.args:
-            arg.argfunction_value.args.append(toproto_arg(a))
-        return arg
-
-    # Special case for symengine.Basic
-    if isinstance(param, se.Basic) and param == (se.I):
-        return handle_complex(param)
-
-    if isinstance(param, se.Basic) and param.is_Number:
-        try:
-            return handle_numeric(float(param))
-        except Exception:
-            pass
-
-    if isinstance(param, (np.float64, np.float32)):
-        return handle_float(float(param))
-    elif isinstance(param, (np.int64, np.int32)):
-        return toproto_arg(int(param))
-
-    # Handle the parameter using the appropriate handler
-    handler = type_handlers.get(type(param))
-    if handler:
-        return handler(param)
-
-    raise ValueError(f"Unsupported parameter type: {type(param)}")
-
-
 def handle_float(value):
     """Handle float values, converting to integer if possible."""
     arg = circuit_pb2.Arg()
@@ -389,6 +336,82 @@ def handle_complex(value):
         return toproto_arg(real_part)
     else:
         raise ArgumentError("Arguments cannot be complex numbers")
+
+
+def _arg_int(p):
+    return circuit_pb2.Arg(argvalue_value=circuit_pb2.ArgValue(integer_value=p))
+
+
+def _arg_se_integer(p):
+    return circuit_pb2.Arg(argvalue_value=circuit_pb2.ArgValue(integer_value=p.p))
+
+
+def _arg_se_realdouble(p):
+    return circuit_pb2.Arg(argvalue_value=circuit_pb2.ArgValue(double_value=p.real))
+
+
+def _arg_se_symbol(p):
+    return circuit_pb2.Arg(symbol_value=circuit_pb2.Symbol(value=p.name))
+
+
+def _arg_string(p):
+    return circuit_pb2.Arg(symbol_value=circuit_pb2.Symbol(value=p))
+
+
+# Direct type -> handler table for the common cases in toproto_arg. Built once
+# at module load (the original code rebuilt it per call).
+_TOPROTO_ARG_HANDLERS = {
+    int: _arg_int,
+    float: handle_float,
+    se.Integer: _arg_se_integer,
+    se.Rational: lambda p: handle_numeric(float(p)),
+    se.Float: lambda p: handle_numeric(float(p)),
+    se.RealDouble: _arg_se_realdouble,
+    se.Symbol: _arg_se_symbol,
+    complex: handle_complex,
+    se.ComplexDouble: lambda p: handle_complex(p.evalf()),
+    str: _arg_string,
+    seZero: lambda p: _arg_int(0),
+    seOne: lambda p: _arg_int(1),
+    seNegativeOne: lambda p: _arg_int(-1),
+    np.float64: lambda p: handle_float(float(p)),
+    np.float32: lambda p: handle_float(float(p)),
+    np.int64: lambda p: _arg_int(int(p)),
+    np.int32: lambda p: _arg_int(int(p)),
+}
+
+
+def toproto_arg(param):
+    """Convert a parameter to protocol buffer format."""
+    handler = _TOPROTO_ARG_HANDLERS.get(type(param))
+    if handler is not None:
+        return handler(param)
+
+    # Slow paths for irrationals, symengine expressions, and other symbolic
+    # values that can't be keyed on exact type.
+    if param in IRRATIONALSYMENGINE:
+        arg = circuit_pb2.Arg()
+        arg.irrational_value = IRRATIONALSYMENGINE[param]
+        return arg
+
+    param_type = type(param)
+    if param_type in EXPRSYMENGINE:
+        arg = circuit_pb2.Arg()
+        arg.argfunction_value.mtype = EXPRSYMENGINE[param_type]
+        for a in param.args:
+            arg.argfunction_value.args.append(toproto_arg(a))
+        return arg
+
+    if isinstance(param, se.Basic):
+        if param == se.I:
+            return handle_complex(param)
+        if param.is_Number:
+            try:
+                return handle_numeric(float(param))
+            except Exception:
+                pass
+
+    raise ValueError(f"Unsupported parameter type: {type(param)}")
 
 
 def fromproto_arg(arg):
@@ -876,6 +899,23 @@ def toproto_customoperator(operator, declcache=None):
     )
 
 
+@operator_registry.register_toproto(mc.LossyOperator)
+def toproto_lossyoperator(operator, declcache=None):
+    matrix_data = operator.matrix()
+    matrix = [
+        toproto_complex(matrix_data[i, j])
+        for i in range(matrix_data.rows)
+        for j in range(matrix_data.cols)
+    ]
+    return circuit_pb2.Operator(
+        lossyoperator=circuit_pb2.LossyOperator(
+            numqubits=operator.num_qubits,
+            matrix=matrix,
+            lossy=list(operator.lossyqubits()),
+        )
+    )
+
+
 @operator_registry.register_fromproto("rescaledgate")
 def fromproto_rescaledgate(rescaledgate_proto, declcache=None):
     """Convert a protocol buffer RescaledGate to a mimiqcircuits RescaledGate."""
@@ -893,6 +933,14 @@ def fromproto_customoperator(customoperator_proto, declcache=None):
         2**customoperator_proto.numqubits,
     )
     return mc.Operator(mat=matrix)
+
+
+@operator_registry.register_fromproto("lossyoperator")
+def fromproto_lossyoperator(lossyoperator_proto, declcache=None):
+    matrix = [fromproto_complex(val) for val in lossyoperator_proto.matrix]
+    size = 2**lossyoperator_proto.numqubits
+    matrix = np.array(matrix).reshape(size, size)
+    return mc.LossyOperator(mat=matrix, lossy=tuple(lossyoperator_proto.lossy))
 
 
 # ---------------------- Kraus Channel Conversion Functions ----------------------
@@ -949,25 +997,9 @@ def fromproto_krauschannel(kraus_proto, declcache=None):
 @krauschannel_registry.register_toproto(mc.Kraus)
 def toproto_kraus(kraus_channel, declcache=None):
     """Convert a Kraus to protocol buffer format."""
-    operators_proto = []
-    for op in kraus_channel.krausoperators():
-        matrix = op.matrix()
-        matrix_elements = []
-        # Get the correct matrix dimensions
-        num_rows, num_cols = matrix.rows, matrix.cols
-
-        for i in range(num_rows):
-            for j in range(num_cols):
-                element = matrix[i, j]
-                matrix_elements.append(toproto_complex(element))
-
-        operators_proto.append(
-            circuit_pb2.Operator(
-                customoperator=circuit_pb2.CustomOperator(
-                    numqubits=kraus_channel.num_qubits, matrix=matrix_elements
-                )
-            )
-        )
+    operators_proto = [
+        toproto_operator(op, declcache) for op in kraus_channel.krausoperators()
+    ]
     return circuit_pb2.KrausChannel(
         customkrauschannel=circuit_pb2.CustomKrausChannel(
             numqubits=kraus_channel.num_qubits, operators=operators_proto
@@ -1058,6 +1090,22 @@ def fromproto_customkrauschannel(customkrauschannel_proto, declcache=None):
                 raise ValueError(
                     f"Unsupported SimpleOperator type: {op_proto.simpleoperator.mtype}"
                 )
+        elif op_proto.HasField("lossyoperator"):
+            matrix_elements = [fromproto_complex(val) for val in op_proto.lossyoperator.matrix]
+            num_qubits = op_proto.lossyoperator.numqubits
+            matrix_size = 2**num_qubits
+
+            if len(matrix_elements) != matrix_size * matrix_size:
+                raise ValueError(
+                    f"Number of elements ({len(matrix_elements)}) does not match expected size ({matrix_size * matrix_size})."
+                )
+
+            matrix = np.array(matrix_elements).reshape(matrix_size, matrix_size)
+            operators.append(
+                mc.LossyOperator(
+                    mat=matrix, lossy=tuple(op_proto.lossyoperator.lossy)
+                )
+            )
         else:
             raise ValueError("Unsupported operator type in customkrauschannel")
 
@@ -1350,7 +1398,7 @@ def fromproto_operation(operation_proto, declcache=None):
         return fromproto_krauschannel(kraus_proto, declcache)
 
     # Handle operator operations
-    operator_fields = ["simpleoperator", "customoperator", "rescaledgate"]
+    operator_fields = ["simpleoperator", "customoperator", "rescaledgate", "lossyoperator"]
     if operation_field in operator_fields:
         operator_proto = circuit_pb2.Operator(
             **{operation_field: getattr(operation_proto, operation_field)}
@@ -1417,6 +1465,26 @@ def fromproto_ifstatement(ifstatement_proto, declcache=None):
     operation = fromproto_operation(ifstatement_proto.operation, declcache)
     bitstring = mc.BitString(fromproto_bitvector(ifstatement_proto.bitstring))
     return mc.IfStatement(operation=operation, bitstring=bitstring)
+
+
+@operation_registry.register_toproto(mc.WhileStatement)
+def toproto_whilestatement(operation, declcache=None):
+    """Convert a WhileStatement operation to protocol buffer format."""
+    bitstring_proto = toproto_bitvector(operation.bitstring)
+    operation_proto = toproto_operation(operation.op, declcache)
+    return circuit_pb2.Operation(
+        whilestatement=circuit_pb2.WhileStatement(
+            operation=operation_proto, bitstring=bitstring_proto
+        )
+    )
+
+
+@operation_registry.register_fromproto("whilestatement")
+def fromproto_whilestatement(whilestatement_proto, declcache=None):
+    """Convert a protocol buffer WhileStatement to a mimiqcircuits WhileStatement."""
+    operation = fromproto_operation(whilestatement_proto.operation, declcache)
+    bitstring = mc.BitString(fromproto_bitvector(whilestatement_proto.bitstring))
+    return mc.WhileStatement(operation=operation, bitstring=bitstring)
 
 
 @operation_registry.register_toproto(mc.ReadoutErr)
@@ -1584,6 +1652,155 @@ def fromproto_rpauli_operation(msg, declcache=None):
     return mc.RPauli(fromproto_paulistring(msg.pauli), fromproto_arg(msg.theta))
 
 
+# ------------- Operation-direct gate converters (skip Gate wrapper) ----------
+#
+# When a Gate appears as a top-level instruction operation, building a
+# circuit_pb2.Gate just to unpack its field and rebuild a circuit_pb2.Operation
+# costs an extra allocation plus a CopyFrom. The converters below produce the
+# Operation message directly. They mirror the existing gate_registry entries
+# but write into the matching Operation oneof field. toproto_gate is still
+# used for inner gate slots (Control.operation, Power.operation, etc.).
+
+
+def toproto_operation_simplegate(gate, declcache=None):
+    return circuit_pb2.Operation(
+        simplegate=circuit_pb2.SimpleGate(
+            mtype=GATEMAP[type(gate)],
+            parameters=[toproto_arg(p) for p in gate.getparams()],
+        )
+    )
+
+
+def toproto_operation_generalized_gate(gate, declcache=None):
+    if isinstance(gate, mc.PolynomialOracle):
+        args = [toproto_arg(arg) for arg in gate._params[2:]]
+    else:
+        args = [toproto_arg(p) for p in gate.getparams()]
+    return circuit_pb2.Operation(
+        generalized=circuit_pb2.Generalized(
+            mtype=GENERALIZEDGATEMAP[type(gate)],
+            args=args,
+            qregsizes=list(getattr(gate, "_qregsizes", [])),
+        )
+    )
+
+
+def toproto_operation_paulistring(gate, declcache=None):
+    return circuit_pb2.Operation(
+        paulistring=pauli_pb2.PauliString(numqubits=gate.num_qubits, pauli=gate.pauli)
+    )
+
+
+def toproto_operation_customgate(gate, declcache=None):
+    U = [toproto_complex(p) for p in gate.matrix.T]
+    return circuit_pb2.Operation(
+        customgate=circuit_pb2.CustomGate(numqubits=gate.num_qubits, matrix=U)
+    )
+
+
+def toproto_operation_gatecall(gate, declcache=None):
+    args_proto = [toproto_arg(arg) for arg in gate._args]
+    if declcache is None:
+        decl_proto = toproto_gatedecl(gate._decl)
+        return circuit_pb2.Operation(
+            gatecall=circuit_pb2.GateCall(decl=decl_proto, args=args_proto)
+        )
+    declid = id(gate._decl)
+    if declid not in declcache[0]:
+        declcache[0][declid] = toproto_gatedecl(gate._decl, declcache)
+        declcache[1].append(declid)
+    return circuit_pb2.Operation(
+        cachedgatecall=circuit_pb2.CachedGateCall(id=declid, args=args_proto)
+    )
+
+
+def toproto_operation_control(gate, declcache=None):
+    return circuit_pb2.Operation(
+        control=circuit_pb2.Control(
+            operation=toproto_gate(gate.op, declcache),
+            numcontrols=gate.num_controls,
+        )
+    )
+
+
+def toproto_operation_power(gate, declcache=None):
+    base = toproto_gate(gate.op, declcache)
+    if isinstance(gate.exponent, int):
+        msg = circuit_pb2.Power(operation=base, int_val=gate.exponent)
+    elif isinstance(gate.exponent, Fraction):
+        msg = circuit_pb2.Power(
+            operation=base,
+            rational_val=circuit_pb2.Rational(
+                num=gate.exponent.numerator, den=gate.exponent.denominator
+            ),
+        )
+    elif isinstance(gate.exponent, float):
+        msg = circuit_pb2.Power(operation=base, double_val=gate.exponent)
+    else:
+        raise ValueError(f"Unsupported exponent type: {type(gate.exponent)}")
+    return circuit_pb2.Operation(power=msg)
+
+
+def toproto_operation_inverse(gate, declcache=None):
+    return circuit_pb2.Operation(
+        inverse=circuit_pb2.Inverse(operation=toproto_gate(gate.op, declcache))
+    )
+
+
+def toproto_operation_parallel(gate, declcache=None):
+    return circuit_pb2.Operation(
+        parallel=circuit_pb2.Parallel(
+            operation=toproto_gate(gate.op, declcache),
+            numrepeats=gate.num_repeats,
+        )
+    )
+
+
+def toproto_operation_rpauli(gate, declcache=None):
+    return circuit_pb2.Operation(
+        rpauli=circuit_pb2.RPauli(
+            pauli=pauli_pb2.PauliString(
+                numqubits=gate.pauli.num_qubits, pauli=str(gate.pauli.pauli)
+            ),
+            theta=toproto_arg(gate.theta),
+        )
+    )
+
+
+def register_operation_direct_gates():
+    """Register Operation-direct converters for every gate type."""
+    for gate_class in GATEMAP:
+        operation_registry.register_toproto_direct(
+            gate_class, toproto_operation_simplegate
+        )
+    for gate_class in GENERALIZEDGATEMAP:
+        operation_registry.register_toproto_direct(
+            gate_class, toproto_operation_generalized_gate
+        )
+    operation_registry.register_toproto_direct(
+        mc.PauliString, toproto_operation_paulistring
+    )
+    operation_registry.register_toproto_direct(
+        mc.GateCustom, toproto_operation_customgate
+    )
+    operation_registry.register_toproto_direct(
+        mc.GateCall, toproto_operation_gatecall
+    )
+    operation_registry.register_toproto_direct(
+        mc.Control, toproto_operation_control
+    )
+    operation_registry.register_toproto_direct(
+        mc.Power, toproto_operation_power
+    )
+    operation_registry.register_toproto_direct(
+        mc.Inverse, toproto_operation_inverse
+    )
+    operation_registry.register_toproto_direct(
+        mc.Parallel, toproto_operation_parallel
+    )
+    operation_registry.register_toproto_direct(RPauli, toproto_operation_rpauli)
+
+
 # ---------------------- Initialize Registries ----------------------
 
 
@@ -1594,6 +1811,7 @@ def initialize_registries():
     register_generalized_operations()
     register_simple_annotations()
     register_generalized_annotations()
+    register_operation_direct_gates()
     # Additional initialization can be added here
 
 

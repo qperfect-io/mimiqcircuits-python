@@ -41,8 +41,10 @@ class MeasureZZ(AbstractMeasurement):
         └── MZZ @ q[0:1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit, 1-bit circuit with 1 instruction:
-        └── MZZ @ q[0:1], c[0]
+        2-qubit, 1-bit circuit with 3 instructions:
+        ├── CX @ q[0], q[1]
+        ├── M @ q[1], c[0]
+        └── CX @ q[0], q[1]
         <BLANKLINE>
     """
 
@@ -107,8 +109,12 @@ class MeasureXX(AbstractMeasurement):
         └── MXX @ q[0:1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit, 1-bit circuit with 1 instruction:
-        └── MXX @ q[0:1], c[0]
+        2-qubit, 1-bit circuit with 5 instructions:
+        ├── CX @ q[0], q[1]
+        ├── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+        ├── M @ q[1], c[0]
+        ├── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+        └── CX @ q[0], q[1]
         <BLANKLINE>
     """
 
@@ -171,8 +177,17 @@ class MeasureYY(AbstractMeasurement):
         └── MYY @ q[0:1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit, 1-bit circuit with 1 instruction:
-        └── MYY @ q[0:1], c[0]
+        2-qubit, 1-bit circuit with 10 instructions:
+        ├── U(0, 0, (1/2)*pi, 0.0) @ q[0]
+        ├── U(0, 0, (1/2)*pi, 0.0) @ q[1]
+        ├── CX @ q[0], q[1]
+        ├── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+        ├── M @ q[0], c[0]
+        ├── U(0, 0, pi, 0.0) @ q[0]
+        ├── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── U(0, 0, (1/2)*pi, 0.0) @ q[0]
+        └── U(0, 0, (1/2)*pi, 0.0) @ q[1]
         <BLANKLINE>
     """
 

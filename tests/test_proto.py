@@ -108,6 +108,16 @@ def test_kraus_proto(tmpdir):
     base_noise_channel_test(circuit, kraus, tmpdir)
 
 
+def test_lossy_kraus_proto(tmpdir):
+    circuit = mc.Circuit()
+    survival = np.array([[1, 0], [0, np.sqrt(0.8)]], dtype=np.complex128)
+    lossy = mc.LossyOperator(
+        np.array([[0, 0], [0, np.sqrt(0.2)]], dtype=np.complex128)
+    )
+    kraus = mc.Kraus([survival, lossy])
+    base_noise_channel_test(circuit, kraus, tmpdir)
+
+
 # Test Cases for gates and operations
 def base_gate_operation_test(circuit, operation, tmpdir, *args):
     temp_file = tmpdir.join("test.pb")

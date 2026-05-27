@@ -34,6 +34,7 @@ def test_noises_definition():
     assert hasattr(mc, "PhaseAmplitudeDamping")
     assert hasattr(mc, "ThermalNoise")
     assert hasattr(mc, "Depolarizing")
+    assert hasattr(mc, "LossyOperator")
 
 
 # Test mixed unitary assignment
@@ -79,6 +80,26 @@ def test_kraus():
         ValueError, match=r"Dimension of operator has to be 2\^n with n>=1"
     ):
         Kraus(Emats)
+
+
+def test_lossy_operator_and_loss_aware_kraus():
+    op = LossyOperator(np.array([[0, 0], [0, np.sqrt(0.2)]], dtype=np.complex128))
+    assert op.lossyqubits() == (1,)
+    assert op.lossytargets(7) == (7,)
+
+    survival = Operator(np.array([[1, 0], [0, np.sqrt(0.8)]], dtype=np.complex128))
+    channel = Kraus([survival, op])
+
+    assert channel.hasloss()
+    assert channel.lossoperators() == [op]
+    assert channel.survivaloperators() == [survival]
+
+    expected = np.array([[0, 0], [0, 0.2]], dtype=np.complex128)
+    actual = np.array(channel.losseffect().matrix().tolist(), dtype=np.complex128)
+    assert np.allclose(actual, expected)
+
+    with pytest.raises(ValueError, match="requires explicit lossy"):
+        LossyOperator(np.zeros((4, 4), dtype=np.complex128))
 
 
 # Test Mixed Unitary channel

@@ -37,8 +37,9 @@ class MeasureReset(AbstractMeasurement):
         └── MR @ q[1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit, 1-bit circuit with 1 instruction:
-        └── MR @ q[1], c[0]
+        2-qubit, 1-bit circuit with 2 instructions:
+        ├── M @ q[1], c[0]
+        └── IF(c==1) U(pi, 0, pi, 0.0) @ q[1], condition[0]
         <BLANKLINE>
     """
 
@@ -96,8 +97,11 @@ class MeasureResetX(AbstractMeasurement):
         └── MRX @ q[1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit, 1-bit circuit with 1 instruction:
-        └── MRX @ q[1], c[0]
+        2-qubit, 1-bit circuit with 4 instructions:
+        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
+        ├── M @ q[1], c[0]
+        ├── IF(c==1) U(pi, 0, pi, 0.0) @ q[1], condition[0]
+        └── U((1/2)*pi, 0, pi, 0.0) @ q[1]
         <BLANKLINE>
     """
 
@@ -158,8 +162,19 @@ class MeasureResetY(AbstractMeasurement):
         └── MRY @ q[1], c[0]
         <BLANKLINE>
         >>> c.decompose()
-        2-qubit, 1-bit circuit with 1 instruction:
-        └── MRY @ q[1], c[0]
+        2-qubit, 1-bit circuit with 12 instructions:
+        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
+        ├── U(0, 0, (1/2)*pi, 0.0) @ q[1]
+        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
+        ├── U(0, 0, pi, 0.0) @ q[1]
+        ├── U(0, 0, 0, (-1/4)*pi) @ q[1]
+        ├── M @ q[1], c[0]
+        ├── IF(c==1) U(pi, 0, pi, 0.0) @ q[1], condition[0]
+        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
+        ├── U(0, 0, (1/2)*pi, 0.0) @ q[1]
+        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
+        ├── U(0, 0, pi, 0.0) @ q[1]
+        └── U(0, 0, 0, (-1/4)*pi) @ q[1]
         <BLANKLINE>
     """
 

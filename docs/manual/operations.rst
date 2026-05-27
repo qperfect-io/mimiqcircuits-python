@@ -30,6 +30,12 @@ MimiqCircuits provides a rich set of operations to build your quantum circuits. 
 
         Define custom noise models and apply them to your circuits.
 
+    .. grid-item-card:: :octicon:`alert` Qubit Loss
+        :link: loss
+        :link-type: doc
+
+        Model qubit loss, reload lost qubits, and process loss-aware circuits.
+
     .. grid-item-card:: :octicon:`pencil` Symbolic Ops
         :link: symbolic_ops
         :link-type: doc
@@ -62,6 +68,7 @@ MimiqCircuits provides a rich set of operations to build your quantum circuits. 
     classical_ops
     non_unitary_ops
     noise
+    loss
     symbolic_ops
     statistical_ops
     special_ops

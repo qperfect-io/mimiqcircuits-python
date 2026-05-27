@@ -1,0 +1,46 @@
+# Changelog
+
+All notable changes to `mimiqcircuits` (Python) are documented here.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+## [0.23.0] — 2026-05-27
+
+### Added
+- `mimiqcircuits.WIRE_FORMAT_VERSION` constant (initial value
+  `"1.0.0"`) declaring the version of the MIMIQ wire format —
+  the union of the ProtoBuf schemas and the JSON request/response
+  envelope — independently of the package's own release version.
+  Mirrors `MimiqCircuitsBase.WIRE_FORMAT_VERSION` byte-for-byte. See
+  `WIRE_FORMAT.md` in `MimiqCircuitsBase.jl/` for the full surface
+  and the bump-trigger checklist.
+
+### Fixed
+- `Backend.can_handle` now rejects circuits with noise channels when
+  the backend has not declared `"noise"`, and circuits with free
+  symbolic parameters when the backend has not declared `"parametric"`.
+  Previously both slipped past admission and surfaced as opaque
+  evolve-time errors. Mirrors the matching tightening in
+  `AbstractQCSs.jl`.
+
+### Changed
+- The JSON request envelope for `submit` and `optimize` now carries a
+  `wireformatversion` key (the value of
+  `mimiqcircuits.WIRE_FORMAT_VERSION`) alongside the existing
+  `circuitsapiversion`. Executors aware of the new field will use it
+  for compatibility checks; older executors ignore it.
+- `circuitproto.toproto_circuit` is ~1.4-2x faster. `ProtoRegistry`
+  converter lookup is memoized (MRO walk runs once per type, cache
+  cleared on registration); `toproto_arg`'s handler dict is hoisted to
+  module scope so it isn't rebuilt per parameter; gate converters write
+  the `Operation` proto directly instead of building a `Gate` and
+  unpacking it (`Control`, `Power`, `Inverse`, `Parallel`,
+  `PauliString`, `GateCustom`, `GateCall`, `RPauli`, and everything in
+  `GATEMAP` / `GENERALIZEDGATEMAP`).
+
+## [0.21.8]
+
+Changelog tracking begins with this version. See git history for prior changes.

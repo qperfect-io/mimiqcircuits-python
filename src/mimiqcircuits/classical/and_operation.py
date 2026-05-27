@@ -55,6 +55,7 @@ class And(AbstractClassical):
     _cregsizes = []
     _zregsizes = []
     _parnames = ()  # No parameters like 'term'
+    _allow_bit_aliasing = True
 
     def __init__(self, N=3):
         """

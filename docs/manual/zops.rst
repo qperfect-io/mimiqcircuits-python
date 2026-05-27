@@ -77,6 +77,10 @@ The following operations perform arithmetic on Z-register variables:
 - :class:`~mimiqcircuits.Multiply`: Multiplies Z-register variables.
 - :class:`~mimiqcircuits.Pow`: Raises a Z-register variable to a power.
 
+Both :class:`~mimiqcircuits.Add` and :class:`~mimiqcircuits.Multiply` are
+**assignments**: the *first* z-target is the destination (its previous value is
+overwritten), and the remaining targets are the inputs.
+
 .. doctest::
 
     >>> c.push(Add(3), 4, 1, 2)         # z[4] = z[1] + z[2]
@@ -86,7 +90,7 @@ The following operations perform arithmetic on Z-register variables:
     ├── ⟨XX⟩ @ q[1,2], z[1]
     ├── ⟨ZZ⟩ @ q[1,2], z[2]
     ├── Amplitude(bs"00") @ z[3]
-    └── z[4] += 0.0 + z[1] + z[2]
+    └── z[4] = 0.0 + z[1] + z[2]
     <BLANKLINE>
     >>> c.push(Multiply(3), 5, 1, 2)    # z[5] = z[1] * z[2]
     3-qubit, 6-zvar circuit with 7 instructions:
@@ -95,19 +99,19 @@ The following operations perform arithmetic on Z-register variables:
     ├── ⟨XX⟩ @ q[1,2], z[1]
     ├── ⟨ZZ⟩ @ q[1,2], z[2]
     ├── Amplitude(bs"00") @ z[3]
-    ├── z[4] += 0.0 + z[1] + z[2]
-    └── z[5] *= 1.0 * z[1] * z[2]
+    ├── z[4] = 0.0 + z[1] + z[2]
+    └── z[5] = 1.0 * z[1] * z[2]
     <BLANKLINE>
-    >>> c.push(Multiply(1, 0.2), 3)     # z[3] *= 0.2
+    >>> c.push(Multiply(2, 0.2), 3, 3)  # z[3] = 0.2 * z[3] (in-place via aliasing)
     3-qubit, 6-zvar circuit with 8 instructions:
     ├── H @ q[1]
     ├── CX @ q[1], q[2]
     ├── ⟨XX⟩ @ q[1,2], z[1]
     ├── ⟨ZZ⟩ @ q[1,2], z[2]
     ├── Amplitude(bs"00") @ z[3]
-    ├── z[4] += 0.0 + z[1] + z[2]
-    ├── z[5] *= 1.0 * z[1] * z[2]
-    └── z[3] *= 0.2
+    ├── z[4] = 0.0 + z[1] + z[2]
+    ├── z[5] = 1.0 * z[1] * z[2]
+    └── z[3] = 0.2 * z[3]
     <BLANKLINE>
     >>> c.push(Pow(-1), 3)              # z[3] = z[3] ** -1
     3-qubit, 6-zvar circuit with 9 instructions:
@@ -116,17 +120,21 @@ The following operations perform arithmetic on Z-register variables:
     ├── ⟨XX⟩ @ q[1,2], z[1]
     ├── ⟨ZZ⟩ @ q[1,2], z[2]
     ├── Amplitude(bs"00") @ z[3]
-    ├── z[4] += 0.0 + z[1] + z[2]
-    ├── z[5] *= 1.0 * z[1] * z[2]
-    ├── z[3] *= 0.2
+    ├── z[4] = 0.0 + z[1] + z[2]
+    ├── z[5] = 1.0 * z[1] * z[2]
+    ├── z[3] = 0.2 * z[3]
     └── z[3] = z[3]^(-1)
     <BLANKLINE>
- 
-.. .. note::
-    These operations can take an arbitrary number of input Z-register indices.
-    For example, ``Add(4)`` adds four Z-register values together.
 
-Additionally, a constant value can be added or multiplied in. For instance, ``Add(2, 0.5)`` adds 0.5 to both inputs before summing them.
+These operations can take an arbitrary number of input Z-register indices.
+For example, ``Add(4)`` is a 4-zvar instruction that adds three input
+Z-register values together and stores the result in the destination.
+
+Additionally, a constant value can be added or multiplied in. For instance, ``Add(3, 0.5)`` evaluates ``z[a] = 0.5 + z[b] + z[c]``, where ``z[a]`` is the destination and ``z[b]``, ``z[c]`` are the inputs.
+
+.. note::
+
+    Because :class:`~mimiqcircuits.Add`, :class:`~mimiqcircuits.Multiply` and :class:`~mimiqcircuits.Pow` opt into *z-variable aliasing*, the destination z-variable may also appear among the input z-variables. This is how you recover the previous in-place behaviour: ``c.push(Add(3), 0, 0, 1)`` evaluates ``z[0] = z[0] + z[1]`` (i.e. ``z[0] += z[1]``), and ``c.push(Multiply(2, 0.2), 3, 3)`` evaluates ``z[3] = 0.2 * z[3]`` (i.e. ``z[3] *= 0.2``). See :ref:`Target aliasing` for the general rules.
 
 Example: Ising Hamiltonian Expectation Value (Energy)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -169,60 +177,63 @@ The circuit to compute the expectation value is:
     >>> for j in range(N - 1):
     ...     newz = c.num_zvars()
     ...     _ = c.push(ExpectationValue(PauliString("ZZ")), j, j + 1, newz)
-    ...     _ = c.push(Multiply(1, -J), newz)
+    ...     # in-place scale: z[newz] = -J * z[newz]
+    ...     _ = c.push(Multiply(2, -J), newz, newz)
 
     >>> c
     4-qubit, 3-zvar circuit with 6 instructions:
     ├── ⟨ZZ⟩ @ q[0,1], z[0]
-    ├── z[0] *= -1.0
+    ├── z[0] = -1.0 * z[0]
     ├── ⟨ZZ⟩ @ q[1,2], z[1]
-    ├── z[1] *= -1.0
+    ├── z[1] = -1.0 * z[1]
     ├── ⟨ZZ⟩ @ q[2,3], z[2]
-    └── z[2] *= -1.0
+    └── z[2] = -1.0 * z[2]
     <BLANKLINE>
 
     >>> for j in range(N):
     ...     newz = c.num_zvars()
     ...     _ = c.push(ExpectationValue(GateX()), j, newz)
-    ...     _ = c.push(Multiply(1, -h), newz)
+    ...     # in-place scale: z[newz] = -h * z[newz]
+    ...     _ = c.push(Multiply(2, -h), newz, newz)
 
     >>> c
     4-qubit, 7-zvar circuit with 14 instructions:
     ├── ⟨ZZ⟩ @ q[0,1], z[0]
-    ├── z[0] *= -1.0
+    ├── z[0] = -1.0 * z[0]
     ├── ⟨ZZ⟩ @ q[1,2], z[1]
-    ├── z[1] *= -1.0
+    ├── z[1] = -1.0 * z[1]
     ├── ⟨ZZ⟩ @ q[2,3], z[2]
-    ├── z[2] *= -1.0
+    ├── z[2] = -1.0 * z[2]
     ├── ⟨X⟩ @ q[0], z[3]
-    ├── z[3] *= -0.5
+    ├── z[3] = -0.5 * z[3]
     ├── ⟨X⟩ @ q[1], z[4]
-    ├── z[4] *= -0.5
+    ├── z[4] = -0.5 * z[4]
     ├── ⟨X⟩ @ q[2], z[5]
-    ├── z[5] *= -0.5
+    ├── z[5] = -0.5 * z[5]
     ├── ⟨X⟩ @ q[3], z[6]
-    └── z[6] *= -0.5
+    └── z[6] = -0.5 * z[6]
     <BLANKLINE>
 
     >>> total_terms = c.num_zvars()
-    >>> _ = c.push(Add(total_terms), *range(total_terms))
+    >>> # store the total energy in a fresh z-variable z[total_terms]
+    >>> _ = c.push(Add(total_terms + 1), total_terms, *range(total_terms))
     >>> c
-    4-qubit, 7-zvar circuit with 15 instructions:
+    4-qubit, 8-zvar circuit with 15 instructions:
     ├── ⟨ZZ⟩ @ q[0,1], z[0]
-    ├── z[0] *= -1.0
+    ├── z[0] = -1.0 * z[0]
     ├── ⟨ZZ⟩ @ q[1,2], z[1]
-    ├── z[1] *= -1.0
+    ├── z[1] = -1.0 * z[1]
     ├── ⟨ZZ⟩ @ q[2,3], z[2]
-    ├── z[2] *= -1.0
+    ├── z[2] = -1.0 * z[2]
     ├── ⟨X⟩ @ q[0], z[3]
-    ├── z[3] *= -0.5
+    ├── z[3] = -0.5 * z[3]
     ├── ⟨X⟩ @ q[1], z[4]
-    ├── z[4] *= -0.5
+    ├── z[4] = -0.5 * z[4]
     ├── ⟨X⟩ @ q[2], z[5]
-    ├── z[5] *= -0.5
+    ├── z[5] = -0.5 * z[5]
     ├── ⟨X⟩ @ q[3], z[6]
-    ├── z[6] *= -0.5
-    └── z[0] += 0.0 + z[1] + z[2] + z[3] + z[4] + z[5] + z[6]
+    ├── z[6] = -0.5 * z[6]
+    └── z[7] = 0.0 + z[0] + z[1] + z[2] + z[3] + z[4] + z[5] + z[6]
     <BLANKLINE>
 
 Reference

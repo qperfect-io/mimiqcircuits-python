@@ -120,6 +120,9 @@ class Repeat(Operation):
     def iswrapper(self):
         return True
 
+    def supports_canonical_rewrite(self):
+        return True
+
     def evaluate(self, d):
         return Repeat(self.repeats, self.op.evaluate(d))
 

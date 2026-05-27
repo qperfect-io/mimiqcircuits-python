@@ -16,6 +16,7 @@
 #
 
 from mimiqcircuits.__version__ import __version__  # noqa: F401
+from mimiqcircuits.proto import WIRE_FORMAT_VERSION  # noqa: F401
 
 from mimiqcircuits.circuit import Circuit
 
@@ -44,6 +45,7 @@ from mimiqcircuits.operations.power import (
 from mimiqcircuits.operations.parallel import Parallel
 from mimiqcircuits.operations.barrier import Barrier
 from mimiqcircuits.operations.ifstatement import IfStatement
+from mimiqcircuits.operations.whilestatement import WhileStatement
 from mimiqcircuits.operations.measure import (
     AbstractMeasurement,
     Measure,
@@ -158,6 +160,7 @@ from mimiqcircuits.operations.noisechannel.standards.depolarizing import (
     Depolarizing2,
 )
 from mimiqcircuits.operations.operators.custom import Operator
+from mimiqcircuits.operations.operators.lossyoperator import LossyOperator
 from mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping import (
     PhaseAmplitudeDamping,
     ThermalNoise,
@@ -364,6 +367,7 @@ __all__ = [
     "Power",
     "Barrier",
     "IfStatement",
+    "WhileStatement",
     "AbstractMeasurement",
     "Measure",
     "MeasureX",
@@ -478,6 +482,7 @@ __all__ = [
     "ProjectorZ0",
     "ProjectorZ1",
     "Operator",
+    "LossyOperator",
     "PauliNoise",
     "krauschannel",
     "PauliX",

@@ -70,6 +70,11 @@ class TestRewriteRules:
         assert not rule.matches(GateCX())
         assert not rule.matches(GateU(pi / 2, 0, pi))
 
+    def test_canonical_rewrite_does_not_match_while(self):
+        """WhileStatement is non-terminal but not canonically rewriteable."""
+        rule = CanonicalRewrite()
+        assert not rule.matches(mc.WhileStatement(GateH(), mc.BitString("1")))
+
     def test_canonical_rewrite_decomposes_h(self):
         """CanonicalRewrite should decompose H to U gate."""
         rule = CanonicalRewrite()
@@ -358,6 +363,13 @@ class TestDecomposeFunction:
     def test_decompose_operation_directly(self):
         """decompose should work on a single Operation."""
         decomposed = decompose(GateH())
+        assert len(decomposed) >= 1
+
+    def test_decompose_measure_reset_x(self):
+        """Non-terminal measurement variants should still decompose canonically."""
+        c = Circuit()
+        c.push(mc.MeasureResetX(), 0, 0)
+        decomposed = decompose(c)
         assert len(decomposed) >= 1
 
     def test_circuit_decompose_method(self):

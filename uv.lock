@@ -1267,7 +1267,7 @@ wheels = [
 
 [[package]]
 name = "mimiqcircuits"
-version = "0.21.6"
+version = "0.21.8"
 source = { editable = "." }
 dependencies = [
     { name = "bitarray" },

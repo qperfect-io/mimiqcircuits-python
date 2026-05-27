@@ -194,6 +194,9 @@ class Block(Operation):
     def __str__(self):
         return f"block {id(self):x}"
 
+    def supports_canonical_rewrite(self):
+        return True
+
     def __repr__(self):
         if not self.instructions:
             return "empty block"

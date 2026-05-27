@@ -80,6 +80,7 @@ def _validate_rule_operation_target(operation: mc.Operation):
             mc.Block,
             mc.Repeat,
             mc.IfStatement,
+            mc.WhileStatement,
             mc.Reset,
             mc.ResetX,
             mc.ResetY,
@@ -88,7 +89,7 @@ def _validate_rule_operation_target(operation: mc.Operation):
     ):
         raise ValueError(
             "Rule target operation must be a gate, measurement, reset, "
-            "Block, Repeat, or IfStatement operation."
+            "Block, Repeat, IfStatement, or WhileStatement operation."
         )
 
 
@@ -796,6 +797,19 @@ def _rewrite_nested_operation(
             return op
 
         return mc.IfStatement(rewritten_inner, op.get_bitstring())
+
+    if isinstance(op, mc.WhileStatement):
+        inner = op.get_operation()
+        qcanon, bcanon, zcanon = _canonical_targets(inner)
+        inner_inst = mc.Instruction(inner, qcanon, bcanon, zcanon)
+
+        noisy_inner = _apply_noise_to_instruction(inner_inst, model, active_decls)
+        rewritten_inner = _collapse_local_instructions_to_operation(noisy_inner, inner)
+
+        if rewritten_inner == inner:
+            return op
+
+        return mc.WhileStatement(rewritten_inner, op.get_bitstring())
 
     if isinstance(op, mc.Parallel):
         inner = op.get_operation()

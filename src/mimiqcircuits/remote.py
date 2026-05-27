@@ -24,6 +24,7 @@ import shutil
 from mimiqcircuits.circuit import Circuit
 from mimiqcircuits.qcsresults import QCSResults
 from mimiqcircuits.__version__ import __version__
+from mimiqcircuits.proto import WIRE_FORMAT_VERSION
 import numpy as np
 from time import sleep
 
@@ -545,6 +546,7 @@ class RemoteConnection:
                 "apilang": "python",
                 "apiversion": __version__,
                 "circuitsapiversion": __version__,
+                "wireformatversion": WIRE_FORMAT_VERSION,
             }
 
             reqfile = os.path.join(tmpdir, "request.json")

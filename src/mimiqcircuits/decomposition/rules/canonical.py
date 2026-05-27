@@ -65,7 +65,7 @@ class CanonicalRewrite(RewriteRule):
         """
         from mimiqcircuits.decomposition.basis import CanonicalBasis
 
-        return not CanonicalBasis().isterminal(op)
+        return op.supports_canonical_rewrite() and not CanonicalBasis().isterminal(op)
 
     def decompose_step(
         self,

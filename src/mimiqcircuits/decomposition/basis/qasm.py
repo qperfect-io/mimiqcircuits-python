@@ -210,6 +210,11 @@ class QASMBasis(DecompositionBasis):
             inner_op = op.get_operation()
             return inner_op is not None and self.isterminal(inner_op)
 
+        # WhileStatement: terminal if inner operation is terminal
+        if isinstance(op, mc.WhileStatement):
+            inner_op = op.get_operation()
+            return inner_op is not None and self.isterminal(inner_op)
+
         # Classical operations
         if isinstance(op, mc.AbstractClassical):
             return True

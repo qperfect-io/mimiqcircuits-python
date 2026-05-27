@@ -274,6 +274,70 @@ def test_circuitDepth():
     assert c.depth() == 3
 
 
+def test_reorder_qubits_ifstatement_recurses_into_amplitude():
+    c = mc.Circuit()
+    c.push(mc.GateCX(), 0, 1)
+    c.push(
+        mc.IfStatement(mc.Amplitude(mc.BitString("01")), mc.BitString("11")),
+        0,
+        1,
+        1,
+    )
+
+    c2 = c.reorder_qubits([1, 0])
+
+    outer = c2[1].operation
+    assert isinstance(outer, mc.IfStatement)
+    assert outer.bitstring == mc.BitString("11")
+    assert isinstance(outer.op, mc.Amplitude)
+    assert outer.op.bs == mc.BitString("10")
+
+
+def test_reorder_qubits_repeat_recurses_into_amplitude():
+    c = mc.Circuit()
+    c.push(mc.GateCX(), 0, 1)
+    c.push(mc.Repeat(2, mc.Amplitude(mc.BitString("01"))), 1)
+
+    c2 = c.reorder_qubits([1, 0])
+
+    outer = c2[1].operation
+    assert isinstance(outer, mc.Repeat)
+    assert isinstance(outer.op, mc.Amplitude)
+    assert outer.op.bs == mc.BitString("10")
+
+
+def test_reorder_qubits_block_treats_local_targets_transparently():
+    inner = mc.Circuit()
+    inner.push(mc.Amplitude(mc.BitString("01")), 0)
+    block = mc.Block(inner)
+
+    c = mc.Circuit()
+    c.push(mc.GateCX(), 0, 1)
+    c.push(block, 0)
+
+    c2 = c.reorder_qubits([1, 0])
+
+    new_block = c2[1].operation
+    assert isinstance(new_block, mc.Block)
+    inner_amp = new_block[0].operation
+    assert isinstance(inner_amp, mc.Amplitude)
+    assert inner_amp.bs == mc.BitString("10")
+    assert new_block[0].qubits == ()
+    assert new_block[0].bits == ()
+    assert new_block[0].zvars == (0,)
+
+
+def test_reorder_qubits_rejects_non_permutation():
+    c = mc.Circuit()
+    c.push(mc.GateCX(), 0, 1)
+    c.push(mc.GateCX(), 0, 2)
+
+    with pytest.raises(
+        ValueError, match=r"perm must be a permutation of range\(3\); got \[1, 0\]"
+    ):
+        c.reorder_qubits([1, 0])
+
+
 def test_appendCircuitToCircuit():
     c = mc.Circuit()
     c.push(mc.GateH(), 0)

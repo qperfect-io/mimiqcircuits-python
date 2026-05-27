@@ -34,7 +34,8 @@ class Operator(mc.AbstractOperator):
         :class:`KrausChannel`
 
     Parameters:
-        matrix (list or np.ndarray): The :math:`2^N \times 2^N` matrix representing the operator.
+        mat (symengine.Matrix | sympy.Matrix | np.ndarray): The
+            :math:`2^N \times 2^N` matrix representing the operator.
 
     Examples:
         >>> from mimiqcircuits import *
