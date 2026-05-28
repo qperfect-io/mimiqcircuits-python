@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.23.1] — 2026-05-28
+
+### Fixed
+- `mimiqcircuits.__version__` is now sourced from the installed
+  package metadata via `importlib.metadata.version("mimiqcircuits")`
+  rather than a hard-coded literal in `__version__.py`. The literal
+  had drifted to `0.21.8` while `pyproject.toml` was at `0.23.0`,
+  so anything reading `__version__` (e.g. the `apiversion` /
+  `circuitsapiversion` envelope fields, the default `pyapi_v…`
+  job label) was lying. Single source of truth now lives in
+  `pyproject.toml`.
+
 ## [0.23.0] — 2026-05-27
 
 ### Added
