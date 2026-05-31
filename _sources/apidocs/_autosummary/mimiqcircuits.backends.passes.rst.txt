@@ -1,0 +1,39 @@
+mimiqcircuits.backends.passes
+=============================
+
+.. automodule:: mimiqcircuits.backends.passes
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      apply_passes
+      invert_perm
+      to_pass_param
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AbstractPass
+      PBool
+      PDict
+      PFloat
+      PInt
+      PList
+      PStr
+      PSym
+      PassContext
+      PassParam
+      PassPipeline
+      PassResult
+      PassSpec
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      RemotePassOrderError
+      UnacceptedPassError
+   

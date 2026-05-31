@@ -1,0 +1,15 @@
+mimiqcircuits.operations.noisechannel
+=====================================
+
+.. automodule:: mimiqcircuits.operations.noisechannel
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   kraus
+   mixedunitary
+   standards

@@ -1,0 +1,20 @@
+mimiqcircuits.operations.power
+==============================
+
+.. automodule:: mimiqcircuits.operations.power
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      canonical_power
+      register_power_alias
+      register_power_decomposition
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Power
+   

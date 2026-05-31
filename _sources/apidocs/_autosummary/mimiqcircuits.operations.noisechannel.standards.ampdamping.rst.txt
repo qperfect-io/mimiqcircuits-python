@@ -1,0 +1,13 @@
+mimiqcircuits.operations.noisechannel.standards.ampdamping
+==========================================================
+
+.. automodule:: mimiqcircuits.operations.noisechannel.standards.ampdamping
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AmplitudeDamping
+      GeneralizedAmplitudeDamping
+   

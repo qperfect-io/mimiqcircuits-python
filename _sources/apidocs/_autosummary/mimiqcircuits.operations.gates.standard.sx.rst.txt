@@ -1,0 +1,13 @@
+mimiqcircuits.operations.gates.standard.sx
+==========================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.sx
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateSX
+      GateSXDG
+   

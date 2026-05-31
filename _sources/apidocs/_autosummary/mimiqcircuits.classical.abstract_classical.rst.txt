@@ -1,0 +1,12 @@
+mimiqcircuits.classical.abstract\_classical
+===========================================
+
+.. automodule:: mimiqcircuits.classical.abstract_classical
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AbstractClassical
+   
