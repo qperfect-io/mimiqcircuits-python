@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.svg" alt="MIMIQ" width="380">
+</p>
+
 # MIMIQ Circuits Python
 
 [![Build Status](https://github.com/qperfect-io/mimiqcircuits-python/workflows/Test/badge.svg)](https://github.com/qperfect-io/mimiqcircuits-python/actions)

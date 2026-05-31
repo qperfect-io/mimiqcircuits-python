@@ -66,6 +66,11 @@ from mimiqcircuits.backends.passes import (
     apply_passes,
     RemotePassOrderError,
 )
+from mimiqcircuits.backends.progress import (
+    NoProgress,
+    to_progress,
+    execution_progress_callback,
+)
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -610,6 +615,15 @@ class LocalBackend(Backend):
         bound = substitute(compiled.source, params)
         return self.compile(bound)
 
+    def compile_progress(self, circuit, progress):
+        """Compile ``circuit`` while optionally emitting a compression
+        stage. The default ignores ``progress`` and defers to
+        :meth:`compile`; MPS-class backends whose compilation fuses
+        gates into tensors override this to open a "compression" stage
+        and step it per fused gate. Keeping the hook separate from
+        :meth:`compile` leaves the required signature untouched."""
+        return self.compile(circuit)
+
     # ── execute driver ────────────────────────────────────────────────────
     #
     # Mirrors `AbstractQCSs.execute` in Julia. Backend-agnostic: runs the
@@ -630,16 +644,11 @@ class LocalBackend(Backend):
         strict_pass_order: bool = True,
         stopped=None,
         num_qubits: Optional[int] = None,
+        progress=False,
     ):
-        from mimiqcircuits.qcsresults import QCSResults
-        from mimiqcircuits.backends.measure_analysis import (
-            extract_projection,
-            needs_trajectories,
-            needs_loss_sampling,
-        )
-
         rngs = self._resolve_rngs(seed, rng)
         passes = passes if passes is not None else self.default_passes()
+        prog = to_progress(progress)
 
         if isinstance(circuit, list):
             return [
@@ -647,7 +656,7 @@ class LocalBackend(Backend):
                     c, nsamples=nsamples, rngs=rngs, passes=passes,
                     callback=callback, param_grid=param_grid,
                     strict_pass_order=strict_pass_order,
-                    stopped=stopped, num_qubits=num_qubits,
+                    stopped=stopped, num_qubits=num_qubits, progress=prog,
                 )
                 for c in circuit
             ]
@@ -656,7 +665,7 @@ class LocalBackend(Backend):
             circuit, nsamples=nsamples, rngs=rngs, passes=passes,
             callback=callback, param_grid=param_grid,
             strict_pass_order=strict_pass_order,
-            stopped=stopped, num_qubits=num_qubits,
+            stopped=stopped, num_qubits=num_qubits, progress=prog,
         )
 
     def _execute_resolved(
@@ -671,6 +680,7 @@ class LocalBackend(Backend):
         strict_pass_order: bool,
         stopped,
         num_qubits: Optional[int],
+        progress,
     ):
         """Single-circuit body of :meth:`execute`. Skips the seed/rng
         resolution and list dispatch so :meth:`execute` stays a thin
@@ -701,7 +711,7 @@ class LocalBackend(Backend):
                     callback=callback,
                     param_grid=None,
                     strict_pass_order=strict_pass_order,
-                    stopped=stopped, num_qubits=num_qubits,
+                    stopped=stopped, num_qubits=num_qubits, progress=progress,
                 )
                 for params, s in zip(param_grid, grid_seeds)
             ]
@@ -725,7 +735,7 @@ class LocalBackend(Backend):
         if needs_loss_sampling(processed_circuit):
             self._execute_with_loss_sampling(
                 processed_circuit, nsamples, rngs,
-                callback, stopped, num_qubits, results,
+                callback, stopped, num_qubits, results, progress,
             )
             results.timings["total"] = time.time() - t_total
             return results
@@ -745,12 +755,12 @@ class LocalBackend(Backend):
         if needs_trajectories(quantum_circuit):
             self._execute_trajectories(
                 processed_circuit, nsamples, rngs,
-                callback, stopped, num_qubits, results,
+                callback, stopped, num_qubits, results, progress,
             )
         else:
             self._execute_sampling(
                 quantum_circuit, projection, processed_circuit, nsamples,
-                rngs, callback, stopped, num_qubits, results,
+                rngs, callback, stopped, num_qubits, results, progress,
             )
 
         results.timings["total"] = time.time() - t_total
@@ -787,6 +797,7 @@ class LocalBackend(Backend):
     def _execute_sampling(
         self, quantum_circuit, projection, processed_circuit,
         nsamples, rngs, callback, stopped, num_qubits, results,
+        progress=None,
     ):
         """Pure unitary tail: one evolve, then sample-and-project.
 
@@ -796,6 +807,8 @@ class LocalBackend(Backend):
         ``ExpectationValue`` ops into ``results.zstates``.
         """
         from mimiqcircuits.backends.measure_analysis import evaluate_projection
+
+        progress = progress if progress is not None else NoProgress()
 
         # `quantum_circuit.num_qubits()` may be smaller than the
         # source when some qubits were fully absorbed by the
@@ -814,17 +827,28 @@ class LocalBackend(Backend):
         num_2q = self._count_two_qubit_gates(processed_circuit)
 
         t_compile = time.time()
-        compiled = self.compile(quantum_circuit)
+        compiled = self.compile_progress(quantum_circuit, progress)
         compiled = self.prepare_trajectory(compiled, rngs.trajectory)
         results.timings["compile"] = time.time() - t_compile
+
+        # Single evolution: drive the execution bar off the backend's
+        # per-step callback. The trajectory paths leave the callback
+        # unwrapped so the trajectory bar stays the only live bar.
+        box = [None]
+        stepcb = (
+            callback if isinstance(progress, NoProgress)
+            else execution_progress_callback(progress, callback, box)
+        )
 
         state = self.build_state(nq, nb_state, nz)
         t_apply = time.time()
         state, fid = self.evolve(
             state, compiled,
-            rng=rngs.noise, callback=callback, stopped=stopped,
+            rng=rngs.noise, callback=stepcb, stopped=stopped,
         )
         results.timings["apply"] = time.time() - t_apply
+        if box[0] is not None:
+            box[0].finish()
 
         scalar = as_lower_bound(_to_fidelity(fid))
         results.fidelities.append(scalar)
@@ -841,9 +865,10 @@ class LocalBackend(Backend):
 
     def _execute_trajectories(
         self, processed_circuit, nsamples, rngs,
-        callback, stopped, num_qubits, results,
+        callback, stopped, num_qubits, results, progress=None,
     ):
         """Per-shot evolution: a fresh state per trajectory."""
+        progress = progress if progress is not None else NoProgress()
         nq = max(processed_circuit.num_qubits(), num_qubits or 0)
         nb = processed_circuit.num_bits()
         nz = processed_circuit.num_zvars()
@@ -851,10 +876,18 @@ class LocalBackend(Backend):
         num_2q = self._count_two_qubit_gates(processed_circuit)
 
         # Compile-once if the backend says the artifact is stable
-        # across trajectories; otherwise recompile per shot.
+        # across trajectories; otherwise recompile per shot. The
+        # one-shot compile shows a compression bar; per-shot recompiles
+        # would redraw it `nsamples` times, so they are left unmuted.
         recompile = self.recompile_per_trajectory(processed_circuit)
-        compiled = None if recompile else self.compile(processed_circuit)
+        compiled = (
+            None if recompile
+            else self.compile_progress(processed_circuit, progress)
+        )
 
+        # The trajectory loop owns the only live bar; the per-shot
+        # execution detail is left unwrapped to keep it the single bar.
+        bar = progress.stage("trajectories", total=nsamples)
         t_apply_total = 0.0
         for _ in range(nsamples):
             if recompile:
@@ -874,22 +907,26 @@ class LocalBackend(Backend):
                 results.cstates.append(state.classical_bits)
             if nz > 0:
                 results.zstates.append(state.complex_values)
+            bar.step()
+        bar.finish()
         results.timings["apply"] = t_apply_total
 
     def _execute_with_loss_sampling(
         self, processed_circuit, nsamples, rngs,
-        callback, stopped, num_qubits, results,
+        callback, stopped, num_qubits, results, progress=None,
     ):
         """Method-1 loss sampling: a fresh loss pattern per shot, then
         evolve the resulting deterministic circuit variant.
         """
         from mimiqcircuits import sample_losses
 
+        progress = progress if progress is not None else NoProgress()
         nq = max(processed_circuit.num_qubits(), num_qubits or 0)
         nb = processed_circuit.num_bits()
         nz = processed_circuit.num_zvars()
         num_2q = self._count_two_qubit_gates(processed_circuit)
 
+        bar = progress.stage("trajectories", total=nsamples)
         t_apply_total = 0.0
         for _ in range(nsamples):
             sampled = sample_losses(processed_circuit, rng=rngs.trajectory)
@@ -909,6 +946,8 @@ class LocalBackend(Backend):
                 results.cstates.append(state.classical_bits)
             if nz > 0:
                 results.zstates.append(state.complex_values)
+            bar.step()
+        bar.finish()
         results.timings["apply"] = t_apply_total
 
 

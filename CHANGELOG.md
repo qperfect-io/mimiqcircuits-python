@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.23.2] — 2026-05-31
+
+### Added
+- Progress reporting for `LocalBackend.execute`. Pass `progress=True`
+  (or a `TqdmProgress`) to draw bars for the compression, single-shot
+  execution, and trajectory phases; the default `progress=False`
+  (`NoProgress`) keeps the pipeline cost-free.
+- `Progress` sink interface with `NoProgress` and `TqdmProgress`
+  implementations. The driver owns the trajectory bar and, on the
+  single-evolve path, an execution bar driven by the backend's per-step
+  `callback`; backends with a countable compression step emit their own
+  stage by overriding `compile_progress`. Adds a `tqdm` dependency.
+
 ## [0.23.1] — 2026-05-28
 
 ### Fixed

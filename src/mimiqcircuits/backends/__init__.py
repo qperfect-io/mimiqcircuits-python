@@ -122,6 +122,13 @@ from mimiqcircuits.backends.backend import (
     State,
     RNGs,
 )
+from mimiqcircuits.backends.progress import (
+    Progress,
+    Stage,
+    NoProgress,
+    TqdmProgress,
+    to_progress,
+)
 from mimiqcircuits.backends.remote import (
     MimiqRemoteBackend,
 )
@@ -188,6 +195,12 @@ __all__ = [
     "RemoteBackend",
     "State",
     "RNGs",
+    # progress
+    "Progress",
+    "Stage",
+    "NoProgress",
+    "TqdmProgress",
+    "to_progress",
     # remote
     "MimiqRemoteBackend",
     # rng helpers
