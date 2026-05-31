@@ -164,6 +164,11 @@ class Block(Operation):
             self, operation, *args, check_fn=self._check_instruction_block
         )
 
+    def _append_raw(self, instruction):
+        # A Block keeps no dependency-graph cache, so this is a plain append;
+        # it exists so the shared push helper can treat Block and Circuit alike.
+        self.instructions.append(instruction)
+
     def _check_instruction_block(self, inst):
         if max(inst.qubits, default=-1) >= self._nq:
             raise ValueError(

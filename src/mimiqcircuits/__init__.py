@@ -20,6 +20,15 @@ from mimiqcircuits.proto import WIRE_FORMAT_VERSION  # noqa: F401
 
 from mimiqcircuits.circuit import Circuit
 
+from mimiqcircuits.dag import (
+    CircuitDAG,
+    traverse_by_bfs,
+    traverse_by_dfs,
+    topological_sort_by_bfs,
+    topological_sort_by_dfs,
+    to_networkx,
+)
+
 from mimiqcircuits.bitstrings import BitString
 
 from mimiqcircuits.operations.operation import Operation

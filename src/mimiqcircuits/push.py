@@ -28,7 +28,8 @@ def push_instruction_container(container, operation, *args, check_fn=None):
     Shared push logic for Circuit or Block.
 
     Args:
-        container: the object with `.instructions` list.
+        container: the target, which appends built instructions through its
+            ``_append_raw`` method (Circuit also invalidates its caches there).
         operation: Operation or Instruction to push.
         args: target qubits/bits/zvars.
         check_fn: optional validator function (e.g., container._check_instruction_block).
@@ -42,7 +43,7 @@ def push_instruction_container(container, operation, *args, check_fn=None):
             raise ValueError("No extra arguments allowed when pushing an instruction.")
         if check_fn:
             check_fn(operation)
-        container.instructions.append(operation)
+        container._append_raw(operation)
         return container
 
     if not isinstance(operation, Operation):
@@ -84,12 +85,12 @@ def push_instruction_container(container, operation, *args, check_fn=None):
             )
             if check_fn:
                 check_fn(inst)
-            container.instructions.append(inst)
+            container._append_raw(inst)
     else:
         inst = Instruction(operation)
         if check_fn:
             check_fn(inst)
-        container.instructions.append(inst)
+        container._append_raw(inst)
 
     return container
 

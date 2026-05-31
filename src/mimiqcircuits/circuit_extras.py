@@ -285,6 +285,7 @@ def remove_swaps(circuit, recursive=False, cache=None):
             new_circuit.append([new_instr])
 
     _pad_to_arity(new_circuit.instructions, circuit.num_qubits())
+    new_circuit._invalidate_cache()
 
     return new_circuit, perm
 

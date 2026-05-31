@@ -29,6 +29,12 @@ from typing import List, Union
 import random
 import numpy as np
 from mimiqcircuits.push import push_instruction_container
+from mimiqcircuits.dag import (
+    build_dag,
+    traverse_by_bfs as _traverse_by_bfs,
+    traverse_by_dfs as _traverse_by_dfs,
+    to_networkx as _to_networkx,
+)
 
 
 def _reorder_op_internals(op, perm):
@@ -254,37 +260,106 @@ class Circuit:
             if not isinstance(instruction, Instruction):
                 raise TypeError("Non Gate object passed to constructor.")
 
-        self.instructions = instructions
+        self._instructions = instructions
+        self._graph = None
+        self._graph_valid = False
+        self._nq = 0
+        self._nb = 0
+        self._nz = 0
+        self._resources_valid = False
+
+    @property
+    def instructions(self):
+        """Read-only view of the circuit's instructions.
+
+        The list is the circuit's own storage, exposed for reading and
+        iteration. Add or remove instructions through :meth:`push`,
+        :meth:`insert`, :meth:`append`, or :meth:`remove`: these keep the
+        cached dependency graph and resource counts consistent, whereas
+        mutating the returned list in place would silently bypass that
+        bookkeeping.
+        """
+        return self._instructions
+
+    def _invalidate_cache(self):
+        self._graph_valid = False
+        self._resources_valid = False
+
+    def _append_raw(self, instruction):
+        """Append an already-built instruction and invalidate the caches.
+
+        Internal entry point shared with the push helper so that every append
+        flows through a single cache-invalidating path.
+        """
+        self._instructions.append(instruction)
+        self._invalidate_cache()
+
+    def _ensure_resources(self):
+        # Qubit/bit/zvar counts are the largest index used on each register
+        # plus one. Computing all three in a single pass and caching mirrors
+        # the resource cache of the Julia Circuit.
+        if self._resources_valid:
+            return
+        nq = nb = nz = -1
+        for inst in self._instructions:
+            for q in inst.qubits:
+                if q > nq:
+                    nq = q
+            for b in inst.bits:
+                if b > nb:
+                    nb = b
+            for z in inst.zvars:
+                if z > nz:
+                    nz = z
+        self._nq, self._nb, self._nz = nq + 1, nb + 1, nz + 1
+        self._resources_valid = True
+
+    def dag(self):
+        """Return the circuit's dependency graph as a :class:`CircuitDAG`.
+
+        Built on first use and cached; any structural change to the circuit
+        invalidates the cache so the next call rebuilds it.
+        """
+        if not self._graph_valid:
+            self._graph = build_dag(self)
+            self._graph_valid = True
+        return self._graph
+
+    def traverse_by_bfs(self):
+        """Iterate the instructions in breadth-first topological order.
+
+        See :func:`mimiqcircuits.traverse_by_bfs`.
+        """
+        return _traverse_by_bfs(self)
+
+    def traverse_by_dfs(self):
+        """Iterate the instructions in depth-first topological order.
+
+        See :func:`mimiqcircuits.traverse_by_dfs`.
+        """
+        return _traverse_by_dfs(self)
+
+    def to_networkx(self):
+        """Return the dependency graph as a ``networkx.DiGraph``.
+
+        See :func:`mimiqcircuits.to_networkx`. Requires the optional
+        ``networkx`` dependency (``pip install mimiqcircuits[graph]``).
+        """
+        return _to_networkx(self)
 
     def num_qubits(self):
         """
         Returns the number of qubits in the circuit.
         """
-        n = -1
-        for instruction in self.instructions:
-            qubits = instruction.qubits
-            if len(qubits) == 0:
-                continue
-            m = max(qubits)
-            if m > n:
-                n = m
-
-        return n + 1
+        self._ensure_resources()
+        return self._nq
 
     def num_bits(self):
         """
         Returns the number of bits in the circuit.
         """
-        n = -1
-        for instruction in self.instructions:
-            bits = instruction.bits
-            if len(bits) == 0:
-                continue
-            m = max(bits)
-            if m > n:
-                n = m
-
-        return n + 1
+        self._ensure_resources()
+        return self._nb
 
     def getparams(self):
         params = []
@@ -300,16 +375,8 @@ class Circuit:
         """
         Returns the number of z-variables in the circuit.
         """
-        n = -1
-        for instruction in self.instructions:
-            zbits = instruction.zvars
-            if len(zbits) == 0:
-                continue
-            m = max(zbits)
-            if m > n:
-                n = m
-
-        return n + 1
+        self._ensure_resources()
+        return self._nz
 
     def empty(self):
         """
@@ -568,8 +635,9 @@ class Circuit:
         """
         if isinstance(operation, Circuit):
             for inst in operation.instructions:
-                self.instructions.insert(index, inst)
+                self._instructions.insert(index, inst)
                 index += 1
+            self._invalidate_cache()
         else:
             N = 0
             M = 0
@@ -582,7 +650,8 @@ class Circuit:
                         "No extra arguments allowed when inserting an instruction."
                     )
 
-                self.instructions.insert(index, operation)
+                self._instructions.insert(index, operation)
+                self._invalidate_cache()
                 return self
 
             if operation == mc.Barrier:
@@ -609,16 +678,17 @@ class Circuit:
                 )
 
             if operation == mc.Barrier:
-                self.instructions.insert(
+                self._instructions.insert(
                     index, Instruction(mc.Barrier(N), (*args,), ())
                 )
             else:
-                self.instructions.insert(
+                self._instructions.insert(
                     index,
                     Instruction(
                         operation, (*args[:N],), (*args[N : N + M],), (*args[N + M :],)
                     ),
                 )
+            self._invalidate_cache()
 
         return self
 
@@ -641,7 +711,8 @@ class Circuit:
             )
 
         for inst in instructions:
-            self.instructions.append(inst)
+            self._instructions.append(inst)
+        self._invalidate_cache()
 
     def remove(self, index: int):
         """
@@ -653,7 +724,8 @@ class Circuit:
         Raises:
             IndexError: If index is out of range.
         """
-        del self.instructions[index]
+        del self._instructions[index]
+        self._invalidate_cache()
         return self
 
     def inverse(self):

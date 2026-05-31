@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.24.0] — 2026-05-31
+
+### Added
+- Dependency-graph view of a `Circuit`. `Circuit.dag()` returns a
+  `CircuitDAG` whose vertices are instruction positions and whose edges
+  record the qubit, bit, and z-variable dependencies between
+  instructions. `traverse_by_bfs` and `traverse_by_dfs` iterate the
+  instructions in topological order — breadth-first (layering mutually
+  independent gates together) or depth-first — and `to_networkx` exports
+  the graph as a `networkx.DiGraph` for use with the networkx ecosystem.
+  networkx is an optional dependency, installed with the `graph` extra
+  (`pip install mimiqcircuits[graph]`). This brings the Python `Circuit`
+  in line with the graph integration of the Julia `MimiqCircuitsBase`.
+
+### Changed
+- `Circuit.instructions` is now a read-only property. Reading and
+  iterating it is unchanged, but instructions must be added or removed
+  through `push`, `insert`, `append`, or `remove`, which keep the cached
+  dependency graph and qubit/bit/z-variable counts consistent. Code that
+  mutated `circuit.instructions` in place should call those methods
+  instead.
+
 ## [0.23.2] — 2026-05-31
 
 ### Added
