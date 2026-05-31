@@ -103,15 +103,48 @@ class CircuitDAG:
         self._in[v].append(u)
 
 
+def _dag_qubits(inst, nq):
+    """Qubits ``inst`` depends on for ordering purposes.
+
+    Most operations touch only the qubits they are applied to. The exceptions
+    are the global state observables, whose value depends on the whole circuit
+    history rather than the wires they declare:
+
+    - ``Amplitude`` reads ``⟨bs|ψ⟩`` over the entire register and declares no
+      qubit at all;
+    - ``BondDim``, ``SchmidtRank``, and ``VonNeumannEntropy`` declare only the
+      bond they probe, but the entanglement across that cut is set by gates on
+      either side.
+
+    For dependency purposes each is treated as acting on every qubit, so it
+    follows all earlier gates and precedes all later ones — a full-register
+    synchronisation point.
+    """
+    from mimiqcircuits.operations.amplitude import Amplitude
+    from mimiqcircuits.operations.entanglement import (
+        BondDim,
+        SchmidtRank,
+        VonNeumannEntropy,
+    )
+
+    if isinstance(
+        inst.operation, (Amplitude, BondDim, SchmidtRank, VonNeumannEntropy)
+    ):
+        return range(nq)
+    return inst.qubits
+
+
 def build_dag(circuit):
     """Build the :class:`CircuitDAG` of ``circuit``.
 
     Walks the instructions in order, remembering the last instruction seen on
     each qubit, bit, and z-variable, and links every instruction to those last
     writers. The result encodes exactly the orderings that must be preserved
-    for the circuit to remain equivalent.
+    for the circuit to remain equivalent. The global state observables depend
+    on every qubit (see :func:`_dag_qubits`).
     """
     n = len(circuit)
+    nq = circuit.num_qubits()
     dag = CircuitDAG(n)
 
     last_q = {}
@@ -119,7 +152,7 @@ def build_dag(circuit):
     last_z = {}
 
     for i, inst in enumerate(circuit):
-        for q in inst.qubits:
+        for q in _dag_qubits(inst, nq):
             prev = last_q.get(q)
             if prev is not None:
                 dag._add_edge(prev, i)

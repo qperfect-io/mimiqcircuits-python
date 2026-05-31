@@ -139,6 +139,49 @@ def test_bfs_groups_by_depth():
     assert topological_sort_by_bfs(dag) == [0, 2, 1]
 
 
+def test_amplitude_depends_on_all_qubits():
+    # Amplitude reads ⟨bs|ψ⟩ over the whole register, so it depends on the last
+    # gate of every qubit even though it declares none, and any later gate
+    # depends on it: it behaves as a full-register barrier.
+    c = mc.Circuit()
+    c.push(mc.GateH(), 0)       # 0
+    c.push(mc.GateH(), 1)       # 1
+    c.push(mc.Amplitude(mc.BitString([0, 0])), 0)  # 2 — reads qubits 0 and 1
+    c.push(mc.GateX(), 1)       # 3 — must come after the read
+    dag = c.dag()
+    assert sorted(dag.in_neighbors(2)) == [0, 1]
+    assert 2 in dag.in_neighbors(3)
+    # Every topological order keeps the read after both H and before the X.
+    for order in (topological_sort_by_bfs(dag), topological_sort_by_dfs(dag)):
+        pos = {v: i for i, v in enumerate(order)}
+        assert pos[0] < pos[2] and pos[1] < pos[2] and pos[2] < pos[3]
+
+
+@pytest.mark.parametrize(
+    "make_op",
+    [
+        lambda: mc.BondDim(),
+        lambda: mc.SchmidtRank(),
+        lambda: mc.VonNeumannEntropy(),
+    ],
+)
+def test_global_observables_depend_on_all_qubits(make_op):
+    # BondDim / SchmidtRank / VonNeumannEntropy declare only the bond they
+    # probe, but the entanglement across that cut is set by gates on either
+    # side, so they depend on every qubit and act as full-register barriers.
+    c = mc.Circuit()
+    c.push(mc.GateH(), 0)        # 0
+    c.push(mc.GateH(), 1)        # 1
+    c.push(make_op(), 0, 0)      # 2 — probes the bond at qubit 0, reads 0 and 1
+    c.push(mc.GateX(), 1)        # 3 — must come after the read
+    dag = c.dag()
+    assert sorted(dag.in_neighbors(2)) == [0, 1]
+    assert 2 in dag.in_neighbors(3)
+    for order in (topological_sort_by_bfs(dag), topological_sort_by_dfs(dag)):
+        pos = {v: i for i, v in enumerate(order)}
+        assert pos[0] < pos[2] and pos[1] < pos[2] and pos[2] < pos[3]
+
+
 def test_bfs_and_dfs_are_topological():
     c = bell_then_local()
     dag = c.dag()

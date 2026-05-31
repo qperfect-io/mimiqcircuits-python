@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.24.2] — 2026-06-01
+
+### Fixed
+- `Circuit.dag()`, `traverse_by_bfs`, and `traverse_by_dfs` now treat
+  `BondDim`, `SchmidtRank`, and `VonNeumannEntropy` as depending on every
+  qubit. Like `Amplitude`, their value is set by the whole circuit history, so
+  a topological traversal could previously place them before gates that affect
+  the bond they probe; they now act as full-register synchronisation points.
+
+## [0.24.1] — 2026-06-01
+
+### Fixed
+- `Circuit.dag()`, `traverse_by_bfs`, and `traverse_by_dfs` now treat
+  `Amplitude` as depending on every qubit. It reads `⟨bs|ψ⟩` over the whole
+  register without declaring any qubit, so a topological traversal could
+  previously place it before the gates whose state it reads; it now acts as a
+  full-register synchronisation point.
+
 ## [0.24.0] — 2026-05-31
 
 ### Added
