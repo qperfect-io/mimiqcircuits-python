@@ -77,15 +77,20 @@ def needs_trajectories(circuit: "mc.Circuit") -> bool:
 
 
 def needs_loss_sampling(circuit: "mc.Circuit") -> bool:
-    """Return True if `circuit` contains a `LossErr` or `QubitLoss`
-    operation that must be sampled (Method-1 pre-evolve sampling)
-    before the simulator runs."""
+    """Return True if `circuit` contains loss operations (`Loss`, `Reload`,
+    `Check`, `MeasureCheck`) that must be resolved into primitives before the
+    simulator runs."""
     try:
-        from mimiqcircuits.operations.losschannel import LossErr, QubitLoss
+        from mimiqcircuits.operations.losschannel import (
+            Loss,
+            Reload,
+            Check,
+            MeasureCheck,
+        )
     except ImportError:
         return False
     for inst in circuit.instructions:
-        if isinstance(inst.operation, (LossErr, QubitLoss)):
+        if isinstance(inst.operation, (Loss, Reload, Check, MeasureCheck)):
             return True
     return False
 

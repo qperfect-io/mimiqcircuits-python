@@ -69,6 +69,10 @@ from mimiqcircuits.operations.losschannel import (
     LossErr,
     CheckLoss,
     MeasureCheckLoss,
+    Loss,
+    Reload,
+    Check,
+    MeasureCheck,
 )
 from mimiqcircuits.operations.gates.gate import Gate
 
@@ -212,6 +216,8 @@ from mimiqcircuits.operations.annotations import (
     ShiftCoordinates,
     ObservableInclude,
     Tick,
+    Lost,
+    Reloaded,
 )
 from mimiqcircuits.classical.abstract_classical import AbstractClassical
 from mimiqcircuits.classical.not_operation import Not
@@ -278,6 +284,10 @@ from mimiqcircuits.lossmodel import (
     CustomRule,
     LossModel,
     sample_losses,
+    lower_losses,
+    resolve_losses,
+    sample_loss_scenario,
+    lossmodel_rewrite,
 )
 from mimiqcircuits.circuit_extras import remove_unused, remove_swaps
 from mimiqcircuits.symbolics import unwrapvalue, listsymbols, UndefinedValue
@@ -307,6 +317,9 @@ from mimiqcircuits.decomposition import (
     eachdecomposed,
     DecomposeIterator,
 )
+
+from mimiqcircuits.fusion import FusePass, fuse_circuit
+from mimiqcircuits.backends.concrete_passes import CanonicalDecomposePass
 
 # needed to initialize the registers
 import mimiqcircuits.proto.circuitproto
@@ -368,6 +381,12 @@ attach_inheritance_tree_to_docstring(
 # Export specific classes, and functions.
 __all__ = [
     "Circuit",
+    "CircuitDAG",
+    "traverse_by_bfs",
+    "traverse_by_dfs",
+    "topological_sort_by_bfs",
+    "topological_sort_by_dfs",
+    "to_networkx",
     "BitString",
     "Operation",
     "Control",
@@ -391,6 +410,10 @@ __all__ = [
     "LossErr",
     "CheckLoss",
     "MeasureCheckLoss",
+    "Loss",
+    "Reload",
+    "Check",
+    "MeasureCheck",
     "MeasureReset",
     "MeasureResetX",
     "MeasureResetY",
@@ -524,6 +547,8 @@ __all__ = [
     "ShiftCoordinates",
     "ObservableInclude",
     "Tick",
+    "Lost",
+    "Reloaded",
     "Not",
     "Pow",
     "Add",
@@ -573,6 +598,10 @@ __all__ = [
     "CustomRule",
     "LossModel",
     "sample_losses",
+    "lower_losses",
+    "resolve_losses",
+    "sample_loss_scenario",
+    "lossmodel_rewrite",
     "SetBit1",
     "SetBit0",
     "And",
@@ -608,4 +637,8 @@ __all__ = [
     "decompose_step",
     "eachdecomposed",
     "DecomposeIterator",
+    # Gate fusion
+    "FusePass",
+    "CanonicalDecomposePass",
+    "fuse_circuit",
 ]

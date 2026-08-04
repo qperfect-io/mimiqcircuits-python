@@ -85,11 +85,11 @@ class TestRewriteRules:
     @pytest.mark.parametrize(
         "op",
         [
-            mc.QubitLoss(),
-            mc.QubitReload(),
-            mc.LossErr(0.5),
-            mc.CheckLoss(),
-            mc.MeasureCheckLoss(),
+            mc.Loss(),
+            mc.Reload(),
+            mc.Loss(0.5),
+            mc.Check(),
+            mc.MeasureCheck(),
         ],
     )
     def test_canonical_rewrite_does_not_match_loss_operations(self, op):
@@ -202,11 +202,11 @@ class TestDecompositionBases:
     @pytest.mark.parametrize(
         "op",
         [
-            mc.QubitLoss(),
-            mc.QubitReload(),
-            mc.LossErr(0.5),
-            mc.CheckLoss(),
-            mc.MeasureCheckLoss(),
+            mc.Loss(),
+            mc.Reload(),
+            mc.Loss(0.5),
+            mc.Check(),
+            mc.MeasureCheck(),
         ],
     )
     def test_canonical_basis_terminal_loss_operations(self, op):
@@ -296,11 +296,11 @@ class TestDecomposeFunction:
     def test_decompose_preserves_loss_operations(self):
         """decompose should preserve terminal loss operations unchanged."""
         c = Circuit()
-        c.push(mc.LossErr(0.5), 0)
-        c.push(mc.QubitLoss(), 1)
-        c.push(mc.CheckLoss(), 0, 0)
-        c.push(mc.MeasureCheckLoss(), 1, 1, 2)
-        c.push(mc.QubitReload(), 1)
+        c.push(mc.Loss(0.5), 0)
+        c.push(mc.Loss(), 1)
+        c.push(mc.Check(), 0, 0)
+        c.push(mc.MeasureCheck(), 1, 1, 2)
+        c.push(mc.Reload(), 1)
 
         decomposed = decompose(c)
 

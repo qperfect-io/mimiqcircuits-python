@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 from mimiqcircuits.operations.operation import Operation
 from mimiqcircuits.symbolics import UndefinedValue, unwrapvalue
 
@@ -36,190 +38,43 @@ def _validate_probability(p):
         raise ValueError("Loss probability p must be between 0 and 1.")
 
 
-class QubitLoss(Operation):
-    """QubitLoss operation.
+class Loss(Operation):
+    """Loss operation.
 
-    This operation deterministically marks a qubit as lost. It is useful for
-    representing qubit-loss events explicitly in a circuit.
+    A qubit-loss event: the qubit is lost with probability ``p``. ``Loss()`` is
+    ``Loss(1.0)``, a certain loss. It replaces both ``LossErr`` and
+    ``QubitLoss``.
 
-    .. warning::
-        This operation is non-reversible.
-
-    Examples:
-    
-        >>> from mimiqcircuits import *
-        >>> c = Circuit()
-        >>> c.push(QubitLoss(), 1)
-        2-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[1]
-        <BLANKLINE>
-
-    See Also:
-        :class:`QubitReload`, :class:`LossErr`, :class:`CheckLoss`,
-        :class:`MeasureCheckLoss`
-    """
-
-    _name = "QubitLoss"
-    _num_qubits = 1
-    _num_bits = 0
-    _num_zvars = 0
-    _num_qregs = 1
-    _qregsizes = [1]
-
-    def inverse(self):
-        raise TypeError("QubitLoss is not inversible")
-
-    def power(self, p):
-        raise TypeError("QubitLoss^p is not defined.")
-
-    def control(self, num_qubits):
-        raise TypeError("Controlled QubitLoss is not defined.")
-
-    def iswrapper(self):
-        return False
-
-    def __str__(self):
-        return self._name
-
-
-class QubitReload(Operation):
-    """QubitReload operation.
-
-    This operation reloads a qubit that was previously marked as lost. It can
-    be used to model qubit reintroduction after a loss event.
-
-    .. warning::
-        This operation is non-reversible.
-
-    Examples:
-    
-        >>> from mimiqcircuits import *
-        >>> c = Circuit()
-        >>> c.push(QubitReload(), 1)
-        2-qubit circuit with 1 instruction:
-        └── QubitReload @ q[1]
-        <BLANKLINE>
-
-    See Also:
-        :class:`QubitLoss`, :class:`LossErr`, :class:`CheckLoss`,
-        :class:`MeasureCheckLoss`
-    """
-
-    _name = "QubitReload"
-    _num_qubits = 1
-    _num_bits = 0
-    _num_zvars = 0
-    _num_qregs = 1
-    _qregsizes = [1]
-
-    def inverse(self):
-        raise TypeError("QubitReload is not inversible")
-
-    def power(self, p):
-        raise TypeError("QubitReload^p is not defined.")
-
-    def control(self, num_qubits):
-        raise TypeError("Controlled QubitReload is not defined.")
-
-    def iswrapper(self):
-        return False
-
-    def __str__(self):
-        return self._name
-
-
-class LossErr(Operation):
-    """LossErr operation.
-
-    This operation models a probabilistic qubit-loss event with probability
-    ``p``. During simulation or sampling, it can be resolved into a concrete
-    qubit-loss event according to the specified probability.
+    The probability is resolved by :meth:`mimiqcircuits.Circuit.sample_losses`,
+    which turns each ``Loss(p)`` into ``Loss(1.0)`` or removes it, and a circuit
+    is turned into a runnable, loss-free form by
+    :meth:`mimiqcircuits.Circuit.resolve_losses`.
 
     .. warning::
         This operation is non-reversible.
 
     Args:
-        p: The probability of a qubit-loss event. It must be real and between
-            0 and 1.
+        p: The loss probability, real and between 0 and 1. Defaults to 1.0.
 
     Examples:
-    
+
         >>> from mimiqcircuits import *
         >>> c = Circuit()
-        >>> c.push(LossErr(0.5), 0)
+        >>> c.push(Loss(0.1), 0)
         1-qubit circuit with 1 instruction:
-        └── LossErr(0.5) @ q[0]
+        └── Loss(0.1) @ q[0]
         <BLANKLINE>
-        
-        Seeded sampling makes stochastic loss reproducible:
-
-        >>> import random
-        >>> c = Circuit()
-        >>> c.push(LossErr(0.5), 1)
-        2-qubit circuit with 1 instruction:
-        └── LossErr(0.5) @ q[1]
-        <BLANKLINE>
-        
-        >>> c.push(GateH(), 1)
+        >>> c.push(Loss(), 1)
         2-qubit circuit with 2 instructions:
-        ├── LossErr(0.5) @ q[1]
-        └── H @ q[1]
+        ├── Loss(0.1) @ q[0]
+        └── Loss(1.0) @ q[1]
         <BLANKLINE>
-        
-        >>> c.sample_losses(random.Random(0))
-        2-qubit circuit with 1 instruction:
-        └── H @ q[1]
-        <BLANKLINE>
-        
-        >>> c.sample_losses(random.Random(7))
-        2-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[1]
-        <BLANKLINE>
-
-        Symbolic probabilities must be evaluated before sampling:
-
-        >>> from symengine import Symbol
-        >>> p = Symbol("p")
-        >>> c = Circuit()
-        >>> c.push(LossErr(p), 0)
-        1-qubit circuit with 1 instruction:
-        └── LossErr(p) @ q[0]
-        <BLANKLINE>
-        
-        >>> c = c.evaluate({p: 0.5})
-        >>> c.sample_losses(random.Random(7))
-        1-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[0]
-        <BLANKLINE>
-
-        Loss-model rules can rewrite gates that touch surviving qubits:
-
-        >>> c = Circuit()
-        >>> c.push(QubitLoss(), 1)
-        2-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[1]
-        <BLANKLINE>
-        
-        >>> c.push(GateCX(), 0, 1)
-        2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
-        └── CX @ q[0], q[1]
-        <BLANKLINE>
-        
-        >>> lm = LossModel().add_replace(GateCX(), Depolarizing1(0.2))
-        >>> c.sample_losses(lm)
-        2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
-        └── Depolarizing(0.2) @ q[0]
-        <BLANKLINE>
-        
 
     See Also:
-        :class:`QubitLoss`, :class:`QubitReload`, :class:`CheckLoss`,
-        :class:`MeasureCheckLoss`, :class:`mimiqcircuits.lossmodel.LossModel`
+        :class:`Reload`, :class:`Check`, :class:`MeasureCheck`
     """
 
-    _name = "LossErr"
+    _name = "Loss"
     _num_qubits = 1
     _num_bits = 0
     _num_zvars = 0
@@ -227,7 +82,7 @@ class LossErr(Operation):
     _qregsizes = [1]
     _parnames = ("p",)
 
-    def __init__(self, p):
+    def __init__(self, p=1.0):
         self.p = p
         _validate_probability(p)
         super().__init__()
@@ -238,23 +93,23 @@ class LossErr(Operation):
         try:
             numeric_p = unwrapvalue(evaluated_p)
         except UndefinedValue:
-            return LossErr(evaluated_p)
+            return Loss(evaluated_p)
 
         if isinstance(numeric_p, complex):
             if numeric_p.imag != 0:
                 raise ValueError("Loss probability p must be real after evaluation.")
             numeric_p = numeric_p.real
 
-        return LossErr(numeric_p)
+        return Loss(numeric_p)
 
     def inverse(self):
-        raise TypeError("LossErr is not inversible")
+        raise TypeError("Loss is not inversible")
 
     def power(self, p):
-        raise TypeError("LossErr^p is not defined.")
+        raise TypeError("Loss^p is not defined.")
 
     def control(self, num_qubits):
-        raise TypeError("Controlled LossErr is not defined.")
+        raise TypeError("Controlled Loss is not defined.")
 
     def iswrapper(self):
         return False
@@ -263,30 +118,76 @@ class LossErr(Operation):
         return f"{self._name}({self.p})"
 
 
-class CheckLoss(Operation):
-    """CheckLoss operation.
+class Reload(Operation):
+    """Reload operation.
 
-    This operation checks whether a qubit is present or lost, and stores the
-    result in a classical bit.
+    Re-initialise a qubit to :math:`|0\\rangle` and mark it present. By default
+    a reload always resets, regardless of whether the qubit was lost. It
+    replaces ``QubitReload``.
 
     .. warning::
         This operation is non-reversible.
 
     Examples:
-    
+
         >>> from mimiqcircuits import *
         >>> c = Circuit()
-        >>> c.push(CheckLoss(), 0, 0)
-        1-qubit, 1-bit circuit with 1 instruction:
-        └── CL @ q[0], c[0]
+        >>> c.push(Reload(), 0)
+        1-qubit circuit with 1 instruction:
+        └── Reload @ q[0]
         <BLANKLINE>
 
     See Also:
-        :class:`QubitLoss`, :class:`QubitReload`, :class:`LossErr`,
-        :class:`MeasureCheckLoss`
+        :class:`Loss`, :class:`Reset`
     """
 
-    _name = "CL"
+    _name = "Reload"
+    _num_qubits = 1
+    _num_bits = 0
+    _num_zvars = 0
+    _num_qregs = 1
+    _qregsizes = [1]
+
+    def inverse(self):
+        raise TypeError("Reload is not inversible")
+
+    def power(self, p):
+        raise TypeError("Reload^p is not defined.")
+
+    def control(self, num_qubits):
+        raise TypeError("Controlled Reload is not defined.")
+
+    def iswrapper(self):
+        return False
+
+    def __str__(self):
+        return self._name
+
+
+class Check(Operation):
+    """Check operation.
+
+    Record whether a qubit is present into a classical bit (1 present, 0 lost).
+    Like :class:`Measure` records a qubit's value, ``Check`` records its
+    presence; it does not touch the quantum state. It replaces ``CheckLoss``.
+
+    .. warning::
+        This operation is non-reversible.
+
+    Examples:
+
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> c.push(Check(), 0, 0)
+        1-qubit, 1-bit circuit with 1 instruction:
+        └── Check @ q[0], c[0]
+        <BLANKLINE>
+
+    See Also:
+        :class:`MeasureCheck`, :class:`Loss`, :class:`Reload`
+    """
+
+    _name = "Check"
     _num_qubits = 1
     _num_bits = 1
     _num_zvars = 0
@@ -296,13 +197,13 @@ class CheckLoss(Operation):
     _cregsizes = [1]
 
     def inverse(self):
-        raise TypeError("CheckLoss is not inversible")
+        raise TypeError("Check is not inversible")
 
     def power(self, p):
-        raise TypeError("CheckLoss^p is not defined.")
+        raise TypeError("Check^p is not defined.")
 
     def control(self, num_qubits):
-        raise TypeError("Controlled CheckLoss is not defined.")
+        raise TypeError("Controlled Check is not defined.")
 
     def iswrapper(self):
         return False
@@ -311,29 +212,31 @@ class CheckLoss(Operation):
         return self._name
 
 
-class MeasureCheckLoss(Operation):
-    """MeasureCheckLoss operation.
+class MeasureCheck(Operation):
+    """MeasureCheck operation.
 
-    This operation measures a qubit and reports both the measurement result and
-    whether the qubit is present or lost.
+    Measure a qubit if it is present, and record its presence. The first bit is
+    the measurement result (0 if lost), the second is the presence (1 present,
+    0 lost). The state is collapsed only when the qubit is present. It replaces
+    ``MeasureCheckLoss``.
 
     .. warning::
         This operation is non-reversible.
 
     Examples:
+
         >>> from mimiqcircuits import *
         >>> c = Circuit()
-        >>> c.push(MeasureCheckLoss(), 0, 0, 1)
+        >>> c.push(MeasureCheck(), 0, 0, 1)
         1-qubit, 2-bit circuit with 1 instruction:
-        └── MCL @ q[0], c[0:1]
+        └── MeasureCheck @ q[0], c[0:1]
         <BLANKLINE>
 
     See Also:
-        :class:`QubitLoss`, :class:`QubitReload`, :class:`LossErr`,
-        :class:`CheckLoss`
+        :class:`Check`, :class:`Measure`, :class:`Loss`
     """
 
-    _name = "MCL"
+    _name = "MeasureCheck"
     _num_qubits = 1
     _num_bits = 2
     _num_zvars = 0
@@ -343,13 +246,13 @@ class MeasureCheckLoss(Operation):
     _cregsizes = [2]
 
     def inverse(self):
-        raise TypeError("MeasureCheckLoss is not inversible")
+        raise TypeError("MeasureCheck is not inversible")
 
     def power(self, p):
-        raise TypeError("MeasureCheckLoss^p is not defined.")
+        raise TypeError("MeasureCheck^p is not defined.")
 
     def control(self, num_qubits):
-        raise TypeError("Controlled MeasureCheckLoss is not defined.")
+        raise TypeError("Controlled MeasureCheck is not defined.")
 
     def iswrapper(self):
         return False
@@ -358,10 +261,27 @@ class MeasureCheckLoss(Operation):
         return self._name
 
 
-__all__ = [
-    "QubitLoss",
-    "QubitReload",
-    "LossErr",
-    "CheckLoss",
-    "MeasureCheckLoss",
-]
+# Deprecated loss operations. The old names map onto the current ones.
+def LossErr(p):
+    warnings.warn("LossErr is deprecated; use Loss(p).", DeprecationWarning, stacklevel=2)
+    return Loss(p)
+
+
+def QubitLoss():
+    warnings.warn("QubitLoss is deprecated; use Loss().", DeprecationWarning, stacklevel=2)
+    return Loss(1.0)
+
+
+def QubitReload():
+    warnings.warn("QubitReload is deprecated; use Reload().", DeprecationWarning, stacklevel=2)
+    return Reload()
+
+
+def CheckLoss():
+    warnings.warn("CheckLoss is deprecated; use Check().", DeprecationWarning, stacklevel=2)
+    return Check()
+
+
+def MeasureCheckLoss():
+    warnings.warn("MeasureCheckLoss is deprecated; use MeasureCheck().", DeprecationWarning, stacklevel=2)
+    return MeasureCheck()

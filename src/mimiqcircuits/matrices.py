@@ -131,15 +131,21 @@ def reorder_qubits_matrix(M, qubits, nq=None):
 
     fullqubits = list(qubits) + [q for q in range(nq) if q not in qubits]
 
+    # A NumPy matrix stays NumPy throughout: identity padding goes through
+    # np.kron and the final reindex is a single fancy-index, instead of looping
+    # over SymEngine scalars. Symbolic matrices keep the SymEngine path below.
+    numeric = isinstance(M, np.ndarray)
+    ident = np.eye(2) if numeric else mc.GateID().matrix()
+
     fullM = M
-
-    # Pad with identities (kron) for nq - len(qubits)
-    I = mc.GateID().matrix()
     for _ in range(nq - len(qubits)):
-        fullM = kronecker(fullM, I)
+        fullM = kronecker(fullM, ident)
 
-    # If sorted, no reordering needed
-    if sorted(qubits) == list(qubits):
+    # The identity padding above places the gate on wires 0..len(qubits)-1, so
+    # no permutation is needed only when the full wire list is already ordered
+    # (i.e. the gate occupies the leading contiguous wires). Testing `qubits`
+    # alone is wrong for non-contiguous targets such as [0, 3].
+    if fullqubits == sorted(fullqubits):
         return fullM
 
     qperm = [(nq - 1) - i for i in reversed(np.argsort(fullqubits))]
@@ -148,11 +154,14 @@ def reorder_qubits_matrix(M, qubits, nq=None):
 
     ints = []
     for i in range(dim):
-        bs = mc.BitString(nq, i)
+        bs = mc.BitString.fromint(nq, i)
         permuted = mc.BitString("".join(str(bs[q]) for q in qperm))
         ints.append(permuted.tointeger())
 
     perm = np.argsort(ints)
+
+    if numeric:
+        return fullM[np.ix_(perm, perm)]
 
     reordered = se.Matrix([[se.S(0) for _ in range(dim)] for _ in range(dim)])
     for i in range(dim):

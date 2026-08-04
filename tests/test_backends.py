@@ -698,3 +698,81 @@ def test_localbackend_recompile_per_trajectory_default():
     plain.push(mc.GateH(), 0)
     plain.push(mc.GateCX(), 0, 1)
     assert backend.recompile_per_trajectory(plain) is False
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# kwargs → passes conversion (MIMIQ prep knobs)
+# ──────────────────────────────────────────────────────────────────────────
+
+
+def test_canonical_decompose_pass_wraps_decompose():
+    import mimiqcircuits as mc
+    from mimiqcircuits import CanonicalDecomposePass
+    from mimiqcircuits.backends import PassContext
+
+    c = mc.Circuit()
+    c.push(mc.GateH(), 0)
+    p = CanonicalDecomposePass()
+    assert p.spec().name == "canonical_decompose"
+    out, res = p.apply(PassContext(), c)
+    assert isinstance(out, mc.Circuit)
+    assert res.qubit_permutation is None
+
+
+def test_resolve_prep_passes_builds_from_knobs():
+    backend = _MockBackend()
+
+    # Neither passes nor knobs → the backend default (empty here).
+    empty = backend._resolve_prep_passes(
+        None, fuse=False, fuse_threshold=0, canonicaldecompose=False,
+        reorderqubits=False, remove_swaps=False)
+    assert len(empty) == 0
+
+    # canonicaldecompose then fuse, in that order; fuse carries the
+    # threshold.
+    pipe = backend._resolve_prep_passes(
+        None, fuse=True, fuse_threshold=3, canonicaldecompose=True,
+        reorderqubits=False, remove_swaps=False)
+    assert [p.spec().name for p in pipe] == ["canonical_decompose", "fuse_gates"]
+    assert dict(pipe[1].spec().parameters)["qubit_threshold"].value == 3
+
+
+def test_resolve_prep_passes_rejects_local_only_knobs():
+    backend = _MockBackend()
+    for knob in ("reorderqubits", "remove_swaps"):
+        with pytest.raises(NotImplementedError):
+            backend._resolve_prep_passes(
+                None, fuse=False, fuse_threshold=0, canonicaldecompose=False,
+                reorderqubits=(knob == "reorderqubits"),
+                remove_swaps=(knob == "remove_swaps"))
+
+
+def test_resolve_prep_passes_rejects_passes_plus_knobs():
+    from mimiqcircuits import FusePass
+    backend = _MockBackend()
+    with pytest.raises(ValueError):
+        backend._resolve_prep_passes(
+            PassPipeline([FusePass()]), fuse=True, fuse_threshold=0,
+            canonicaldecompose=False, reorderqubits=False, remove_swaps=False)
+
+
+def test_execute_fuse_kwarg_reaches_pipeline():
+    """execute(fuse=True) fuses the circuit before it reaches compile."""
+    import mimiqcircuits as mc
+
+    class _RecBackend(_MockBackend):
+        def __init__(self, **kw):
+            super().__init__(**kw)
+            self.compiled_len = None
+
+        def compile(self, circuit):
+            self.compiled_len = len(circuit)
+            return super().compile(circuit)
+
+    c = mc.Circuit()
+    c.push(mc.GateH(), 0)
+    c.push(mc.GateH(), 0)  # H·H collapses to a single fused block
+
+    backend = _RecBackend(fixed_bits=[False])
+    backend.execute(c, nsamples=3, fuse=True)
+    assert backend.compiled_len == 1

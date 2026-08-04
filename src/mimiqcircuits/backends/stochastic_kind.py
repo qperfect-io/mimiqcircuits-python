@@ -39,7 +39,7 @@ from typing import TYPE_CHECKING
 from mimiqcircuits.instruction import Instruction
 from mimiqcircuits.operations.ifstatement import IfStatement
 from mimiqcircuits.operations.krauschannel import krauschannel
-from mimiqcircuits.operations.losschannel import LossErr
+from mimiqcircuits.operations.losschannel import Loss
 from mimiqcircuits.operations.measure import AbstractMeasurement
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -90,8 +90,7 @@ def default_stochastic_kind(op) -> StochasticKind:
     - ``IfStatement`` / similar wrappers: recurse on the inner op.
     - ``krauschannel``: ``TrajectorySampleable`` if ``ismixedunitary``,
       else ``RuntimeOnly``.
-    - ``LossErr``: ``RuntimeOnly`` (until ``sample_losses`` moves into
-      ``prepare_trajectory()``; F-S2 follow-up).
+    - ``Loss``: ``RuntimeOnly`` (resolved per trajectory by ``resolve_losses``).
     - ``AbstractMeasurement``: ``RuntimeOnly``.
     - everything else: ``Deterministic``.
     """
@@ -104,7 +103,7 @@ def default_stochastic_kind(op) -> StochasticKind:
             if op.ismixedunitary()
             else StochasticKind.RuntimeOnly
         )
-    if isinstance(op, LossErr):
+    if isinstance(op, Loss):
         return StochasticKind.RuntimeOnly
     if isinstance(op, AbstractMeasurement):
         return StochasticKind.RuntimeOnly

@@ -87,11 +87,10 @@ class CanonicalBasis(DecompositionBasis):
             (
                 mc.Measure,
                 mc.Reset,
-                mc.QubitLoss,
-                mc.QubitReload,
-                mc.LossErr,
-                mc.CheckLoss,
-                mc.MeasureCheckLoss,
+                mc.Loss,
+                mc.Reload,
+                mc.Check,
+                mc.MeasureCheck,
             ),
         ):
             return True

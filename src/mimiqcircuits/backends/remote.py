@@ -403,6 +403,13 @@ class MimiqRemoteBackend(RemoteBackend):
         callback=None,
         param_grid: Optional[list[dict]] = None,
         strict_pass_order: bool = True,
+        # Circuit-preparation knobs run server-side. Alternatives to
+        # `passes=`; the server consumes them as a flat option set.
+        fuse: Optional[bool] = None,
+        reorderqubits=None,
+        canonicaldecompose: Optional[bool] = None,
+        remove_swaps: Optional[bool] = None,
+        reorderqubits_seed: Optional[int] = None,
         # Submit-time tuning knobs. Forwarded to the server as-is; a
         # `None` value means "let the server pick its default".
         bonddim: Optional[int] = None,
@@ -424,6 +431,26 @@ class MimiqRemoteBackend(RemoteBackend):
         if kwargs:
             raise TypeError(
                 f"unexpected keyword arguments: {sorted(kwargs)}"
+            )
+
+        # The flat prep knobs and an explicit `passes` pipeline are two
+        # spellings of the same thing; accepting both would leave their
+        # precedence ambiguous.
+        prep_knobs = {
+            k: v
+            for k, v in (
+                ("fuse", fuse),
+                ("reorderqubits", reorderqubits),
+                ("canonicaldecompose", canonicaldecompose),
+                ("remove_swaps", remove_swaps),
+                ("reorderqubits_seed", reorderqubits_seed),
+            )
+            if v is not None
+        }
+        if prep_knobs and passes is not None and len(passes) > 0:
+            raise ValueError(
+                "pass either `passes=` or the boolean shorthands "
+                "(fuse=, reorderqubits=, …), not both"
             )
 
         if param_grid:
@@ -495,6 +522,7 @@ class MimiqRemoteBackend(RemoteBackend):
             "seed": seed,
         }
         submit_kwargs.update(pipeline_knobs)
+        submit_kwargs.update(prep_knobs)
 
         request_id = self._connection.submit(circuits, **submit_kwargs)
         return _MimiqJob(

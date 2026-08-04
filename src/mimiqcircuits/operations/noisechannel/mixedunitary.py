@@ -72,6 +72,11 @@ class MixedUnitary(krauschannel):
     Parameters:
         p (list): List of probabilities, must be positive real numbers and add up to 1.
         umatrices (list): List of complex-valued :math:`2^N \times 2^N` matrices. The number of qubits is equal to :math:`N`.
+        lossy (list, optional): Per-branch list marking which qubits in ``1:N`` leak when
+            that branch is drawn (e.g. ``[[], [1]]`` makes the second branch lose qubit 1).
+            Branches default to lossless. A lossy branch is resolved by
+            :meth:`Circuit.sample_mixedunitaries`, which emits a :class:`Loss` on the marked
+            qubits when the branch is sampled.
 
     The length of the lists `p` and `umatrices` must be equal.
 
@@ -114,7 +119,7 @@ class MixedUnitary(krauschannel):
     _name = "MixedUnitary"
     _parnames = ()
 
-    def __init__(self, *args):
+    def __init__(self, *args, lossy=None):
         if len(args) == 1:
             rescaledgates = args[0]
             if not isinstance(rescaledgates, list) or not all(
@@ -178,8 +183,29 @@ class MixedUnitary(krauschannel):
                 "Custom mixed unitary channels larger than 2 qubits are not supported"
             )
 
+        # Per-branch lossy qubit masks (local 1:N indices), empty when lossless.
+        if lossy is None:
+            self.lossy = [tuple() for _ in self.gates]
+        else:
+            if len(lossy) != len(self.gates):
+                raise ValueError(
+                    "Lists of unitaries and lossy masks must have the same length."
+                )
+            self.lossy = []
+            for m in lossy:
+                qs = tuple(sorted({int(q) for q in m}))
+                if any(q < 1 or q > self.N for q in qs):
+                    raise ValueError(
+                        f"Lossy qubit indices must be in 1:{self.N}, got {qs}."
+                    )
+                self.lossy.append(qs)
+
         super().__init__()
         self._num_qubits = self.N
+
+    def haslossybranch(self):
+        """Whether any branch loses qubits when drawn."""
+        return any(self.lossy)
 
     def evaluate(self, values: dict):
         """Evaluates symbolic parameters in the MixedUnitary using a dictionary of values.
@@ -206,7 +232,7 @@ class MixedUnitary(krauschannel):
             u.evaluate(values) if hasattr(u, "evaluate") else u for u in self.U
         ]
 
-        return MixedUnitary(evaluated_p, evaluated_U)
+        return MixedUnitary(evaluated_p, evaluated_U, lossy=self.lossy)
 
     def krausmatrices(self):
         probabilities = [se.sqrt(p) for p in self.probabilities()]
@@ -277,6 +303,9 @@ class MixedUnitary(krauschannel):
 
             if i < len(ps) - 1:
                 repr_string += sep
+
+        if self.haslossybranch():
+            repr_string += f"; lossy={tuple(self.lossy)}"
 
         repr_string += ")"
         return repr_string

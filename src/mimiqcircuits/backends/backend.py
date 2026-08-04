@@ -97,17 +97,17 @@ def _circuit_count(circuit, attr_name: str) -> int:
 
 def _circuit_has_loss(circuit) -> bool:
     """Return ``True`` if ``circuit`` contains any loss-bearing
-    operation (``LossErr`` / ``QubitLoss``)."""
+    operation (``Loss``)."""
     instructions = getattr(circuit, "instructions", None)
     if instructions is None:
         return False
     try:
-        from mimiqcircuits.operations.losschannel import LossErr, QubitLoss
+        from mimiqcircuits.operations.losschannel import Loss
     except ImportError:  # pragma: no cover - defensive
         return False
     for inst in instructions:
         op = getattr(inst, "operation", None)
-        if isinstance(op, (LossErr, QubitLoss)):
+        if isinstance(op, Loss):
             return True
     return False
 
@@ -135,6 +135,38 @@ def _circuit_has_kraus(circuit) -> bool:
 
     for inst in instructions:
         if _op_has_kraus(getattr(inst, "operation", None)):
+            return True
+    return False
+
+
+def _circuit_has_runtime_loss(circuit) -> bool:
+    """Return ``True`` if ``circuit`` contains a ``LossyOperator``-bearing
+    Kraus channel, the only loss whose outcome depends on the quantum state
+    and so cannot be resolved before the backend runs. Such a circuit needs
+    the ``loss`` capability; all other loss is resolved upstream."""
+    instructions = getattr(circuit, "instructions", None)
+    if instructions is None:
+        return False
+    try:
+        from mimiqcircuits.operations.krauschannel import krauschannel
+        from mimiqcircuits.operations.operators.lossyoperator import LossyOperator
+        from mimiqcircuits.operations.ifstatement import IfStatement
+        from mimiqcircuits.operations.whilestatement import WhileStatement
+    except ImportError:  # pragma: no cover - defensive
+        return False
+
+    def _op_has_lossy(op) -> bool:
+        if isinstance(op, krauschannel):
+            try:
+                return any(isinstance(k, LossyOperator) for k in op.krausoperators())
+            except Exception:  # pragma: no cover - defensive
+                return False
+        if isinstance(op, (IfStatement, WhileStatement)):
+            return _op_has_lossy(op.get_operation())
+        return False
+
+    for inst in instructions:
+        if _op_has_lossy(getattr(inst, "operation", None)):
             return True
     return False
 
@@ -311,6 +343,60 @@ class State(abc.ABC):
     def reset(self) -> None:
         raise NotImplementedError
 
+    def get_loss_state(self) -> "LossState":
+        """Return the per-qubit loss register (see :class:`LossState`).
+
+        Backends that opt into the shared runtime-loss driver
+        (:meth:`LocalBackend.uses_loss_driver`) embed one and clear it in
+        :meth:`reset`.
+        """
+        raise NotImplementedError(
+            "get_loss_state() not implemented for this state type"
+        )
+
+
+class LossState:
+    """Per-qubit present/lost register, a peer to the quantum, classical and
+    complex registers of a :class:`State`. Entry ``q`` is ``True`` when qubit
+    ``q`` has leaked out of the system.
+
+    The register holds no loss *policy*: only the shared runtime-loss driver
+    (:meth:`LocalBackend.evolve_with_loss`) mutates it. Mirrors the Julia
+    ``AbstractQCSs.LossState``.
+    """
+
+    def __init__(self, n_or_flags):
+        if isinstance(n_or_flags, int):
+            self.lost = [False] * n_or_flags
+        else:
+            self.lost = list(n_or_flags)
+
+    def is_lost(self, q) -> bool:
+        return self.lost[q]
+
+    def mark_lost(self, q) -> None:
+        self.lost[q] = True
+
+    def mark_present(self, q) -> None:
+        self.lost[q] = False
+
+    def any_lost(self, qubits) -> bool:
+        return any(self.lost[q] for q in qubits)
+
+    def all_lost(self, qubits) -> bool:
+        return all(self.lost[q] for q in qubits)
+
+    def reset(self) -> None:
+        self.lost = [False] * len(self.lost)
+
+    def __len__(self) -> int:
+        return len(self.lost)
+
+    def as_map(self) -> dict:
+        """Lost-qubit map consumed by :func:`lossmodel_rewrite`; only lost
+        qubits get an entry since the rewrite reads it via ``get(.., False)``."""
+        return {q: True for q, v in enumerate(self.lost) if v}
+
 
 # ──────────────────────────────────────────────────────────────────────────
 # Backend / LocalBackend / RemoteBackend
@@ -372,7 +458,7 @@ class Backend(abc.ABC):
           ``max_classical_bits`` / ``max_zvars`` declared by
           :meth:`limits`;
         - the circuit contains a loss-bearing operation
-          (``LossErr``, ``QubitLoss``) but the backend does not
+          (``Loss``) but the backend does not
           advertise the ``"loss"`` capability.
 
         Returns :class:`Admissible` otherwise.
@@ -408,10 +494,10 @@ class Backend(abc.ABC):
                 )
             )
 
-        if _circuit_has_loss(circuit) and "loss" not in caps:
+        if _circuit_has_runtime_loss(circuit) and "loss" not in caps:
             return Inadmissible(
                 reason=(
-                    "circuit contains a loss-bearing operation "
+                    "circuit contains runtime (LossyOperator) loss "
                     f"but backend {self.name} does not declare "
                     "the 'loss' capability"
                 )
@@ -448,7 +534,7 @@ class Backend(abc.ABC):
 
         The default delegates to
         :func:`default_stochastic_kind` (mix-unitary Kraus is TS;
-        non-mix-unitary Kraus, mid-circuit ``Measure``, and ``LossErr``
+        non-mix-unitary Kraus, mid-circuit ``Measure``, and ``Loss``
         are RT; everything else Deterministic). Backends that handle a
         specific op type differently override this method.
 
@@ -532,6 +618,48 @@ class Backend(abc.ABC):
         if seed is not None:
             return RNGs.from_seed(int(seed))
         return RNGs.from_seed(random.SystemRandom().getrandbits(63))
+
+
+def _loss_segment_role(op, qs, ls):
+    """Role of an instruction in the runtime-loss walk, given the loss register:
+    ``"event"`` is a loss boundary the driver resolves, ``"buffer"`` joins the
+    all-present run, ``"drop"`` is an all-lost op skipped without breaking the
+    run. Mirrors ``_segment_role`` in Julia.
+    """
+    import mimiqcircuits as mc
+    from mimiqcircuits.operations.krauschannel import krauschannel
+
+    if isinstance(op, (mc.Loss, mc.Reload, mc.Check, mc.MeasureCheck)) or \
+            isinstance(op, krauschannel):
+        return "event"
+    if isinstance(op, mc.Measure) and ls.is_lost(qs[0]):
+        return "event"
+    if not ls.any_lost(qs):
+        return "buffer"
+    if ls.all_lost(qs):
+        return "drop"
+    return "event"
+
+
+def _next_loss_segment(insts, start, ls):
+    """Collect the maximal all-present run from ``start`` under loss register
+    ``ls``. Returns ``(run, event_index_or_None, next_index)``; the run stops
+    just before the first loss event (or the circuit end). Mirrors
+    ``_next_segment`` in Julia.
+    """
+    seg = []
+    n = len(insts)
+    j = start
+    while j < n:
+        inst = insts[j]
+        role = _loss_segment_role(inst.get_operation(), tuple(inst.get_qubits()), ls)
+        if role == "buffer":
+            seg.append(inst)
+        elif role == "event":
+            return seg, j, j + 1
+        # "drop": skip the all-lost op, keep the run open
+        j += 1
+    return seg, None, n
 
 
 class LocalBackend(Backend):
@@ -624,12 +752,209 @@ class LocalBackend(Backend):
         :meth:`compile` leaves the required signature untouched."""
         return self.compile(circuit)
 
+    # ── runtime-loss driver ───────────────────────────────────────────────
+    #
+    # Mirrors `AbstractQCSs.evolve_with_loss!`. Runtime `LossyOperator` loss
+    # cannot be resolved before the backend runs (which qubit leaks depends on
+    # which Kraus branch fires), so it is resolved live. A backend opts in by
+    # returning `True` from `uses_loss_driver` and implementing the two
+    # loss-agnostic primitives below; all loss bookkeeping lives in the driver.
+
+    def uses_loss_driver(self) -> bool:
+        """Whether :meth:`execute` resolves runtime ``LossyOperator`` loss
+        through :meth:`evolve_with_loss`. Opt in by returning ``True`` and
+        implementing :meth:`apply_instruction` and :meth:`sample_kraus`."""
+        return False
+
+    def apply_instruction(self, state, inst, *, rng=None):
+        """Apply a single (loss-free) instruction to ``state`` and return the
+        fidelity factor it contributes (``1.0`` for an exact application). The
+        per-step primitive the runtime-loss driver calls; no loss logic."""
+        raise NotImplementedError(
+            "apply_instruction(state, inst) not implemented for this backend"
+        )
+
+    def sample_kraus(self, state, channel, targets, *, rng=None):
+        """Sample one branch of a Kraus ``channel`` against ``state``, apply it,
+        and return ``(fidelity, fired_operator)`` where ``fired_operator`` is the
+        original branch (tag preserving, so a ``LossyOperator`` arrives intact).
+        The driver maps the fired operator back to the qubits that leaked."""
+        raise NotImplementedError(
+            "sample_kraus(state, channel, targets) not implemented for this backend"
+        )
+
+    def apply_segment(self, state, insts, *, rng=None):
+        """Apply a contiguous run of loss-free instructions and return the
+        product of their fidelity factors.
+
+        The runtime-loss driver hands this the maximal run of instructions
+        between two loss events; every instruction acts only on present qubits,
+        so a compressing or fusing backend (MPS/MPO) may override this to
+        compress the whole run at once — that all-present guarantee is the
+        contract it relies on. The default applies one instruction at a time via
+        :meth:`apply_instruction`, which suits a non-compressing backend. Mirrors
+        ``apply_segment!`` in Julia.
+        """
+        fid = 1.0
+        for inst in insts:
+            fid *= self.apply_instruction(state, inst, rng=rng)
+        return fid
+
+    def evolve_with_loss(self, state, circuit, lossmodel, *,
+                         rng=None, callback=None, stopped=None):
+        """Evolve ``circuit`` while resolving qubit loss at runtime.
+
+        Loss rides in the state's :class:`LossState` register and is interpreted
+        exactly as the offline :func:`lower_losses` does, so the two agree shot
+        for shot. The circuit is walked as alternating [all-present run, loss
+        event]: each run is handed to :meth:`apply_segment` (which a compressing
+        backend fuses) before the event after it is resolved, so a lost-qubit op
+        can never enter a fused run. Returns ``(state, fidelity)`` where
+        ``fidelity`` is the product of the per-step fidelity factors. Mirrors
+        ``evolve_with_loss!`` in Julia.
+        """
+        ls = state.get_loss_state()
+        fid = 1.0
+        insts = list(circuit)
+        n = len(insts)
+        i = 0
+        while i < n:
+            start = i
+            seg, evidx, i = _next_loss_segment(insts, start, ls)
+            if seg:
+                fid *= self.apply_segment(state, seg, rng=rng)
+            if callback is not None:
+                # One tick per source instruction in the run (buffered or
+                # dropped), keeping the per-instruction callback contract.
+                for k in range(start, n if evidx is None else evidx):
+                    callback(state, insts[k])
+            if evidx is None:
+                break
+            ev = insts[evidx]
+            fid *= self._resolve_loss_event(state, ev, ls, lossmodel, rng=rng)
+            if callback is not None:
+                callback(state, ev)
+        return state, fid
+
+    def _resolve_loss_event(self, state, inst, ls, lossmodel, *, rng=None):
+        """Resolve a single loss event against the live state and register,
+        returning its fidelity factor. The only place loss marks are written.
+        Mirrors ``_resolve_event!`` in Julia.
+        """
+        import mimiqcircuits as mc
+        from mimiqcircuits.lossmodel import lossmodel_rewrite, _loss_fires
+        from mimiqcircuits.operations.krauschannel import krauschannel
+        from mimiqcircuits.operations.operators.lossyoperator import LossyOperator
+
+        op = inst.get_operation()
+        qs = tuple(inst.get_qubits())
+
+        def _apply(o, qubits=(), bits=()):
+            return self.apply_instruction(
+                state, mc.Instruction(o, tuple(qubits), tuple(bits), ()), rng=rng
+            )
+
+        if isinstance(op, mc.Loss):
+            q = qs[0]
+            if not ls.is_lost(q) and _loss_fires(op, rng):
+                ls.mark_lost(q)
+            return 1.0
+
+        if isinstance(op, mc.Reload):
+            # Mark present before resetting: a backend may guard `Reset` against
+            # lost qubits, and a reload must always reset.
+            q = qs[0]
+            ls.mark_present(q)
+            return _apply(mc.Reset(), (q,))
+
+        if isinstance(op, mc.Check):
+            b = inst.get_bits()[0]
+            _apply(mc.SetBit0() if ls.is_lost(qs[0]) else mc.SetBit1(), (), (b,))
+            return 1.0
+
+        if isinstance(op, mc.MeasureCheck):
+            bits = tuple(inst.get_bits())
+            if ls.is_lost(qs[0]):
+                _apply(mc.SetBit0(), (), (bits[0],))
+                _apply(mc.SetBit0(), (), (bits[1],))
+                return 1.0
+            f = _apply(mc.Measure(), (qs[0],), (bits[0],))
+            _apply(mc.SetBit1(), (), (bits[1],))
+            return f
+
+        if isinstance(op, krauschannel):
+            f, fired = self.sample_kraus(state, op, qs, rng=rng)
+            if isinstance(fired, LossyOperator):
+                for t in fired.lossytargets(*qs):
+                    ls.mark_lost(t)
+            return f
+
+        if isinstance(op, mc.Measure):
+            # a measurement on a lost qubit reads 0
+            _apply(mc.SetBit0(), (), (inst.get_bits()[0],))
+            return 1.0
+
+        # partially lost -> defer to the shared LossModel decision core
+        fid = 1.0
+        for r in lossmodel_rewrite(inst, ls.as_map(), lossmodel, rng):
+            fid *= self.apply_instruction(state, r, rng=rng)
+        return fid
+
     # ── execute driver ────────────────────────────────────────────────────
     #
     # Mirrors `AbstractQCSs.execute` in Julia. Backend-agnostic: runs the
     # pass pipeline, detects loss sampling, splits off the classical
     # projection, and routes to either `_execute_sampling` or
     # `_execute_trajectories`. Concrete backends inherit this unchanged.
+
+    def _resolve_prep_passes(
+        self,
+        passes,
+        *,
+        fuse,
+        fuse_threshold,
+        canonicaldecompose,
+        reorderqubits,
+        remove_swaps,
+    ):
+        """Resolve the circuit-preparation pipeline for local execution.
+
+        Mirrors the boolean shorthands of the MIMIQ knobs: an explicit
+        ``passes`` pipeline wins; otherwise the knobs build one; with
+        neither, the backend's :meth:`default_passes` applies.
+        ``reorderqubits`` and ``remove_swaps`` have no local
+        implementation and are rejected here — a remote MIMIQ backend runs
+        them server-side instead.
+        """
+        knobs_set = (
+            fuse or canonicaldecompose or bool(reorderqubits) or remove_swaps
+        )
+        if passes is not None:
+            if knobs_set:
+                raise ValueError(
+                    "pass either `passes=` or the boolean shorthands "
+                    "(fuse=, canonicaldecompose=, …), not both"
+                )
+            return passes
+        if not knobs_set:
+            return self.default_passes()
+        if reorderqubits or remove_swaps:
+            raise NotImplementedError(
+                "reorderqubits/remove_swaps are not available for local "
+                "execution; submit to a remote MIMIQ backend, which runs "
+                "them server-side"
+            )
+        from mimiqcircuits.fusion import FusePass
+        from mimiqcircuits.backends.concrete_passes import (
+            CanonicalDecomposePass,
+        )
+
+        prep = []
+        if canonicaldecompose:
+            prep.append(CanonicalDecomposePass())
+        if fuse:
+            prep.append(FusePass(qubit_threshold=fuse_threshold))
+        return PassPipeline(prep)
 
     def execute(
         self,
@@ -639,6 +964,11 @@ class LocalBackend(Backend):
         seed: Optional[int] = None,
         rng: Optional[random.Random] = None,
         passes: Optional[PassPipeline] = None,
+        fuse: bool = False,
+        fuse_threshold: int = 0,
+        canonicaldecompose: bool = False,
+        reorderqubits=False,
+        remove_swaps: bool = False,
         callback=None,
         param_grid: Optional[list[dict]] = None,
         strict_pass_order: bool = True,
@@ -647,7 +977,14 @@ class LocalBackend(Backend):
         progress=False,
     ):
         rngs = self._resolve_rngs(seed, rng)
-        passes = passes if passes is not None else self.default_passes()
+        passes = self._resolve_prep_passes(
+            passes,
+            fuse=fuse,
+            fuse_threshold=fuse_threshold,
+            canonicaldecompose=canonicaldecompose,
+            reorderqubits=reorderqubits,
+            remove_swaps=remove_swaps,
+        )
         prog = to_progress(progress)
 
         if isinstance(circuit, list):
@@ -729,10 +1066,27 @@ class LocalBackend(Backend):
 
         results = QCSResults(simulator=self.name, version=self.version)
 
+        runtime_loss = (
+            _circuit_has_runtime_loss(processed_circuit) and self.uses_loss_driver()
+        )
+
+        # Runtime loss: resolve the state-dependent `LossyOperator` branch live
+        # via the shared driver (backends that opt in via `uses_loss_driver`).
+        if runtime_loss:
+            self._execute_runtime_loss(
+                processed_circuit, nsamples, rngs,
+                callback, stopped, num_qubits, results, progress,
+            )
+            results.timings["total"] = time.time() - t_total
+            return results
+
         # Loss sampling: pre-sample a deterministic variant per
         # trajectory so the simulator only ever sees trace-preserving
-        # channels.
-        if needs_loss_sampling(processed_circuit):
+        # channels. Gate on `runtime_loss` (not bare `_circuit_has_runtime_loss`)
+        # so a circuit that mixes pre-resolvable loss with a runtime Kraus on a
+        # `:loss` backend that does not use the driver still gets its
+        # pre-resolvable loss lowered here.
+        if needs_loss_sampling(processed_circuit) and not runtime_loss:
             self._execute_with_loss_sampling(
                 processed_circuit, nsamples, rngs,
                 callback, stopped, num_qubits, results, progress,
@@ -915,10 +1269,10 @@ class LocalBackend(Backend):
         self, processed_circuit, nsamples, rngs,
         callback, stopped, num_qubits, results, progress=None,
     ):
-        """Method-1 loss sampling: a fresh loss pattern per shot, then
-        evolve the resulting deterministic circuit variant.
+        """Method-1 loss resolution: a fresh loss pattern per shot, resolved
+        into a primitive (loss-free) circuit variant, then evolved.
         """
-        from mimiqcircuits import sample_losses
+        from mimiqcircuits import resolve_losses
 
         progress = progress if progress is not None else NoProgress()
         nq = max(processed_circuit.num_qubits(), num_qubits or 0)
@@ -929,13 +1283,49 @@ class LocalBackend(Backend):
         bar = progress.stage("trajectories", total=nsamples)
         t_apply_total = 0.0
         for _ in range(nsamples):
-            sampled = sample_losses(processed_circuit, rng=rngs.trajectory)
+            sampled = resolve_losses(processed_circuit, rng=rngs.trajectory)
             compiled = self.compile(sampled)
             prepared = self.prepare_trajectory(compiled, rngs.trajectory)
             state = self.build_state(nq, nb, nz)
             t0 = time.time()
             state, fid = self.evolve(
                 state, prepared,
+                rng=rngs.noise, callback=callback, stopped=stopped,
+            )
+            t_apply_total += time.time() - t0
+            scalar = as_lower_bound(_to_fidelity(fid))
+            results.fidelities.append(scalar)
+            results.avggateerrors.append(self._avg_gate_error(scalar, num_2q))
+            if nb > 0:
+                results.cstates.append(state.classical_bits)
+            if nz > 0:
+                results.zstates.append(state.complex_values)
+            bar.step()
+        bar.finish()
+        results.timings["apply"] = t_apply_total
+
+    def _execute_runtime_loss(
+        self, processed_circuit, nsamples, rngs,
+        callback, stopped, num_qubits, results, progress=None,
+    ):
+        """Per-shot evolution through the shared runtime-loss driver: a fresh
+        state and loss register per trajectory, loss resolved live."""
+        from mimiqcircuits import LossModel
+
+        progress = progress if progress is not None else NoProgress()
+        nq = max(processed_circuit.num_qubits(), num_qubits or 0)
+        nb = processed_circuit.num_bits()
+        nz = processed_circuit.num_zvars()
+        num_2q = self._count_two_qubit_gates(processed_circuit)
+        lossmodel = LossModel()
+
+        bar = progress.stage("trajectories", total=nsamples)
+        t_apply_total = 0.0
+        for _ in range(nsamples):
+            state = self.build_state(nq, nb, nz)
+            t0 = time.time()
+            state, fid = self.evolve_with_loss(
+                state, processed_circuit, lossmodel,
                 rng=rngs.noise, callback=callback, stopped=stopped,
             )
             t_apply_total += time.time() - t0

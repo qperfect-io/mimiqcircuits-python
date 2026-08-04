@@ -166,3 +166,25 @@ def test_block_protobuf_serialization():
     assert isinstance(restored_outer[0].operation, mc.GateH)
     assert isinstance(restored_outer[1].operation, mc.Block)
     assert isinstance(restored_outer[1].decompose()[0].operation, mc.GateX)
+
+
+def test_block_evaluate_and_is_symbolic():
+    from symengine import symbols
+
+    x = symbols("x")
+    b = mc.Block(1, 0, 0)
+    b.push(mc.GateRX(x), 0)
+    c = mc.Circuit()
+    c.push(b, 0)
+
+    # A symbol inside a block makes the circuit symbolic.
+    assert c.is_symbolic()
+
+    c2 = c.evaluate({x: 0.5})
+    assert not c2.is_symbolic()
+
+    # Substitution reaches the gate inside the block.
+    inner = c2[0].operation
+    assert isinstance(inner, mc.Block)
+    assert not inner.is_symbolic()
+    assert inner[0].operation == mc.GateRX(0.5)

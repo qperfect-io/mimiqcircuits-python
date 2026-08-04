@@ -15,27 +15,20 @@
 #
 """Loss model definitions and qubit-loss sampling.
 
-This module provides the rule system used by :func:`sample_losses` when a
-circuit instruction touches both lost and surviving qubits. A
-:class:`LossModel` lets users decide whether such an instruction should be
-dropped, replaced, decorated, or handled by custom logic.
+This module provides the rule system used by :func:`lower_losses` (and hence
+:func:`resolve_losses`) when a circuit instruction touches both lost and
+surviving qubits. A :class:`LossModel` lets users decide whether such an
+instruction should be dropped, replaced, decorated, or handled by custom logic.
 
 Examples:
     >>> from mimiqcircuits import *
     >>> circuit = Circuit()
-    >>> circuit.push(QubitLoss(), 1)
-    2-qubit circuit with 1 instruction:
-    └── QubitLoss @ q[1]
-    <BLANKLINE>
-    >>> circuit.push(GateCX(), 0, 1)
-    2-qubit circuit with 2 instructions:
-    ├── QubitLoss @ q[1]
-    └── CX @ q[0], q[1]
-    <BLANKLINE>
+    >>> _ = circuit.push(Loss(), 1)
+    >>> _ = circuit.push(GateCX(), 0, 1)
     >>> model = LossModel().add_replace(GateCX(), Depolarizing1(0.2))
-    >>> sample_losses(circuit, lossmodel=model)
+    >>> resolve_losses(circuit, lossmodel=model)
     2-qubit circuit with 2 instructions:
-    ├── QubitLoss @ q[1]
+    ├── Lost @ q[1]
     └── Depolarizing(0.2) @ q[0]
     <BLANKLINE>
 """
@@ -236,18 +229,11 @@ class DropRule(AbstractCircuitRule):
         └── DropRule(CX)
 
         >>> circuit = Circuit()
-        >>> circuit.push(QubitLoss(), 1)
+        >>> _ = circuit.push(Loss(), 1)
+        >>> _ = circuit.push(GateCX(), 0, 1)
+        >>> circuit.resolve_losses(lossmodel=model)
         2-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[1]
-        <BLANKLINE>
-        >>> circuit.push(GateCX(), 0, 1)
-        2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
-        └── CX @ q[0], q[1]
-        <BLANKLINE>
-        >>> circuit.sample_losses(lossmodel=model)
-        2-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[1]
+        └── Lost @ q[1]
         <BLANKLINE>
     """
 
@@ -304,18 +290,11 @@ class DecorateRule(AbstractCircuitRule):
         └── DecorateRule(CZ, Depolarizing(0.01), before)
 
         >>> circuit = Circuit()
-        >>> circuit.push(QubitLoss(), 1)
-        2-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[1]
-        <BLANKLINE>
-        >>> circuit.push(GateCZ(), 0, 1)
+        >>> _ = circuit.push(Loss(), 1)
+        >>> _ = circuit.push(GateCZ(), 0, 1)
+        >>> circuit.resolve_losses(lossmodel=model)
         2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
-        └── CZ @ q[0], q[1]
-        <BLANKLINE>
-        >>> circuit.sample_losses(lossmodel=model)
-        2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
+        ├── Lost @ q[1]
         └── Depolarizing(0.01) @ q[0]
         <BLANKLINE>
     """
@@ -388,18 +367,11 @@ class ReplaceRule(AbstractCircuitRule):
         └── ReplaceRule(CX => Depolarizing(0.2))
 
         >>> circuit = Circuit()
-        >>> circuit.push(QubitLoss(), 1)
-        2-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[1]
-        <BLANKLINE>
-        >>> circuit.push(GateCX(), 0, 1)
+        >>> _ = circuit.push(Loss(), 1)
+        >>> _ = circuit.push(GateCX(), 0, 1)
+        >>> circuit.resolve_losses(lossmodel=model)
         2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
-        └── CX @ q[0], q[1]
-        <BLANKLINE>
-        >>> circuit.sample_losses(lossmodel=model)
-        2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
+        ├── Lost @ q[1]
         └── Depolarizing(0.2) @ q[0]
         <BLANKLINE>
     """
@@ -485,18 +457,11 @@ class CustomRule(AbstractCircuitRule):
         └── CustomRule(<callable>)
 
         >>> circuit = Circuit()
-        >>> circuit.push(QubitLoss(), 1)
-        2-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[1]
-        <BLANKLINE>
-        >>> circuit.push(GateCX(), 0, 1)
+        >>> _ = circuit.push(Loss(), 1)
+        >>> _ = circuit.push(GateCX(), 0, 1)
+        >>> circuit.resolve_losses(lossmodel=model)
         2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
-        └── CX @ q[0], q[1]
-        <BLANKLINE>
-        >>> circuit.sample_losses(lossmodel=model)
-        2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
+        ├── Lost @ q[1]
         └── X @ q[0]
         <BLANKLINE>
 
@@ -514,9 +479,9 @@ class CustomRule(AbstractCircuitRule):
         ...         ],
         ...     )
         ... ])
-        >>> circuit.sample_losses(lossmodel=model)
+        >>> circuit.resolve_losses(lossmodel=model)
         2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
+        ├── Lost @ q[1]
         └── Z @ q[0]
         <BLANKLINE>
     """
@@ -570,18 +535,11 @@ class LossModel:
         The model can then be passed to ``sample_losses``:
 
         >>> circuit = Circuit()
-        >>> circuit.push(QubitLoss(), 1)
-        2-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[1]
-        <BLANKLINE>
-        >>> circuit.push(GateCX(), 0, 1)
+        >>> _ = circuit.push(Loss(), 1)
+        >>> _ = circuit.push(GateCX(), 0, 1)
+        >>> circuit.resolve_losses(lossmodel=model)
         2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
-        └── CX @ q[0], q[1]
-        <BLANKLINE>
-        >>> circuit.sample_losses(lossmodel=model)
-        2-qubit circuit with 2 instructions:
-        ├── QubitLoss @ q[1]
+        ├── Lost @ q[1]
         └── Depolarizing(0.2) @ q[0]
         <BLANKLINE>
     """
@@ -615,8 +573,11 @@ class LossModel:
     def add_decorate(self, operation, decoration=None, *, before=False):
         return self.add_rule(DecorateRule(operation, decoration, before=before))
 
-    def sample_losses(self, circuit: mc.Circuit, rng=None):
-        return sample_losses(circuit, rng=rng, lossmodel=self)
+    def lower_losses(self, circuit: mc.Circuit, rng=None):
+        return lower_losses(circuit, rng=rng, lossmodel=self)
+
+    def resolve_losses(self, circuit: mc.Circuit, rng=None):
+        return resolve_losses(circuit, rng=rng, lossmodel=self)
 
     def describe(self):
         title = f"LossModel: {self.name}" if self.name else "LossModel"
@@ -673,7 +634,18 @@ class LossModel:
         return "\n".join(lines)
 
 
-def _apply_lossmodel_rules(out, inst: mc.Instruction, model: LossModel, lost, rng):
+def lossmodel_rewrite(inst: mc.Instruction, lost, model: LossModel, rng):
+    """Decide how a single instruction touching both lost and present qubits is
+    rewritten under a :class:`LossModel`, returning the instructions to emit in
+    its place (an empty list when the instruction is dropped).
+
+    This is the per-instruction decision core shared by the offline
+    :func:`lower_losses` and the online runtime-loss driver: both feed it the
+    same ``lost`` map (qubit -> lost?) and apply whatever it returns. Rules are
+    tried in order, the first matching rule wins, and any emitted instruction
+    still touching a lost qubit is filtered out. When no rule matches, the
+    instruction is dropped.
+    """
     for rule in model.rules:
         if isinstance(rule, CustomRule):
             if not rule.matches(inst):
@@ -687,114 +659,48 @@ def _apply_lossmodel_rules(out, inst: mc.Instruction, model: LossModel, lost, rn
         if result is None:
             continue
 
-        filtered = [
+        # discard instructions where any target qubit is lost; first match wins
+        return [
             replacement
             for replacement in result
             if not any(lost.get(q, False) for q in replacement.get_qubits())
         ]
-        for replacement in filtered:
-            out.push(replacement)
-        return
+    # No rule matched -> drop (default)
+    return []
 
 
-def _sample_loss_probability(op: mc.LossErr):
+def _apply_lossmodel_rules(out, inst: mc.Instruction, model: LossModel, lost, rng):
+    for replacement in lossmodel_rewrite(inst, lost, model, rng):
+        out.push(replacement)
+
+
+def _sample_loss_probability(op: "mc.Loss"):
     try:
         value = unwrapvalue(op.p)
     except UndefinedValue as exc:
         raise ValueError(
-            "LossErr probability must be numeric for sampling. "
+            "Loss probability must be numeric for sampling. "
             "Use evaluate() to substitute symbolic parameters first."
         ) from exc
 
     if isinstance(value, complex):
         if value.imag != 0:
-            raise ValueError("LossErr probability must be real for sampling.")
+            raise ValueError("Loss probability must be real for sampling.")
         value = value.real
 
-    if not (0 <= value <= 1):
-        raise ValueError("LossErr probability must be between 0 and 1 for sampling.")
-
+    # Range is not re-checked here: the `Loss` constructor already rejects
+    # out-of-range numeric `p`, and `_loss_fires` treats `p >= 1` as certain
+    # loss, matching the Julia `_loss_fires`.
     return value
 
 
-def _process_losserr(out, op: mc.LossErr, qubits, lost, rng):
-    q = qubits[0]
-
-    if lost.get(q, False):
-        return
-
-    if rng.random() < _sample_loss_probability(op):
-        lost[q] = True
-        out.push(mc.QubitLoss(), q)
+def _loss_fires(op: "mc.Loss", rng) -> bool:
+    """Whether a ``Loss(p)`` fires. A certain loss (p == 1) always fires."""
+    p = _sample_loss_probability(op)
+    return p >= 1.0 or rng.random() < p
 
 
-def _process_qubitloss(out, op: mc.QubitLoss, qubits, lost):
-    q = qubits[0]
-    lost[q] = True
-    out.push(mc.Instruction(op, tuple(qubits)))
-
-
-def _process_qubitreload(out, op: mc.QubitReload, qubits, lost):
-    q = qubits[0]
-
-    if lost.get(q, False):
-        lost[q] = False
-        out.push(mc.Instruction(op, tuple(qubits)))
-
-
-def sample_losses(circuit: mc.Circuit, rng=None, lossmodel: Optional[LossModel] = None):
-    """
-    Sample qubit-loss events in a circuit and apply a loss model.
-
-    Args:
-        circuit: Circuit to sample.
-        rng (optional): Random number generator used to sample ``LossErr`` events.
-            Any object providing a ``random()`` method is accepted.
-        lossmodel (optional): A :class:`LossModel` describing how to rewrite gates
-            touching lost qubits. A positional :class:`LossModel` is also accepted as
-            the second argument.
-
-    Returns:
-        mc.Circuit: A new circuit where loss events are sampled and the
-        corresponding loss rules are applied.
-
-    Examples:
-        Reusing one seeded RNG advances its state and yields a reproducible sequence:
-
-        >>> import random
-        >>> from mimiqcircuits import Circuit, GateH, LossErr, sample_losses
-        >>> c = Circuit()
-        >>> c.push(LossErr(0.5), 1)
-        2-qubit circuit with 1 instruction:
-        └── LossErr(0.5) @ q[1]
-        <BLANKLINE>
-        >>> c.push(GateH(), 1)
-        2-qubit circuit with 2 instructions:
-        ├── LossErr(0.5) @ q[1]
-        └── H @ q[1]
-        <BLANKLINE>
-        >>> rng = random.Random(70)
-        >>> sample_losses(c, rng=rng)
-        2-qubit circuit with 1 instruction:
-        └── H @ q[1]
-        <BLANKLINE>
-        >>> sample_losses(c, rng=rng)
-        2-qubit circuit with 1 instruction:
-        └── QubitLoss @ q[1]
-        <BLANKLINE>
-
-        Creating a fresh RNG with the same seed for each call repeats the same sample:
-
-        >>> sample_losses(c, rng=random.Random(20))
-        2-qubit circuit with 1 instruction:
-        └── H @ q[1]
-        <BLANKLINE>
-        >>> sample_losses(c, rng=random.Random(20))
-        2-qubit circuit with 1 instruction:
-        └── H @ q[1]
-        <BLANKLINE>
-    """
-
+def _coerce_rng_lossmodel(rng, lossmodel):
     if isinstance(rng, LossModel):
         if lossmodel is not None:
             raise TypeError(
@@ -802,35 +708,115 @@ def sample_losses(circuit: mc.Circuit, rng=None, lossmodel: Optional[LossModel] 
             )
         lossmodel = rng
         rng = None
-
     if rng is None:
         rng = random.Random()
     elif not hasattr(rng, "random"):
         raise TypeError("rng must provide a random() method.")
     if lossmodel is None:
         lossmodel = LossModel()
+    return rng, lossmodel
+
+
+def sample_losses(circuit: mc.Circuit, rng=None):
+    """Resolve the random qubit-loss events in a circuit.
+
+    Each :class:`mimiqcircuits.Loss` ``(p)`` is drawn: with probability ``p`` it
+    becomes a certain loss ``Loss(1.0)``, otherwise it is removed. Every other
+    operation, including the deterministic loss bookkeeping (``Reload``,
+    ``Check``, ``MeasureCheck``), is kept unchanged. The result is deterministic
+    but still expressed with loss operations; use :func:`lower_losses` or
+    :func:`resolve_losses` to turn it into a runnable, loss-free circuit.
+
+    Args:
+        circuit: Circuit to sample.
+        rng (optional): Random number generator providing a ``random()`` method.
+
+    Returns:
+        mc.Circuit: A circuit whose random loss events have been resolved.
+    """
+    if rng is None:
+        rng = random.Random()
+    elif not hasattr(rng, "random"):
+        raise TypeError("rng must provide a random() method.")
+
+    out = mc.Circuit()
+    for inst in circuit:
+        op = inst.get_operation()
+        if isinstance(op, mc.Loss):
+            if _loss_fires(op, rng):
+                out.push(mc.Loss(1.0), inst.get_qubits()[0])
+        else:
+            out.push(inst)
+    return out
+
+
+def lower_losses(circuit: mc.Circuit, rng=None, lossmodel: Optional[LossModel] = None):
+    """Lower a circuit with loss operations into one using only primitives.
+
+    This is the deterministic half of loss resolution. It expects the random
+    ``Loss(p)`` events to be resolved already (see :func:`sample_losses`) and
+    treats any remaining ``Loss`` as a certain loss. It rewrites every loss
+    operation into ``Reset`` / ``Measure`` / ``SetBit0`` / ``SetBit1`` plus
+    passive ``Lost`` / ``Reloaded`` markers, and drops or replaces gates on lost
+    qubits according to ``lossmodel``. The returned circuit contains no loss
+    operations.
+
+    Args:
+        circuit: Circuit to lower.
+        rng (optional): Random number generator for stochastic loss-model rules.
+            A positional :class:`LossModel` is also accepted.
+        lossmodel (optional): A :class:`LossModel` for gates touching lost qubits.
+
+    Returns:
+        mc.Circuit: A loss-free circuit that runs on any backend.
+    """
+    rng, lossmodel = _coerce_rng_lossmodel(rng, lossmodel)
 
     lost = {}
     out = mc.Circuit()
-
     for inst in circuit:
         op = inst.get_operation()
         qubits = tuple(inst.get_qubits())
 
-        if isinstance(op, mc.LossErr):
-            _process_losserr(out, op, qubits, lost, rng)
+        if isinstance(op, mc.Loss):
+            q = qubits[0]
+            if lost.get(q, False):
+                continue
+            lost[q] = True
+            out.push(mc.Lost(), q)
             continue
 
-        if isinstance(op, mc.QubitLoss):
-            _process_qubitloss(out, op, qubits, lost)
+        if isinstance(op, mc.Reload):
+            q = qubits[0]
+            out.push(mc.Reset(), q)
+            out.push(mc.Reloaded(), q)
+            lost[q] = False
             continue
 
-        if isinstance(op, mc.QubitReload):
-            _process_qubitreload(out, op, qubits, lost)
+        if isinstance(op, mc.Check):
+            q = qubits[0]
+            b = inst.get_bits()[0]
+            out.push(mc.SetBit0() if lost.get(q, False) else mc.SetBit1(), b)
             continue
 
-        if isinstance(op, (mc.CheckLoss, mc.MeasureCheckLoss)):
-            out.push(inst)
+        if isinstance(op, mc.MeasureCheck):
+            q = qubits[0]
+            bits = tuple(inst.get_bits())
+            if lost.get(q, False):
+                out.push(mc.SetBit0(), bits[0])
+                out.push(mc.SetBit0(), bits[1])
+            else:
+                out.push(mc.Measure(), q, bits[0])
+                out.push(mc.SetBit1(), bits[1])
+            continue
+
+        # a single-qubit measurement on a lost qubit reads 0
+        if (
+            isinstance(op, mc.AbstractMeasurement)
+            and len(qubits) == 1
+            and lost.get(qubits[0], False)
+        ):
+            out.push(mc.SetBit0(), inst.get_bits()[0])
             continue
 
         if not any(lost.get(q, False) for q in qubits):
@@ -845,6 +831,105 @@ def sample_losses(circuit: mc.Circuit, rng=None, lossmodel: Optional[LossModel] 
     return out
 
 
+def resolve_losses(circuit: mc.Circuit, rng=None, lossmodel: Optional[LossModel] = None):
+    """Fully resolve loss into a runnable, loss-free circuit.
+
+    The user-facing entry point: it runs :func:`sample_losses` to draw the
+    random ``Loss(p)`` events, then :func:`lower_losses` to rewrite the result
+    into primitives. The returned circuit contains no loss operations.
+
+    Args:
+        circuit: Circuit to resolve.
+        rng (optional): Random number generator. A positional :class:`LossModel`
+            is also accepted.
+        lossmodel (optional): A :class:`LossModel` for gates touching lost qubits.
+
+    Returns:
+        mc.Circuit: A loss-free circuit that runs on any backend.
+    """
+    rng, lossmodel = _coerce_rng_lossmodel(rng, lossmodel)
+    return lower_losses(sample_losses(circuit, rng=rng), rng=rng, lossmodel=lossmodel)
+
+
+def _normalize_loss_indices(loss_indices) -> set:
+    if isinstance(loss_indices, int):
+        loss_indices = (loss_indices,)
+    indices = set()
+    for idx in loss_indices:
+        idx = int(idx)
+        if idx < 1:
+            raise ValueError(f"Loss indices must be >= 1, got {idx}.")
+        indices.add(idx)
+    return indices
+
+
+def sample_loss_scenario(
+    circuit: mc.Circuit,
+    loss_indices,
+    *,
+    p: float = 1.0,
+    rng=None,
+    lossmodel: Optional[LossModel] = None,
+):
+    """Build a deterministic "what-if" loss scenario from a circuit.
+
+    The selected :class:`mimiqcircuits.Loss` instructions, counted in circuit
+    order (1-based), are forced to ``Loss(p)`` while every other ``Loss`` is
+    forced to ``Loss(0.0)``. The result is then resolved with
+    :func:`resolve_losses`, so the returned circuit shows the effect of losing
+    exactly those sites.
+
+    Args:
+        circuit: Circuit containing ``Loss`` instructions.
+        loss_indices: A 1-based index or iterable of indices selecting which
+            ``Loss`` instructions to force.
+        p (optional): Probability assigned to the selected sites (default 1.0).
+        rng (optional): Random number generator.
+        lossmodel (optional): A :class:`LossModel` for gates touching lost qubits.
+
+    Returns:
+        mc.Circuit: A loss-free circuit for the chosen scenario.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> circuit = Circuit()
+        >>> _ = circuit.push(Loss(0.2), 0)
+        >>> _ = circuit.push(GateCX(), 0, 1)
+        >>> _ = circuit.push(Loss(0.4), 1)
+        >>> sample_loss_scenario(circuit, 2)
+        2-qubit circuit with 2 instructions:
+        ├── CX @ q[0], q[1]
+        └── Lost @ q[1]
+        <BLANKLINE>
+    """
+    forced_indices = _normalize_loss_indices(loss_indices)
+    if not (0.0 <= p <= 1.0):
+        raise ValueError(f"Probability p must be between 0 and 1, got {p}.")
+
+    scenario = mc.Circuit()
+    current_index = 0
+    for inst in circuit:
+        op = inst.get_operation()
+        if isinstance(op, mc.Loss):
+            current_index += 1
+            forced_p = p if current_index in forced_indices else 0.0
+            scenario.push(mc.Loss(forced_p), inst.get_qubits()[0])
+        else:
+            scenario.push(inst)
+
+    if current_index == 0:
+        raise ValueError("Circuit does not contain any Loss instructions.")
+
+    invalid = sorted(i for i in forced_indices if i > current_index)
+    if invalid:
+        raise ValueError(
+            f"Loss index/indices {invalid} out of range for a circuit with "
+            f"{current_index} Loss instruction(s)."
+        )
+
+    return resolve_losses(scenario, rng=rng, lossmodel=lossmodel)
+
+
 __all__ = [
     "AbstractCircuitRule",
     "DropRule",
@@ -853,4 +938,7 @@ __all__ = [
     "CustomRule",
     "LossModel",
     "sample_losses",
+    "lower_losses",
+    "resolve_losses",
+    "sample_loss_scenario",
 ]

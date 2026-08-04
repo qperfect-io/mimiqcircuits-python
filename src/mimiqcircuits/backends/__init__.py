@@ -94,6 +94,9 @@ from mimiqcircuits.backends.passes import (
     UnacceptedPassError,
     RemotePassOrderError,
 )
+from mimiqcircuits.backends.concrete_passes import (
+    CanonicalDecomposePass,
+)
 from mimiqcircuits.backends.measure_analysis import (
     extract_projection,
     evaluate_projection,
@@ -120,6 +123,7 @@ from mimiqcircuits.backends.backend import (
     LocalBackend,
     RemoteBackend,
     State,
+    LossState,
     RNGs,
 )
 from mimiqcircuits.backends.progress import (
@@ -189,11 +193,13 @@ __all__ = [
     "invert_perm",
     "UnacceptedPassError",
     "RemotePassOrderError",
+    "CanonicalDecomposePass",
     # backend
     "Backend",
     "LocalBackend",
     "RemoteBackend",
     "State",
+    "LossState",
     "RNGs",
     # progress
     "Progress",

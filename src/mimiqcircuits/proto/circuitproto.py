@@ -178,10 +178,9 @@ OPERATIONMAP = {
     mc.Pow: circuit_pb2.OperationType.Pow,
     mc.SetBit0: circuit_pb2.OperationType.SetBit0,
     mc.SetBit1: circuit_pb2.OperationType.SetBit1,
-    mc.QubitLoss: circuit_pb2.OperationType.QubitLoss,
-    mc.QubitReload: circuit_pb2.OperationType.QubitReload,
-    mc.CheckLoss: circuit_pb2.OperationType.CheckLoss,
-    mc.MeasureCheckLoss: circuit_pb2.OperationType.MeasureCheckLoss,
+    mc.Reload: circuit_pb2.OperationType.Reload,
+    mc.Check: circuit_pb2.OperationType.Check,
+    mc.MeasureCheck: circuit_pb2.OperationType.MeasureCheck,
 }
 
 # Reverse operation mapping: protobuf -> mimiqcircuits
@@ -283,6 +282,8 @@ ANNOTATIONMAP = {
     mc.QubitCoordinates: circuit_pb2.AnnotationType.QubitCoordinates,
     mc.ShiftCoordinates: circuit_pb2.AnnotationType.ShiftCoordinates,
     mc.Tick: circuit_pb2.AnnotationType.Tick,
+    mc.Lost: circuit_pb2.AnnotationType.Lost,
+    mc.Reloaded: circuit_pb2.AnnotationType.Reloaded,
 }
 # Reverse annotation mappings: protobuf -> mimiqcircuits
 REVERSE_ANNOTATIONMAP = {v: k for k, v in ANNOTATIONMAP.items()}
@@ -1007,6 +1008,18 @@ def toproto_kraus(kraus_channel, declcache=None):
     )
 
 
+# Per-branch lossy qubit masks: qubit q (1-based) <-> bit q-1.
+def _lossy_to_mask(lossy):
+    mask = 0
+    for q in lossy:
+        mask |= 1 << (q - 1)
+    return mask
+
+
+def _mask_to_lossy(mask):
+    return tuple(q for q in range(1, mask.bit_length() + 1) if mask & (1 << (q - 1)))
+
+
 @krauschannel_registry.register_toproto(mc.MixedUnitary)
 def toproto_mixedunitary(kraus_channel, declcache=None):
     """Convert a MixedUnitary to protocol buffer format."""
@@ -1024,8 +1037,17 @@ def toproto_mixedunitary(kraus_channel, declcache=None):
         operators_proto.append(
             circuit_pb2.RescaledGate(operation=gate_proto, scale=scale_proto)
         )
+
+    lossy = getattr(kraus_channel, "lossy", None)
+    lossy_masks = (
+        [_lossy_to_mask(m) for m in lossy]
+        if lossy is not None and any(lossy)
+        else []
+    )
     return circuit_pb2.KrausChannel(
-        mixedunitarychannel=circuit_pb2.MixedUnitaryChannel(operators=operators_proto)
+        mixedunitarychannel=circuit_pb2.MixedUnitaryChannel(
+            operators=operators_proto, lossy_masks=lossy_masks
+        )
     )
 
 
@@ -1124,7 +1146,11 @@ def fromproto_mixedunitarychannel(mixedunitary_proto, declcache=None):
         gate = fromproto_gate(rescaled_gate_proto.operation, declcache)
         unitary_matrices.append(gate)
 
-    return mc.MixedUnitary(probabilities, unitary_matrices)
+    masks = list(mixedunitary_proto.lossy_masks)
+    if not masks:
+        return mc.MixedUnitary(probabilities, unitary_matrices)
+    lossy = [_mask_to_lossy(m) for m in masks]
+    return mc.MixedUnitary(probabilities, unitary_matrices, lossy=lossy)
 
 
 @krauschannel_registry.register_fromproto("paulichannel")
@@ -1285,8 +1311,14 @@ def toproto_operation(operation, declcache=None):
     raise ValueError(f"Unsupported operation type: {type(operation)}")
 
 
+_LEGACY_QUBITLOSS = 16  # pre-redesign OperationType tag, folded into Loss
+
+
 @operation_registry.register_fromproto("simpleoperation")
 def fromproto_simpleoperation(simpleoperation_proto, declcache=None):
+    # Legacy: pre-redesign certain loss (QubitLoss) folded into Loss().
+    if simpleoperation_proto.mtype == _LEGACY_QUBITLOSS:
+        return mc.Loss()
     args = [fromproto_arg(param) for param in simpleoperation_proto.parameters]
     operation_class = REVERSE_OPERATIONMAP.get(simpleoperation_proto.mtype)
     if operation_class:
@@ -1505,18 +1537,18 @@ def fromproto_readouterr(readouterr_proto, declcache=None):
     )
 
 
-@operation_registry.register_toproto(mc.LossErr)
-def toproto_losserr(operation, declcache=None):
-    """Convert a LossErr operation to protobuf format."""
+@operation_registry.register_toproto(mc.Loss)
+def toproto_loss(operation, declcache=None):
+    """Convert a Loss operation to protobuf format."""
     msg = circuit_pb2.Operation()
-    msg.losserr.p.CopyFrom(toproto_arg(operation.p))
+    msg.loss.p.CopyFrom(toproto_arg(operation.p))
     return msg
 
 
-@operation_registry.register_fromproto("losserr")
-def fromproto_losserr(losserr_proto, declcache=None):
-    """Convert protobuf LossErr to mimiqcircuits LossErr."""
-    return mc.LossErr(fromproto_arg(losserr_proto.p))
+@operation_registry.register_fromproto("loss")
+def fromproto_loss(loss_proto, declcache=None):
+    """Convert protobuf Loss to mimiqcircuits Loss."""
+    return mc.Loss(fromproto_arg(loss_proto.p))
 
 
 # ------------ Block & Repeat -----------

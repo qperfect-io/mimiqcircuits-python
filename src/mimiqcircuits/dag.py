@@ -47,12 +47,21 @@ class CircuitDAG:
     """
 
     def __init__(self, n):
+        if not isinstance(n, int):
+            raise TypeError(
+                f"CircuitDAG(n) takes a vertex count (int), got "
+                f"{type(n).__name__}; to build the DAG of a circuit use "
+                "circuit.dag()."
+            )
         self._n = n
         # Adjacency lists are kept sorted and duplicate-free so that traversals
         # are deterministic and in-degree counts match the number of distinct
         # predecessors (Kahn's algorithm relies on the latter).
         self._out = [[] for _ in range(n)]
         self._in = [[] for _ in range(n)]
+
+    def __repr__(self):
+        return f"CircuitDAG(vertices={self._n}, edges={self.num_edges()})"
 
     def num_vertices(self):
         """Number of vertices, i.e. instructions in the circuit."""
@@ -176,6 +185,14 @@ def build_dag(circuit):
     return dag
 
 
+def _require_dag(dag):
+    if not isinstance(dag, CircuitDAG):
+        raise TypeError(
+            f"expected a CircuitDAG, got {type(dag).__name__}; "
+            "build one with circuit.dag()."
+        )
+
+
 def topological_sort_by_bfs(dag):
     """Topological order via Kahn's algorithm (breadth-first, layer by layer).
 
@@ -184,6 +201,7 @@ def topological_sort_by_bfs(dag):
     Vertices with no remaining predecessor are visited in ascending index
     order, making the result deterministic.
     """
+    _require_dag(dag)
     n = dag.num_vertices()
     in_degree = [dag.in_degree(v) for v in range(n)]
 
@@ -211,6 +229,7 @@ def topological_sort_by_dfs(dag):
     Raises :class:`ValueError` if the graph contains a cycle, which for a
     well-formed circuit should never happen.
     """
+    _require_dag(dag)
     n = dag.num_vertices()
     WHITE, GRAY, BLACK = 0, 1, 2
     color = [WHITE] * n

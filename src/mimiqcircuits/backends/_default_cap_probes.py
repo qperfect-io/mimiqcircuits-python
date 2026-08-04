@@ -76,13 +76,18 @@ def _probe_noise():
 
 
 def _probe_loss():
-    """A non-trace-preserving loss-bearing operation. The default
-    ``can_handle`` rejects these on backends that don't advertise
-    ``"loss"`` (see ``Backend.can_handle``).
+    """A runtime loss channel: a ``Kraus`` with a ``LossyOperator`` branch,
+    whose outcome depends on the quantum state. The default ``can_handle``
+    rejects these on backends that don't advertise ``"loss"`` (see
+    ``Backend.can_handle``). Pre-resolvable loss (``Loss``/``Reload``/
+    ``Check``/``MeasureCheck``) is resolved upstream and needs no capability.
     """
+    import numpy as np
+
+    survival = mc.Operator(np.array([[1, 0], [0, np.sqrt(0.9)]], dtype=np.complex128))
+    lossy = mc.LossyOperator(np.array([[0, np.sqrt(0.1)], [0, 0]], dtype=np.complex128))
     c = mc.Circuit()
-    c.push(mc.GateH(), 0)
-    c.push(mc.LossErr(0.1), 0)
+    c.push(mc.Kraus([survival, lossy]), 0)
     return c
 
 

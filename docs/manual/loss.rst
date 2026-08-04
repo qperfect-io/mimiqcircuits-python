@@ -10,9 +10,9 @@ realistic near-term hardware behavior, especially in workflows where missing
 qubits should change the later circuit execution.
 
 In the Python API, loss can be represented directly in a circuit. You can insert
-stochastic loss events, mark a qubit as lost deterministically, reload it later,
-write its loss status into classical bits, and rewrite partially affected
-instructions with a :class:`~mimiqcircuits.lossmodel.LossModel`.
+stochastic loss events, reload a lost qubit, write its loss status into classical
+bits, and rewrite partially affected instructions with a
+:class:`~mimiqcircuits.lossmodel.LossModel`.
 
 Loss can also be part of a custom Kraus channel. A
 :class:`~mimiqcircuits.operations.noisechannel.kraus.Kraus` channel becomes
@@ -20,8 +20,9 @@ loss-aware when one or more branches are tagged with
 :class:`~mimiqcircuits.operations.operators.lossyoperator.LossyOperator`, which
 lets the channel separate survival branches from branches that lose a qubit.
 
+All examples on this page assume the following imports:
+
 .. doctest:: loss
-    :hide:
 
     >>> from mimiqcircuits import *
     >>> import random
@@ -30,20 +31,27 @@ lets the channel separate survival branches from branches that lose a qubit.
 Summary of Loss Functionality
 -----------------------------
 
-**Loss operations:** :class:`~mimiqcircuits.operations.losschannel.LossErr`,
-:class:`~mimiqcircuits.operations.losschannel.QubitLoss`,
-:class:`~mimiqcircuits.operations.losschannel.QubitReload`,
-:class:`~mimiqcircuits.operations.losschannel.CheckLoss`,
-:class:`~mimiqcircuits.operations.losschannel.MeasureCheckLoss`.
+**Loss operations:** :class:`~mimiqcircuits.operations.losschannel.Loss`,
+:class:`~mimiqcircuits.operations.losschannel.Reload`,
+:class:`~mimiqcircuits.operations.losschannel.Check`,
+:class:`~mimiqcircuits.operations.losschannel.MeasureCheck`.
 
-**Loss processing:** :func:`~mimiqcircuits.lossmodel.sample_losses` with
-:class:`~mimiqcircuits.lossmodel.LossModel`. The same sampling functionality is
-also available as :meth:`~mimiqcircuits.circuit.Circuit.sample_losses`.
+**Loss processing:** :func:`~mimiqcircuits.lossmodel.sample_losses` draws the
+random loss events, :func:`~mimiqcircuits.lossmodel.lower_losses` rewrites loss
+into primitives, and :func:`~mimiqcircuits.lossmodel.resolve_losses` does both
+and is the usual entry point. Each is also available as a method on
+:class:`~mimiqcircuits.circuit.Circuit`. Use
+:func:`~mimiqcircuits.lossmodel.sample_loss_scenario` to force a specific set of
+loss sites.
 
 **Loss-model rules:** :class:`~mimiqcircuits.lossmodel.DropRule`,
 :class:`~mimiqcircuits.lossmodel.ReplaceRule`,
 :class:`~mimiqcircuits.lossmodel.DecorateRule`,
 :class:`~mimiqcircuits.lossmodel.CustomRule`.
+
+**Loss markers:** :class:`~mimiqcircuits.operations.annotations.Lost` and
+:class:`~mimiqcircuits.operations.annotations.Reloaded` are passive annotations
+that record where loss landed in a resolved circuit.
 
 **Loss-aware Kraus:**
 :class:`~mimiqcircuits.operations.operators.lossyoperator.LossyOperator`
@@ -54,67 +62,54 @@ inspected with ``hasloss``, ``lossoperators``, ``survivaloperators``, and
 Loss Operations
 ---------------
 
-Loss in MIMIQ is represented explicitly in the circuit. You can add operations that mark a qubit as lost, sample stochastic loss events, reload a lost qubit,
-or query whether a qubit is still present.
+Loss in MIMIQ is represented explicitly in the circuit. You can add operations
+that mark a qubit as lost, reload a lost qubit, or query whether a qubit is
+still present.
 
-Loss Error
-~~~~~~~~~~
+Loss
+~~~~
 
-:class:`~mimiqcircuits.operations.losschannel.LossErr` represents a
-probabilistic loss event. At that point in the circuit, the qubit is lost with
-probability ``p``.
+:class:`~mimiqcircuits.operations.losschannel.Loss` represents a loss event: at
+that point in the circuit the qubit is lost with probability ``p``. ``Loss()``
+is ``Loss(1.0)``, a certain loss.
 
 .. doctest:: loss
 
     >>> circuit = Circuit()
-    >>> circuit.push(LossErr(0.1), 0)
+    >>> circuit.push(Loss(0.1), 0)
     1-qubit circuit with 1 instruction:
-    └── LossErr(0.1) @ q[0]
+    └── Loss(0.1) @ q[0]
     <BLANKLINE>
 
-The probability may also be symbolic, but it must be numeric before calling
-:func:`~mimiqcircuits.lossmodel.sample_losses`.
+The probability may also be symbolic, but it must be numeric before the loss is
+resolved.
 
-Deterministic Loss
-~~~~~~~~~~~~~~~~~~
-
-:class:`~mimiqcircuits.operations.losschannel.QubitLoss` marks a qubit as lost
-unconditionally.
-
-.. doctest:: loss
-
-    >>> circuit = Circuit()
-    >>> circuit.push(QubitLoss(), 1)
-    2-qubit circuit with 1 instruction:
-    └── QubitLoss @ q[1]
-    <BLANKLINE>
-
-Once a qubit is lost, later instructions touching that qubit are removed by
-:func:`~mimiqcircuits.lossmodel.sample_losses` until the qubit is reloaded.
+Once a qubit is lost, later instructions touching that qubit are dropped while
+resolving until the qubit is reloaded.
 
 Reloading a Lost Qubit
 ~~~~~~~~~~~~~~~~~~~~~~
 
-:class:`~mimiqcircuits.operations.losschannel.QubitReload` makes a previously
-lost qubit available again. After reloading, the qubit is reset to ``|0>`` and
-can be used by later operations.
+:class:`~mimiqcircuits.operations.losschannel.Reload` makes a qubit available
+again. It always re-initialises the qubit to ``|0>``, whether or not it was
+lost, so later operations can use it.
 
 .. doctest:: loss
 
     >>> circuit = Circuit()
-    >>> circuit.push(QubitLoss(), 0)
+    >>> circuit.push(Loss(), 0)
     1-qubit circuit with 1 instruction:
-    └── QubitLoss @ q[0]
+    └── Loss(1.0) @ q[0]
     <BLANKLINE>
-    >>> circuit.push(QubitReload(), 0)
+    >>> circuit.push(Reload(), 0)
     1-qubit circuit with 2 instructions:
-    ├── QubitLoss @ q[0]
-    └── QubitReload @ q[0]
+    ├── Loss(1.0) @ q[0]
+    └── Reload @ q[0]
     <BLANKLINE>
     >>> circuit.push(GateX(), 0)
     1-qubit circuit with 3 instructions:
-    ├── QubitLoss @ q[0]
-    ├── QubitReload @ q[0]
+    ├── Loss(1.0) @ q[0]
+    ├── Reload @ q[0]
     └── X @ q[0]
     <BLANKLINE>
 
@@ -123,89 +118,115 @@ Checking for Loss
 
 MIMIQ provides two operations to query the loss status of a qubit.
 
-:class:`~mimiqcircuits.operations.losschannel.CheckLoss` writes one classical
-bit:
+:class:`~mimiqcircuits.operations.losschannel.Check` writes one classical bit:
 
 * ``1`` if the qubit is present
 * ``0`` if the qubit is lost
 
-It does not measure the quantum state.
+It does not touch the quantum state.
 
 .. doctest:: loss
 
     >>> circuit = Circuit()
-    >>> circuit.push(CheckLoss(), 0, 0)
+    >>> circuit.push(Check(), 0, 0)
     1-qubit, 1-bit circuit with 1 instruction:
-    └── CL @ q[0], c[0]
+    └── Check @ q[0], c[0]
     <BLANKLINE>
 
-:class:`~mimiqcircuits.operations.losschannel.MeasureCheckLoss` both measures
-the qubit and reports whether it is still present.
+:class:`~mimiqcircuits.operations.losschannel.MeasureCheck` measures the qubit
+if it is present and reports whether it is still present.
 
 .. doctest:: loss
 
     >>> circuit = Circuit()
-    >>> circuit.push(MeasureCheckLoss(), 0, 0, 1)
+    >>> circuit.push(MeasureCheck(), 0, 0, 1)
     1-qubit, 2-bit circuit with 1 instruction:
-    └── MCL @ q[0], c[0:1]
+    └── MeasureCheck @ q[0], c[0:1]
     <BLANKLINE>
 
-The first classical bit stores the measurement result, and the second classical
-bit stores the loss status.
+The first classical bit stores the measurement result (``0`` if the qubit is
+lost), and the second classical bit stores the loss status.
 
-Sampling Loss Events
---------------------
+Resolving Loss
+--------------
 
-To process loss operations in a circuit, use
-:func:`~mimiqcircuits.lossmodel.sample_losses` or the convenience wrapper
-:meth:`~mimiqcircuits.circuit.Circuit.sample_losses`. These functions walk the
-circuit, sample :class:`~mimiqcircuits.operations.losschannel.LossErr` events,
-keep track of which qubits are currently lost, and return a rewritten circuit.
+A circuit that contains loss operations is not yet runnable: the random events
+must be drawn and every loss operation rewritten into ordinary primitives.
+:func:`~mimiqcircuits.lossmodel.resolve_losses`, also available as
+:meth:`~mimiqcircuits.circuit.Circuit.resolve_losses`, does this in one step. It
+first draws each :class:`~mimiqcircuits.operations.losschannel.Loss`, then lowers
+the result into ``Reset`` / ``Measure`` / ``SetBit0`` / ``SetBit1`` plus passive
+:class:`~mimiqcircuits.operations.annotations.Lost` and
+:class:`~mimiqcircuits.operations.annotations.Reloaded` markers. The returned
+circuit contains no loss operations.
 
-The ``rng`` argument is a random number generator. It is only used to make the
-random loss samples reproducible. You can omit it if you do not need the same
-random result every time.
+The ``rng`` argument is a random number generator, used only to make the random
+loss samples reproducible. Omit it if you do not need the same result every time.
 
 .. doctest:: loss
 
     >>> rng = random.Random(42)
     >>> circuit = Circuit()
-    >>> circuit.push(LossErr(0.2), 0)
+    >>> circuit.push(Loss(0.2), 0)
     1-qubit circuit with 1 instruction:
-    └── LossErr(0.2) @ q[0]
+    └── Loss(0.2) @ q[0]
     <BLANKLINE>
     >>> circuit.push(GateH(), 0)
     1-qubit circuit with 2 instructions:
-    ├── LossErr(0.2) @ q[0]
+    ├── Loss(0.2) @ q[0]
     └── H @ q[0]
     <BLANKLINE>
-    >>> circuit.push(CheckLoss(), 0, 0)
+    >>> circuit.push(Check(), 0, 0)
     1-qubit, 1-bit circuit with 3 instructions:
-    ├── LossErr(0.2) @ q[0]
+    ├── Loss(0.2) @ q[0]
     ├── H @ q[0]
-    └── CL @ q[0], c[0]
+    └── Check @ q[0], c[0]
     <BLANKLINE>
-    >>> circuit.sample_losses(rng=rng)
+    >>> circuit.resolve_losses(rng=rng)
     1-qubit, 1-bit circuit with 2 instructions:
     ├── H @ q[0]
-    └── CL @ q[0], c[0]
+    └── c[0] = 1
     <BLANKLINE>
 
-The basic behavior is:
+The basic behavior while resolving is:
 
-* :class:`~mimiqcircuits.operations.losschannel.LossErr` may emit a
-  :class:`~mimiqcircuits.operations.losschannel.QubitLoss`
-* :class:`~mimiqcircuits.operations.losschannel.QubitLoss` marks a qubit as lost
-* :class:`~mimiqcircuits.operations.losschannel.QubitReload` makes the qubit
-  available again
-* :class:`~mimiqcircuits.operations.losschannel.CheckLoss` and
-  :class:`~mimiqcircuits.operations.losschannel.MeasureCheckLoss` are always
-  kept
+* :class:`~mimiqcircuits.operations.losschannel.Loss` is drawn; a fired loss
+  emits a :class:`~mimiqcircuits.operations.annotations.Lost` marker
+* :class:`~mimiqcircuits.operations.losschannel.Reload` becomes a ``Reset`` plus
+  a :class:`~mimiqcircuits.operations.annotations.Reloaded` marker
+* :class:`~mimiqcircuits.operations.losschannel.Check` and
+  :class:`~mimiqcircuits.operations.losschannel.MeasureCheck` become
+  ``SetBit0`` / ``SetBit1`` (and a ``Measure`` for a present ``MeasureCheck``)
 * Instructions acting only on lost qubits are dropped
 
-If an instruction touches some lost qubits but not all of them,
-:func:`~mimiqcircuits.lossmodel.sample_losses` consults a
-:class:`~mimiqcircuits.lossmodel.LossModel`.
+If an instruction touches some lost qubits but not all of them, resolving
+consults a :class:`~mimiqcircuits.lossmodel.LossModel`.
+
+If you need the two halves separately,
+:func:`~mimiqcircuits.lossmodel.sample_losses` returns a circuit with the random
+events drawn but the loss bookkeeping still present, and
+:func:`~mimiqcircuits.lossmodel.lower_losses` lowers an already-sampled circuit
+into primitives.
+
+Forcing a Loss Scenario
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To study a specific outcome,
+:func:`~mimiqcircuits.lossmodel.sample_loss_scenario` forces the chosen
+:class:`~mimiqcircuits.operations.losschannel.Loss` sites (counted 1-based in
+circuit order) to fire and resolves the rest as not lost.
+
+.. doctest:: loss
+
+    >>> circuit = Circuit()
+    >>> _ = circuit.push(Loss(0.2), 0)
+    >>> _ = circuit.push(GateCX(), 0, 1)
+    >>> _ = circuit.push(Loss(0.4), 1)
+    >>> circuit.sample_loss_scenario(2)
+    2-qubit circuit with 2 instructions:
+    ├── CX @ q[0], q[1]
+    └── Lost @ q[1]
+    <BLANKLINE>
 
 Loss Models
 -----------
@@ -213,11 +234,10 @@ Loss Models
 Why Loss Models Exist
 ~~~~~~~~~~~~~~~~~~~~~
 
-A :class:`~mimiqcircuits.lossmodel.LossModel` is the user-defined policy used by
-:func:`~mimiqcircuits.lossmodel.sample_losses` when an instruction is only
-partially affected by loss. This happens, for example, when a two-qubit gate is
-scheduled but one of its qubits has already been lost while the other one is
-still present.
+A :class:`~mimiqcircuits.lossmodel.LossModel` is the user-defined policy used
+while resolving loss when an instruction is only partially affected. This
+happens, for example, when a two-qubit gate is scheduled but one of its qubits
+has already been lost while the other is still present.
 
 MIMIQ can detect this situation, but it should not guess the physics for the
 remaining qubits. Different hardware models and approximations can lead to
@@ -233,8 +253,8 @@ simulation workflow has a more specific response to partial loss.
 When Rules Are Used
 ~~~~~~~~~~~~~~~~~~~
 
-During :func:`~mimiqcircuits.lossmodel.sample_losses`, MIMIQ tracks which
-qubits are currently lost and rewrites the circuit as follows:
+While resolving, MIMIQ tracks which qubits are currently lost and rewrites the
+circuit as follows:
 
 * If an instruction touches no lost qubits, it is kept unchanged.
 * If an instruction touches only lost qubits, it is dropped.
@@ -279,19 +299,12 @@ one-qubit depolarizing channel on the remaining control qubit.
 .. doctest:: loss
 
     >>> circuit = Circuit()
-    >>> circuit.push(QubitLoss(), 1)
-    2-qubit circuit with 1 instruction:
-    └── QubitLoss @ q[1]
-    <BLANKLINE>
-    >>> circuit.push(GateCX(), 0, 1)
-    2-qubit circuit with 2 instructions:
-    ├── QubitLoss @ q[1]
-    └── CX @ q[0], q[1]
-    <BLANKLINE>
+    >>> _ = circuit.push(Loss(), 1)
+    >>> _ = circuit.push(GateCX(), 0, 1)
     >>> model = LossModel().add_replace(GateCX(), Depolarizing1(0.2))
-    >>> circuit.sample_losses(lossmodel=model)
+    >>> circuit.resolve_losses(lossmodel=model)
     2-qubit circuit with 2 instructions:
-    ├── QubitLoss @ q[1]
+    ├── Lost @ q[1]
     └── Depolarizing(0.2) @ q[0]
     <BLANKLINE>
 
@@ -301,18 +314,11 @@ on the surviving target qubit.
 .. doctest:: loss
 
     >>> circuit = Circuit()
-    >>> circuit.push(QubitLoss(), 0)
-    1-qubit circuit with 1 instruction:
-    └── QubitLoss @ q[0]
-    <BLANKLINE>
-    >>> circuit.push(GateCX(), 0, 1)
+    >>> _ = circuit.push(Loss(), 0)
+    >>> _ = circuit.push(GateCX(), 0, 1)
+    >>> circuit.resolve_losses(lossmodel=model)
     2-qubit circuit with 2 instructions:
-    ├── QubitLoss @ q[0]
-    └── CX @ q[0], q[1]
-    <BLANKLINE>
-    >>> circuit.sample_losses(lossmodel=model)
-    2-qubit circuit with 2 instructions:
-    ├── QubitLoss @ q[0]
+    ├── Lost @ q[0]
     └── Depolarizing(0.2) @ q[1]
     <BLANKLINE>
 
@@ -357,7 +363,7 @@ Decorating a Partially Lost Gate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`~mimiqcircuits.lossmodel.DecorateRule` adds another operation before or
-after the matched instruction. In a loss model, generated instructions touching
+after the matched instruction. While resolving, generated instructions touching
 lost qubits are filtered out, so if the original gate still touches a lost
 qubit it is removed and only surviving decorations remain.
 
@@ -386,15 +392,8 @@ enough.
 .. doctest:: loss
 
     >>> circuit = Circuit()
-    >>> circuit.push(QubitLoss(), 1)
-    2-qubit circuit with 1 instruction:
-    └── QubitLoss @ q[1]
-    <BLANKLINE>
-    >>> circuit.push(GateCX(), 0, 1)
-    2-qubit circuit with 2 instructions:
-    ├── QubitLoss @ q[1]
-    └── CX @ q[0], q[1]
-    <BLANKLINE>
+    >>> _ = circuit.push(Loss(), 1)
+    >>> _ = circuit.push(GateCX(), 0, 1)
     >>> model = LossModel([
     ...     CustomRule(
     ...         lambda inst: isinstance(inst.get_operation(), GateCX),
@@ -405,13 +404,12 @@ enough.
     ...         ],
     ...     )
     ... ])
-
     >>> model
     LossModel (unnamed, 1 rules)
     └── CustomRule(<callable>)
-    >>> circuit.sample_losses(lossmodel=model)
+    >>> circuit.resolve_losses(lossmodel=model)
     2-qubit circuit with 2 instructions:
-    ├── QubitLoss @ q[1]
+    ├── Lost @ q[1]
     └── Z @ q[0]
     <BLANKLINE>
 
@@ -432,7 +430,7 @@ branches are tagged with
 
 Use this when the loss event is part of the physical noise channel itself,
 rather than a separate
-:class:`~mimiqcircuits.operations.losschannel.LossErr` instruction. The
+:class:`~mimiqcircuits.operations.losschannel.Loss` instruction. The
 ``LossyOperator`` matrix contains amplitudes, not probabilities, and the
 remaining Kraus branches describe the no-loss evolution.
 

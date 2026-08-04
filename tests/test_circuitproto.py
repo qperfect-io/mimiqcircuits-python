@@ -415,6 +415,19 @@ class TestKrausChannelConversion:
         for g1, g2 in zip(gates1, gates2):
             assert type(g1) == type(g2)
 
+    def test_mixed_unitary_lossy_conversion(self):
+        """Lossy branch masks survive the round-trip."""
+        channel = mc.MixedUnitary(
+            [0.3, 0.7], [mc.GateID(), mc.GateX()], lossy=[[], [1]]
+        )
+        restored = fromproto_krauschannel(toproto_krauschannel(channel))
+        assert restored.lossy == channel.lossy
+
+        # Lossless channels stay lossless after a round-trip.
+        lossless = mc.MixedUnitary([0.8, 0.2], [mc.GateID(), mc.GateX()])
+        restored_lossless = fromproto_krauschannel(toproto_krauschannel(lossless))
+        assert not restored_lossless.haslossybranch()
+
 
 class TestOperationConversion:
     """Test conversion of operations."""

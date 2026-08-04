@@ -149,15 +149,14 @@ class InheritanceTree:
         :class:`Barrier`
         :class:`Block`
         :class:`BondDim`
-        :class:`CheckLoss`
+        :class:`Check`
         :class:`ExpectationValue`
         :class:`IfStatement`
-        :class:`LossErr`
-        :class:`MeasureCheckLoss`
+        :class:`Loss`
+        :class:`MeasureCheck`
         :class:`Multiply`
         :class:`Pow`
-        :class:`QubitLoss`
-        :class:`QubitReload`
+        :class:`Reload`
         :class:`ReadoutErr`
         :class:`Repeat`
         :class:`SchmidtRank`

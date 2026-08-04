@@ -136,7 +136,7 @@ class TestDefaultClassification:
     def test_loss_err_is_RT_in_v1(self):
         # F-S2 will promote to TS once sample_losses moves into
         # prepare_trajectory; today there is no such resolver.
-        assert self.backend.stochastic_kind(mc.LossErr(0.1)) == StochasticKind.RuntimeOnly
+        assert self.backend.stochastic_kind(mc.Loss(0.1)) == StochasticKind.RuntimeOnly
 
     def test_measure_is_RT(self):
         assert self.backend.stochastic_kind(mc.Measure()) == StochasticKind.RuntimeOnly

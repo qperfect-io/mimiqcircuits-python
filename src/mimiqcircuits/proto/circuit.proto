@@ -270,6 +270,9 @@ message DepolarizingChannel {
 
 message MixedUnitaryChannel {
     repeated RescaledGate operators = 1;
+    // Per-operator lossy qubit bitmask (bit q-1 set ⟹ qubit q leaks when that
+    // branch is drawn). Parallel to operators; empty when no branch is lossy.
+    repeated int64 lossy_masks = 2;
 }
 
 message PauliChannel {
@@ -309,10 +312,14 @@ enum OperationType {
     Pow = 13;
     SetBit0 = 14;
     SetBit1 = 15;
-    QubitLoss = 16;
-    QubitReload = 17;
-    CheckLoss = 18;
-    MeasureCheckLoss = 19;
+    // 16 was QubitLoss, folded into Loss in the loss redesign. The encoder
+    // never emits 16 (certain loss serializes as the Loss message); the
+    // decoder still reads it as Loss() so older circuits keep loading.
+    reserved 16;
+    reserved "QubitLoss";
+    Reload = 17;
+    Check = 18;
+    MeasureCheck = 19;
 }
 
 message SimpleOperation {
@@ -360,6 +367,8 @@ enum AnnotationType {
     QubitCoordinates = 0;
     ShiftCoordinates = 1;
     Tick = 3;
+    Lost = 4;
+    Reloaded = 5;
 }
 
 message Note {
@@ -392,7 +401,7 @@ message ReadoutErr {
   Arg p1 = 2;
 }
 
-message LossErr {
+message Loss {
   Arg p = 1;
 }
 
@@ -427,7 +436,7 @@ message Operation {
         Repeat repeat = 27;
         Block block = 28;
         ReadoutErr readouterr = 29;
-        LossErr losserr = 30;
+        Loss loss = 30;
         LossyOperator lossyoperator = 31;
         WhileStatement whilestatement = 32;
     }

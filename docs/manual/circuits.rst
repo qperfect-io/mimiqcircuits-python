@@ -504,6 +504,59 @@ Most gates can be decomposed into a combination of `U` and `CX` gates, the :meth
     └── U(pi, 0, pi, 0.0) @ q[0]
     <BLANKLINE>
 
+Dependency graph (DAG) view
+----------------------------------------------------
+
+A circuit is stored as an ordered list of instructions, but many of those
+instructions are independent: they act on different qubits and could run in any
+relative order. :meth:`~mimiqcircuits.Circuit.dag` exposes this structure as a
+:class:`~mimiqcircuits.CircuitDAG`, a dependency graph whose vertices are the
+instruction positions ``0 .. n-1`` and whose edges ``u -> v`` mean instruction
+``v`` depends on ``u`` (they share a qubit, bit, or z-variable and ``u`` is the
+most recent earlier instruction on that wire). This is useful for analysing or
+reordering a circuit — for example to find which gates can be fused or run in
+parallel.
+
+.. doctest:: python
+
+    >>> c = Circuit()
+    >>> c.push(GateH(), 0)
+    1-qubit circuit with 1 instruction:
+    └── H @ q[0]
+    <BLANKLINE>
+    >>> c.push(GateCX(), 0, 1)
+    2-qubit circuit with 2 instructions:
+    ├── H @ q[0]
+    └── CX @ q[0], q[1]
+    <BLANKLINE>
+    >>> c.push(Measure(), 0, 0)
+    2-qubit, 1-bit circuit with 3 instructions:
+    ├── H @ q[0]
+    ├── CX @ q[0], q[1]
+    └── M @ q[0], c[0]
+    <BLANKLINE>
+    >>> dag = c.dag()
+    >>> dag
+    CircuitDAG(vertices=3, edges=2)
+    >>> dag.edges()
+    [(0, 1), (1, 2)]
+
+The graph can be sorted into a topological order, or you can iterate the
+circuit's instructions directly in dependency order with
+:func:`~mimiqcircuits.traverse_by_bfs` (layer by layer) or
+:func:`~mimiqcircuits.traverse_by_dfs`:
+
+.. doctest:: python
+
+    >>> topological_sort_by_bfs(dag)
+    [0, 1, 2]
+    >>> [str(inst) for inst in traverse_by_bfs(c)]
+    ['H @ q[0]', 'CX @ q[0], q[1]', 'M @ q[0], c[0]']
+
+With the optional ``networkx`` dependency installed (``pip install
+mimiqcircuits[graph]``), :func:`~mimiqcircuits.to_networkx` returns the same
+graph as a ``networkx.DiGraph`` for drawing or further analysis.
+
 Reference
 ---------
 

@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-WIRE_FORMAT_VERSION = "1.0.0"
+WIRE_FORMAT_VERSION = "1.1.0"
 """
 Version of the MIMIQ wire format (protobuf schemas + JSON
 request/response envelope) spoken by this build. Versioned independently

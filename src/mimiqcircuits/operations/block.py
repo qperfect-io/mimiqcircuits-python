@@ -183,6 +183,17 @@ class Block(Operation):
                 f"Too many zvars: max zvar index {max(inst.zvars)} exceeds allowed {self._nz - 1}"
             )
 
+    def is_symbolic(self):
+        # A Block carries its state in its instructions, not in parameters, so
+        # symbolics must be checked by descending into them.
+        return any(inst.operation.is_symbolic() for inst in self.instructions)
+
+    def evaluate(self, d):
+        # Substitute the inner instructions so parameters inside the block are
+        # evaluated too.
+        new_insts = [inst.evaluate(d) for inst in self.instructions]
+        return Block(self._nq, self._nc, self._nz, new_insts)
+
     def __iter__(self):
         return iter(self.instructions)
 

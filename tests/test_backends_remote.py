@@ -342,6 +342,38 @@ def test_execute_passes_lax_warns_and_translates(backend, fake_conn):
         assert forbidden not in str(k)
 
 
+def test_submit_forwards_prep_knobs(fake_conn):
+    """The flat prep knobs reach the connection as server options —
+    the remote-compatible spelling of a circuit-preparation pipeline."""
+    backend = MimiqRemoteBackend(fake_conn, algorithm="mps")
+    backend.execute(
+        _bell_circuit(),
+        nsamples=10,
+        fuse=True,
+        reorderqubits="sa",
+        canonicaldecompose=True,
+        remove_swaps=True,
+        reorderqubits_seed=7,
+    )
+    k = fake_conn.last_submit_kwargs
+    assert k["fuse"] is True
+    assert k["reorderqubits"] == "sa"
+    assert k["canonicaldecompose"] is True
+    assert k["remove_swaps"] is True
+    assert k["reorderqubits_seed"] == 7
+
+
+def test_submit_prep_knobs_and_passes_conflict(backend):
+    """Flat knobs and an explicit pipeline are two spellings of the
+    same thing; supplying both is ambiguous and must raise."""
+    pipe = PassPipeline(passes=[_NamedPass("fuse_gates")])
+    with pytest.raises(ValueError):
+        backend.execute(
+            _bell_circuit(), nsamples=10, passes=pipe, fuse=True,
+            strict_pass_order=False,
+        )
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # 11: seed resolution
 # ──────────────────────────────────────────────────────────────────────────

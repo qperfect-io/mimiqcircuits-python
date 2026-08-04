@@ -440,3 +440,87 @@ class Tick(AbstractAnnotation):
 
 
 __all__ = ["Detector", "QubitCoordinates", "ShiftCoordinates", "ObservableInclude"]
+
+
+class Lost(AbstractAnnotation):
+    """A passive marker recording that a qubit became lost at this point.
+
+    ``Lost`` has no effect on execution. It is emitted when a circuit's losses
+    are resolved, so the resolved circuit still shows where losses landed, and
+    it may be added by hand for documentation.
+
+    See Also:
+        :class:`Reloaded`, :class:`mimiqcircuits.Loss`
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> c.push(Lost(), 0)
+        1-qubit circuit with 1 instruction:
+        └── Lost @ q[0]
+        <BLANKLINE>
+    """
+
+    _name = "Lost"
+    _num_zvars = 0
+    _num_cregs = 0
+    _num_qregs = 1
+    _num_zregs = 0
+    _num_bits = 0
+    _num_qubits = 1
+    _qregsizes = [1]
+
+    @staticmethod
+    def opname():
+        return "Lost"
+
+    def get_notes(self):
+        return []
+
+    def iswrapper(self):
+        return False
+
+    def __str__(self):
+        return f"{self.opname()}"
+
+
+class Reloaded(AbstractAnnotation):
+    """A passive marker recording that a qubit was reloaded at this point.
+
+    ``Reloaded`` has no effect on execution. It is emitted next to the
+    :class:`Reset` that performs a reload, and may be added by hand for
+    documentation.
+
+    See Also:
+        :class:`Lost`, :class:`mimiqcircuits.Reload`
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> c.push(Reloaded(), 0)
+        1-qubit circuit with 1 instruction:
+        └── Reloaded @ q[0]
+        <BLANKLINE>
+    """
+
+    _name = "Reloaded"
+    _num_zvars = 0
+    _num_cregs = 0
+    _num_qregs = 1
+    _num_zregs = 0
+    _num_bits = 0
+    _num_qubits = 1
+    _qregsizes = [1]
+
+    @staticmethod
+    def opname():
+        return "Reloaded"
+
+    def get_notes(self):
+        return []
+
+    def iswrapper(self):
+        return False
+
+    def __str__(self):
+        return f"{self.opname()}"
