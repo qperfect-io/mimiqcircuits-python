@@ -1,0 +1,6 @@
+mimiqcircuits.backends.stochastic\_kind
+=======================================
+
+.. currentmodule:: mimiqcircuits.backends
+
+.. autofunction:: stochastic_kind

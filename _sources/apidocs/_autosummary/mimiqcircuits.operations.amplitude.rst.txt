@@ -1,0 +1,12 @@
+mimiqcircuits.operations.amplitude
+==================================
+
+.. automodule:: mimiqcircuits.operations.amplitude
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Amplitude
+   

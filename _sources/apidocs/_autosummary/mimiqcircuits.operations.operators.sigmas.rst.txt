@@ -1,0 +1,13 @@
+mimiqcircuits.operations.operators.sigmas
+=========================================
+
+.. automodule:: mimiqcircuits.operations.operators.sigmas
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SigmaMinus
+      SigmaPlus
+   

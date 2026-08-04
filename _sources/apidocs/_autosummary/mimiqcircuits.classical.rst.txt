@@ -1,0 +1,19 @@
+﻿mimiqcircuits.classical
+=======================
+
+.. automodule:: mimiqcircuits.classical
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   abstract_classical
+   and_operation
+   not_operation
+   or_operation
+   paritycheck
+   setbits
+   xor_operation

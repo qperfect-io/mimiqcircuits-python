@@ -1,0 +1,22 @@
+﻿mimiqcircuits.lazy
+==================
+
+.. automodule:: mimiqcircuits.lazy
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      control
+      inverse
+      parallel
+      power
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LazyArg
+      LazyExpr
+   

@@ -1,0 +1,40 @@
+mimiqcircuits.backends.capabilities
+===================================
+
+.. automodule:: mimiqcircuits.backends.capabilities
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      CAPABILITY_VOCABULARY
+      CAP_PROBES
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      is_admissible
+      register_cap_probe
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Admissible
+      AdmissionResult
+      AllToAll
+      CouplingMap
+      Inadmissible
+      Limits
+      LinearChain
+      Marginal
+      Topology
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      UnsupportedCapabilityError
+   

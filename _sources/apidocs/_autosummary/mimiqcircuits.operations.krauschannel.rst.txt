@@ -1,0 +1,12 @@
+mimiqcircuits.operations.krauschannel
+=====================================
+
+.. automodule:: mimiqcircuits.operations.krauschannel
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      krauschannel
+   

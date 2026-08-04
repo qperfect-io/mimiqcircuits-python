@@ -1,0 +1,18 @@
+mimiqcircuits.operations.gates.generalized.paulistring
+======================================================
+
+.. automodule:: mimiqcircuits.operations.gates.generalized.paulistring
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      convert_pauli
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PauliString
+   

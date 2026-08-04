@@ -1,0 +1,25 @@
+mimiqcircuits.operations.losschannel
+====================================
+
+.. automodule:: mimiqcircuits.operations.losschannel
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      CheckLoss
+      LossErr
+      MeasureCheckLoss
+      QubitLoss
+      QubitReload
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Check
+      Loss
+      MeasureCheck
+      Reload
+   

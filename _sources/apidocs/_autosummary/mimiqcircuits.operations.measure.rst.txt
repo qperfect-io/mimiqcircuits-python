@@ -1,0 +1,16 @@
+mimiqcircuits.operations.measure
+================================
+
+.. automodule:: mimiqcircuits.operations.measure
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AbstractMeasurement
+      Measure
+      MeasureX
+      MeasureY
+      MeasureZ
+   

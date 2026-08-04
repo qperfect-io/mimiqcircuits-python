@@ -1,0 +1,13 @@
+mimiqcircuits.operations.gates.standard.t
+=========================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.t
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateT
+      GateTDG
+   

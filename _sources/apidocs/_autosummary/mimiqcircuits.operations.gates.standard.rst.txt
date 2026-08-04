@@ -1,0 +1,38 @@
+mimiqcircuits.operations.gates.standard
+=======================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   chadamard
+   cnp
+   cnx
+   cpauli
+   cphase
+   crotations
+   cs
+   cswap
+   csx
+   cu
+   dcx
+   deprecated
+   ecr
+   hadamard
+   id
+   interactions
+   iswap
+   pauli
+   phase
+   rotations
+   s
+   swap
+   sx
+   sy
+   t
+   u

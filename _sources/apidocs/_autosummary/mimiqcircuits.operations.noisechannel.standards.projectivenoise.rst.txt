@@ -1,0 +1,21 @@
+mimiqcircuits.operations.noisechannel.standards.projectivenoise
+===============================================================
+
+.. automodule:: mimiqcircuits.operations.noisechannel.standards.projectivenoise
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      checknormalizlength
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ProjectiveNoise
+      ProjectiveNoiseX
+      ProjectiveNoiseY
+      ProjectiveNoiseZ
+   
