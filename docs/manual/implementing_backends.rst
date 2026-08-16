@@ -12,10 +12,6 @@ working examples for both in-process simulators
 (:class:`~mimiqcircuits.backends.LocalBackend`) and remote services
 (:class:`~mimiqcircuits.backends.RemoteBackend`).
 
-.. contents::
-    :local:
-    :depth: 2
-
 When to subclass which base
 ---------------------------
 

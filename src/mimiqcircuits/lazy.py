@@ -94,11 +94,13 @@ def control(*args):
 
     Args:
         *args: Variable length argument list.
-            - If one argument is provided:
-              - If it's an operation, returns a lazy expression `control(?, op)`.
-              - If it's an integer (num_controls), returns a lazy expression `control(n, ?)`.
-            - If two arguments are provided (num_controls, gate):
-              - Returns the controlled operation `gate.control(num_controls)`.
+
+            - If one argument is provided and it's an operation, returns a lazy
+              expression `control(?, op)`.
+            - If one argument is provided and it's an integer (num_controls),
+              returns a lazy expression `control(n, ?)`.
+            - If two arguments are provided (num_controls, gate), returns the
+              controlled operation `gate.control(num_controls)`.
 
     Returns:
         Union[Operation, LazyExpr]: The controlled operation or a lazy expression.
@@ -138,12 +140,13 @@ def parallel(*args):
 
     Args:
         *args: Variable length argument list.
-            - If one argument is provided:
-                - If it's an operation, returns a lazy expression `parallel(?, op)`.
-                - If it's an integer (num_repeats), returns a lazy expression `parallel(n, ?)`.
 
-            - If two arguments are provided (num_repeats, gate):
-                - Returns the parallel operation `gate.parallel(num_repeats)`.
+            - If one argument is provided and it's an operation, returns a lazy
+              expression `parallel(?, op)`.
+            - If one argument is provided and it's an integer (num_repeats),
+              returns a lazy expression `parallel(n, ?)`.
+            - If two arguments are provided (num_repeats, gate), returns the
+              parallel operation `gate.parallel(num_repeats)`.
 
     Returns:
         Union[Operation, LazyExpr]: The parallel operation or a lazy expression.
@@ -197,11 +200,13 @@ def power(*args):
 
     Args:
         *args: Variable length argument list.
-            - If one argument is provided:
-              - If it's an operation, returns a lazy expression `power(op, ?)`.
-              - If it's a number (exponent), returns a lazy expression `power(?, exponent)`.
-            - If two arguments are provided (gate, exponent):
-              - Returns the powered operation `gate.power(exponent)`.
+
+            - If one argument is provided and it's an operation, returns a lazy
+              expression `power(op, ?)`.
+            - If one argument is provided and it's a number (exponent), returns
+              a lazy expression `power(?, exponent)`.
+            - If two arguments are provided (gate, exponent), returns the
+              powered operation `gate.power(exponent)`.
 
     Returns:
         Union[Operation, LazyExpr]: The powered operation or a lazy expression.

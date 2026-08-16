@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.26.5] — 2026-08-16
+
+### Fixed
+- `GateCustom` accepts matrices of any power-of-two size. It previously derived the qubit count incorrectly and rejected matrices wider than 3 qubits, which also made `fuse_circuit` and `FusePass` raise for `max_support` above 3.
+
+### Docs
+- The use case demos are rendered from notebooks hosted in the documentation instead of linking to blog posts. Sphinx now uses `myst-nb`, with notebook execution disabled.
+
 ## [0.26.4] — 2026-08-05
 
 ### Fixed

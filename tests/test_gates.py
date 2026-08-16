@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import mimiqcircuits as mc
 import symengine as se
 from scipy.linalg import qr
@@ -300,5 +301,14 @@ def _check_custom_gate(N):
 
 
 def test_GateCustom():
-    N = 2
-    _check_custom_gate(N)
+    # the qubit count used to be derived with a shift that only happened to be
+    # right for 2 and 3 qubits, so anything wider was rejected
+    for N in range(1, 6):
+        _check_custom_gate(N)
+        assert mc.GateCustom(np.eye(2**N, dtype=complex)).num_qubits == N
+
+
+def test_GateCustom_rejects_bad_sizes():
+    for rows in (1, 3, 6):
+        with pytest.raises(ValueError):
+            mc.GateCustom(np.eye(rows, dtype=complex))

@@ -30,7 +30,10 @@ from mimiqcircuits.operations.decompositions.matrix_decompositions.zyz import  _
 
 
 class GateCustom(Gate):
-    """One or Two qubit Custom gates.
+    """Custom gate defined by a unitary matrix.
+
+    The matrix must be square with a power of two number of rows, and it acts
+    on ``log2(rows)`` qubits.
 
     Examples:
         >>> from mimiqcircuits import Circuit, GateCustom
@@ -73,8 +76,8 @@ class GateCustom(Gate):
             if not self.is_unitary(mat, tol=tolerance):
                 raise ValueError("Matrix is not unitary")
 
-        num_qubits = (mat.rows >> 2) + 1
-        if mat.rows != 2**num_qubits:
+        num_qubits = mat.rows.bit_length() - 1
+        if num_qubits < 1 or mat.rows != 2**num_qubits:
             raise ValueError("Wrong number of the rows for the matrix")
 
         self.matrix = mat

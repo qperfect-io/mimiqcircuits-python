@@ -212,3 +212,15 @@ def test_qubit_threshold_skips_small_circuits():
     assert dict(pth.spec().parameters)["qubit_threshold"].value == 2
     skipped, _ = pth.apply(PassContext(), c)
     assert len(skipped) == 2
+
+
+def test_fuse_wider_than_three_qubits():
+    # a cluster wider than 3 qubits used to be rejected by GateCustom
+    c = mc.Circuit()
+    c.push(mc.GateH(), 0)
+    for t in (1, 2, 3):
+        c.push(mc.GateCX(), 0, t)
+    f = mc.fuse_circuit(c, 4)
+    assert len(f) == 1
+    assert isinstance(f[0].operation, mc.GateCustom)
+    assert f[0].operation.num_qubits == 4

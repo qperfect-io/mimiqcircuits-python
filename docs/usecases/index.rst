@@ -18,44 +18,63 @@ Explore specific examples and workflows for using MimiqCircuits.
 
         Methodologies for automating equivalence testing.
 
-    .. grid-item-card:: :octicon:`graph` QFT Demo
-        :link: https://qperfect.io/index.php/2025/02/11/mimiq-demo-quantum-fourier-transform/
-        :link-type: url
+    .. grid-item-card:: :octicon:`graph` Quantum Fourier Transform
+        :link: demos/QFT/qft
+        :link-type: doc
 
-        Quantum Fourier Transform demo on QPerfect.io.
+        Approximate QFT and the entanglement it generates.
 
-    .. grid-item-card:: :octicon:`search` Grover Demo
-        :link: https://qperfect.io/index.php/2025/02/04/demo-grover/
-        :link-type: url
+    .. grid-item-card:: :octicon:`search` Grover's Algorithm
+        :link: demos/Grover/grover
+        :link-type: doc
 
-        Grover's Algorithm demo on QPerfect.io.
+        Amplitude amplification search on an unstructured database.
 
-    .. grid-item-card:: :octicon:`pulse` KPZ Dynamics
-        :link: https://qperfect.io/index.php/2025/01/31/demo-kpz/
-        :link-type: url
+    .. grid-item-card:: :octicon:`pulse` Heisenberg XXZ and KPZ
+        :link: demos/KPZ/kpz
+        :link-type: doc
 
-        Kardar-Parisi-Zhang (KPZ) dynamics demo on QPerfect.io.
+        Spin transport and KPZ universality in the XXZ model.
 
     .. grid-item-card:: :octicon:`package` Quantum Volume
-        :link: https://qperfect.io/index.php/2025/02/05/mimiq-demo-qv/
-        :link-type: url
+        :link: demos/QV/qv
+        :link-type: doc
 
-        Quantum Volume (QV) benchmark demo on QPerfect.io.
+        Heavy-output benchmark for measuring quantum volume.
 
     .. grid-item-card:: :octicon:`shield` Surface Code
-        :link: https://qperfect.io/index.php/2025/02/10/mimiq-demo-surface-code/
-        :link-type: url
+        :link: demos/Surfacecode/surfacecode
+        :link-type: doc
 
-        Surface Code simulation demo on QPerfect.io.
+        Noisy simulation of the surface code and its syndromes.
 
     .. grid-item-card:: :octicon:`hubot` GHZ State
-        :link: https://qperfect.io/index.php/2025/02/15/mimiq-demo-ghz-state/
+        :link: demos/GHZ/ghz
+        :link-type: doc
+
+        Constant- and log-depth GHZ preparation with dynamic circuits.
+
+    .. grid-item-card:: :octicon:`share-android` Entanglement Dynamics
+        :link: demos/Ent/Entanglementdynamics
+        :link-type: doc
+
+        Entanglement growth after a quench in transverse Ising models.
+
+    .. grid-item-card:: :octicon:`repo` All Demos
+        :link: https://github.com/qperfect-io/MimiqDemos
         :link-type: url
 
-        GHZ State preparation demo on QPerfect.io.
+        Browse the full demo repository on GitHub.
 
 .. toctree::
     :hidden:
 
     vqe
     circuit_tester
+    demos/QFT/qft
+    demos/Grover/grover
+    demos/KPZ/kpz
+    demos/QV/qv
+    demos/Surfacecode/surfacecode
+    demos/GHZ/ghz
+    demos/Ent/Entanglementdynamics

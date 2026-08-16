@@ -36,8 +36,22 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_inline_tabs",
     "sphinx.ext.doctest",
-    "myst_parser",
+    "myst_nb",
     "sphinx_design",
+]
+
+# -- MyST-NB (Jupyter notebook rendering) ------------------------------------
+# Notebooks are rendered from their stored outputs; cells are never re-executed
+# at build time (executing them would require live MIMIQ credentials).
+nb_execution_mode = "off"
+
+myst_enable_extensions = [
+    # Notebook prose writes math as $...$ / $$...$$, which MyST leaves as
+    # literal text unless dollarmath is enabled.
+    "dollarmath",
+    # Notebook prose cites papers as bare URLs, which MyST leaves as plain text
+    # unless linkify turns them into anchors.
+    "linkify",
 ]
 
 templates_path = ["_templates"]
