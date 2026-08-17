@@ -110,6 +110,19 @@ class GateCustom(Gate):
 
     @staticmethod
     def is_unitary(matrix, tol=1e-8):
+        # Fully numeric entries go through NumPy. The symbolic path below builds
+        # a dense SymEngine product and then walks its 4^n entries in Python, so
+        # for a wide gate it dominates construction: at 9 qubits it takes ~13s
+        # against ~6ms here.
+        try:
+            u = _as_numpy_numeric(matrix)
+        except TypeError:
+            u = None
+        if u is not None:
+            return bool(
+                np.allclose(u @ u.conj().T, np.eye(u.shape[0]), rtol=0, atol=tol)
+            )
+
         conjugate_transpose = matrix.transpose().conjugate()
         product = matrix * conjugate_transpose
         identity_matrix = se.eye(matrix.rows)

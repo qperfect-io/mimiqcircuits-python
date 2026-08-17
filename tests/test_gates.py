@@ -308,6 +308,31 @@ def test_GateCustom():
         assert mc.GateCustom(np.eye(2**N, dtype=complex)).num_qubits == N
 
 
+def test_GateCustom_unitarity_tolerance():
+    # numeric matrices are checked with NumPy; it has to agree with the
+    # element-wise 1e-8 tolerance the symbolic check used, on both sides of it
+    eye = np.eye(4, dtype=complex)
+    assert mc.GateCustom(eye).num_qubits == 2
+
+    near = eye.copy()
+    near[0, 0] = 1 + 1e-10
+    assert mc.GateCustom(near).num_qubits == 2
+
+    far = eye.copy()
+    far[0, 0] = 1 + 1e-4
+    with pytest.raises(ValueError):
+        mc.GateCustom(far)
+
+    with pytest.raises(ValueError):
+        mc.GateCustom(np.array([[1, 1], [0, 1]], dtype=complex))
+
+
+def test_GateCustom_wide_matrix_is_cheap():
+    # the unitarity check used to run as a dense symbolic product, which made an
+    # 8-qubit block take seconds to construct
+    assert mc.GateCustom(np.eye(256, dtype=complex)).num_qubits == 8
+
+
 def test_GateCustom_rejects_bad_sizes():
     for rows in (1, 3, 6):
         with pytest.raises(ValueError):

@@ -16,12 +16,21 @@
 #
 """Clustering gate-fusion pass.
 
-Replaces maximal runs of adjacent unitary gates acting on at most
-``max_support`` qubits with a single :class:`GateCustom` block whose matrix is
-the ordered product of the run. Non-unitary or opaque operations
-(measurements, resets, noise channels, ``Barrier``, control flow, and gates
-with symbolic parameters) are emitted unchanged and act as fusion boundaries:
-no gate fuses across one on a shared wire.
+Replaces runs of unitary gates spanning at most ``max_support`` qubits with a
+single :class:`GateCustom` block whose matrix is the ordered product of the
+run. Non-unitary or opaque operations (measurements, resets, noise channels,
+``Barrier``, control flow, and gates with symbolic parameters) are emitted
+unchanged and act as fusion boundaries: no gate fuses across one on a shared
+wire.
+
+Clusters grow by absorbing the clusters that own a gate's wires. Merging is
+what makes ``max_support`` above two useful: on an entangling circuit every
+wire is owned after the first layer, so a gate that could only ever extend a
+single cluster would start a fresh one every time.
+
+Merging two clusters is only sound when nothing outside them sits in between,
+otherwise the contracted DAG gains a cycle and the circuit cannot be reordered.
+The ``open`` flag is what keeps that safe: see ``seal`` in `fuse_circuit`.
 """
 
 from mimiqcircuits.circuit import Circuit
@@ -80,6 +89,10 @@ def fuse_circuit(circuit, max_support=2):
     original instruction (never rewrapped as a one-qubit ``GateCustom``), and
     qubit indices are never relabeled.
 
+    Raising ``max_support`` lets a block cover more wires and so emit fewer,
+    wider blocks. Which gates end up together is decided greedily, so the
+    result is not guaranteed to be the smallest possible circuit.
+
     Examples:
         >>> import mimiqcircuits as mc
         >>> c = mc.Circuit()
@@ -95,52 +108,97 @@ def fuse_circuit(circuit, max_support=2):
     nq = circuit.num_qubits()
 
     owner = {}  # qubit -> cluster id (a boundary owns its wires too)
-    clusters = []  # {"members": [...], "support": set(), "kind": "FUSE" | "PASS"}
+    # {"members": [...], "support": set(), "kind": "FUSE" | "PASS", "open": bool}
+    clusters = []
     cluster_of = [None] * n
 
     def new_cluster(i, qs, kind):
         cid = len(clusters)
-        clusters.append({"members": [i], "support": set(qs), "kind": kind})
+        clusters.append(
+            {"members": [i], "support": set(qs), "kind": kind, "open": kind == "FUSE"}
+        )
         return cid
+
+    # A cluster stays *open* while it owns every wire it spans, which makes it a
+    # sink in the contracted DAG: nothing downstream depends on it yet. Losing a
+    # wire to a later instruction gives it a successor, and from then on merging
+    # it could close a cycle (A -> X -> B with X left outside), so it is sealed
+    # for good.
+    def seal(qs):
+        for q in qs:
+            g = owner.get(q)
+            if g is not None:
+                clusters[g]["open"] = False
 
     for i, inst in enumerate(circuit):
         qs = list(inst.qubits)
         if not _is_fusible(inst, max_support):
-            cid = new_cluster(i, qs, "PASS")
             # The boundary owns every wire it depends on, so a later gate on one
             # of those wires cannot fuse back into a cluster sitting before it.
             # A few global observables synchronise the whole register, hence
             # `_dag_qubits` rather than `inst.qubits`.
-            for q in _dag_qubits(inst, nq):
+            dq = _dag_qubits(inst, nq)
+            seal(dq)
+            cid = new_cluster(i, qs, "PASS")
+            for q in dq:
                 owner[q] = cid
             cluster_of[i] = cid
             continue
 
-        live = {owner[q] for q in qs if q in owner}
-        if len(live) == 1:
-            g = next(iter(live))
-            # Join only a fusible cluster that already owns the immediate
-            # predecessor on each shared wire. A boundary-owned wire is "PASS"
-            # and so blocks the join; fresh wires carry no owner.
-            if (
-                clusters[g]["kind"] == "FUSE"
-                and len(clusters[g]["support"] | set(qs)) <= max_support
-            ):
-                clusters[g]["members"].append(i)
-                clusters[g]["support"].update(qs)
-                for q in qs:
-                    owner[q] = g
-                cluster_of[i] = g
-                continue
-
-        cid = new_cluster(i, qs, "FUSE")
+        # Candidates are the open fusible clusters owning this gate's wires.
+        # Merging several of them at once is what lets a cluster grow past two
+        # qubits: every one absorbed is an operation removed from the output, so
+        # take them cheapest-first to fit as many as `max_support` allows.
+        cand = []
         for q in qs:
-            owner[q] = cid
-        cluster_of[i] = cid
+            g = owner.get(q)
+            if g is None or g in cand:
+                continue
+            if clusters[g]["kind"] == "FUSE" and clusters[g]["open"]:
+                cand.append(g)
+        cand.sort(key=lambda g: len(clusters[g]["support"] - set(qs)))
+
+        support = set(qs)
+        chosen = []
+        for g in cand:
+            u = support | clusters[g]["support"]
+            if len(u) <= max_support:
+                support = u
+                chosen.append(g)
+
+        if not chosen:
+            seal(qs)
+            cid = new_cluster(i, qs, "FUSE")
+            for q in qs:
+                owner[q] = cid
+            cluster_of[i] = cid
+            continue
+
+        # Fold the chosen clusters into the earliest of them. Any other cluster
+        # holding one of this gate's wires loses it here, so it is sealed.
+        s = min(chosen)
+        for q in qs:
+            g = owner.get(q)
+            if g is not None and g not in chosen:
+                clusters[g]["open"] = False
+        for g in chosen:
+            if g == s:
+                continue
+            clusters[s]["members"].extend(clusters[g]["members"])
+            for j in clusters[g]["members"]:
+                cluster_of[j] = s
+            clusters[s]["support"] |= clusters[g]["support"]
+            clusters[g]["members"] = []  # folded away, emits nothing
+            clusters[g]["support"] = set()
+        clusters[s]["members"].append(i)
+        clusters[s]["support"].update(qs)
+        cluster_of[i] = s
+        for q in support:
+            owner[q] = s
 
     # Contract the instruction DAG by cluster id and topologically sort it: any
     # topological order is a valid, equivalent circuit (independent clusters
-    # commute). Single-owner greedy keeps every cluster convex, so this is a DAG.
+    # commute). Merging only sinks keeps every cluster convex, so this is a DAG.
     dag = circuit.dag()
     succ = {c: set() for c in range(len(clusters))}
     indeg = [0] * len(clusters)
@@ -165,6 +223,8 @@ def fuse_circuit(circuit, max_support=2):
     out = Circuit()
     for cid in order:
         cluster = clusters[cid]
+        if not cluster["members"]:
+            continue
         if cluster["kind"] == "PASS" or len(cluster["members"]) == 1:
             for i in cluster["members"]:
                 out.push(circuit[i])  # verbatim: keeps qubits, bits and zvars

@@ -173,7 +173,7 @@ def test_random_equivalence():
                 c.push(mc.Reset(), rng.randrange(nq))
         return c
 
-    for n in (1, 2, 3):
+    for n in (1, 2, 3, 4, 5):
         for _ in range(60):
             nq = rng.randint(1, 5)
             c = randcirc(nq, rng.randint(2, 16))
@@ -224,3 +224,42 @@ def test_fuse_wider_than_three_qubits():
     assert len(f) == 1
     assert isinstance(f[0].operation, mc.GateCustom)
     assert f[0].operation.num_qubits == 4
+
+
+def _brickwall(nq, layers):
+    c = mc.Circuit()
+    for l in range(layers):
+        for q in range(l % 2, nq - 1, 2):
+            c.push(mc.GateH(), q)
+            c.push(mc.GateCX(), q, q + 1)
+    return c
+
+
+def test_clusters_merge_past_two_qubits():
+    # Brick-wall entangling layers: after the first layer every wire is owned,
+    # so each later gate bridges two clusters. Fusion used to refuse every such
+    # bridge, which pinned the output at the max_support=2 result no matter how
+    # wide the budget was.
+    nq = 5
+    c = _brickwall(nq, 4)
+    counts = [len(mc.fuse_circuit(c, k)) for k in range(2, nq + 1)]
+    assert counts == sorted(counts, reverse=True)  # wider budget never fuses worse
+    assert counts[-1] < counts[0]                  # ... and here it fuses better
+
+    # a cluster wider than two qubits has to actually be emitted
+    assert any(i.operation.num_qubits > 2 for i in mc.fuse_circuit(c, 4))
+
+    ref = _circuit_unitary(c, nq)
+    for k in (2, nq):
+        assert np.allclose(ref, _circuit_unitary(mc.fuse_circuit(c, k), nq), atol=1e-9)
+
+
+def test_merging_never_closes_a_cycle():
+    # g1 and g3 both look mergeable at g4, but g2 sits between them: fusing the
+    # two into one block would need g2 to run both after and before it.
+    c = mc.Circuit()
+    for a, b in ((0, 1), (1, 2), (2, 3), (0, 3)):
+        c.push(mc.GateCX(), a, b)
+    ref = _circuit_unitary(c, 4)
+    for k in (2, 3, 4):
+        assert np.allclose(ref, _circuit_unitary(mc.fuse_circuit(c, k), 4), atol=1e-9)

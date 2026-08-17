@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.26.6] — 2026-08-18
+
+### Changed
+- `GateCustom` checks unitarity with NumPy when the matrix is fully numeric, instead of building a dense SymEngine product and walking its entries in Python. Constructing a 9-qubit block drops from about 15 seconds to under half a second, which matters now that `fuse_circuit` can emit blocks that wide. Symbolic matrices are unaffected.
+
+### Fixed
+- `fuse_circuit` and `FusePass` merge the clusters owning a gate's wires instead of only extending a single one, so `max_support` above 2 now produces wider blocks. On entangling circuits every wire is owned after the first layer, which made every later gate start a fresh cluster and pinned the output at the `max_support=2` result. A quantum volume circuit on 30 qubits at depth 30 now fuses to 442 blocks at `max_support=2` and 159 at `max_support=4`, where before it gave 442 at every setting.
+
+### Docs
+- Fixed the heading hierarchy in the entanglement dynamics demo, which rendered several sections as separate top-level pages.
+
 ## [0.26.5] — 2026-08-16
 
 ### Fixed
