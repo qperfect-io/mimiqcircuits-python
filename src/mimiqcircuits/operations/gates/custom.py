@@ -53,6 +53,10 @@ class GateCustom(Gate):
     def __init__(self, matrix):
         super().__init__()
 
+        numeric = isinstance(matrix, np.ndarray) and np.issubdtype(
+            matrix.dtype, np.number
+        )
+
         if isinstance(matrix, np.ndarray):
             mat = se.Matrix(matrix.tolist())
         elif isinstance(matrix, se.Matrix):
@@ -66,13 +70,18 @@ class GateCustom(Gate):
             raise ValueError("Matrix is not square")
 
         tolerance = 1e-8
-        if any(
+        # A numeric dtype cannot hold a symbol, so for those the elementwise scan
+        # below can only ever fail — 4^n `__getitem__`/`isinstance` pairs for
+        # nothing. Unitarity then reads the array we were handed rather than
+        # converting the SymEngine copy back to NumPy.
+        if numeric:
+            if not self.is_unitary(matrix, tol=tolerance):
+                raise ValueError("Matrix is not unitary")
+        elif not any(
             isinstance(mat[i, j], (se.Symbol, str))
             for i in range(mat.rows)
             for j in range(mat.cols)
         ):
-            pass
-        else:
             if not self.is_unitary(mat, tol=tolerance):
                 raise ValueError("Matrix is not unitary")
 
@@ -80,25 +89,31 @@ class GateCustom(Gate):
         if num_qubits < 1 or mat.rows != 2**num_qubits:
             raise ValueError("Wrong number of the rows for the matrix")
 
-        self.matrix = mat
+        self._U = mat
         self._num_qubits = num_qubits
         self._qregsizes = [
             num_qubits,
         ]
 
-    
+    def _matrix(self):
+        return self._U
+
     def matrix(self):
-        """
-        Try to numerically evaluate entries when possible,
-        otherwise keep symbolic.
+        """Numerically evaluate entries where possible, otherwise keep symbolic.
+
+        Deliberately not inherited from :class:`AbstractOperator`: that version
+        memoises on the *class* for parameter-free operators, which is right for
+        a named gate but would make every ``GateCustom`` share whichever matrix
+        was built first. ``unwrappedmatrix`` below is overridden for the same
+        reason.
         """
         out = []
-        for x in self.matrix:
+        for x in self._U:
             try:
                 out.append(complex(x))
             except Exception:
                 out.append(x)
-        return se.Matrix(self.matrix.rows, self.matrix.cols, out)
+        return se.Matrix(self._U.rows, self._U.cols, out)
 
 
     @property
@@ -106,7 +121,7 @@ class GateCustom(Gate):
         return self._num_qubits
 
     def inverse(self):
-        return GateCustom(self.matrix.inv())
+        return GateCustom(self._U.inv())
 
     @staticmethod
     def is_unitary(matrix, tol=1e-8):
@@ -140,10 +155,10 @@ class GateCustom(Gate):
         return f"{self._name}(...)"
 
     def pretty_print(self):
-        if isinstance(self.matrix, se.Matrix):
-            U = np.array(self.matrix.tolist(), dtype=object)
+        if isinstance(self._U, se.Matrix):
+            U = np.array(self._U.tolist(), dtype=object)
         else:
-            U = np.array(self.matrix, dtype=object)
+            U = np.array(self._U, dtype=object)
 
         result = f"{self._num_qubits}-qubit GateCustom:\n"
         rows, cols = U.shape
@@ -158,7 +173,7 @@ class GateCustom(Gate):
         return result
 
     def evaluate(self, d):
-        sympy_matrix = sp.Matrix(self.matrix)
+        sympy_matrix = sp.Matrix(self._U)
         matrix = sympy_matrix.applyfunc(
             lambda entry: (
                 entry.subs(d) if not isinstance(entry, (float, int)) else entry
@@ -168,7 +183,7 @@ class GateCustom(Gate):
         return GateCustom(evaluated_matrix)
 
     def unwrappedmatrix(self):
-        return _as_numpy_numeric(self.matrix)
+        return _as_numpy_numeric(self._U)
 
     def _decompose(self, circ, qubits, bits, zvars):
         N = self.num_qubits

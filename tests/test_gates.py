@@ -297,7 +297,7 @@ def _check_custom_gate(N):
     gate = mc.GateCustom(sym_mat)
 
     assert isinstance(gate, mc.GateCustom)
-    assert is_close(gate.matrix, sym_mat)
+    assert is_close(gate.matrix(), sym_mat)
 
 
 def test_GateCustom():
@@ -306,6 +306,36 @@ def test_GateCustom():
     for N in range(1, 6):
         _check_custom_gate(N)
         assert mc.GateCustom(np.eye(2**N, dtype=complex)).num_qubits == N
+
+
+def test_GateCustom_matrix_is_a_method():
+    # __init__ used to assign `self.matrix`, which shadowed the method of the
+    # same name: `matrix()` was dead code and `Instruction.matrix()` raised
+    # "MutableDenseMatrix object is not callable" for every fused block.
+    X = np.array([[0, 1], [1, 0]], dtype=complex)
+    gate = mc.GateCustom(X)
+
+    assert callable(gate.matrix)
+    assert np.allclose(np.array(gate.matrix().tolist(), dtype=complex), X)
+
+    embedded = mc.Instruction(gate, (0,)).matrix(2)
+    assert np.allclose(
+        np.array(embedded.tolist(), dtype=complex), np.kron(X, np.eye(2))
+    )
+
+
+def test_GateCustom_does_not_share_a_class_level_matrix_cache():
+    # AbstractOperator.matrix()/unwrappedmatrix() memoise on the class for
+    # parameter-free operators. GateCustom must keep its own overrides, or every
+    # instance would hand back whichever matrix was built first.
+    X = np.array([[0, 1], [1, 0]], dtype=complex)
+    Z = np.array([[1, 0], [0, -1]], dtype=complex)
+
+    a, b = mc.GateCustom(X), mc.GateCustom(Z)
+    assert np.allclose(a.unwrappedmatrix(), X)
+    assert np.allclose(b.unwrappedmatrix(), Z)
+    assert np.allclose(np.array(a.matrix().tolist(), dtype=complex), X)
+    assert np.allclose(np.array(b.matrix().tolist(), dtype=complex), Z)
 
 
 def test_GateCustom_unitarity_tolerance():

@@ -15,20 +15,23 @@
 # limitations under the License.
 #
 
+import itertools
 from random import Random
 
 import numpy as np
 
 import mimiqcircuits as mc
-from mimiqcircuits.matrices import reorder_qubits_matrix
+from mimiqcircuits.matrices import (
+    _apply_local,
+    _index_permutation,
+    reorder_qubits_matrix,
+)
 
 
 def _gate_matrix(op):
     # SymEngine matrix of a gate, for an independent reference unitary that
-    # does not share the implementation's NumPy path. GateCustom keeps its
-    # matrix in an attribute rather than a method, so accept either form.
-    m = op.matrix
-    return m() if callable(m) else m
+    # does not share the implementation's NumPy path.
+    return op.matrix()
 
 
 def _np(m):
@@ -263,3 +266,74 @@ def test_merging_never_closes_a_cycle():
     ref = _circuit_unitary(c, 4)
     for k in (2, 3, 4):
         assert np.allclose(ref, _circuit_unitary(mc.fuse_circuit(c, k), 4), atol=1e-9)
+
+
+def _slow_index_permutation(qperm, nq):
+    """Obvious O(2**nq) form of `_index_permutation`, for reference."""
+    ints = [
+        mc.BitString(
+            "".join(str(mc.BitString.fromint(nq, i)[q]) for q in qperm)
+        ).tointeger()
+        for i in range(2**nq)
+    ]
+    return np.argsort(ints)
+
+
+def _slow_embed(g, targets, nq):
+    """Embedding by identity padding and reindexing.
+
+    The independent reference for `_apply_local` and for the NumPy path of
+    `reorder_qubits_matrix`, both of which now contract instead of padding.
+    """
+    fullqubits = list(targets) + [q for q in range(nq) if q not in targets]
+    fullM = g
+    for _ in range(nq - len(targets)):
+        fullM = np.kron(fullM, np.eye(2))
+    if fullqubits == sorted(fullqubits):
+        return fullM
+    qperm = [(nq - 1) - i for i in reversed(np.argsort(fullqubits))]
+    perm = _slow_index_permutation(qperm, nq)
+    return fullM[np.ix_(perm, perm)]
+
+
+def test_index_permutation_matches_obvious_form():
+    for nq in range(1, 6):
+        for qperm in itertools.permutations(range(nq)):
+            assert np.array_equal(
+                _index_permutation(list(qperm), nq),
+                _slow_index_permutation(list(qperm), nq),
+            )
+
+
+def test_reorder_qubits_matrix_matches_padding_route():
+    """Contracting against an identity must reproduce the padding route exactly.
+
+    Each entry of that product is a sum with at most one non-zero term, so the
+    agreement is bit-for-bit and not merely to tolerance.
+    """
+    rng = np.random.default_rng(20260818)
+    for nq in range(1, 5):
+        for ng in range(1, nq + 1):
+            g = rng.normal(size=(2**ng, 2**ng)) + 1j * rng.normal(size=(2**ng, 2**ng))
+            for targets in itertools.permutations(range(nq), ng):
+                targets = list(targets)
+                assert np.array_equal(
+                    reorder_qubits_matrix(g, targets, nq), _slow_embed(g, targets, nq)
+                )
+
+
+def test_apply_local_matches_embedding():
+    """Contracting a gate in place must equal embedding it and multiplying."""
+    rng = np.random.default_rng(20260819)
+    for nq in range(1, 5):
+        # Small integers are exact in float64, so any difference here is a logic
+        # error rather than a difference in summation order.
+        u = rng.integers(-4, 5, (2**nq, 2**nq)).astype(complex)
+        for ng in range(1, nq + 1):
+            g = rng.integers(-4, 5, (2**ng, 2**ng)).astype(complex)
+            for targets in itertools.permutations(range(nq), ng):
+                targets = list(targets)
+                assert np.array_equal(
+                    _apply_local(u, g, targets, nq),
+                    _slow_embed(g, targets, nq) @ u,
+                )

@@ -33,9 +33,11 @@ otherwise the contracted DAG gains a cycle and the circuit cannot be reordered.
 The ``open`` flag is what keeps that safe: see ``seal`` in `fuse_circuit`.
 """
 
+import numpy as np
+
 from mimiqcircuits.circuit import Circuit
 from mimiqcircuits.dag import _dag_qubits
-from mimiqcircuits.matrices import reorder_qubits_matrix
+from mimiqcircuits.matrices import _apply_local
 from mimiqcircuits.operations.gates.gate import Gate
 from mimiqcircuits.operations.gates.custom import GateCustom
 from mimiqcircuits.backends.passes import AbstractPass, PassSpec, PassResult
@@ -67,17 +69,17 @@ def _is_fusible(inst, n):
 def _synthesize(circuit, members, support):
     """Dense matrix of a cluster on the sorted ``support``.
 
-    Each member is embedded at its local position within ``support`` and the
-    embeddings are multiplied in circuit order (the later gate on the left).
-    Members are numeric by construction — ``_is_fusible`` rejects symbolic
-    gates — so the product runs in NumPy rather than through SymEngine.
+    Each member acts at its local position within ``support``, applied in
+    circuit order (the later gate on the left). Members are numeric by
+    construction — ``_is_fusible`` rejects symbolic gates — so this runs in
+    NumPy rather than through SymEngine.
     """
-    u = None
+    nq = len(support)
+    u = np.eye(2**nq, dtype=complex)
     for i in sorted(members):
         inst = circuit[i]
         localq = [support.index(q) for q in inst.qubits]
-        e = reorder_qubits_matrix(inst.operation.unwrappedmatrix(), localq, len(support))
-        u = e if u is None else e @ u
+        u = _apply_local(u, inst.operation.unwrappedmatrix(), localq, nq)
     return u
 
 

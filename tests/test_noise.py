@@ -116,12 +116,12 @@ def test_mixed_unitary():
 
     for i, Uk in enumerate(much2.unitarymatrices()):
         if hasattr(Uk, "matrix"):
-            Uk = np.array(Uk.matrix.tolist(), dtype=np.complex128)
+            Uk = np.array(Uk.matrix().tolist(), dtype=np.complex128)
         assert is_close(Uk, Umats2[i])
 
     for i, Uk in enumerate(much4.unitarymatrices()):
         if hasattr(Uk, "matrix"):
-            Uk = np.array(Uk.matrix.tolist(), dtype=np.complex128)
+            Uk = np.array(Uk.matrix().tolist(), dtype=np.complex128)
         assert is_close(Uk, Umats4[i])
 
     # Test wrong MixedUnitary: not unitary

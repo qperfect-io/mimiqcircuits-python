@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.26.7] — 2026-08-18
+
+`GateCustom.matrix` is a method again, as it is on every other operation. Read it
+as `gate.matrix()`; `gate.matrix` on its own now gives you the bound method
+rather than the matrix.
+
+### Fixed
+- `Instruction.matrix()` no longer raises for instructions holding a `GateCustom`. `GateCustom.__init__` assigned `self.matrix`, which shadowed its own `matrix()` method, so the method was unreachable and `Instruction.matrix()` tried to call a matrix. The matrix now lives in a private field and `matrix()` works, which also makes `RescaledGate` accept a `GateCustom`. This mattered more after the fusion changes below, since `GateCustom` is the normal output of `fuse_circuit`.
+
+### Changed
+- `fuse_circuit` and `FusePass` build each fused block by contracting every member gate directly against the accumulating matrix, instead of embedding it into the block's full space first. Together with the changes below, fusion is 2.7–5.0x faster across bricklayer, QFT and quantum volume circuits at `max_support` 3–5. The fused unitary is unchanged, but the summation order is not, so entries may differ in the last few bits of the mantissa (measured within 3 units in the last place).
+- `reorder_qubits_matrix` embeds a NumPy matrix by contracting it against an identity, replacing the chain of Kronecker products and the index permutation that followed it. Every entry of that product is a sum with at most one non-zero term, so results are bit-for-bit identical to before. Symbolic matrices keep the SymEngine path, whose index permutation is now derived from the `nq` basis indices and inverted by scatter rather than round-tripping all `2**nq` indices through `BitString` and calling `argsort`.
+- `GateCustom` skips the elementwise symbolic scan when handed a NumPy array of numeric dtype, where it could never match, and checks unitarity against that array rather than converting its SymEngine copy back to NumPy.
+
 ## [0.26.6] — 2026-08-18
 
 ### Changed

@@ -139,7 +139,7 @@ class TestGateConversion:
         proto_gate = toproto_gate(gate)
         restored_gate = fromproto_gate(proto_gate)
 
-        assert np.array_equal(gate.matrix, restored_gate.matrix)
+        assert np.array_equal(gate.matrix(), restored_gate.matrix())
 
     def test_control_gate_conversion(self):
         """Test conversion of control gates."""

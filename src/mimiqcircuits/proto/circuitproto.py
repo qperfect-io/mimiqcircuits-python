@@ -566,7 +566,7 @@ def toproto_paulistring(gate, declcache=None):
 @gate_registry.register_toproto(mc.GateCustom)
 def toproto_customgate(gate, declcache=None):
     """Convert a GateCustom to protocol buffer format."""
-    U = [toproto_complex(param) for param in gate.matrix.T]
+    U = [toproto_complex(param) for param in gate._U.T]
     return circuit_pb2.Gate(
         customgate=circuit_pb2.CustomGate(numqubits=gate.num_qubits, matrix=U)
     )
@@ -1724,7 +1724,7 @@ def toproto_operation_paulistring(gate, declcache=None):
 
 
 def toproto_operation_customgate(gate, declcache=None):
-    U = [toproto_complex(p) for p in gate.matrix.T]
+    U = [toproto_complex(p) for p in gate._U.T]
     return circuit_pb2.Operation(
         customgate=circuit_pb2.CustomGate(numqubits=gate.num_qubits, matrix=U)
     )

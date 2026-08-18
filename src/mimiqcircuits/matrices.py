@@ -125,17 +125,63 @@ def rzmatrix(lmbda):
     return rzmatrixpi(lmbda / pi)
 
 
+def _apply_local(u, g, targets, nq):
+    """Left-multiply ``u`` by ``g`` acting on ``targets``, without embedding ``g``.
+
+    Building the embedding costs a chain of ``kron`` products and a full
+    ``2**nq`` square product; contracting ``g`` against ``u``'s target axes
+    instead is ``O(2**len(targets) * 4**nq)`` and allocates nothing wider than
+    ``u``. Axis ``i`` of the reshaped view is qubit ``i`` because MIMIQ orders
+    qubit 0 as the most significant index bit — the same convention
+    ``reorder_qubits_matrix`` realises through its identity padding.
+    """
+    ng = len(targets)
+    front = list(range(ng))
+    t = np.moveaxis(u.reshape((2,) * nq + (-1,)), targets, front)
+    shape = t.shape
+    t = (g @ t.reshape(2**ng, -1)).reshape(shape)
+    return np.moveaxis(t, front, targets).reshape(2**nq, 2**nq)
+
+
+def _index_permutation(qperm, nq):
+    """Permutation of the ``2**nq`` basis indices induced by permuting index bits.
+
+    The map permutes index *bits*, so it is linear over them: the image of an
+    index is the sum of the images of its set bits. Evaluating it on the ``nq``
+    basis indices costs ``nq`` ``BitString`` round-trips instead of ``2**nq``.
+    The images form a bijection on ``range(2**nq)``, so the permutation we want
+    is their inverse — a scatter, not an ``argsort``. The per-bit images still go
+    through ``BitString``, so the endianness convention is read from there rather
+    than re-derived here.
+    """
+    weights = np.empty(nq, dtype=np.int64)
+    for k in range(nq):
+        bs = mc.BitString.fromint(nq, 1 << k)
+        weights[k] = mc.BitString("".join(str(bs[q]) for q in qperm)).tointeger()
+
+    dim = 1 << nq
+    bits = (np.arange(dim, dtype=np.int64)[:, None] >> np.arange(nq)) & 1
+    ints = bits @ weights
+
+    perm = np.empty(dim, dtype=np.int64)
+    perm[ints] = np.arange(dim, dtype=np.int64)
+    return perm
+
+
 def reorder_qubits_matrix(M, qubits, nq=None):
     if nq is None:
         nq = max(qubits) + 1
 
-    fullqubits = list(qubits) + [q for q in range(nq) if q not in qubits]
+    # A NumPy matrix is embedded by contracting it against an identity: that is
+    # the same result as padding with `kron` and permuting, without building
+    # either the padding chain or the index permutation. Every entry of the
+    # product is a sum with at most one non-zero term, so it is exact.
+    if isinstance(M, np.ndarray):
+        return _apply_local(np.eye(2**nq, dtype=M.dtype), M, list(qubits), nq)
 
-    # A NumPy matrix stays NumPy throughout: identity padding goes through
-    # np.kron and the final reindex is a single fancy-index, instead of looping
-    # over SymEngine scalars. Symbolic matrices keep the SymEngine path below.
-    numeric = isinstance(M, np.ndarray)
-    ident = np.eye(2) if numeric else mc.GateID().matrix()
+    # Symbolic matrices keep the SymEngine path.
+    fullqubits = list(qubits) + [q for q in range(nq) if q not in qubits]
+    ident = mc.GateID().matrix()
 
     fullM = M
     for _ in range(nq - len(qubits)):
@@ -152,16 +198,7 @@ def reorder_qubits_matrix(M, qubits, nq=None):
 
     dim = 2**nq
 
-    ints = []
-    for i in range(dim):
-        bs = mc.BitString.fromint(nq, i)
-        permuted = mc.BitString("".join(str(bs[q]) for q in qperm))
-        ints.append(permuted.tointeger())
-
-    perm = np.argsort(ints)
-
-    if numeric:
-        return fullM[np.ix_(perm, perm)]
+    perm = _index_permutation(qperm, nq)
 
     reordered = se.Matrix([[se.S(0) for _ in range(dim)] for _ in range(dim)])
     for i in range(dim):
