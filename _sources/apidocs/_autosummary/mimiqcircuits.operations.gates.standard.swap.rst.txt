@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.standard.swap
+============================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.swap
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateSWAP
+   

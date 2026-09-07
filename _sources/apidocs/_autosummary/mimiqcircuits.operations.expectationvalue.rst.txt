@@ -1,0 +1,12 @@
+mimiqcircuits.operations.expectationvalue
+=========================================
+
+.. automodule:: mimiqcircuits.operations.expectationvalue
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ExpectationValue
+   

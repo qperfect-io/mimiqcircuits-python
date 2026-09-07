@@ -1,0 +1,13 @@
+mimiqcircuits.operations.utils
+==============================
+
+.. automodule:: mimiqcircuits.operations.utils
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      control_one_defined
+      power_idempotent
+   

@@ -1,0 +1,17 @@
+mimiqcircuits.backends.measure\_analysis
+========================================
+
+.. automodule:: mimiqcircuits.backends.measure_analysis
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      any_mixed_unitary
+      evaluate_projection
+      extract_projection
+      needs_loss_sampling
+      needs_trajectories
+      remap_projection_qubits
+   

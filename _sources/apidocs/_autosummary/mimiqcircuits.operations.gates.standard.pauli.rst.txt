@@ -1,0 +1,14 @@
+mimiqcircuits.operations.gates.standard.pauli
+=============================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.pauli
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateX
+      GateY
+      GateZ
+   

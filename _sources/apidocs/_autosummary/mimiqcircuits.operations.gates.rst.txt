@@ -1,0 +1,18 @@
+mimiqcircuits.operations.gates
+==============================
+
+.. automodule:: mimiqcircuits.operations.gates
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   custom
+   customdiagonal
+   delay
+   gate
+   generalized
+   standard

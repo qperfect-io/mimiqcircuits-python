@@ -1,0 +1,1070 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html"><link rel="next" title="Quantum Volume" href="../QV/qv.html"><link rel="prev" title="Grover’s Algorithm" href="../Grover/grover.html">
+        <link rel="prefetch" href="../../../_static/qperfect_logo.png" as="image">
+
+    <!-- Generated with Sphinx 7.4.7 and Furo 2025.12.19 -->
+        <title>The Heisenberg XXZ Model and KPZ Universality - MIMIQ Circuits v0.27.1</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=6deec1a2" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #990066;
+  --color-brand-content: #990066;
+  --color-inline-code-background: rgba(153, 0, 102, 0.08);
+  --color-admonition-background: #f8f9fc;
+  --color-api-name: #990066;
+  --color-api-pre-name: #4b5563;
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #d94faa;
+  --color-brand-content: #d94faa;
+  --color-background-primary: #0f1117;
+  --color-background-secondary: #161922;
+  --color-background-border: #2d3548;
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+  --color-sidebar-background: #0d0f14;
+  --color-sidebar-background-border: #1f2937;
+  --color-sidebar-link-text: #e5e7eb;
+  --color-sidebar-link-text--top-level: #ffffff;
+  --color-sidebar-item-background--current: rgba(217, 79, 170, 0.15);
+  --color-sidebar-item-background--hover: rgba(217, 79, 170, 0.08);
+  --color-inline-code-background: rgba(249, 168, 212, 0.15);
+  --color-admonition-background: #1a1f2c;
+  --color-api-background: #1a1f2c;
+  --color-api-name: #d94faa;
+  --color-api-pre-name: #9ca3af;
+  --color-highlight-on-target: rgba(255, 215, 0, 0.15);
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #d94faa;
+  --color-brand-content: #d94faa;
+  --color-background-primary: #0f1117;
+  --color-background-secondary: #161922;
+  --color-background-border: #2d3548;
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+  --color-sidebar-background: #0d0f14;
+  --color-sidebar-background-border: #1f2937;
+  --color-sidebar-link-text: #e5e7eb;
+  --color-sidebar-link-text--top-level: #ffffff;
+  --color-sidebar-item-background--current: rgba(217, 79, 170, 0.15);
+  --color-sidebar-item-background--hover: rgba(217, 79, 170, 0.08);
+  --color-inline-code-background: rgba(249, 168, 212, 0.15);
+  --color-admonition-background: #1a1f2c;
+  --color-api-background: #1a1f2c;
+  --color-api-name: #d94faa;
+  --color-api-pre-name: #9ca3af;
+  --color-highlight-on-target: rgba(255, 215, 0, 0.15);
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     The MIMIQ Update 2026 is out! Update now to the latest <strong>v0.27.1</strong> version. 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">MIMIQ Circuits v0.27.1</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../_static/qperfect_logo.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">MIMIQ Circuits v0.27.1</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../mimiq_documentation.html">MIMIQ Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../manual/index.html">Manual</a><input aria-label="Toggle navigation of Manual" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../manual/getting_started.html">Getting Started</a><input aria-label="Toggle navigation of Getting Started" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/installation.html">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/overview.html">Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../manual/core_concepts.html">Core Concepts</a><input aria-label="Toggle navigation of Core Concepts" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/circuits.html">Circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/hamiltonian.html">Hamiltonians and Time Evolution</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../manual/operations.html">Operations</a><input aria-label="Toggle navigation of Operations" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/unitary_gates.html">Unitary Gates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/classical_ops.html">Classical Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/non_unitary_ops.html">Non-unitary Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/noise.html">Noisy simulations on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/loss.html">Qubit Loss on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/statistical_ops.html">Statistical Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/special_ops.html">Special Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/zops.html">Z-register Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../manual/simulation.html">Simulation &amp; Execution</a><input aria-label="Toggle navigation of Simulation &amp; Execution" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/local_statevector.html">Quantanium</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/remote_execution.html">Execution on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/simulation_parameters.html">Simulation Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../manual/advanced.html">Advanced Topics</a><input aria-label="Toggle navigation of Advanced Topics" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/import_export.html">Import and export circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/special_topics.html">Special Topics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/compilation.html">Circuit Compilation &amp; Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/implementing_backends.html">Implementing a Custom Backend</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../index.html">Use Cases and Special Workflows</a><input aria-label="Toggle navigation of Use Cases and Special Workflows" checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../vqe.html">Variational Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../circuit_tester.html">Circuit Equivalence Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../QFT/qft.html">Quantum Fourier Transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Grover/grover.html">Grover’s Algorithm</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">The Heisenberg XXZ Model and KPZ Universality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../QV/qv.html">Quantum Volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Surfacecode/surfacecode.html">Surface Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GHZ/ghz.html">GHZ state including dynamic circuits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Ent/Entanglementdynamics.html">Entanglement Dynamics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../apidocs/mimiqcircuits.html">API References</a><input aria-label="Toggle navigation of API References" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.circuit.html">mimiqcircuits.circuit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.hamiltonian.html">mimiqcircuits.hamiltonian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.instruction.html">mimiqcircuits.instruction</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.html">mimiqcircuits.operations</a><input aria-label="Toggle navigation of mimiqcircuits.operations" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.amplitude.html">mimiqcircuits.operations.amplitude</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.annotations.html">mimiqcircuits.operations.annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.barrier.html">mimiqcircuits.operations.barrier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.block.html">mimiqcircuits.operations.block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.control.html">mimiqcircuits.operations.control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.entanglement.html">mimiqcircuits.operations.entanglement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.expectationvalue.html">mimiqcircuits.operations.expectationvalue</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.html">mimiqcircuits.operations.gates</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.custom.html">mimiqcircuits.operations.gates.custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.customdiagonal.html">mimiqcircuits.operations.gates.customdiagonal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.delay.html">mimiqcircuits.operations.gates.delay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.gate.html">mimiqcircuits.operations.gates.gate</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.html">mimiqcircuits.operations.gates.generalized</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates.generalized" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.diffusion.html">mimiqcircuits.operations.gates.generalized.diffusion</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.paulistring.html">mimiqcircuits.operations.gates.generalized.paulistring</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.phasegradient.html">mimiqcircuits.operations.gates.generalized.phasegradient</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.polynomialoracle.html">mimiqcircuits.operations.gates.generalized.polynomialoracle</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.qft.html">mimiqcircuits.operations.gates.generalized.qft</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.rnz.html">mimiqcircuits.operations.gates.generalized.rnz</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.rpauli.html">mimiqcircuits.operations.gates.generalized.rpauli</a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.html">mimiqcircuits.operations.gates.standard</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates.standard" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.chadamard.html">mimiqcircuits.operations.gates.standard.chadamard</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cnp.html">mimiqcircuits.operations.gates.standard.cnp</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cnx.html">mimiqcircuits.operations.gates.standard.cnx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cpauli.html">mimiqcircuits.operations.gates.standard.cpauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cphase.html">mimiqcircuits.operations.gates.standard.cphase</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.crotations.html">mimiqcircuits.operations.gates.standard.crotations</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cs.html">mimiqcircuits.operations.gates.standard.cs</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cswap.html">mimiqcircuits.operations.gates.standard.cswap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.csx.html">mimiqcircuits.operations.gates.standard.csx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cu.html">mimiqcircuits.operations.gates.standard.cu</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.dcx.html">mimiqcircuits.operations.gates.standard.dcx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.deprecated.html">mimiqcircuits.operations.gates.standard.deprecated</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.ecr.html">mimiqcircuits.operations.gates.standard.ecr</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.hadamard.html">mimiqcircuits.operations.gates.standard.hadamard</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.id.html">mimiqcircuits.operations.gates.standard.id</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.interactions.html">mimiqcircuits.operations.gates.standard.interactions</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.iswap.html">mimiqcircuits.operations.gates.standard.iswap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.pauli.html">mimiqcircuits.operations.gates.standard.pauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.phase.html">mimiqcircuits.operations.gates.standard.phase</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.rotations.html">mimiqcircuits.operations.gates.standard.rotations</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.s.html">mimiqcircuits.operations.gates.standard.s</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.swap.html">mimiqcircuits.operations.gates.standard.swap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.sx.html">mimiqcircuits.operations.gates.standard.sx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.sy.html">mimiqcircuits.operations.gates.standard.sy</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.t.html">mimiqcircuits.operations.gates.standard.t</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.u.html">mimiqcircuits.operations.gates.standard.u</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.generating_list.html">mimiqcircuits.operations.generating_list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.ifstatement.html">mimiqcircuits.operations.ifstatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.inverse.html">mimiqcircuits.operations.inverse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.krauschannel.html">mimiqcircuits.operations.krauschannel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.losschannel.html">mimiqcircuits.operations.losschannel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.measure.html">mimiqcircuits.operations.measure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.measurereset.html">mimiqcircuits.operations.measurereset</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.html">mimiqcircuits.operations.noisechannel</a><input aria-label="Toggle navigation of mimiqcircuits.operations.noisechannel" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.kraus.html">mimiqcircuits.operations.noisechannel.kraus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.mixedunitary.html">mimiqcircuits.operations.noisechannel.mixedunitary</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.html">mimiqcircuits.operations.noisechannel.standards</a><input aria-label="Toggle navigation of mimiqcircuits.operations.noisechannel.standards" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.ampdamping.html">mimiqcircuits.operations.noisechannel.standards.ampdamping</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.depolarizing.html">mimiqcircuits.operations.noisechannel.standards.depolarizing</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.pauli.html">mimiqcircuits.operations.noisechannel.standards.pauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping.html">mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.projectivenoise.html">mimiqcircuits.operations.noisechannel.standards.projectivenoise</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operation.html">mimiqcircuits.operations.operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operator.html">mimiqcircuits.operations.operator</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.html">mimiqcircuits.operations.operators</a><input aria-label="Toggle navigation of mimiqcircuits.operations.operators" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.custom.html">mimiqcircuits.operations.operators.custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.diagonals.html">mimiqcircuits.operations.operators.diagonals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.lossyoperator.html">mimiqcircuits.operations.operators.lossyoperator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.projectors.html">mimiqcircuits.operations.operators.projectors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.sigmas.html">mimiqcircuits.operations.operators.sigmas</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.pairmeasure.html">mimiqcircuits.operations.pairmeasure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.parallel.html">mimiqcircuits.operations.parallel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.power.html">mimiqcircuits.operations.power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.readouterr.html">mimiqcircuits.operations.readouterr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.repeat.html">mimiqcircuits.operations.repeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.rescaledgates.html">mimiqcircuits.operations.rescaledgates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.reset.html">mimiqcircuits.operations.reset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.utils.html">mimiqcircuits.operations.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.whilestatement.html">mimiqcircuits.operations.whilestatement</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.html">mimiqcircuits.classical</a><input aria-label="Toggle navigation of mimiqcircuits.classical" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.abstract_classical.html">mimiqcircuits.classical.abstract_classical</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.and_operation.html">mimiqcircuits.classical.and_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.not_operation.html">mimiqcircuits.classical.not_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.or_operation.html">mimiqcircuits.classical.or_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.paritycheck.html">mimiqcircuits.classical.paritycheck</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.setbits.html">mimiqcircuits.classical.setbits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.xor_operation.html">mimiqcircuits.classical.xor_operation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.lossmodel.html">mimiqcircuits.lossmodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.noisemodel.html">mimiqcircuits.noisemodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.remote.html">mimiqcircuits.remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.qcsresults.html">mimiqcircuits.qcsresults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.lazy.html">mimiqcircuits.lazy</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.visualization.html">mimiqcircuits.visualization</a><input aria-label="Toggle navigation of mimiqcircuits.visualization" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.visualization.results.html">mimiqcircuits.visualization.results</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.html">mimiqcircuits.backends</a><input aria-label="Toggle navigation of mimiqcircuits.backends" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.backend.html">mimiqcircuits.backends.backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.capabilities.html">mimiqcircuits.backends.capabilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.compiled.html">mimiqcircuits.backends.compiled</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.concrete_passes.html">mimiqcircuits.backends.concrete_passes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.fidelity.html">mimiqcircuits.backends.fidelity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.measure_analysis.html">mimiqcircuits.backends.measure_analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.passes.html">mimiqcircuits.backends.passes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.progress.html">mimiqcircuits.backends.progress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.remote.html">mimiqcircuits.backends.remote</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.stochastic_kind.html">mimiqcircuits.backends.stochastic_kind</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/qperfect-io/mimiqcircuits-python">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mimiq.qperfect.io/docs/julia/">Julia APIs</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://qperfect.io">QPerfect</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/qperfect-io/mimiqcircuits-python/blob/main/docs/usecases/demos/KPZ/kpz.ipynb?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/qperfect-io/mimiqcircuits-python/edit/main/docs/usecases/demos/KPZ/kpz.ipynb" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section class="tex2jax_ignore mathjax_ignore" id="the-heisenberg-xxz-model-and-kpz-universality">
+<h1>The Heisenberg XXZ Model and KPZ Universality<a class="headerlink" href="#the-heisenberg-xxz-model-and-kpz-universality" title="Link to this heading">¶</a></h1>
+<p>QPerfect 2025 <a class="reference external" href="https://qperfect.io/">https://qperfect.io/</a></p>
+<p>The interactive version of this demo can be found at <a class="reference external" href="https://github.com/qperfect-io/MimiqDemos/blob/main/KPZ/kpz.ipynb">https://github.com/qperfect-io/MimiqDemos/blob/main/KPZ/kpz.ipynb</a></p>
+<section id="introduction-and-context">
+<h2>Introduction and context<a class="headerlink" href="#introduction-and-context" title="Link to this heading">¶</a></h2>
+<p>At the forefront of computational physics lies the “many-body problem” - a class of challenges that describe the behavior of matter and materials. This problem is not only one of the most computationally demanding in physics but is also likely to be the first arena where quantum computers demonstrate superiority over classical ones. For quantum simulation, a quantum advantage is achieved when a quantum computer can compute relevant quantities (e.g., magnetism, universal critical exponents) with a precision and accuracy better than any known classical methods.</p>
+<p>In 2024, Google Quantum AI and Collaborators published a study on the dynamics of the Heisenberg XXZ model [<a class="reference external" href="https://doi.org/10.1126/science.adi7877">https://doi.org/10.1126/science.adi7877</a>], a model for describing quantum magnets. Their experiments used a 46 qubit quantum computer to sample output states produced by a deep and wide quantum circuit of alternating layers of 2-qubit Fermionic Simulation “fSim” gates, one of the highest fidelity gates available on the Google device. They observe the mean and variance of the transferred magnetisation exhibits characteristic powerlaws as a function of system size in agreement with the expected Kardar-Parisi-Zhang (KPZ) universality class. However higher moments revealed deviations from the KPZ predictions, hinting at the possibility of new physics.</p>
+<p>In this demo, we’ll use MIMIQ to simulate the same Heisenberg XXZ model up to 46 qubits - a feat that significantly surpasses what was possible using other simulators, including in the original paper using a high-end NVIDIA GPU cluster. This demonstration underscores MIMIQ’s potential for simulating novel physics and verifying quantum computations beyond the limits of traditional methods.</p>
+<section id="the-heisenberg-xxz-model-a-closer-look">
+<h3>The Heisenberg XXZ Model: A Closer Look<a class="headerlink" href="#the-heisenberg-xxz-model-a-closer-look" title="Link to this heading">¶</a></h3>
+<p>The model we’re investigating is the one-dimensional (1D) XXZ model, which describes nearest-neighbor exchange interactions between spin-1/2 particles. The Hamiltonian is given by:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[H = \sum_i (S_i^x S_{i+1}^x + S_i^y S_{i+1}^y+ \Delta S_i^z S_{i+1}^z)\]</div>
+</div>
+<p>Here, <span class="math notranslate nohighlight">\(S_i^x, S_i^y, S_i^z\)</span> represent single-site spin operators, and <span class="math notranslate nohighlight">\(\Delta\)</span> is the anisotropy parameter.</p>
+<p>Our experiment involves simulating this model using a 1D chain of spins (qubits) subject to periodic applications of unitary <span class="math notranslate nohighlight">\(\text{fSim}(\theta,\phi)\)</span> gates. This includes:</p>
+<ol class="arabic simple">
+<li><p>Initial State: We start with a product state where the left and right halves of the spin chain have average magnetizations of <span class="math notranslate nohighlight">\(\pm \tanh(\mu)\)</span>. As <span class="math notranslate nohighlight">\(\mu \rightarrow \infty\)</span>, we approach a pure domain-wall state, while <span class="math notranslate nohighlight">\(\mu \rightarrow 0\)</span> leads towards infinite-temperature thermal state.</p></li>
+<li><p>Circuit Structure: The circuit comprises multiple cycles. Each cycle applies fSim gates to all neighboring pairs in the chain, alternating between odd and even bonds. In the limit <span class="math notranslate nohighlight">\(\theta, \phi \rightarrow 0\)</span> this is equivalent to the Trotter–Suzuki expansion of the XXZ Hamiltonian, with <span class="math notranslate nohighlight">\(\Delta = \sin(\phi/2)/\sin(\theta)\)</span>. The number of qubits is fixed to twice the number of cycles.</p></li>
+<li><p>Analysis: By examining the output states for various random input states, we extract the statistical moments of the transferred magnetization - essentially, the number of spins that flip from one half of the qubit chain to the other.</p></li>
+</ol>
+</section>
+<section id="mimiq-features-used-in-this-demo">
+<h3>MIMIQ Features used in this demo<a class="headerlink" href="#mimiq-features-used-in-this-demo" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Custom gates</p></li>
+<li><p>Batch mode</p></li>
+<li><p>Fast sampling</p></li>
+</ul>
+</section>
+</section>
+<section id="mimiq-implementation">
+<h2>MIMIQ implementation<a class="headerlink" href="#mimiq-implementation" title="Link to this heading">¶</a></h2>
+<p>Let’s begin by importing the necessary packages and establishing a connection to the MIMIQ service.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">sleep</span>
+
+<span class="c1"># create a connection to the MIMIQ server</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">MimiqConnection</span><span class="p">()</span>
+<span class="n">conn</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Connection:
+├── url: https://mimiq.qperfect.io/api
+├── Computing time: 590/10000 minutes
+├── Executions: 783/10000
+├── Max time limit is: Infinite
+├── Default time limit is: 30 minutes
+└── status: open
+</pre></div>
+</div>
+</div>
+</div>
+<p>Next, we’ll define the fSim (fermionic simulation) gate used by Google in their experiment. This gate is characterized by two parameters: theta and phi.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fsim</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a custom fSim (Fermionic Simulation) gate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">phi</span><span class="p">)]</span>
+    <span class="p">])</span>
+    
+    <span class="k">return</span> <span class="n">GateCustom</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We’ll also create functions to initialize the quantum state mimicking the initial conditions of the Google experiment and construct the corresponding circuit.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">build0</span><span class="p">(</span><span class="n">nqubits</span><span class="p">,</span> <span class="n">ncycles</span><span class="p">,</span> <span class="n">fsim_gate</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build the quantum circuit for the XXZ model simulation</span>
+<span class="sd">    assuming a pure domain wall initial state (mu = infty)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">circ</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+    
+    <span class="c1"># prepare initial state</span>
+    <span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateX</span><span class="p">(),</span> <span class="nb">range</span><span class="p">(</span><span class="n">nqubits</span><span class="o">//</span><span class="mi">2</span><span class="p">))</span>
+    
+    <span class="c1"># force MIMIQ to simulate the full chain</span>
+    <span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateID</span><span class="p">(),</span> <span class="n">nqubits</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncycles</span><span class="p">):</span>
+        <span class="c1"># Apply fSim gates to even-odd pairs</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nqubits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">fsim_gate</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Apply fSim gates to odd-even pairs</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nqubits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">fsim_gate</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">circ</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we’re ready to perform our simulation. We’ll use the same parameters as those in Figure 1 of the Google paper, allowing for a direct comparison of results for a pure domain wall (<span class="math notranslate nohighlight">\(\mu = \infty\)</span>). Below we build a list of circuits, each for a different number of cycles up to 23.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">theta</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="mf">0.4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">0.8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="n">nqubits</span> <span class="o">=</span> <span class="mi">46</span>
+<span class="n">circuits</span> <span class="o">=</span> <span class="p">[</span><span class="n">build0</span><span class="p">(</span><span class="n">nqubits</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">fsim</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span><span class="n">phi</span><span class="p">))</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>This returns a list of 24 circuits, each representing a different number of cycles from 0 to 23. To efficiently process these, we’ll leverage MIMIQ’s batch mode capability. To ensure the accuracy of our simulation, we’ll explicitly set the bond dimension, which controls the amount of entanglement that can be represented in the simulation. A higher bond dimension generally leads to more accurate results but can increase the run time. After running the simulations, we’ll print the fidelity estimates for each circuit to check the accuracy.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bonddim</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">nsamples</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">12</span>
+<span class="n">job</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">circuits</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;mps&quot;</span><span class="p">,</span> <span class="n">nsamples</span> <span class="o">=</span> <span class="n">nsamples</span><span class="p">,</span> <span class="n">bonddim</span><span class="o">=</span><span class="n">bonddim</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Cycle | Qubits | Fidelity</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">28</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">simulation</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+    <span class="n">nqubits</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cycle</span>
+    <span class="n">fidelity</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">fidelities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cycle</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">nqubits</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">fidelity</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> Cycle | Qubits | Fidelity
+ ----------------------------
+     0 |      0 | 1.000000
+     1 |      2 | 1.000000
+     2 |      4 | 1.000000
+     3 |      6 | 1.000000
+     4 |      8 | 1.000000
+     5 |     10 | 1.000000
+     6 |     12 | 1.000000
+     7 |     14 | 1.000000
+     8 |     16 | 0.996208
+     9 |     18 | 0.996207
+    10 |     20 | 0.996181
+    11 |     22 | 0.995038
+    12 |     24 | 0.994884
+    13 |     26 | 0.994762
+    14 |     28 | 0.994314
+    15 |     30 | 0.993781
+    16 |     32 | 0.993322
+    17 |     34 | 0.992665
+    18 |     36 | 0.992001
+    19 |     38 | 0.991365
+    20 |     40 | 0.990076
+    21 |     42 | 0.988211
+    22 |     44 | 0.986008
+    23 |     46 | 0.981561
+</pre></div>
+</div>
+</div>
+</div>
+<p>Our simulations show fidelities very close to 1, decreasing slightly for larger cycle numbers. This high fidelity indicates the accuracy of our simulation. If you wish to extend the simulation even further, you may want to increase the bond dimension even more.</p>
+</section>
+<section id="reproducing-some-plots-from-the-paper">
+<h2>Reproducing some plots from the paper<a class="headerlink" href="#reproducing-some-plots-from-the-paper" title="Link to this heading">¶</a></h2>
+<p>Lets visualize the samples from each cycle.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Choose at random one sample from each simulation</span>
+<span class="n">bitstrings</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">simulation</span><span class="o">.</span><span class="n">cstates</span><span class="p">)</span><span class="o">.</span><span class="n">to01</span><span class="p">()</span> <span class="k">for</span> <span class="n">simulation</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+<span class="n">mz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">bitstrings</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="c1"># Create a custom colormap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearSegmentedColormap</span>
+<span class="n">my_cmap</span> <span class="o">=</span> <span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span><span class="s2">&quot;custom_cmap&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;#BFBF00&#39;</span><span class="p">,</span> <span class="s1">&#39;#1F77B4&#39;</span><span class="p">])</span>
+
+<span class="c1"># Create the plot</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">mz</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">my_cmap</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">46</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">y</span><span class="o">&lt;=</span><span class="mi">24</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">y</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="mf">0.8</span><span class="p">)</span> 
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Cycle number&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Site in 1D chain&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../../_images/f8d2188ef79a2163edf89bf69d0a81b009790f02c5132dde9a9ee7224f610842.png" src="../../../_images/f8d2188ef79a2163edf89bf69d0a81b009790f02c5132dde9a9ee7224f610842.png" />
+</div>
+</div>
+<p>Lets take a look at the probability distribution of transferred magnetization after t = 1, 5 and 20 cycles. This can be directly compared with figure 1c in the paper. First we will define a simple function to extract the transferred magnetisation.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">transferred_magnetisation_inf</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the transferred magnetisation for each</span>
+<span class="sd">    sample assuming a pure domain wall initial state</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nq</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">mid</span> <span class="o">=</span> <span class="n">nq</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">init_right_sum</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">sample</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+        <span class="n">right_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bit</span><span class="p">)</span> <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="n">sample</span><span class="p">[</span><span class="n">mid</span><span class="p">:])</span>
+        <span class="n">M</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">right_sum</span> <span class="o">-</span> <span class="n">init_right_sum</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">M</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Finally we can plot histograms of the transferred magnetisation for 1, 5 and 20 cycles.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M1</span> <span class="o">=</span> <span class="n">transferred_magnetisation_inf</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">cstates</span><span class="p">)</span>
+<span class="n">M5</span> <span class="o">=</span> <span class="n">transferred_magnetisation_inf</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">cstates</span><span class="p">)</span>
+<span class="n">M20</span> <span class="o">=</span> <span class="n">transferred_magnetisation_inf</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">20</span><span class="p">]</span><span class="o">.</span><span class="n">cstates</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">M1</span><span class="p">,</span> <span class="n">M5</span><span class="p">,</span> <span class="n">M20</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;#FAC3BE&quot;</span><span class="p">,</span> <span class="s2">&quot;#F767A1&quot;</span><span class="p">,</span> <span class="s2">&quot;#AD017E&quot;</span><span class="p">]):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="n">nsamples</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Transferred Magnetization&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Probability&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../../_images/5c0c2811c374f7e0474f7e31b49aed67c69637b17a3f5a87ccd77de596271621.png" src="../../../_images/5c0c2811c374f7e0474f7e31b49aed67c69637b17a3f5a87ccd77de596271621.png" />
+</div>
+</div>
+</section>
+<section id="going-further-with-mimiq">
+<h2>Going further with MIMIQ<a class="headerlink" href="#going-further-with-mimiq" title="Link to this heading">¶</a></h2>
+<p>Having successfully reproduced the experimental protocol, we can now try to verify the Kardar-Parisi-Zhang (KPZ) scaling law. This verification requires a statistical analysis across various initial states for finite values of μ. Ordinarily, this would involve numerous simulations with different random initial states, necessitating many job submissions to the MIMIQ servers. However, we can employ a more efficient approach:</p>
+<ul class="simple">
+<li><p>Prepare the initial state in a superposition which depends on the parameter <span class="math notranslate nohighlight">\(\mu\)</span>.</p></li>
+<li><p>Use Measure instructions before and after applying the circuit.</p>
+<ul>
+<li><p>The first Measure instruction will prepare the initial product state and record it to the first <span class="math notranslate nohighlight">\(n\)</span> bits of the classical register</p></li>
+<li><p>The second Measure instruction will record the final states to the last <span class="math notranslate nohighlight">\(n\)</span> bits of the classical register.</p></li>
+</ul>
+</li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="n">nqubits</span><span class="p">,</span> <span class="n">ncycles</span><span class="p">,</span> <span class="n">fsim_gate</span><span class="p">,</span> <span class="n">mu</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build the full quantum circuit for the XXZ model simulation</span>
+<span class="sd">    </span>
+<span class="sd">    Initialization is performed by preparing the qubits in a superposition state</span>
+<span class="sd">    followed by Measure instruction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">circ</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+
+    <span class="c1"># calculate rotation angle</span>
+    <span class="n">Sz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Sz</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">theta2</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">Sz</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+    
+    <span class="c1"># prepare initial superposition state</span>
+    <span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRY</span><span class="p">(</span><span class="o">-</span><span class="n">theta2</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nqubits</span><span class="o">//</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRY</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">nqubits</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">nqubits</span><span class="p">))</span>
+
+    <span class="c1"># measure initial state</span>
+    <span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Measure</span><span class="p">(),</span> <span class="nb">range</span><span class="p">(</span><span class="n">nqubits</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">nqubits</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncycles</span><span class="p">):</span>
+        <span class="c1"># Apply fSim gates to even-odd pairs</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nqubits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">fsim_gate</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Apply fSim gates to odd-even pairs</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nqubits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">fsim_gate</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># measure final state</span>
+    <span class="n">circ</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Measure</span><span class="p">(),</span> <span class="nb">range</span><span class="p">(</span><span class="n">nqubits</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">nqubits</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">nqubits</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">circ</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="running-the-simulations-mu-1-0">
+<h3>Running the simulations (mu=1.0)<a class="headerlink" href="#running-the-simulations-mu-1-0" title="Link to this heading">¶</a></h3>
+<p>By incorporating Measure instructions, each sample is treated as an independent simulation run. This method allows us to gather a large amount of data in a single execution, though it may take some time to process a high number of samples.</p>
+<p>Let’s prepare our circuit and execute it on the MIMIQ platform.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">theta</span> <span class="o">=</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="n">phi</span> <span class="o">=</span> <span class="mf">0.8</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="n">mu</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">bonddim</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">nsamples</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="mi">800</span> <span class="o">//</span> <span class="n">t</span> <span class="c1"># adaptive number of samples</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">24</span><span class="p">):</span>
+    <span class="n">nqubits</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">t</span>
+    <span class="n">circuits</span> <span class="o">=</span> <span class="n">build</span><span class="p">(</span><span class="n">nqubits</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">fsim</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">),</span> <span class="n">mu</span><span class="p">)</span>
+    <span class="n">job</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="n">circuits</span><span class="p">,</span>
+        <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;mps&quot;</span><span class="p">,</span>
+        <span class="n">nsamples</span><span class="o">=</span><span class="n">nsamples</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+        <span class="n">bonddim</span><span class="o">=</span><span class="n">bonddim</span>
+    <span class="p">)</span>
+    <span class="n">expt</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;job&#39;</span><span class="p">:</span> <span class="n">job</span><span class="p">,</span>
+        <span class="s1">&#39;cycles&#39;</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span>
+        <span class="s1">&#39;bonddim&#39;</span><span class="p">:</span> <span class="n">bonddim</span><span class="p">,</span>
+        <span class="s1">&#39;samples&#39;</span><span class="p">:</span> <span class="n">nsamples</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+        <span class="s1">&#39;nqubits&#39;</span><span class="p">:</span> <span class="n">nqubits</span><span class="p">,</span>
+        <span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="n">mu</span><span class="p">,</span>
+        <span class="s1">&#39;theta&#39;</span><span class="p">:</span> <span class="n">theta</span><span class="p">,</span>
+        <span class="s1">&#39;phi&#39;</span><span class="p">:</span> <span class="n">phi</span>
+    <span class="p">}</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">expt</span><span class="p">)</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="extracting-observables">
+<h3>Extracting observables<a class="headerlink" href="#extracting-observables" title="Link to this heading">¶</a></h3>
+<p>To accommodate our modified approach, we need to create a new function for calculating the transferred magnetization. This function will now base its calculations on both the initial and final bitstrings obtained from our measurements.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">transferred_magnetization</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+    <span class="n">Mz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">))</span>
+    
+    <span class="n">split</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">bs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="n">bs</span><span class="p">[:</span><span class="n">split</span><span class="p">]</span>
+        <span class="n">final</span> <span class="o">=</span> <span class="n">bs</span><span class="p">[</span><span class="n">split</span><span class="p">:]</span>
+        <span class="n">mid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">initial</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">Mz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">final</span><span class="o">.</span><span class="n">to01</span><span class="p">()[:</span><span class="n">mid</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="n">initial</span><span class="o">.</span><span class="n">to01</span><span class="p">()[:</span><span class="n">mid</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Mz</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Once the simulations are complete we’ll retrieve the results and generate a detailed report.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">process_experiment</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">expt</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">conn</span><span class="o">.</span><span class="n">isJobDone</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;job&#39;</span><span class="p">]):</span>
+        <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;done&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">expt</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_result</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;job&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="o">**</span><span class="n">expt</span><span class="p">,</span>
+        <span class="s1">&#39;done&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s1">&#39;fidelities&#39;</span><span class="p">:</span> <span class="n">results</span><span class="o">.</span><span class="n">fidelities</span><span class="p">,</span>
+        <span class="s1">&#39;Mz&#39;</span><span class="p">:</span> <span class="n">transferred_magnetization</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">cstates</span><span class="p">),</span>
+        <span class="s1">&#39;runtimes&#39;</span><span class="p">:</span> <span class="n">results</span><span class="o">.</span><span class="n">timings</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">]</span>
+    <span class="p">}</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">process_experiment</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">expt</span><span class="p">)</span> <span class="k">for</span> <span class="n">expt</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Cycles&#39;</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Fid&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Mean Mz&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Var Mz&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Runtime&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Trials&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">expt</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;done&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;cycles&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;fidelities&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">8.4f</span><span class="si">}</span><span class="s2"> &quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;Mz&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">10.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;Mz&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">10.4f</span><span class="si">}</span><span class="s2"> &quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;runtimes&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">10.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;Mz&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">8d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Cycles      Fid    Mean Mz     Var Mz    Runtime   Trials
+------------------------------------------------------------
+     4   1.0000     3.9600     5.2784     0.3235      200
+     5   1.0000     4.5625     5.5086     0.9066      160
+     6   1.0000     5.2481     4.7881     1.7418      133
+     7   1.0000     6.1228     6.9674     8.2042      114
+     8   0.9988     6.4600     7.1084    30.4813      100
+     9   0.9857     6.7273     8.2893   102.2527       88
+    10   0.9852     7.4000     7.6400   155.9567       80
+    11   0.9683     8.1667    10.5278   287.4743       72
+    12   0.9661     8.8182     9.3306   341.6125       66
+    13   0.9242     8.3934     7.1895   482.8892       61
+    14   0.9301     8.7368     9.3518   543.3167       57
+    15   0.8886     9.4340     8.6607   733.4767       53
+    16   0.8417     8.4800    10.3296   822.1937       50
+    17   0.8218    10.2128    12.1249  1014.0792       47
+    18   0.7656     9.9545     9.9070  1078.3841       44
+    19   0.7876    10.4286    11.7211  1222.1644       42
+    20   0.6642     9.8000    16.1600  1418.8198       40
+    21   0.7046    10.3158     8.3213  1544.4104       38
+    22   0.6063    10.8889    14.5432  1620.0289       36
+    23   0.6122    11.7647    11.4740  1769.6291       34
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-the-data-and-compare-with-the-original-experiments">
+<h3>Plot the data and compare with the original experiments<a class="headerlink" href="#plot-the-data-and-compare-with-the-original-experiments" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># generate arrays</span>
+<span class="n">cycles</span> <span class="o">=</span> <span class="p">[</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;cycles&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">expt</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span> <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;done&#39;</span><span class="p">]]</span>
+<span class="n">meanM</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;Mz&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">expt</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span> <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;done&#39;</span><span class="p">]]</span>
+<span class="n">varM</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;Mz&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">expt</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span> <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;done&#39;</span><span class="p">]]</span>
+
+<span class="c1"># Google&#39;s experiments for the mean and variance</span>
+<span class="c1"># https://zenodo.org/records/10957534</span>
+<span class="n">mean_google</span> <span class="o">=</span> <span class="p">[</span><span class="mf">4.13764503e+00</span><span class="p">,</span> <span class="mf">4.86157089e+00</span><span class="p">,</span> <span class="mf">5.53853615e+00</span><span class="p">,</span> <span class="mf">6.25599039e+00</span><span class="p">,</span>
+               <span class="mf">6.86650431e+00</span><span class="p">,</span> <span class="mf">7.47127230e+00</span><span class="p">,</span> <span class="mf">8.01175521e+00</span><span class="p">,</span> <span class="mf">8.49793481e+00</span><span class="p">,</span>
+               <span class="mf">8.91637586e+00</span><span class="p">,</span> <span class="mf">9.35459297e+00</span><span class="p">,</span> <span class="mf">9.80771573e+00</span><span class="p">,</span> <span class="mf">1.02247414e+01</span><span class="p">,</span>
+               <span class="mf">1.06550979e+01</span><span class="p">,</span> <span class="mf">1.10051316e+01</span><span class="p">,</span> <span class="mf">1.13353823e+01</span><span class="p">,</span> <span class="mf">1.17048219e+01</span><span class="p">,</span>
+               <span class="mf">1.19527548e+01</span><span class="p">,</span> <span class="mf">1.23273715e+01</span><span class="p">,</span> <span class="mf">1.24908791e+01</span><span class="p">,</span> <span class="mf">1.29423539e+01</span><span class="p">]</span>
+
+<span class="n">var_google</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">4.16691574e+00</span><span class="p">,</span> <span class="mf">5.13637533e+00</span><span class="p">,</span> <span class="mf">5.99239447e+00</span><span class="p">,</span> <span class="mf">6.81448950e+00</span><span class="p">,</span>
+               <span class="mf">7.57429554e+00</span><span class="p">,</span> <span class="mf">8.30211450e+00</span><span class="p">,</span> <span class="mf">9.09801946e+00</span><span class="p">,</span> <span class="mf">9.73519956e+00</span><span class="p">,</span>
+               <span class="mf">1.03150800e+01</span><span class="p">,</span> <span class="mf">1.09799737e+01</span><span class="p">,</span> <span class="mf">1.16172881e+01</span><span class="p">,</span> <span class="mf">1.20237727e+01</span><span class="p">,</span>
+               <span class="mf">1.27507625e+01</span><span class="p">,</span> <span class="mf">1.31558716e+01</span><span class="p">,</span> <span class="mf">1.38362763e+01</span><span class="p">,</span> <span class="mf">1.41206288e+01</span><span class="p">,</span>
+               <span class="mf">1.46993168e+01</span><span class="p">,</span> <span class="mf">1.50762525e+01</span><span class="p">,</span> <span class="mf">1.52515802e+01</span><span class="p">,</span> <span class="mf">1.51641930e+01</span><span class="p">]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="c1"># First subplot</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">cycles</span><span class="p">,</span> <span class="n">meanM</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">24</span><span class="p">),</span> <span class="n">mean_google</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Mean Transferred Magnetization&quot;</span><span class="p">)</span>
+
+<span class="n">ax2</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">cycles</span><span class="p">,</span> <span class="n">varM</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">24</span><span class="p">),</span> <span class="n">var_google</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Variance of the Transferred Magnetization&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ax1</span><span class="p">,</span><span class="n">ax2</span><span class="p">]:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;$t^{2/3}$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">cycles</span><span class="p">,</span> <span class="mf">1.25</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cycles</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">),</span> <span class="s1">&#39;-k&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">20</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">20</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Cycle number, t&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../../_images/4850fc728fadaacbaefbdfc1769f10630ee3249e180b56516f7c3e9f92289874.png" src="../../../_images/4850fc728fadaacbaefbdfc1769f10630ee3249e180b56516f7c3e9f92289874.png" />
+</div>
+</div>
+<p>The simulations confirm that the mean transferred magnetization and variance closely follow the expected KPZ scaling of <span class="math notranslate nohighlight">\(t^{2/3}\)</span> within sampling precision, aligning with the experiments reported in the Google paper (orange squares). We note that the experimental data appears slightly shifted up compared to the simulations, which upon closer inspection can also be seen when comparing the data to the exact simulataions presented in the paper up to 18 cycles. The estimated full circuit fidelity of our simulations gradually decreases with cycle number, and is still quite high at approximately 0.6 for the largest problem size (23 cycles = 46 qubits) within a time of approximately 1 minute per sample, without significantly impacting the observables. Overall our simulations are substantially faster than what was reported in the Google paper using a large-scale GPU based statevector simulator, with minimal accuracy loss.</p>
+<p>MIMIQ’s capabilities extend beyond this challenging many-body problem, which combines high entanglement with non-trivial observables. We encourage you to explore further using MIMIQ. For example, with MIMIQ you can:</p>
+<ul class="simple">
+<li><p>Analyze of various quantum observables and their higher-order moments</p></li>
+<li><p>Investigate of different quantum models, including higher-dimensional systems</p></li>
+<li><p>Explore of time-dependent quantum problems</p></li>
+<li><p>Study disorder effects and relaxation dynamics in quantum systems</p></li>
+<li><p>Simulate and compare both ideal and noisy quantum circuits
+By leveraging MIMIQ’s advanced features, you can validate theoretical models, discover potential new universality classes, and develop insights into complex quantum systems, pushing the boundaries in many-body physics, quantum simulation, and quantum computing.</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../QV/qv.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Quantum Volume</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../Grover/grover.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Grover’s Algorithm</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023-2026, QPerfect
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/qperfect-io/mimiqcircuits-python" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              <a class="muted-link " href="https://qperfect.io" aria-label="QPerfect">
+                <svg stroke="currentColor" fill="none" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">The Heisenberg XXZ Model and KPZ Universality</a><ul>
+<li><a class="reference internal" href="#introduction-and-context">Introduction and context</a><ul>
+<li><a class="reference internal" href="#the-heisenberg-xxz-model-a-closer-look">The Heisenberg XXZ Model: A Closer Look</a></li>
+<li><a class="reference internal" href="#mimiq-features-used-in-this-demo">MIMIQ Features used in this demo</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mimiq-implementation">MIMIQ implementation</a></li>
+<li><a class="reference internal" href="#reproducing-some-plots-from-the-paper">Reproducing some plots from the paper</a></li>
+<li><a class="reference internal" href="#going-further-with-mimiq">Going further with MIMIQ</a><ul>
+<li><a class="reference internal" href="#running-the-simulations-mu-1-0">Running the simulations (mu=1.0)</a></li>
+<li><a class="reference internal" href="#extracting-observables">Extracting observables</a></li>
+<li><a class="reference internal" href="#plot-the-data-and-compare-with-the-original-experiments">Plot the data and compare with the original experiments</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=a075537f"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../../_static/tabs.js?v=3ee01567"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>

@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.customdiagonal
+=============================================
+
+.. automodule:: mimiqcircuits.operations.gates.customdiagonal
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateCustomDiagonal
+   

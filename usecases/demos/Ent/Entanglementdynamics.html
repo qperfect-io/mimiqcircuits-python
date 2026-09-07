@@ -1,0 +1,1205 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html"><link rel="next" title="API Reference" href="../../../apidocs/mimiqcircuits.html"><link rel="prev" title="GHZ state including dynamic circuits" href="../GHZ/ghz.html">
+        <link rel="prefetch" href="../../../_static/qperfect_logo.png" as="image">
+
+    <!-- Generated with Sphinx 7.4.7 and Furo 2025.12.19 -->
+        <title>Entanglement Dynamics - MIMIQ Circuits v0.27.1</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=6deec1a2" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #990066;
+  --color-brand-content: #990066;
+  --color-inline-code-background: rgba(153, 0, 102, 0.08);
+  --color-admonition-background: #f8f9fc;
+  --color-api-name: #990066;
+  --color-api-pre-name: #4b5563;
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #d94faa;
+  --color-brand-content: #d94faa;
+  --color-background-primary: #0f1117;
+  --color-background-secondary: #161922;
+  --color-background-border: #2d3548;
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+  --color-sidebar-background: #0d0f14;
+  --color-sidebar-background-border: #1f2937;
+  --color-sidebar-link-text: #e5e7eb;
+  --color-sidebar-link-text--top-level: #ffffff;
+  --color-sidebar-item-background--current: rgba(217, 79, 170, 0.15);
+  --color-sidebar-item-background--hover: rgba(217, 79, 170, 0.08);
+  --color-inline-code-background: rgba(249, 168, 212, 0.15);
+  --color-admonition-background: #1a1f2c;
+  --color-api-background: #1a1f2c;
+  --color-api-name: #d94faa;
+  --color-api-pre-name: #9ca3af;
+  --color-highlight-on-target: rgba(255, 215, 0, 0.15);
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #d94faa;
+  --color-brand-content: #d94faa;
+  --color-background-primary: #0f1117;
+  --color-background-secondary: #161922;
+  --color-background-border: #2d3548;
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+  --color-sidebar-background: #0d0f14;
+  --color-sidebar-background-border: #1f2937;
+  --color-sidebar-link-text: #e5e7eb;
+  --color-sidebar-link-text--top-level: #ffffff;
+  --color-sidebar-item-background--current: rgba(217, 79, 170, 0.15);
+  --color-sidebar-item-background--hover: rgba(217, 79, 170, 0.08);
+  --color-inline-code-background: rgba(249, 168, 212, 0.15);
+  --color-admonition-background: #1a1f2c;
+  --color-api-background: #1a1f2c;
+  --color-api-name: #d94faa;
+  --color-api-pre-name: #9ca3af;
+  --color-highlight-on-target: rgba(255, 215, 0, 0.15);
+  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--headings: 'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  --font-stack--monospace: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  --font-weight--headings: 600;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     The MIMIQ Update 2026 is out! Update now to the latest <strong>v0.27.1</strong> version. 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">MIMIQ Circuits v0.27.1</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../_static/qperfect_logo.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">MIMIQ Circuits v0.27.1</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../mimiq_documentation.html">MIMIQ Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start.html">Quick Start</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../manual/index.html">Manual</a><input aria-label="Toggle navigation of Manual" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../manual/getting_started.html">Getting Started</a><input aria-label="Toggle navigation of Getting Started" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/installation.html">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/overview.html">Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../manual/core_concepts.html">Core Concepts</a><input aria-label="Toggle navigation of Core Concepts" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/circuits.html">Circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/hamiltonian.html">Hamiltonians and Time Evolution</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../manual/operations.html">Operations</a><input aria-label="Toggle navigation of Operations" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/unitary_gates.html">Unitary Gates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/classical_ops.html">Classical Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/non_unitary_ops.html">Non-unitary Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/noise.html">Noisy simulations on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/loss.html">Qubit Loss on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/symbolic_ops.html">Symbolic Operations in MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/statistical_ops.html">Statistical Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/special_ops.html">Special Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/zops.html">Z-register Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../manual/simulation.html">Simulation &amp; Execution</a><input aria-label="Toggle navigation of Simulation &amp; Execution" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/local_statevector.html">Quantanium</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/remote_execution.html">Execution on MIMIQ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/simulation_parameters.html">Simulation Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../manual/advanced.html">Advanced Topics</a><input aria-label="Toggle navigation of Advanced Topics" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/import_export.html">Import and export circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/special_topics.html">Special Topics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/compilation.html">Circuit Compilation &amp; Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../manual/implementing_backends.html">Implementing a Custom Backend</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../index.html">Use Cases and Special Workflows</a><input aria-label="Toggle navigation of Use Cases and Special Workflows" checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../vqe.html">Variational Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../circuit_tester.html">Circuit Equivalence Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../QFT/qft.html">Quantum Fourier Transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Grover/grover.html">Grover’s Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../KPZ/kpz.html">The Heisenberg XXZ Model and KPZ Universality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../QV/qv.html">Quantum Volume</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Surfacecode/surfacecode.html">Surface Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GHZ/ghz.html">GHZ state including dynamic circuits</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Entanglement Dynamics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../apidocs/mimiqcircuits.html">API References</a><input aria-label="Toggle navigation of API References" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.circuit.html">mimiqcircuits.circuit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.hamiltonian.html">mimiqcircuits.hamiltonian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.instruction.html">mimiqcircuits.instruction</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.html">mimiqcircuits.operations</a><input aria-label="Toggle navigation of mimiqcircuits.operations" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.amplitude.html">mimiqcircuits.operations.amplitude</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.annotations.html">mimiqcircuits.operations.annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.barrier.html">mimiqcircuits.operations.barrier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.block.html">mimiqcircuits.operations.block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.control.html">mimiqcircuits.operations.control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.entanglement.html">mimiqcircuits.operations.entanglement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.expectationvalue.html">mimiqcircuits.operations.expectationvalue</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.html">mimiqcircuits.operations.gates</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.custom.html">mimiqcircuits.operations.gates.custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.customdiagonal.html">mimiqcircuits.operations.gates.customdiagonal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.delay.html">mimiqcircuits.operations.gates.delay</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.gate.html">mimiqcircuits.operations.gates.gate</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.html">mimiqcircuits.operations.gates.generalized</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates.generalized" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.diffusion.html">mimiqcircuits.operations.gates.generalized.diffusion</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.paulistring.html">mimiqcircuits.operations.gates.generalized.paulistring</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.phasegradient.html">mimiqcircuits.operations.gates.generalized.phasegradient</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.polynomialoracle.html">mimiqcircuits.operations.gates.generalized.polynomialoracle</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.qft.html">mimiqcircuits.operations.gates.generalized.qft</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.rnz.html">mimiqcircuits.operations.gates.generalized.rnz</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.generalized.rpauli.html">mimiqcircuits.operations.gates.generalized.rpauli</a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.html">mimiqcircuits.operations.gates.standard</a><input aria-label="Toggle navigation of mimiqcircuits.operations.gates.standard" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.chadamard.html">mimiqcircuits.operations.gates.standard.chadamard</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cnp.html">mimiqcircuits.operations.gates.standard.cnp</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cnx.html">mimiqcircuits.operations.gates.standard.cnx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cpauli.html">mimiqcircuits.operations.gates.standard.cpauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cphase.html">mimiqcircuits.operations.gates.standard.cphase</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.crotations.html">mimiqcircuits.operations.gates.standard.crotations</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cs.html">mimiqcircuits.operations.gates.standard.cs</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cswap.html">mimiqcircuits.operations.gates.standard.cswap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.csx.html">mimiqcircuits.operations.gates.standard.csx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.cu.html">mimiqcircuits.operations.gates.standard.cu</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.dcx.html">mimiqcircuits.operations.gates.standard.dcx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.deprecated.html">mimiqcircuits.operations.gates.standard.deprecated</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.ecr.html">mimiqcircuits.operations.gates.standard.ecr</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.hadamard.html">mimiqcircuits.operations.gates.standard.hadamard</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.id.html">mimiqcircuits.operations.gates.standard.id</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.interactions.html">mimiqcircuits.operations.gates.standard.interactions</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.iswap.html">mimiqcircuits.operations.gates.standard.iswap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.pauli.html">mimiqcircuits.operations.gates.standard.pauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.phase.html">mimiqcircuits.operations.gates.standard.phase</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.rotations.html">mimiqcircuits.operations.gates.standard.rotations</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.s.html">mimiqcircuits.operations.gates.standard.s</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.swap.html">mimiqcircuits.operations.gates.standard.swap</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.sx.html">mimiqcircuits.operations.gates.standard.sx</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.sy.html">mimiqcircuits.operations.gates.standard.sy</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.t.html">mimiqcircuits.operations.gates.standard.t</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.gates.standard.u.html">mimiqcircuits.operations.gates.standard.u</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.generating_list.html">mimiqcircuits.operations.generating_list</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.ifstatement.html">mimiqcircuits.operations.ifstatement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.inverse.html">mimiqcircuits.operations.inverse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.krauschannel.html">mimiqcircuits.operations.krauschannel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.losschannel.html">mimiqcircuits.operations.losschannel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.measure.html">mimiqcircuits.operations.measure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.measurereset.html">mimiqcircuits.operations.measurereset</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.html">mimiqcircuits.operations.noisechannel</a><input aria-label="Toggle navigation of mimiqcircuits.operations.noisechannel" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.kraus.html">mimiqcircuits.operations.noisechannel.kraus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.mixedunitary.html">mimiqcircuits.operations.noisechannel.mixedunitary</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.html">mimiqcircuits.operations.noisechannel.standards</a><input aria-label="Toggle navigation of mimiqcircuits.operations.noisechannel.standards" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.ampdamping.html">mimiqcircuits.operations.noisechannel.standards.ampdamping</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.depolarizing.html">mimiqcircuits.operations.noisechannel.standards.depolarizing</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.pauli.html">mimiqcircuits.operations.noisechannel.standards.pauli</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping.html">mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.noisechannel.standards.projectivenoise.html">mimiqcircuits.operations.noisechannel.standards.projectivenoise</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operation.html">mimiqcircuits.operations.operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operator.html">mimiqcircuits.operations.operator</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.html">mimiqcircuits.operations.operators</a><input aria-label="Toggle navigation of mimiqcircuits.operations.operators" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.custom.html">mimiqcircuits.operations.operators.custom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.diagonals.html">mimiqcircuits.operations.operators.diagonals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.lossyoperator.html">mimiqcircuits.operations.operators.lossyoperator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.projectors.html">mimiqcircuits.operations.operators.projectors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.operators.sigmas.html">mimiqcircuits.operations.operators.sigmas</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.pairmeasure.html">mimiqcircuits.operations.pairmeasure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.parallel.html">mimiqcircuits.operations.parallel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.power.html">mimiqcircuits.operations.power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.readouterr.html">mimiqcircuits.operations.readouterr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.repeat.html">mimiqcircuits.operations.repeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.rescaledgates.html">mimiqcircuits.operations.rescaledgates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.reset.html">mimiqcircuits.operations.reset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.utils.html">mimiqcircuits.operations.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.operations.whilestatement.html">mimiqcircuits.operations.whilestatement</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.html">mimiqcircuits.classical</a><input aria-label="Toggle navigation of mimiqcircuits.classical" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.abstract_classical.html">mimiqcircuits.classical.abstract_classical</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.and_operation.html">mimiqcircuits.classical.and_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.not_operation.html">mimiqcircuits.classical.not_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.or_operation.html">mimiqcircuits.classical.or_operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.paritycheck.html">mimiqcircuits.classical.paritycheck</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.setbits.html">mimiqcircuits.classical.setbits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.classical.xor_operation.html">mimiqcircuits.classical.xor_operation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.lossmodel.html">mimiqcircuits.lossmodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.noisemodel.html">mimiqcircuits.noisemodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.remote.html">mimiqcircuits.remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.qcsresults.html">mimiqcircuits.qcsresults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.lazy.html">mimiqcircuits.lazy</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.visualization.html">mimiqcircuits.visualization</a><input aria-label="Toggle navigation of mimiqcircuits.visualization" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.visualization.results.html">mimiqcircuits.visualization.results</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.html">mimiqcircuits.backends</a><input aria-label="Toggle navigation of mimiqcircuits.backends" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.backend.html">mimiqcircuits.backends.backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.capabilities.html">mimiqcircuits.backends.capabilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.compiled.html">mimiqcircuits.backends.compiled</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.concrete_passes.html">mimiqcircuits.backends.concrete_passes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.fidelity.html">mimiqcircuits.backends.fidelity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.measure_analysis.html">mimiqcircuits.backends.measure_analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.passes.html">mimiqcircuits.backends.passes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.progress.html">mimiqcircuits.backends.progress</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.remote.html">mimiqcircuits.backends.remote</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../apidocs/_autosummary/mimiqcircuits.backends.stochastic_kind.html">mimiqcircuits.backends.stochastic_kind</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/qperfect-io/mimiqcircuits-python">GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://mimiq.qperfect.io/docs/julia/">Julia APIs</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://qperfect.io">QPerfect</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/qperfect-io/mimiqcircuits-python/blob/main/docs/usecases/demos/Ent/Entanglementdynamics.ipynb?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/qperfect-io/mimiqcircuits-python/edit/main/docs/usecases/demos/Ent/Entanglementdynamics.ipynb" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section class="tex2jax_ignore mathjax_ignore" id="entanglement-dynamics">
+<h1>Entanglement Dynamics<a class="headerlink" href="#entanglement-dynamics" title="Link to this heading">¶</a></h1>
+<p><strong>QPerfect 2025</strong><br />
+<a class="reference external" href="https://qperfect.io/">https://qperfect.io/</a></p>
+<p>The interactive version of this demo can be found at …</p>
+<section id="introduction-and-context">
+<h2>Introduction and Context<a class="headerlink" href="#introduction-and-context" title="Link to this heading">¶</a></h2>
+<p>Arguably, one of the most promising use cases for universal digital quantum computers is the simulation of quantum many-body dynamics [S. Lloyd, Science 273, 1073 (1996), <a class="reference external" href="https://doi.org/10.1126/science.273.5278.1073">https://doi.org/10.1126/science.273.5278.1073</a> ]. For researchers working on quantum many-body problems in physics or chemistry, it can thus be valuable to start formulating a problem in a quantum circuit language. This way the code can be run on real quantum computers in the future. In addition, with MIMIQ being a universal emulator for quantum circuits, the problems can then already been tackled today.</p>
+<p>In two aspects, MIMIQ goes clearly beyond what real quantum computers can do today: i) <strong>Higher fidelities and larger scale</strong> – MIMIQ incorporates advances in classical algorithm development of over 30 years; ii) <strong>Direct access to observables</strong> – Unlike real quantum computers that require costly circuit repetition and sampling, MIMIQ provides direct access to observables (single- or multi-qubit), amplitudes, entanglement properties, … we call it “god mode”.</p>
+<p>The goal of this demo is to demonstrate how to use MIMIQ in practice to conduct research on a recent topic in quantum many-body theory:</p>
+<section id="entanglement-entropy-and-complexity-of-a-quantum-state">
+<h3>Entanglement Entropy and complexity of a quantum state<a class="headerlink" href="#entanglement-entropy-and-complexity-of-a-quantum-state" title="Link to this heading">¶</a></h3>
+<p>Entanglement is a key concept of fundamental interest in quantum many-body theory, for example useful for characterizing quantum phases of matter. In addition, large-scale entanglement is also a fundamental resource for quantum computations and simulations. This is very easy to understand. Consider the following quantum state of <em>n</em> qubits:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+|\psi_{\rm PS}\rangle =|\phi_0\rangle \otimes |\phi_1\rangle \otimes |\phi_2\rangle \otimes \dots \otimes  |\phi_{n-1}\rangle,
+\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(|\phi_i\rangle = c^{[i]}_0 |0_i\rangle +  c^{[i]}_1 |1_i\rangle \)</span> is a state of qubit <em>i</em>. The many-body state <span class="math notranslate nohighlight">\(|\psi_{\rm PS}\rangle \)</span> is a <strong>product state</strong> and does not feature any entanglement by definition, i.e. the bipartite von Neumann entanglement entropy (VNE) of <span class="math notranslate nohighlight">\(|\psi_{\rm PS}\rangle\)</span> vanishes, <span class="math notranslate nohighlight">\(S_{A} = 0\)</span>. Here <span class="math notranslate nohighlight">\(S_{A}\)</span> is the VNE for a bipartition of the two qubits into two blocks <span class="math notranslate nohighlight">\(A\)</span> and <span class="math notranslate nohighlight">\(B\)</span>, and for product states <span class="math notranslate nohighlight">\(S_{A} = 0\)</span> for all such possible bi-partitions. From a computational standpoint, the absence of entanglement allows for an efficient classical representation of the state, here requiring only <span class="math notranslate nohighlight">\(2n\)</span> parameters (<span class="math notranslate nohighlight">\(c^{[i]}_{0,1}\)</span> for <span class="math notranslate nohighlight">\(i = 0,\dots,n-1\)</span>), a number scaling linearly with <span class="math notranslate nohighlight">\(n\)</span>.</p>
+<p>MIMIQ uses <strong>matrix product states (MPS)</strong> (see U. Schollwöck, Ann. Phys. 326, 96 (2011), <a class="reference external" href="https://doi.org/10.1016/j.aop.2010.09.012">https://doi.org/10.1016/j.aop.2010.09.012</a> for a review). An MPS can be thought of as a generalization of product states using a larger number of parameters to describe a state. In contrast to a product state, an MPS can represent states with a controllable amounts of entanglement. In particualr, the amount of VNE for any bi-partition is controlled with a single parameter, the <strong>bond-dimension cutoff</strong>, <span class="math notranslate nohighlight">\(\chi\)</span>. An upper bound of VNE is given by <span class="math notranslate nohighlight">\(S_{A} \leq \log_2 (\chi)\)</span>. In practice, this upper bound can be much smaller than the hypothetical maximally entanglement present in the system (<span class="math notranslate nohighlight">\(S_{A} \leq n/2\)</span> for <span class="math notranslate nohighlight">\(n\)</span> qubits), nevertheless the MPS may be big enought to capture all physics of interest. Note that a product state is simply a special case of an MPS with <span class="math notranslate nohighlight">\(\chi = 1\)</span>.</p>
+<p>The key insight to keep in mind is: It is <strong>not</strong> the number of qubits <span class="math notranslate nohighlight">\(n\)</span> that make a state difficult to represent in classical memory. It is the MPS <strong>bond dimension</strong> <span class="math notranslate nohighlight">\(\chi\)</span> that determines the complexity of the state. The more entanglement appears in some quantum dynamics, the larger <span class="math notranslate nohighlight">\(\chi\)</span> needs to be. Naturally, this has led to an important research question in quantum many-body theory over the past years: <strong>How does entanglement grow over time?</strong></p>
+</section>
+</section>
+<section id="quench-dynamics-in-transverse-ising-models-a-closer-look">
+<h2>Quench Dynamics in Transverse Ising Models: A Closer Look<a class="headerlink" href="#quench-dynamics-in-transverse-ising-models-a-closer-look" title="Link to this heading">¶</a></h2>
+<p>Here we focus on so-called <strong>quantum quench</strong> dynamics in a transverse Ising model, where we study entanglement growth after a sudden change of a system parameter. The general idea is to use a violent quench of one parameter such that the system is take far out of equilibrium initially, leading to sub-sequent rapid build-up of entanglement.</p>
+<p>Our transverse Ising model has the following Hamiltonian:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+   \hat H = \sum_{i&lt;j} J_{ij} \hat \sigma_i^z \hat \sigma_j^z + B \sum_i \hat \sigma_i^x
+   \]</div>
+</div>
+<p>Here, <span class="math notranslate nohighlight">\(\hat \sigma_i^{x,z}\)</span> are usual Pauli matrices, and this model includes an interaction matrix <span class="math notranslate nohighlight">\(J_{ij}\)</span> and a transverse field of strength <span class="math notranslate nohighlight">\(B\)</span>. We call it a spin-1/2 model, by identifying the two spin states as qubit states <span class="math notranslate nohighlight">\(|\!\uparrow\rangle = |0\rangle\)</span> and <span class="math notranslate nohighlight">\(|\!\downarrow\rangle = |1\rangle\)</span>. Let’s consider a situation where we take a system that is in the equilibrium ground state for times <span class="math notranslate nohighlight">\(t&lt;0\)</span> for an infinite negatvie transverse field <span class="math notranslate nohighlight">\(B(t&lt;0) = -\infty\)</span>. This ground-state is a product state given by <span class="math notranslate nohighlight">\(|\psi_{\rm PS}\rangle =|+_0\rangle \otimes |+_1\rangle  \otimes \dots \otimes  |+_{n-1}\rangle\)</span>, where <span class="math notranslate nohighlight">\(|+\rangle\)</span> denotes the positive eigenenstate of <span class="math notranslate nohighlight">\(\hat \sigma^x_i\)</span>, <span class="math notranslate nohighlight">\(|+_i\rangle = (|0\rangle + |1\rangle)/\sqrt(2)\)</span>. We can create this state by applying a series of Hadamard gates to a quantum register initialized in the 0 states. So, let’s start our quantum circuit by creating this state:</p>
+<p>MIMIQ provides built-in tools to set up and simulate entanglement growth in quenched systems.</p>
+</section>
+<section id="mimiq-features-used-in-this-demo">
+<h2>MIMIQ Features Used in This Demo<a class="headerlink" href="#mimiq-features-used-in-this-demo" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Entanglement entropy calculations</strong></p></li>
+<li><p><strong>Expectation values of observables</strong></p></li>
+<li><p><strong>Rotation Gates</strong></p></li>
+<li><p><strong>Simulation of models with long-range connectivity</strong></p></li>
+</ul>
+</section>
+<section id="mimiq-implementation">
+<h2>MIMIQ implementation<a class="headerlink" href="#mimiq-implementation" title="Link to this heading">¶</a></h2>
+<section id="nearest-neighbour-interaction">
+<h3>Nearest-Neighbour Interaction<a class="headerlink" href="#nearest-neighbour-interaction" title="Link to this heading">¶</a></h3>
+<p>First we want to simulate entanglement dynamics for nearest-neighbour interactions in the Ising Hamiltonian</p>
+<p>Let’s begin by importing the necessary packages and establishing a connection to the MIMIQ service.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">MimiqConnection</span><span class="p">()</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>To study entanglement dynamics, we define the following parameters:</p>
+<p>n  → Number of qubits in the system.</p>
+<p>B  → Strength of the transverse field in the Ising model.</p>
+<p>J  → Coupling strength for the interaction terms.</p>
+<p>dt  → Time step for Trotterization.</p>
+<p>steps → Number of discrete time evolution steps.</p>
+<p>tvec  → Time vector representing evolution times.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">B</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">J</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">tvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">steps</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span> 
+</pre></div>
+</div>
+</div>
+</div>
+<p>Next we implement the time evolution. We use <strong>Trotter decomposition</strong>, which approximates the evolution operator.</p>
+<section id="trotter-decomposition">
+<h4>Trotter Decomposition<a class="headerlink" href="#trotter-decomposition" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Decompose evolution into smaller time steps.</p></li>
+</ul>
+<p>Commonly used orders are:</p>
+<ol class="arabic simple">
+<li><p><strong>1st- and 2nd-order Trotterization</strong> – Provides basic approximations.</p></li>
+<li><p><strong>4th-order Trotterization</strong> – The “sweet spot” for accuracy vs. efficiency.</p></li>
+</ol>
+<p>We can map the evolution operator onto a sequence of one- and two-qubit rotation gates. To implement Trotterization efficiently, we decompose the evolution into two fundamental sweeps:</p>
+<ol class="arabic simple">
+<li><p>Left sweep – Evolves the transverse field in a forward direction.</p></li>
+<li><p>Right sweep – Evolves the transverse field in a backward direction.</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">nn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRX</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="n">dt</span><span class="p">),</span> <span class="n">nn</span><span class="p">)</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRZZ</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">J</span> <span class="o">*</span> <span class="n">dt</span><span class="p">),</span> <span class="n">nn</span><span class="p">,</span> <span class="n">nn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRX</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="n">dt</span><span class="p">),</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRX</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="n">dt</span><span class="p">),</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">nn</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)):</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRZZ</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">J</span> <span class="o">*</span> <span class="n">dt</span><span class="p">),</span> <span class="n">nn</span><span class="p">,</span> <span class="n">nn</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRX</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="n">dt</span><span class="p">),</span> <span class="n">nn</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>By alternating these sweeps, we can construct higher-order Trotterization methods to improve the accuracy of the simulation.</p>
+</section>
+<section id="first-order-trotterization-trotter1">
+<h4>First-Order Trotterization (trotter1)<a class="headerlink" href="#first-order-trotterization-trotter1" title="Link to this heading">¶</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">trotter1</span><span class="p">(</span><span class="n">circuit</span><span class="p">):</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="second-order-trotterization-trotter2">
+<h4>Second-Order Trotterization (trotter2)<a class="headerlink" href="#second-order-trotterization-trotter2" title="Link to this heading">¶</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">trotter2</span><span class="p">(</span><span class="n">circuit</span><span class="p">):</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="fourth-order-trotterization-trotter4">
+<h4>Fourth-Order Trotterization (trotter4)<a class="headerlink" href="#fourth-order-trotterization-trotter4" title="Link to this heading">¶</a></h4>
+<p>Uses an alternating sequence of left and right sweeps to increase accuracy.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">trotter4</span><span class="p">(</span><span class="n">circuit</span><span class="p">):</span>
+        
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="o">-</span><span class="n">dt</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="o">-</span><span class="n">dt</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we can start creating our quantum circuit. We use fourth-order Trotterization, which improves accuracy by systematically alternating left and right sweeps with carefully adjusted time steps. This allows us to better approximate the time evolution.</p>
+<p>To construct the circuit:</p>
+<ol class="arabic simple">
+<li><p>First apply Hadamard gates to each qubit, preparing an equal superposition state.</p></li>
+<li><p>At each step, we compute the Von Neumann entropy at the midpoint to track entanglement growth over time.</p></li>
+<li><p>Trotterized evolution – Using fourth-order Trotterization.</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">prepare_circuit</span><span class="p">():</span>
+    
+    <span class="n">circuit</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">nn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">nn</span><span class="p">)</span>
+        
+    <span class="k">for</span> <span class="n">ss</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">VonNeumannEntropy</span><span class="p">(),</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ss</span><span class="p">)</span>
+        <span class="n">trotter4</span><span class="p">(</span><span class="n">circuit</span><span class="p">)</span>
+     
+    <span class="k">return</span> <span class="n">circuit</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we are ready to simulate our circuit with the <strong>MPS</strong> method of the <strong>MIMIQ Simulator</strong>. We write a <code class="docutils literal notranslate"><span class="pre">simulate</span></code> method that returns the job ID.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span><span class="n">bonddim</span><span class="p">):</span>
+    <span class="n">circuit</span> <span class="o">=</span> <span class="n">prepare_circuit</span><span class="p">()</span>
+    <span class="n">job</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">bonddim</span><span class="o">=</span><span class="n">bonddim</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;mps&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">job</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="running-the-simulation-with-different-bond-dimensions">
+<h4>Running the Simulation with Different Bond Dimensions<a class="headerlink" href="#running-the-simulation-with-different-bond-dimensions" title="Link to this heading">¶</a></h4>
+<p>To systematically analyze the impact of bond dimension on simulation performance, we execute our circuit across multiple bond dimension values, submitting the corresponding jobs to the MIMIQ server. We organize the results in a structured dictionary, ensuring efficient storage and retrieval.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bonddim_values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]</span>
+
+<span class="n">job_data</span> <span class="o">=</span> <span class="p">{}</span>  
+<span class="k">for</span> <span class="n">bonddim</span> <span class="ow">in</span> <span class="n">bonddim_values</span><span class="p">:</span>
+    <span class="n">job_id</span> <span class="o">=</span> <span class="n">simulate</span><span class="p">(</span><span class="n">bonddim</span><span class="p">)</span>
+    <span class="n">job_data</span><span class="p">[</span><span class="n">bonddim</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_id</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Submitted job for bonddim=</span><span class="si">{</span><span class="n">bonddim</span><span class="si">}</span><span class="s2">, Job ID: </span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Submitted job for bonddim=16, Job ID: 67becb29f4cc5c2f9b611adf
+Submitted job for bonddim=32, Job ID: 67becb2bf4cc5c2f9b611b98
+Submitted job for bonddim=64, Job ID: 67becb2ef4cc5c2f9b611c51
+Submitted job for bonddim=128, Job ID: 67becb31f4cc5c2f9b611db6
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we retrieve the simulation job IDs from the MIMIQ server, extract the Von Neumann entropy and fidelity for the different bond dimensions, and store the results in dictionaries.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">von_neumann_entropy</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">fidelities</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">bonddim</span><span class="p">,</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">job_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching results for bonddim=</span><span class="si">{</span><span class="n">bonddim</span><span class="si">}</span><span class="s2">, Job ID: </span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_result</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+
+    <span class="n">von_neumann_entropy</span><span class="p">[</span><span class="n">bonddim</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">zstates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">fidelities</span><span class="p">[</span><span class="n">bonddim</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">fidelities</span>  
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fetching results for bonddim=16, Job ID: 67becb29f4cc5c2f9b611adf...
+Fetching results for bonddim=32, Job ID: 67becb2bf4cc5c2f9b611b98...
+Fetching results for bonddim=64, Job ID: 67becb2ef4cc5c2f9b611c51...
+Fetching results for bonddim=128, Job ID: 67becb31f4cc5c2f9b611db6...
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we are ready to plot our results for making it easy we save the results in a list format</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bonddim_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">job_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="n">fidelity_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">fidelities</span><span class="p">[</span><span class="n">bd</span><span class="p">]</span> <span class="k">for</span> <span class="n">bd</span> <span class="ow">in</span> <span class="n">bonddim_values</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Define unique colors and markers for the different bond dimension values.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]</span>
+<span class="n">markers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Here are the results, showing Von Neumann entropy vs. time for different bond dimensions.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bonddim</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bonddim_values</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tvec</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">von_neumann_entropy</span><span class="p">[</span><span class="n">bonddim</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> 
+             <span class="n">marker</span><span class="o">=</span><span class="n">markers</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">markers</span><span class="p">)],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> 
+             <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;bonddim = </span><span class="si">{</span><span class="n">bonddim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time (t)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Von Neumann Entropy&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Von Neumann Entropy Evolution for Different Bond Dimensions&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;von_neumann_entropy_nn.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../../_images/417b27588227dc918489154d2ed1a16bd4cefebf43a735c8fb8f9b5154cef01e.png" src="../../../_images/417b27588227dc918489154d2ed1a16bd4cefebf43a735c8fb8f9b5154cef01e.png" />
+</div>
+</div>
+<p>We also plot fidelity vs. bond dimension.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bonddim_values</span><span class="p">,</span> <span class="n">fidelity_list</span><span class="p">,</span> 
+         <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;darkred&#39;</span><span class="p">,</span> 
+         <span class="n">markersize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Fidelity&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Bond Dimension&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Fidelity&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Fidelity vs Bond Dimension&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;bonddim_nn.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../../_images/1d69590b98861a0685979459c42dcbdae37b454a606ffb122bf33a6e96ac8d45.png" src="../../../_images/1d69590b98861a0685979459c42dcbdae37b454a606ffb122bf33a6e96ac8d45.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="going-further-with-mimiq">
+<h2>Going further with MIMIQ<a class="headerlink" href="#going-further-with-mimiq" title="Link to this heading">¶</a></h2>
+<section id="incorporating-long-range-interactions">
+<h3>Incorporating Long-Range Interactions<a class="headerlink" href="#incorporating-long-range-interactions" title="Link to this heading">¶</a></h3>
+<p>To study the effect of long-range interactions, we modify our <strong>Left</strong> and <strong>Right Sweeps</strong> to include interactions between all qubits instead of just nearest neighbors. The rest of the process remains the same as in the nearest-neighbor case.</p>
+<section id="introducing-distance-dependent-interactions">
+<h4>Introducing Distance-Dependent Interactions<a class="headerlink" href="#introducing-distance-dependent-interactions" title="Link to this heading">¶</a></h4>
+<p>To incorporate long-range connectivity, we introduce the <strong>alpha parameter (α)</strong>, which controls how the interaction strength decays with distance. The coupling strength <strong>Jij</strong> between qubits <strong>i</strong> and <strong>j</strong> is defined as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+J_{ij} = \frac{J}{\text{dist}(i, j)^{\alpha}}
+\]</div>
+</div>
+<p>where <strong>dist(i, j)</strong> represents the absolute distance between qubits <strong>i</strong> and <strong>j</strong>. This modification ensures that the interaction strength decreases as the qubit separation increases, mimicking physical systems with power-law interaction decay.</p>
+<p>Like before, we import the necessary libraries and establish a connection to the MIMIQ server.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mimiqcircuits</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+  
+<span class="n">conn</span> <span class="o">=</span> <span class="n">MimiqConnection</span><span class="p">()</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[INFO] Listening on: 127.0.0.1:1444, thread id: 130552144312128
+[INFO] Please login in your browser at http://localhost:1444
+[INFO] Authentication successful.
+</pre></div>
+</div>
+</div>
+</div>
+<p>Defining the parameters and setting α = 3.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">alpha</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">B</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">J</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">tvec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">steps</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="modified-trotterization-methods">
+<h4>Modified Trotterization Methods<a class="headerlink" href="#modified-trotterization-methods" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Introduces <strong>long-range two-qubit interactions</strong> (<em>RZZ gates</em>) for all pairs based on the distance-dependent coupling.</p></li>
+<li><p>By introducing <strong>long-range interactions</strong>, we extend our simulation beyond the nearest-neighbor case, allowing us to study the effects of <strong>power-law decaying interactions</strong> on entanglement growth and quantum dynamics.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)):</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRX</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="n">dt</span><span class="p">),</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">j</span><span class="p">)</span>
+            <span class="n">Jij</span> <span class="o">=</span> <span class="n">J</span> <span class="o">/</span> <span class="p">(</span><span class="n">dist</span> <span class="o">**</span> <span class="n">alpha</span><span class="p">)</span>
+            <span class="n">param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">Jij</span> <span class="o">*</span> <span class="n">dt</span>
+            <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRZZ</span><span class="p">(</span><span class="n">param</span><span class="p">),</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRX</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="n">dt</span><span class="p">),</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    
+            
+<span class="k">def</span><span class="w"> </span><span class="nf">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRX</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="n">dt</span><span class="p">),</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)):</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">j</span><span class="p">)</span>
+            <span class="n">Jij</span> <span class="o">=</span> <span class="n">J</span> <span class="o">/</span> <span class="p">(</span><span class="n">dist</span> <span class="o">**</span> <span class="n">alpha</span><span class="p">)</span>
+            <span class="n">param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">Jij</span> <span class="o">*</span> <span class="n">dt</span>
+            <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRZZ</span><span class="p">(</span><span class="n">param</span><span class="p">),</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateRX</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="n">dt</span><span class="p">),</span> <span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="defining-fourth-order-trotterization-methods">
+<h4>Defining Fourth-Order Trotterization Methods<a class="headerlink" href="#defining-fourth-order-trotterization-methods" title="Link to this heading">¶</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">trotter4</span><span class="p">(</span><span class="n">circuit</span><span class="p">):</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="o">-</span><span class="n">dt</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="o">-</span><span class="n">dt</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">lsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">rsweep</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="preparing-the-circuit-for-long-range-interactions">
+<h4>Preparing the Circuit for Long-Range Interactions<a class="headerlink" href="#preparing-the-circuit-for-long-range-interactions" title="Link to this heading">¶</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">prepare_circuit</span><span class="p">():</span>
+    
+    <span class="n">circuit</span> <span class="o">=</span> <span class="n">Circuit</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">nn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">GateH</span><span class="p">(),</span> <span class="n">nn</span><span class="p">)</span>
+        
+    <span class="k">for</span> <span class="n">ss</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">VonNeumannEntropy</span><span class="p">(),</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ss</span><span class="p">)</span>
+        <span class="n">trotter4</span><span class="p">(</span><span class="n">circuit</span><span class="p">)</span>
+     
+    <span class="k">return</span> <span class="n">circuit</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Again we are ready to simulate our circuit with the MPS method of the MIMIQ Simulator. We write a <strong>simulate</strong> method that returns the job ID:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span><span class="n">bonddim</span><span class="p">):</span>
+    <span class="n">circuit</span> <span class="o">=</span> <span class="n">prepare_circuit</span><span class="p">()</span>
+    <span class="n">job</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">bonddim</span><span class="o">=</span><span class="n">bonddim</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;mps&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">job</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we run our simulation again for different bond dimensions, as in the nearest-neighbour case:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bonddim_values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">]</span> 
+<span class="n">job_data</span> <span class="o">=</span> <span class="p">{}</span>  
+<span class="k">for</span> <span class="n">bonddim</span> <span class="ow">in</span> <span class="n">bonddim_values</span><span class="p">:</span>
+    <span class="n">job_id</span> <span class="o">=</span> <span class="n">simulate</span><span class="p">(</span> <span class="n">bonddim</span><span class="p">)</span>
+    <span class="n">job_data</span><span class="p">[</span><span class="n">bonddim</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_id</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Submitted job for bonddim=</span><span class="si">{</span><span class="n">bonddim</span><span class="si">}</span><span class="s2">, Job ID: </span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Submitted job for bonddim=16, Job ID: 67be4afcf4cc5c2f9b5dd5b0
+Submitted job for bonddim=32, Job ID: 67be4b42f4cc5c2f9b5dd8f2
+Submitted job for bonddim=64, Job ID: 67be4b89f4cc5c2f9b5ddb6d
+Submitted job for bonddim=128, Job ID: 67be4bd5f4cc5c2f9b5dde07
+</pre></div>
+</div>
+</div>
+</div>
+<p>We retrieve the results, save them in dictionaries, and extract the Von Neumann entropy and fidelity from the simulator results:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">von_neumann_entropy</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">fidelities</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">bonddim</span><span class="p">,</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">job_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching results for bonddim=</span><span class="si">{</span><span class="n">bonddim</span><span class="si">}</span><span class="s2">, Job ID: </span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">get_result</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+
+    <span class="n">von_neumann_entropy</span><span class="p">[</span><span class="n">bonddim</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">zstates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">fidelities</span><span class="p">[</span><span class="n">bonddim</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">fidelities</span>  
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fetching results for bonddim=16, Job ID: 67be4afcf4cc5c2f9b5dd5b0...
+Fetching results for bonddim=32, Job ID: 67be4b42f4cc5c2f9b5dd8f2...
+Fetching results for bonddim=64, Job ID: 67be4b89f4cc5c2f9b5ddb6d...
+Fetching results for bonddim=128, Job ID: 67be4bd5f4cc5c2f9b5dde07...
+</pre></div>
+</div>
+</div>
+</div>
+<p>Convert to lists for easy plotting.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bonddim_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">job_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="n">fidelity_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">fidelities</span><span class="p">[</span><span class="n">bd</span><span class="p">]</span> <span class="k">for</span> <span class="n">bd</span> <span class="ow">in</span> <span class="n">bonddim_values</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Define unique colors and markers for the different bond dimension values.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]</span>
+<span class="n">markers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we plot Von Neumann entropy vs. time.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bonddim</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bonddim_values</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tvec</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">von_neumann_entropy</span><span class="p">[</span><span class="n">bonddim</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> 
+             <span class="n">marker</span><span class="o">=</span><span class="n">markers</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">markers</span><span class="p">)],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> 
+             <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;bonddim = </span><span class="si">{</span><span class="n">bonddim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time (t)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Von Neumann Entropy&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Von Neumann Entropy Evolution for Different Bond Dimensions&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;von_neumann_entropy_lr.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../../_images/fa5a935a10b0e369eb92bbd36f918e618581237002a3e3ae02d17915b2b84db2.png" src="../../../_images/fa5a935a10b0e369eb92bbd36f918e618581237002a3e3ae02d17915b2b84db2.png" />
+</div>
+</div>
+<p>And we plot fidelity vs. bond dimension.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># PLOT 2: </span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bonddim_values</span><span class="p">,</span> <span class="n">fidelity_list</span><span class="p">,</span> 
+         <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;darkred&#39;</span><span class="p">,</span> 
+         <span class="n">markersize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Fidelity&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Bond Dimension&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Fidelity&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Fidelity vs Bond Dimension&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;bonddim_lr.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../../_images/23a172faa5586b4215025144ebc22ad6b309e0470f4abd1ca96c0aaad1f83376.png" src="../../../_images/23a172faa5586b4215025144ebc22ad6b309e0470f4abd1ca96c0aaad1f83376.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">¶</a></h2>
+<p>In this study, we have explored how entanglement grows under different interaction regimes in the Ising Hamiltonian using <strong>Trotterized time evolution</strong>. Our results demonstrate distinct behaviors in entanglement dynamics depending on the nature of the interaction:</p>
+<ul class="simple">
+<li><p><strong>Nearest-neighbor interactions</strong> lead to <strong>linear growth</strong> of entanglement entropy over time.</p></li>
+<li><p><strong>Long-range interactions</strong> (modeled by a power-law decay) exhibit <strong>logarithmic growth</strong> in entanglement entropy, reflecting the broader connectivity of the system.</p></li>
+</ul>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../../../apidocs/mimiqcircuits.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">API Reference</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../GHZ/ghz.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">GHZ state including dynamic circuits</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023-2026, QPerfect
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/qperfect-io/mimiqcircuits-python" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            </a>
+              <a class="muted-link " href="https://qperfect.io" aria-label="QPerfect">
+                <svg stroke="currentColor" fill="none" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Entanglement Dynamics</a><ul>
+<li><a class="reference internal" href="#introduction-and-context">Introduction and Context</a><ul>
+<li><a class="reference internal" href="#entanglement-entropy-and-complexity-of-a-quantum-state">Entanglement Entropy and complexity of a quantum state</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#quench-dynamics-in-transverse-ising-models-a-closer-look">Quench Dynamics in Transverse Ising Models: A Closer Look</a></li>
+<li><a class="reference internal" href="#mimiq-features-used-in-this-demo">MIMIQ Features Used in This Demo</a></li>
+<li><a class="reference internal" href="#mimiq-implementation">MIMIQ implementation</a><ul>
+<li><a class="reference internal" href="#nearest-neighbour-interaction">Nearest-Neighbour Interaction</a><ul>
+<li><a class="reference internal" href="#trotter-decomposition">Trotter Decomposition</a></li>
+<li><a class="reference internal" href="#first-order-trotterization-trotter1">First-Order Trotterization (trotter1)</a></li>
+<li><a class="reference internal" href="#second-order-trotterization-trotter2">Second-Order Trotterization (trotter2)</a></li>
+<li><a class="reference internal" href="#fourth-order-trotterization-trotter4">Fourth-Order Trotterization (trotter4)</a></li>
+<li><a class="reference internal" href="#running-the-simulation-with-different-bond-dimensions">Running the Simulation with Different Bond Dimensions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#going-further-with-mimiq">Going further with MIMIQ</a><ul>
+<li><a class="reference internal" href="#incorporating-long-range-interactions">Incorporating Long-Range Interactions</a><ul>
+<li><a class="reference internal" href="#introducing-distance-dependent-interactions">Introducing Distance-Dependent Interactions</a></li>
+<li><a class="reference internal" href="#modified-trotterization-methods">Modified Trotterization Methods</a></li>
+<li><a class="reference internal" href="#defining-fourth-order-trotterization-methods">Defining Fourth-Order Trotterization Methods</a></li>
+<li><a class="reference internal" href="#preparing-the-circuit-for-long-range-interactions">Preparing the Circuit for Long-Range Interactions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=a075537f"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../../_static/tabs.js?v=3ee01567"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>

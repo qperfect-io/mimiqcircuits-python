@@ -1,0 +1,15 @@
+mimiqcircuits.operations.gates.standard.hadamard
+================================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.hadamard
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateH
+      GateHXY
+      GateHXZ
+      GateHYZ
+   
