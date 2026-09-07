@@ -208,6 +208,12 @@ class GateCustom(Gate):
             new_q = [mapping[q] for q in local_q]
             circ.push(op, *new_q)
 
+        # `_qsd_decomposition` builds a circuit for `U * exp(-i phase)`; putting
+        # the phase back keeps the decomposition equal to `U` and not merely
+        # proportional to it, which matters as soon as the gate sits under a
+        # Control or the circuit is read through amplitudes.
+        if abs(phase) > 1e-14:
+            circ.push(mc.GateU(0, 0, 0, phase), qubits[0])
 
         return circ
 

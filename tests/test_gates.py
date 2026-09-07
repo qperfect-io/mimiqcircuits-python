@@ -308,6 +308,55 @@ def test_GateCustom():
         assert mc.GateCustom(np.eye(2**N, dtype=complex)).num_qubits == N
 
 
+def test_GateCustomDiagonal():
+    d = np.exp(2j * np.pi * np.random.rand(8))
+    gate = mc.GateCustomDiagonal(d)
+
+    assert gate.num_qubits == 3
+    assert np.allclose(gate.unwrappeddiagonal(), d)
+    assert np.allclose(gate.unwrappedmatrix(), np.diag(d))
+    assert np.allclose(
+        np.array(gate.matrix().tolist(), dtype=complex), np.diag(d)
+    )
+    assert np.allclose(gate.inverse().unwrappeddiagonal(), np.conj(d))
+
+    # equal whatever numeric type the entries came in as
+    assert mc.GateCustomDiagonal([1, -1]) == mc.GateCustomDiagonal([1.0, -1.0])
+    assert mc.GateCustomDiagonal([1, -1]) != mc.GateCustomDiagonal([1, 1])
+
+    # only phases are unitary, and only 2**N of them
+    with pytest.raises(ValueError):
+        mc.GateCustomDiagonal([1, 2])
+    with pytest.raises(ValueError):
+        mc.GateCustomDiagonal([1, 1, 1])
+
+
+def test_GateCustomDiagonal_decomposes_into_parity_rotations():
+    # the rewrite is exact, global phase included — which the dense QSD route
+    # applied to a diagonal matrix is not
+    from mimiqcircuits.matrices import reorder_qubits_matrix
+
+    d = np.exp(2j * np.pi * np.array([0.1, 0.4, 0.7, 0.9]))
+    c = mc.Circuit()
+    c.push(mc.GateCustomDiagonal(d), 0, 1)
+
+    u = np.eye(4, dtype=complex)
+    for inst in c.decompose():
+        m = reorder_qubits_matrix(inst.operation.matrix(), list(inst.qubits), 2)
+        u = np.array([[complex(m[i, j]) for j in range(4)] for i in range(4)]) @ u
+    assert np.allclose(u, np.diag(d), atol=1e-10)
+
+
+def test_GateCustomDiagonal_symbolic_entries():
+    x = se.Symbol("x")
+    gate = mc.GateCustomDiagonal([1, se.exp(se.I * x)])
+
+    with pytest.raises(TypeError):
+        gate.unwrappeddiagonal()
+
+    assert gate.evaluate({x: 0}) == mc.GateCustomDiagonal([1, 1])
+
+
 def test_GateCustom_matrix_is_a_method():
     # __init__ used to assign `self.matrix`, which shadowed the method of the
     # same name: `matrix()` was dead code and `Instruction.matrix()` raised

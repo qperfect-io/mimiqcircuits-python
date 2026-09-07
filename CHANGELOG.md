@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.27.1] — 2026-09-07
+
+`bitarray` is now required at `>=3.10`, up from `>=2.9`. `BitString` only uses the
+`bitarray`/`frozenbitarray` constructors, so nothing in the public API changes, but an
+environment pinned to `bitarray 2.x` will no longer resolve.
+
+### Changed
+- `bitarray` is required at `>=3.10,<4`, its first release with supported free-threading — it declares itself safe to run without the GIL, so it no longer forces the interpreter back into GIL-mode on import. The 2.x line also publishes no wheel for the free-threaded ABI, so the old `<3` bound made installing on Python 3.14t build `bitarray` from source, which needs a C compiler on the user's machine.
+- `symengine` is required at `>=0.14.1,<0.15`. The floor is its first release publishing a wheel for the free-threaded CPython ABI (`cp314t`); the cap closes at the next version a `0.y.z` dependency is allowed to break in, so an incompatible release fails to resolve instead of failing at runtime.
+
+### CI
+- The test job runs against Python 3.10, 3.13 and 3.14t, where it previously ran only the image's 3.13.
+
+### Build
+- The package installs and passes its suite on free-threaded CPython 3.14 (`python3.14t`). Free-threading is not yet in effect there: `symengine` does not declare itself safe to run without the GIL, so importing `mimiqcircuits` re-enables it and the interpreter falls back to GIL-mode execution. The declaration is merged upstream but unreleased as of `symengine 0.14.1`, so lifting this needs a `symengine` release plus a deliberate bump of the bound above, with the suite run against it. Setting `PYTHON_GIL=0` overrides the fallback and keeps the GIL off; the released wheels are built with `WITH_SYMENGINE_THREAD_SAFE`, so this overrides a stale declaration rather than running unprotected code, but it is process-wide and applies to every extension.
+
+## [0.27.0] — 2026-08-19
+
+### Added
+- `GateCustomDiagonal(d)`, an `n`-qubit gate given by the `2**n` entries of its diagonal, as `GateCustom` is given by a full matrix. Storing only the diagonal keeps a wide diagonal block at `2**n` numbers rather than `4**n`; entries must be phases. It decomposes exactly into parity rotations (`GateRNZ`/`GateRZ`) through a Walsh-Hadamard expansion of its phases, so backends that do not know the gate still handle it.
+- `fuse_circuit` and `FusePass` take `max_diagonal_support` (default: `max_support`), the width budget for runs where every gate is diagonal in the computational basis. Such runs now fuse into a `GateCustomDiagonal` and are composed by multiplying diagonals elementwise, never building the dense block. A cluster keeps the diagonal budget only while all of its gates are diagonal; the first dense gate joining it brings it back under `max_support`. With the default budget the emitted blocks cover the same gates as before, but an all-diagonal block comes out as `GateCustomDiagonal` rather than `GateCustom`.
+- Wire format 1.2.0: the `circuit.proto` schema gains a `CustomDiagonalGate` message, carried by the `Gate`, `Operator` and `Operation` oneofs. Additive, so an older decoder ignores it and a newer one still reads old payloads; a client emitting `GateCustomDiagonal` needs an executor speaking 1.2.0.
+
+### Fixed
+- The decomposition of `GateCustom` reproduces the gate exactly, where it used to be off by a global phase — and, on a matrix whose singular values are degenerate (any diagonal one), could put an O(1) phase on a single amplitude: the worst 2-qubit case measured a fidelity of 0.53. Two causes: `_qsd_decomposition` returns a circuit for `U * exp(-i phi)` and `GateCustom._decompose` discarded `phi`, and both `_zyz_decomposition` and `_csd_decomposition` derived their angles through `arccos` of a cosine that is 1 to within rounding, which costs half the mantissa (`arccos(1 - eps) ~ sqrt(2 eps)`) and misdirected the branch that decides which matrix entries carry the phases. Angles now come from `arctan2` of a sine and a cosine read directly off the matrix, a diagonal block gets `theta = 0` exactly, and the phase is put back. Decomposed circuits are unchanged in structure apart from a trailing global-phase `GateU`.
+
 ## [0.26.7] — 2026-08-18
 
 `GateCustom.matrix` is a method again, as it is on every other operation. Read it

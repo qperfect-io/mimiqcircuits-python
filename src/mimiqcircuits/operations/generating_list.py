@@ -82,6 +82,7 @@ class InheritanceTree:
                 :class:`Diffusion`
                 :class:`GateCall`
                 :class:`GateCustom`
+                :class:`GateCustomDiagonal`
                 :class:`GateDCX`
                 :class:`GateECR`
                 :class:`GateH`
@@ -367,6 +368,7 @@ class CLASSICALOPERATIONS:
     def list():
         return [
             GateCustom,
+            GateCustomDiagonal,
             GateU,
             GateID,
             GateX,
@@ -485,6 +487,7 @@ SIMPLEGATES_GROUPS = {
         GateHXZ,
         GateHYZ,
         GateCustom,
+        GateCustomDiagonal,
     ],
 }
 

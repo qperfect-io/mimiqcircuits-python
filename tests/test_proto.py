@@ -162,6 +162,12 @@ def test_gate_custom_proto(tmpdir):
     base_gate_operation_test(circuit, gate_custom, tmpdir, 0)
 
 
+def test_gate_customdiagonal_proto(tmpdir):
+    circuit = mc.Circuit()
+    gate = mc.GateCustomDiagonal([1, 1j, -1, -1j])
+    base_gate_operation_test(circuit, gate, tmpdir, 2, 0)
+
+
 def test_gate_x_proto(tmpdir):
     circuit = mc.Circuit()
     gate_x = mc.GateX()

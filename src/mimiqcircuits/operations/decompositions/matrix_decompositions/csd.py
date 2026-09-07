@@ -47,31 +47,36 @@ def _csd_decomposition(U, threshold=1e-6):
     C_diag = np.clip(S0, 0.0, 1.0)
     R0 = Vh0
 
-    theta = np.arccos(C_diag)
+    # Derivation from u10 = L1 @ S @ R0 and u01 = -L0 @ S @ R1
+    X = u10 @ R0.conj().T
+    Y = L0.conj().T @ u01
+
+    # `X[:, i] = L1[:, i] * sin(theta_i)` with `L1[:, i]` a unit vector, so the
+    # sines are column norms. Taking them as `sin(arccos(sigma_i))` instead
+    # loses half the significant digits whenever `sigma_i ~ 1` —
+    # `arccos(1 - eps) ~ sqrt(2 eps)` — and a block that is already unitary has
+    # every `sigma_i = 1`, so a diagonal `U` came out with `sin(theta) ~ 1.5e-8`
+    # where it should be 0.
+    sin_theta = np.linalg.norm(X, axis=0)
+    theta = np.arctan2(sin_theta, C_diag)
 
     # Allocate
     L1 = np.zeros((m, m), dtype=complex)
     R1 = np.zeros((m, m), dtype=complex)
 
-    sin_theta = np.sin(theta)
     determined = np.where(sin_theta > threshold)[0]
     undetermined = np.where(sin_theta <= threshold)[0]
 
     # Determined part
-    if len(determined) > 0:
-        S_inv = 1.0 / sin_theta[determined]
-        X = u10 @ R0.conj().T
-        Y = L0.conj().T @ u01
-
-        for i, idx in enumerate(determined):
-            L1[:, idx] = X[:, idx] * S_inv[i]
-            R1[idx, :] = -Y[idx, :] * S_inv[i]
+    for idx in determined:
+        L1[:, idx] = X[:, idx] / sin_theta[idx]
+        R1[idx, :] = -Y[idx, :] / sin_theta[idx]
 
     # Undetermined part
     if len(undetermined) > 0:
         L1_det = L1[:, determined]
         R1_det = R1[determined, :]
-        C_det = np.diag(np.cos(theta[determined]))
+        C_det = np.diag(C_diag[determined])
 
         Rem = u11 - L1_det @ C_det @ R1_det
         Urem, _, Vhrem = svd(Rem)

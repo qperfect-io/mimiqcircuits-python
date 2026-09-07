@@ -37,34 +37,40 @@ def _zyz_decomposition(U):
     u10 = U[1, 0]
     u11 = U[1, 1]
 
-    # Calculate theta from diagonal magnitude
-    cos_theta_2 = min(abs(u00), 1.0)
-    theta = 2.0 * np.arccos(cos_theta_2)
+    # cos(theta/2) and sin(theta/2) read straight off the matrix, and theta from
+    # their ratio. Going through `arccos(|u00|)` instead loses half the
+    # significant digits whenever `|u00| ~ 1` — `arccos(1 - eps) ~ sqrt(2 eps)`,
+    # so a diagonal matrix comes out with theta ~ 1.5e-8 instead of 0, which is
+    # both a 1e-8 error in the reconstruction and enough to miss any test for
+    # "theta is zero".
+    c = abs(u00)
+    s = abs(u10)
+    theta = 2.0 * np.arctan2(s, c)
 
-    atol = 1e-10
-
-    
-    # Case 1: theta ~ 0 (Identity-like)
-    if np.isclose(theta, 0.0, atol=atol):
+    # Diagonal: the off-diagonal entries are exactly zero, so phi is free — only
+    # phi + lambda is fixed, and the conventional choice is phi = 0.
+    if s == 0.0:
         gamma = np.angle(u00)
-        # u11 = exp(i*(gamma + phi + lambda))
-        # choose phi = 0
-        lam = np.angle(u11) - gamma
-        return (0.0, 0.0, float(lam), float(gamma))
+        return (0.0, 0.0, float(np.angle(u11) - gamma), float(gamma))
 
-    
-    # Case 2: theta ~ pi (X-like)
-    if np.isclose(theta, np.pi, atol=atol):
-        # u10 = exp(i*(gamma + phi)), choose phi = 0
+    # Anti-diagonal: both diagonal entries vanish, so gamma and lambda cannot be
+    # read from them. `u01` and `u10` carry independent phases here (any
+    # `[[0, b], [a, 0]]` with `|a| = |b| = 1` is unitary), so lambda must come
+    # from `u01`.
+    if c <= 1e-8 * max(c, s):
         gamma = np.angle(u10)
-        # u01 = -exp(i*(gamma + lambda))
         lam = np.angle(u01) - gamma - np.pi
-        return (float(theta), 0.0, float(lam), float(gamma))
+        return (float(np.pi), 0.0, float(lam), float(gamma))
 
-    
-    # General case
+    # Everywhere else, take every phase from an entry of size cos(theta/2)
+    # except phi, whose defining entry is `u10`. Reading lambda from `u11`
+    # rather than from `u01` is what keeps a near-diagonal matrix exact: the
+    # noisy `angle(u10)` of a vanishing entry then enters phi and lambda with
+    # opposite signs, so it cancels in `phi + lambda` — the only combination
+    # that multiplies cos(theta/2) — and what it does reach is scaled by
+    # sin(theta/2) ~ 0.
     gamma = np.angle(u00)
     phi = np.angle(u10) - gamma
-    lam = np.angle(-u01) - gamma
+    lam = np.angle(u11) - np.angle(u10)
 
     return (float(theta), float(phi), float(lam), float(gamma))

@@ -77,6 +77,7 @@ from mimiqcircuits.operations.losschannel import (
 from mimiqcircuits.operations.gates.gate import Gate
 
 from mimiqcircuits.operations.gates.custom import GateCustom
+from mimiqcircuits.operations.gates.customdiagonal import GateCustomDiagonal
 
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.standard.id import GateID
@@ -420,6 +421,7 @@ __all__ = [
     "MeasureResetZ",
     "Gate",
     "GateCustom",
+    "GateCustomDiagonal",
     "GateU",
     "GateID",
     "GateX",

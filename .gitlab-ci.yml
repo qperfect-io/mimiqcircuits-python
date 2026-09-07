@@ -19,13 +19,16 @@ test:
   rules:
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "devel"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  parallel:
+    matrix:
+      - PYTHON: ["3.10", "3.13", "3.14t"]
   before_script:
     - pip install uv
     - *add-mimiqlink
   script:
     - apt-get update -qq && apt-get install -y -qq build-essential gfortran libopenblas-dev
-    - uv sync
-    - uv run pytest -sxv
+    - uv sync --python $PYTHON
+    - uv run --python $PYTHON pytest -sxv
 
 pages:
   stage: deploy

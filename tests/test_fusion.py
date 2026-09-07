@@ -185,6 +185,97 @@ def test_random_equivalence():
             assert np.allclose(_circuit_unitary(c, nq), _circuit_unitary(f, nq), atol=1e-9)
 
 
+def test_diagonal_run_fuses_into_customdiagonal():
+    c = mc.Circuit()
+    c.push(mc.GateP(0.1), 0)
+    c.push(mc.GateCZ(), 0, 1)
+    c.push(mc.GateRZ(0.3), 1)
+    f = mc.fuse_circuit(c)
+    assert len(f) == 1
+    assert isinstance(f[0].operation, mc.GateCustomDiagonal)
+    assert np.allclose(_circuit_unitary(c, 2), _circuit_unitary(f, 2), atol=1e-12)
+
+
+def test_one_dense_gate_makes_the_block_dense():
+    c = mc.Circuit()
+    c.push(mc.GateP(0.1), 0)
+    c.push(mc.GateH(), 0)
+    c.push(mc.GateCZ(), 0, 1)
+    f = mc.fuse_circuit(c)
+    assert len(f) == 1
+    assert isinstance(f[0].operation, mc.GateCustom)
+    assert np.allclose(_circuit_unitary(c, 2), _circuit_unitary(f, 2), atol=1e-12)
+
+
+def _diagonal_chain():
+    c = mc.Circuit()
+    for q in range(4):
+        c.push(mc.GateP(0.1 * (q + 1)), q)
+    c.push(mc.GateCZ(), 0, 1)
+    c.push(mc.GateCZ(), 1, 2)
+    c.push(mc.GateCZ(), 2, 3)
+    return c
+
+
+def test_max_diagonal_support_widens_diagonal_runs():
+    c = _diagonal_chain()
+    assert len(mc.fuse_circuit(c, 2)) > 1
+
+    f = mc.fuse_circuit(c, 2, 4)
+    assert len(f) == 1
+    assert isinstance(f[0].operation, mc.GateCustomDiagonal)
+    assert tuple(f[0].qubits) == (0, 1, 2, 3)
+    assert np.allclose(_circuit_unitary(c, 4), _circuit_unitary(f, 4), atol=1e-12)
+
+
+def test_customdiagonal_member_with_unsorted_targets():
+    c = mc.Circuit()
+    c.push(mc.GateCustomDiagonal([1, 1j, -1, -1j]), 1, 0)
+    c.push(mc.GateCustomDiagonal([1, np.exp(1.1j)]), 0)
+    f = mc.fuse_circuit(c)
+    assert len(f) == 1
+    assert isinstance(f[0].operation, mc.GateCustomDiagonal)
+    assert np.allclose(_circuit_unitary(c, 2), _circuit_unitary(f, 2), atol=1e-12)
+
+
+def test_narrow_diagonal_budget_still_fuses_densely():
+    c = mc.Circuit()
+    c.push(mc.GateP(0.1), 0)
+    c.push(mc.GateCZ(), 0, 1)
+    f = mc.fuse_circuit(c, 2, 1)
+    assert len(f) == 1
+    assert isinstance(f[0].operation, mc.GateCustom)
+    assert np.allclose(_circuit_unitary(c, 2), _circuit_unitary(f, 2), atol=1e-12)
+
+
+def test_random_equivalence_with_diagonal_budget():
+    rng = Random(20260818)
+    gd = [mc.GateZ, mc.GateT, lambda: mc.GateP(rng.random()),
+          lambda: mc.GateRZ(rng.random())]
+
+    for _ in range(60):
+        nq = rng.randint(2, 5)
+        c = mc.Circuit()
+        for _ in range(rng.randint(2, 20)):
+            r = rng.random()
+            a = rng.randrange(nq)
+            b = rng.choice([x for x in range(nq) if x != a])
+            if r < 0.4:
+                c.push(rng.choice(gd)(), a)
+            elif r < 0.7:
+                c.push(mc.GateCZ(), a, b)
+            elif r < 0.85:
+                c.push(mc.GateH(), a)
+            else:
+                c.push(mc.GateCX(), a, b)
+        for mds in range(1, 6):
+            f = mc.fuse_circuit(c, 2, mds)
+            assert len(f) <= len(c)
+            assert np.allclose(
+                _circuit_unitary(c, nq), _circuit_unitary(f, nq), atol=1e-9
+            )
+
+
 def test_pass_entry_point():
     from mimiqcircuits.backends import PassContext
 

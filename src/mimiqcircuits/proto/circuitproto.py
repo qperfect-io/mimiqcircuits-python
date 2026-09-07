@@ -572,6 +572,17 @@ def toproto_customgate(gate, declcache=None):
     )
 
 
+@gate_registry.register_toproto(mc.GateCustomDiagonal)
+def toproto_customdiagonalgate(gate, declcache=None):
+    """Convert a GateCustomDiagonal to protocol buffer format."""
+    d = [toproto_complex(entry) for entry in gate._d]
+    return circuit_pb2.Gate(
+        customdiagonalgate=circuit_pb2.CustomDiagonalGate(
+            numqubits=gate.num_qubits, diagonal=d
+        )
+    )
+
+
 def toproto_gatedecl(gate, declcache=None):
     """Convert a GateDecl to protocol buffer format."""
     instructions_proto = list(
@@ -701,6 +712,13 @@ def fromproto_customgate(customgate_proto, declcache=None):
     matrix_size = 2**customgate_proto.numqubits
     original_matrix = np.array(U_matrix).reshape(matrix_size, matrix_size).T
     return mc.GateCustom(matrix=original_matrix)
+
+
+@gate_registry.register_fromproto("customdiagonalgate")
+def fromproto_customdiagonalgate(customdiagonalgate_proto, declcache=None):
+    """Convert a protocol buffer CustomDiagonalGate to a GateCustomDiagonal."""
+    d = [fromproto_complex(val) for val in customdiagonalgate_proto.diagonal]
+    return mc.GateCustomDiagonal(d)
 
 
 @gate_registry.register_fromproto("generalized")
@@ -853,6 +871,7 @@ def fromproto_operator(operator_proto, declcache=None):
     gate_fields = [
         "simplegate",
         "customgate",
+        "customdiagonalgate",
         "control",
         "power",
         "inverse",
@@ -1400,6 +1419,7 @@ def fromproto_operation(operation_proto, declcache=None):
     gate_fields = [
         "simplegate",
         "customgate",
+        "customdiagonalgate",
         "control",
         "power",
         "inverse",
@@ -1730,6 +1750,15 @@ def toproto_operation_customgate(gate, declcache=None):
     )
 
 
+def toproto_operation_customdiagonalgate(gate, declcache=None):
+    d = [toproto_complex(entry) for entry in gate._d]
+    return circuit_pb2.Operation(
+        customdiagonalgate=circuit_pb2.CustomDiagonalGate(
+            numqubits=gate.num_qubits, diagonal=d
+        )
+    )
+
+
 def toproto_operation_gatecall(gate, declcache=None):
     args_proto = [toproto_arg(arg) for arg in gate._args]
     if declcache is None:
@@ -1814,6 +1843,9 @@ def register_operation_direct_gates():
     )
     operation_registry.register_toproto_direct(
         mc.GateCustom, toproto_operation_customgate
+    )
+    operation_registry.register_toproto_direct(
+        mc.GateCustomDiagonal, toproto_operation_customdiagonalgate
     )
     operation_registry.register_toproto_direct(
         mc.GateCall, toproto_operation_gatecall

@@ -122,6 +122,28 @@ def test_zyz():
     )
 
 
+def test_zyz_degenerate_is_exact():
+    # A diagonal matrix has theta exactly 0. Deriving it from `arccos(|u00|)`
+    # returned ~1.5e-8 whenever `|u00|` rounded just below 1, which then sent
+    # the rewrite down the general branch and read phases off entries that are
+    # zero. Sweep the phase: which way `|u00|` rounds depends on the value.
+    for k in range(32):
+        a = 2 * np.pi * k / 32
+        U = np.diag([np.exp(1j * a), np.exp(1j * (a + 0.7))]).astype(complex)
+        theta, phi, lam, gamma = _zyz_decomposition(U)
+        assert theta == 0.0
+        np.testing.assert_allclose(
+            to_np(mc.GateU(theta, phi, lam, gamma).matrix()), U, atol=1e-14
+        )
+
+    # Anti-diagonal: `u01` and `u10` carry independent phases
+    U = np.array([[0.0, np.exp(0.7j)], [np.exp(-1.3j), 0.0]], dtype=complex)
+    theta, phi, lam, gamma = _zyz_decomposition(U)
+    np.testing.assert_allclose(
+        to_np(mc.GateU(theta, phi, lam, gamma).matrix()), U, atol=1e-14
+    )
+
+
 def test_csd():
     with pytest.raises(ValueError):
         _csd_decomposition(np.eye(3, dtype=complex))
@@ -140,6 +162,13 @@ def test_csd():
     rec = blkdiag(L0, L1) @ np.block([[C, -S], [S, C]]) @ blkdiag(R0, R1)
     np.testing.assert_allclose(rec, U, atol=1e-6)
 
+    # Block-diagonal input: the off-diagonal blocks are exactly zero, so the
+    # sines are too — they used to come out at ~1.5e-8, the accuracy floor of
+    # `arccos` near 1.
+    D = np.diag(np.exp(1j * np.array([0.3, 1.1, -0.4, 2.2]))).astype(complex)
+    theta = np.array(_csd_decomposition(D)[4].tolist(), dtype=float).reshape(-1)
+    assert np.all(theta == 0.0)
+
 
 def test_qsd():
     U1 = rand_u(2, 9)
@@ -156,3 +185,40 @@ def test_qsd():
     U3 = rand_u(8, 11)
     c3, p3 = _qsd_decomposition(U3)
     assert_phase_eq(circ_mat(c3, 3), np.exp(-1j * p3) * U3, atol=2e-5)
+
+
+def _rewrite(U, n):
+    c = mc.Circuit()
+    c.push(mc.GateCustom(U), *range(n))
+    return circ_mat(c.decompose(), n)
+
+
+def test_gatecustom_rewrite_is_exact():
+    # The rewrite has to reproduce the matrix itself, not just something
+    # proportional to it: the QSD phase used to be dropped on the way out, and a
+    # degenerate (diagonal) input could come back with an O(1) phase on a single
+    # amplitude.
+    fixed = [
+        np.array([[0, 1], [1, 0]], dtype=complex),
+        np.array([[1, 0], [0, -1]], dtype=complex),
+        np.array([[1, 1], [1, -1]], dtype=complex) / np.sqrt(2),
+        np.diag([1, 1, 1, -1]).astype(complex),
+        np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=complex),
+        np.array([[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], dtype=complex),
+        np.kron(np.array([[0, 1], [1, 0]]), np.array([[0, 1], [1, 0]])).astype(complex),
+    ]
+    for U in fixed:
+        n = int(np.log2(U.shape[0]))
+        np.testing.assert_allclose(_rewrite(U, n), U, atol=1e-12)
+
+    # Diagonal matrices: every singular value is degenerate, and which branch of
+    # the 1-qubit rewrite runs depends on how `|u00|` rounds, so sweep the phase
+    # rather than trusting one draw.
+    for k in range(16):
+        a = 2 * np.pi * k / 16
+        d = np.exp(1j * (a + np.array([0.0, 0.3, 1.1, 2.7])))
+        np.testing.assert_allclose(_rewrite(np.diag(d), 2), np.diag(d), atol=1e-12)
+
+    for n, seed in ((1, 21), (2, 22), (3, 23)):
+        U = rand_u(2**n, seed)
+        np.testing.assert_allclose(_rewrite(U, n), U, atol=1e-12)
