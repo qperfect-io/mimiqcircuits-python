@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-09-22
+
+### Added
+- `CompiledProjection` (`mimiqcircuits.backends`) compiles a projection circuit once and runs it over a whole block of shots, where `evaluate_projection` interprets it per shot. `LocalBackend._execute_sampling` uses it. GHZ 100 qubits, 1024 shots: 145 ms to under 1 ms.
+- `evaluate_projection` accepts `And`, `Or`, `Xor` and `ParityCheck`, the operations of the classical language it was missing. It stays the reference `CompiledProjection` is tested against.
+- `MimiqConnection(url, auth_url)` takes an authentication URL and opens a `mimiqlink.QhiveConnection` when one is given, or when `url` is `QPERFECT_DEV`. Quantum Hive authenticates through Keycloak rather than the MIMIQ cloud login, so the two need different connections; every other URL still gets `mimiqlink.MimiqConnection` and behaves as before.
+
+### Changed
+- `BitString.__setitem__` copies the buffer as a `bitarray` rather than through a Python list. Still O(n), since the buffer stays frozen for `__hash__`: 200 writes on a 200-bit string, 0.36 ms to 0.09 ms.
+- `extract_projection` absorbs a trailing `Not`, `And`, `Or`, `Xor`, `ParityCheck`, `SetBit0` or `SetBit1`, where it absorbed only `Measure` and `MeasureReset` before. **This changes which path such a circuit takes**: it evolves once and projects per shot, where it used to evolve once per shot. GHZ 24 qubits, 1000 shots with a `Not`: 527 ms to 7 ms. See `Upgrading` below.
+- `BitString` shares an argument that is already a `frozenbitarray` rather than copying it. The buffer's bit order is kept as given, as the copying path also did, so anything reading the raw buffer must check `.endian`.
+- A write to a classical bit that the projection overwrites without reading is dropped, so reusing a classical bit no longer costs a per-shot write that nothing observes.
+
+### Fixed
+- `_is_writing_op` reads a wrapper's own bit and z-var footprint before unwrapping. `IfStatement`, `PairMeasure` and `ExpectationValue` write a bit or a z-var while wrapping an operator that writes nothing, so they reported no write and did not block their bits: a measurement feeding an `IfStatement`'s condition could be absorbed past it. Matches `AbstractQCSs.jl`, which fixed this in 0.21.7.
+- `get_results` reports the server's reason when a remote job errors on Quantum Hive. Its API returns a `messages` list where the MIMIQ cloud returns `errorMessage`, so the failure came back as the bare "Remote job errored."
+
+### Upgrading
+- A circuit ending in measurements plus classical logic now takes the sampling path. `results.fidelities` and `results.avggateerrors` carry one entry rather than `nsamples`, and a seeded run gives different samples, because the two paths consume randomness differently.
+
+### Build
+- `mimiqlink` is required at `>=0.9,<0.10`, its first release with `QhiveConnection`.
+
 ## [0.27.1] — 2026-09-07
 
 `bitarray` is now required at `>=3.10`, up from `>=2.9`. `BitString` only uses the

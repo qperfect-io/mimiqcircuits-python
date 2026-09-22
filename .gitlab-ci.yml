@@ -9,7 +9,7 @@ variables:
   # Pin mimiqlink-python to a specific commit so CI does not break when its
   # default branch advances ahead of the next tagged release.
   # Use scripts/bump-mimiqlink.sh to update.
-  MIMIQLINK_REF: "f62014225ccdfcac356ce94efebd67600babd37d"
+  MIMIQLINK_REF: "b8f8c415ac9b7b39424ad02555272f34eaead9dd"
 
 .add-mimiqlink: &add-mimiqlink
   - uv add "mimiqlink @ git+https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.qperfect.io/development/mimiq/mimiqlink-python.git@${MIMIQLINK_REF}"

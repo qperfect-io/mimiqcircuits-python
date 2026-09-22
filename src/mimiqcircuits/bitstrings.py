@@ -139,6 +139,19 @@ class BitString:
             >>> BitString(bitarray('101010')) # bitarray
             bs"101010"
         """
+        # A frozenbitarray is already the stored representation and is
+        # immutable, so it can be shared rather than copied. This is the
+        # path every bulk producer of BitStrings takes.
+        #
+        # The buffer's bit order is kept as given, which is what the copying
+        # path did too: `frozenbitarray(x)` preserves `x.endian`. So a
+        # BitString can hold either order, `to01` and indexing read the same
+        # bits from both, and only `tobytes` differs. Anything reading the
+        # raw buffer has to check `.endian` rather than assume.
+        if indices is None and type(arg) is frozenbitarray:
+            self._bits = arg
+            return
+
         if isinstance(arg, int):
             if indices is None:
                 bitstring = arg * "0"
@@ -332,16 +345,20 @@ class BitString:
         return self.bits[index]
 
     def __setitem__(self, index, value):
-        """Set a specific bit by creating a new frozenbitarray."""
+        """Set a specific bit by creating a new frozenbitarray.
+
+        The buffer stays frozen because `__hash__` is defined over it and
+        `QCSResults.histogram()` uses BitStrings as dictionary keys, so a
+        freely mutable buffer would break the key contract. Copying it as a
+        bitarray rather than through a Python list of ints is what keeps a
+        single-bit write from costing two conversions of the whole string.
+        """
         if not isinstance(value, (bool, int)) or value not in (0, 1):
             raise ValueError("Value must be a boolean or an integer (0 or 1).")
 
-        # Convert frozenbitarray to a mutable bitarray
-        temp_bits = self._bits.tolist()
-        temp_bits[index] = value
-
-        # Recreate the frozenbitarray with the updated bits
-        self._bits = frozenbitarray(temp_bits)
+        temp = bitarray(self._bits)
+        temp[index] = value
+        self._bits = frozenbitarray(temp)
 
     def __or__(self, other):
         if not isinstance(other, BitString):

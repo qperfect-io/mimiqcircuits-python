@@ -1160,7 +1160,7 @@ class LocalBackend(Backend):
         expectation values flow through in-circuit ``Amplitude`` /
         ``ExpectationValue`` ops into ``results.zstates``.
         """
-        from mimiqcircuits.backends.measure_analysis import evaluate_projection
+        from mimiqcircuits.backends.compiled_projection import CompiledProjection
 
         progress = progress if progress is not None else NoProgress()
 
@@ -1210,8 +1210,9 @@ class LocalBackend(Backend):
 
         t_sample = time.time()
         samples = state.sample(nsamples, rngs.shot)
-        for s in samples:
-            results.cstates.append(evaluate_projection(projection, s))
+        results.cstates.extend(
+            CompiledProjection.from_circuit(projection).evaluate_batch(samples)
+        )
         results.timings["sample"] = time.time() - t_sample
 
         if nz > 0:

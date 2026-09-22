@@ -105,6 +105,9 @@ from mimiqcircuits.backends.measure_analysis import (
     any_mixed_unitary,
     remap_projection_qubits,
 )
+from mimiqcircuits.backends.compiled_projection import (
+    CompiledProjection,
+)
 from mimiqcircuits.backends.stochastic_kind import (
     StochasticKind,
     default_stochastic_kind,
@@ -219,6 +222,7 @@ __all__ = [
     "needs_loss_sampling",
     "any_mixed_unitary",
     "remap_projection_qubits",
+    "CompiledProjection",
     # stochastic kind
     "StochasticKind",
     "default_stochastic_kind",

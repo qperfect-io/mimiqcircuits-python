@@ -672,13 +672,19 @@ class MimiqConnection(RemoteConnection):
     This is a wrapper around mimiqlink.MimiqConnection to provide the circuit execution API.
     """
 
-    def __init__(self, url=None):
+    def __init__(self, url=None, auth_url=None):
         """Initialize a MimiqConnection.
 
         Args:
             url (str, optional): The URL of the Mimiq server. Defaults to None (using default cloud URL).
+            auth_url (str, optional): The URL of the authentication server. Giving one, or giving
+                ``QPERFECT_DEV`` as ``url``, connects to Quantum Hive, which authenticates through
+                Keycloak. Defaults to None.
         """
-        connection = mimiqlink.MimiqConnection(url)
+        if auth_url is not None or url == mimiqlink.QPERFECT_DEV:
+            connection = mimiqlink.QhiveConnection(url, auth_url)
+        else:
+            connection = mimiqlink.MimiqConnection(url)
         super().__init__(connection)
 
 

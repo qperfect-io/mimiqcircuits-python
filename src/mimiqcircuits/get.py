@@ -136,7 +136,12 @@ def get_results(self, execution, interval=1):
     infos = self.connection.requestInfo(execution)
 
     if infos.status == "ERROR":
-        error_message = infos.get("errorMessage", "Remote job errored.")
+        # The MIMIQ cloud reports the reason in errorMessage, Quantum Hive in messages.
+        error_message = (
+            infos.get("errorMessage", None)
+            or ", ".join(msg["message"] for msg in infos.get("messages", None) or [])
+            or "Remote job errored."
+        )
         raise RuntimeError(f"Remote job errored: {error_message}")
     elif infos.status == "CANCELED":
         raise RuntimeError("Remote job canceled.")
