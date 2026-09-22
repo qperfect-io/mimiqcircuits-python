@@ -1,0 +1,12 @@
+mimiqcircuits.backends.concrete\_passes
+=======================================
+
+.. automodule:: mimiqcircuits.backends.concrete_passes
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CanonicalDecomposePass
+   

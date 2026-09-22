@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.generalized.polynomialoracle
+===========================================================
+
+.. automodule:: mimiqcircuits.operations.gates.generalized.polynomialoracle
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PolynomialOracle
+   

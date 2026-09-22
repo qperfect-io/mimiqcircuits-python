@@ -1,0 +1,22 @@
+﻿mimiqcircuits.hamiltonian
+=========================
+
+.. automodule:: mimiqcircuits.hamiltonian
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      push_expval
+      push_lietrotter
+      push_suzukitrotter
+      push_yoshidatrotter
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Hamiltonian
+      HamiltonianTerm
+   

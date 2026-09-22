@@ -1,0 +1,28 @@
+﻿mimiqcircuits.noisemodel
+========================
+
+.. automodule:: mimiqcircuits.noisemodel
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      apply_noise_model
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AbstractNoiseRule
+      CustomNoiseRule
+      ExactOperationInstanceQubitNoise
+      ExactQubitReadoutNoise
+      GlobalReadoutNoise
+      IdleNoise
+      NoiseModel
+      OperationInstanceNoise
+      SetIdleQubitNoise
+      SetOperationInstanceQubitNoise
+      SetQubitReadoutNoise
+   

@@ -1,0 +1,15 @@
+mimiqcircuits.operations.gates.standard.rotations
+=================================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.rotations
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateR
+      GateRX
+      GateRY
+      GateRZ
+   

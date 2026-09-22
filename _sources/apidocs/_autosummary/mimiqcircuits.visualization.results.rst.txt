@@ -1,0 +1,12 @@
+mimiqcircuits.visualization.results
+===================================
+
+.. automodule:: mimiqcircuits.visualization.results
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      plothistogram
+   

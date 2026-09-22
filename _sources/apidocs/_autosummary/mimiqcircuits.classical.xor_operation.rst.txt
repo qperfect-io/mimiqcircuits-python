@@ -1,0 +1,12 @@
+mimiqcircuits.classical.xor\_operation
+======================================
+
+.. automodule:: mimiqcircuits.classical.xor_operation
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Xor
+   

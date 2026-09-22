@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.generalized.diffusion
+====================================================
+
+.. automodule:: mimiqcircuits.operations.gates.generalized.diffusion
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Diffusion
+   

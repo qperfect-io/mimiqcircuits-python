@@ -1,0 +1,29 @@
+mimiqcircuits.operations.operators.projectors
+=============================================
+
+.. automodule:: mimiqcircuits.operations.operators.projectors
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      to_subscript
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Projector0
+      Projector00
+      Projector01
+      Projector1
+      Projector10
+      Projector11
+      ProjectorX0
+      ProjectorX1
+      ProjectorY0
+      ProjectorY1
+      ProjectorZ0
+      ProjectorZ1
+   

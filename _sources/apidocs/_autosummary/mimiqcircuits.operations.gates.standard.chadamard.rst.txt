@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.standard.chadamard
+=================================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.chadamard
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateCH
+   

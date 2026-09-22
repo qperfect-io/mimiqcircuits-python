@@ -1,0 +1,25 @@
+mimiqcircuits.backends.fidelity
+===============================
+
+.. automodule:: mimiqcircuits.backends.fidelity
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      as_expected
+      as_interval
+      as_lower_bound
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EstimatedFidelity
+      ExactFidelity
+      Fidelity
+      LowerBoundPerStep
+      TruncationLowerBound
+      UnknownFidelity
+   

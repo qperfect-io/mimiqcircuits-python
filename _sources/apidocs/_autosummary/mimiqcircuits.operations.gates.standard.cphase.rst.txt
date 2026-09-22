@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.standard.cphase
+==============================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.cphase
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateCP
+   

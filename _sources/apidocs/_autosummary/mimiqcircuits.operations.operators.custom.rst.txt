@@ -1,0 +1,12 @@
+mimiqcircuits.operations.operators.custom
+=========================================
+
+.. automodule:: mimiqcircuits.operations.operators.custom
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Operator
+   
