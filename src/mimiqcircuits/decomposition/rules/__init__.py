@@ -23,10 +23,13 @@ Available rules:
     - :class:`SpecialAngleRewrite`: Decompose rotations with special angles to Clifford+T
     - :class:`ToZRotationRewrite`: Convert RX/RY to RZ + Clifford gates
     - :class:`ToffoliToCliffordTRewrite`: Optimal Toffoli -> Clifford+T rewrite
+    - :class:`SolovayKitaevRewrite`: Solovay-Kitaev approximation with Clifford+T
+    - :class:`GridSynthRewrite`: Ross-Selinger approximation of RZ with Clifford+T
 """
 
 from mimiqcircuits.decomposition.rules.canonical import CanonicalRewrite
 from mimiqcircuits.decomposition.rules.flatten_containers import FlattenContainers
+from mimiqcircuits.decomposition.rules.gridsynth import GridSynthRewrite
 from mimiqcircuits.decomposition.rules.solovay_kitaev import SolovayKitaevRewrite
 from mimiqcircuits.decomposition.rules.special_angle import SpecialAngleRewrite
 from mimiqcircuits.decomposition.rules.to_z_rotation import ToZRotationRewrite
@@ -43,4 +46,5 @@ __all__ = [
     "ToZRotationRewrite",
     "ToffoliToCliffordTRewrite",
     "SolovayKitaevRewrite",
+    "GridSynthRewrite",
 ]

@@ -35,10 +35,12 @@ Custom passes subclass :class:`AbstractPass` and implement
 from __future__ import annotations
 
 import abc
-import math
+import numbers
 import random
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Optional
+
+import numpy as np
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -80,8 +82,8 @@ class PBool(PassParam):
 
 @dataclass(frozen=True)
 class PSym(PassParam):
-    """Pass parameter that is semantically a :class:`Symbol` (Julia) or
-    :class:`enum.Enum`-like in Python. Distinct from :class:`PStr` at the
+    """Pass parameter that names one of a fixed set of choices, like an
+    :class:`enum.Enum` member. Distinct from :class:`PStr` at the
     tag level.
     """
 
@@ -252,6 +254,210 @@ class PassPipeline:
 
     def __getitem__(self, i):
         return self.passes[i]
+
+    def __add__(self, other):
+        if isinstance(other, PassPipeline):
+            return PassPipeline(self.passes + other.passes)
+        return PassPipeline(self.passes + list(other))
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# Preparation flags
+# ──────────────────────────────────────────────────────────────────────────
+
+
+#: Which pass each preparation flag speaks about, in the order those passes
+#: run. A backend's own pass of a kind must report the same ``spec`` name
+#: (Exaqt's kernel-cost reorder reports ``reorder_qubits``), so a flag finds
+#: it in ``default_passes`` whichever backend declared it.
+_FLAG_PASS_NAMES = {
+    "remove_swaps": "remove_swaps",
+    "simplify": "simplify",
+    "canonicaldecompose": "canonical_decompose",
+    "fuse": "fuse_gates",
+    "reorderqubits": "reorder_qubits",
+}
+
+
+def check_prep_flags(
+    *,
+    fuse=None,
+    fuse_threshold=None,
+    canonicaldecompose=None,
+    reorderqubits=None,
+    remove_swaps=None,
+    simplify=None,
+    reorderqubits_seed=None,
+):
+    """Validate the circuit-preparation flags and return them normalised, as a
+    dict keyed by flag name.
+
+    ``fuse``, ``canonicaldecompose``, ``remove_swaps``, ``simplify`` and
+    ``reorderqubits`` must be ``None`` or a bool (NumPy bools become ``bool``); ``reorderqubits``
+    may also be a method name. ``fuse_threshold`` and ``reorderqubits_seed``
+    must be ``None`` or an integer other than a bool, and become ``int``.
+    Anything else raises :class:`TypeError`: a value like ``fuse=0`` would
+    otherwise read as "set" and install the pass.
+    """
+    out = {}
+    for name, value in (
+        ("fuse", fuse),
+        ("canonicaldecompose", canonicaldecompose),
+        ("reorderqubits", reorderqubits),
+        ("remove_swaps", remove_swaps),
+        ("simplify", simplify),
+    ):
+        if isinstance(value, np.bool_):
+            value = bool(value)
+        if not (value is None or isinstance(value, bool)
+                or (name == "reorderqubits" and isinstance(value, str))):
+            allowed = "None, a bool or a str" if name == "reorderqubits" else "None or a bool"
+            raise TypeError(f"{name} must be {allowed}, not {value!r}")
+        out[name] = value
+    for name, value in (
+        ("fuse_threshold", fuse_threshold),
+        ("reorderqubits_seed", reorderqubits_seed),
+    ):
+        if value is not None:
+            if isinstance(value, (bool, np.bool_)) or not isinstance(value, numbers.Integral):
+                raise TypeError(f"{name} must be None or an integer, not {value!r}")
+            value = int(value)
+        out[name] = value
+    return out
+
+
+def _flag_pass(backend, flag, value, fuse_threshold, reorderqubits_seed):
+    """The pass a flag asks for, when set to anything but ``False``.
+
+    The backend builds it, so a flag never swaps a backend's own pass for the
+    generic one.
+    """
+    if flag == "remove_swaps":
+        return backend.remove_swaps_pass()
+    if flag == "simplify":
+        return backend.simplify_pass()
+    if flag == "canonicaldecompose":
+        return backend.canonical_decompose_pass()
+    if flag == "fuse":
+        return backend.fuse_pass(threshold=fuse_threshold)
+    method = None if value is True else str(value)
+    return backend.reorder_pass(method, seed=reorderqubits_seed)
+
+
+def _flag_rank(name):
+    """Where a pass of this kind runs; passes no flag names rank first."""
+    order = list(_FLAG_PASS_NAMES.values())
+    return order.index(name) + 1 if name in order else 0
+
+
+def _insert_position(names, name):
+    rank = _flag_rank(name)
+    for i, n in enumerate(names):
+        if _flag_rank(n) > rank:
+            return i
+    return len(names)
+
+
+def resolve_pipeline(
+    backend,
+    passes,
+    *,
+    fuse=None,
+    fuse_threshold=None,
+    canonicaldecompose=None,
+    reorderqubits=None,
+    remove_swaps=None,
+    simplify=None,
+    reorderqubits_seed=None,
+) -> "PassPipeline":
+    """Circuit preparation, resolved: the backend's
+    :meth:`~mimiqcircuits.backends.Backend.default_passes`, adjusted by the
+    flags, then extended with the caller's own ``passes``.
+
+    Each flag speaks about one kind of pass. Set to ``False`` it drops that
+    pass from the backend's declaration; set to anything else it replaces it
+    with the pass the backend builds for that flag
+    (:meth:`~mimiqcircuits.backends.Backend.fuse_pass`,
+    :meth:`~mimiqcircuits.backends.Backend.reorder_pass`,
+    :meth:`~mimiqcircuits.backends.Backend.canonical_decompose_pass`,
+    :meth:`~mimiqcircuits.backends.Backend.remove_swaps_pass`,
+    :meth:`~mimiqcircuits.backends.Backend.simplify_pass`), or adds that
+    one if the backend declared none. Everything the flags say nothing about is left exactly as the backend
+    wants it.
+
+    ``passes`` are appended at the end, as given. Invalid flag values raise
+    :class:`TypeError`; see :func:`check_prep_flags`.
+    """
+    flags = check_prep_flags(
+        fuse=fuse,
+        fuse_threshold=fuse_threshold,
+        canonicaldecompose=canonicaldecompose,
+        reorderqubits=reorderqubits,
+        remove_swaps=remove_swaps,
+        simplify=simplify,
+        reorderqubits_seed=reorderqubits_seed,
+    )
+    fuse = flags["fuse"]
+    fuse_threshold = flags["fuse_threshold"]
+    canonicaldecompose = flags["canonicaldecompose"]
+    reorderqubits = flags["reorderqubits"]
+    remove_swaps = flags["remove_swaps"]
+    simplify = flags["simplify"]
+    reorderqubits_seed = flags["reorderqubits_seed"]
+    if fuse is False and fuse_threshold is not None:
+        raise ValueError(
+            f"fuse_threshold={fuse_threshold!r} given with fuse=False: "
+            "nothing to threshold"
+        )
+
+    # A threshold on its own is a request to fuse.
+    if fuse is None and fuse_threshold is not None:
+        fuse = True
+
+    values = {
+        "remove_swaps": remove_swaps,
+        "simplify": simplify,
+        "canonicaldecompose": canonicaldecompose,
+        "fuse": fuse,
+        "reorderqubits": reorderqubits,
+    }
+
+    # Nothing to adjust: leave the backend's declaration alone rather than
+    # taking it apart and putting it back together.
+    if all(v is None for v in values.values()):
+        if passes is None:
+            return backend.default_passes()
+        return backend.default_passes() + passes
+
+    out = list(backend.default_passes())
+    # spec() builds a whole PassSpec, parameters and all, so it is far too
+    # expensive to call per flag per pass: take the names once and keep them in
+    # step with `out`.
+    names = [p.spec().name for p in out]
+
+    for flag, name in _FLAG_PASS_NAMES.items():
+        value = values[flag]
+        if value is None:
+            continue
+
+        i = names.index(name) if name in names else None
+        if value is False:
+            if i is not None:
+                del out[i]
+                del names[i]
+        else:
+            p = _flag_pass(backend, flag, value, fuse_threshold, reorderqubits_seed)
+            if i is None:
+                j = _insert_position(names, name)
+                out.insert(j, p)
+                names.insert(j, name)
+            else:
+                out[i] = p
+
+    if passes is not None:
+        out.extend(passes)
+
+    return PassPipeline(out)
 
 
 # ──────────────────────────────────────────────────────────────────────────

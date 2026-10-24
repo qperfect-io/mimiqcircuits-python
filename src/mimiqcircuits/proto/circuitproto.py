@@ -119,7 +119,6 @@ gate_registry = ProtoRegistry()
 operation_registry = ProtoRegistry()
 krauschannel_registry = ProtoRegistry()
 operator_registry = ProtoRegistry()
-annotation_registry = ProtoRegistry()
 
 # ---------------------- Constants and Mappings ----------------------
 
@@ -194,11 +193,12 @@ GENERALIZEDOPERATIONMAP = {
     mc.And: circuit_pb2.GeneralizedOperationType.And,
     mc.Or: circuit_pb2.GeneralizedOperationType.Or,
     mc.Xor: circuit_pb2.GeneralizedOperationType.Xor,
-    mc.ParityCheck: circuit_pb2.GeneralizedOperationType.ParityCheck,
 }
 
 # Reverse generalized operation mapping: protobuf -> mimiqcircuits
 REVERSE_GENERALIZEDOPERATIONMAP = {v: k for k, v in GENERALIZEDOPERATIONMAP.items()}
+# Files written before ParityCheck was deprecated still carry its enum value.
+REVERSE_GENERALIZEDOPERATIONMAP[circuit_pb2.GeneralizedOperationType.ParityCheck] = mc.Xor
 
 # Kraus Channel mapping: mimiqcircuits -> protobuf
 KRAUSCHANNELMAP = {
@@ -218,6 +218,7 @@ KRAUSCHANNELMAP = {
     mc.ProjectiveNoiseY: circuit_pb2.KrausChannelType.ProjectiveNoiseY,
     mc.ProjectiveNoiseZ: circuit_pb2.KrausChannelType.ProjectiveNoiseZ,
     mc.ProjectiveNoise: circuit_pb2.KrausChannelType.ProjectiveNoiseZ,
+    mc.PrepareStateT: circuit_pb2.KrausChannelType.PrepareStateT,
 }
 
 # Reverse Kraus Channel mapping: protobuf -> mimiqcircuits
@@ -251,8 +252,6 @@ GENERALIZEDGATEMAP = {
     mc.Diffusion: circuit_pb2.GeneralizedType.Diffusion,
     mc.GateRNZ: circuit_pb2.GeneralizedType.GateRNZ,
 }
-
-REVERSE_GENERALIZEDGATEMAP = {v: k for k, v in GENERALIZEDGATEMAP.items()}
 
 # Expression mappings: regex -> protobuf
 EXPRSYMENGINE = {
@@ -359,13 +358,102 @@ def _arg_string(p):
     return circuit_pb2.Arg(symbol_value=circuit_pb2.Symbol(value=p))
 
 
+def _arg_function(mtype, args):
+    return circuit_pb2.Arg(
+        argfunction_value=circuit_pb2.ArgFunction(mtype=mtype, args=args)
+    )
+
+
+def _arg_rational(num, den):
+    # `Arg` has no rational variant: a rational `p/q` travels as `DIV(p, q)`
+    # of two integers, which the decoders read back as an exact rational.
+    if den == 1:
+        return _arg_int(int(num))
+    return _arg_function(
+        circuit_pb2.FunctionType.DIV, [_arg_int(int(num)), _arg_int(int(den))]
+    )
+
+
+def _argbytes(arg):
+    return arg.SerializeToString(deterministic=True)
+
+
+def _sorted_args(args):
+    # Symbolics and SymEngine order the terms of a sum or product differently.
+    # Sorting them by their encoding gives both languages the same bytes; the
+    # decoders rebuild through `+` and `*`, so the order does not change the
+    # value.
+    return sorted(args, key=_argbytes)
+
+
+def _arg_se_add(p):
+    return _arg_function(
+        circuit_pb2.FunctionType.ADD, _sorted_args(map(toproto_arg, p.args))
+    )
+
+
+def _arg_se_quotient(p):
+    # SymEngine stores `x/y` as `Mul(x, Pow(y, -1))` and `1/x` as `Pow(x, -1)`.
+    # The wire format writes a quotient with a non-numeric denominator as
+    # `DIV(num, den)`. A numeric denominator is
+    # left to the product and rational rules. Returns `None` when `p` is not
+    # such a quotient. Powers go through `_arg_se_pow`.
+    num, den = p.as_numer_denom()
+    if den.is_Number:
+        return None
+    return _arg_function(
+        circuit_pb2.FunctionType.DIV, [toproto_arg(num), toproto_arg(den)]
+    )
+
+
+def _arg_se_pow(p):
+    num, den = p.as_numer_denom()
+    if not den.is_Number:
+        # The numerator of a power is always 1, but SymEngine returns `1.0`
+        # for a float exponent such as `x**-0.5`.
+        return _arg_function(
+            circuit_pb2.FunctionType.DIV, [_arg_int(1), toproto_arg(den)]
+        )
+    return _arg_function(circuit_pb2.FunctionType.POW, [toproto_arg(a) for a in p.args])
+
+
+def _arg_se_mul(p):
+    # SymEngine stores `pi/4` as `Mul(1/4, pi)`. The wire format writes a
+    # single factor divided by an integer as `DIV(pi, 4)`, and folds any other
+    # rational into the product's coefficient, so the expression a user writes
+    # as `pi/4` always gives the same bytes and decodes to what the user wrote.
+    quotient = _arg_se_quotient(p)
+    if quotient is not None:
+        return quotient
+    args = p.args
+    coeff = args[0] if args[0].is_Number else None
+    factors = args[1:] if coeff is not None else args
+    if (
+        isinstance(coeff, se.Rational)
+        and coeff.p == 1
+        and coeff.q != 1
+        and len(factors) == 1
+    ):
+        return _arg_function(
+            circuit_pb2.FunctionType.DIV, [toproto_arg(factors[0]), _arg_int(int(coeff.q))]
+        )
+    return _arg_function(
+        circuit_pb2.FunctionType.MUL, _sorted_args(map(toproto_arg, args))
+    )
+
+
 # Direct type -> handler table for the common cases in toproto_arg. Built once
 # at module load (the original code rebuilt it per call).
 _TOPROTO_ARG_HANDLERS = {
     int: _arg_int,
     float: handle_float,
     se.Integer: _arg_se_integer,
-    se.Rational: lambda p: handle_numeric(float(p)),
+    se.Rational: lambda p: _arg_rational(p.p, p.q),
+    type(se.Rational(1, 2)): lambda p: _arg_rational(p.p, p.q),
+    Fraction: lambda p: _arg_rational(p.numerator, p.denominator),
+    se.Add: _arg_se_add,
+    se.Mul: _arg_se_mul,
+    se.Pow: _arg_se_pow,
     se.Float: lambda p: handle_numeric(float(p)),
     se.RealDouble: _arg_se_realdouble,
     se.Symbol: _arg_se_symbol,
@@ -402,6 +490,9 @@ def toproto_arg(param):
         for a in param.args:
             arg.argfunction_value.args.append(toproto_arg(a))
         return arg
+
+    if isinstance(param, se.Rational):
+        return _arg_rational(param.p, param.q)
 
     if isinstance(param, se.Basic):
         if param == se.I:
@@ -1299,8 +1390,6 @@ def toproto_operation(operation, declcache=None):
     if converter:
         return converter(operation, declcache)
 
-    # print(operation_registry.toproto_registry)
-
     if isinstance(operation, mc.krauschannel):
         kraus_proto = toproto_krauschannel(operation, declcache)
         kraus_field_name = kraus_proto.WhichOneof("krauschannel")
@@ -1569,6 +1658,24 @@ def toproto_loss(operation, declcache=None):
 def fromproto_loss(loss_proto, declcache=None):
     """Convert protobuf Loss to mimiqcircuits Loss."""
     return mc.Loss(fromproto_arg(loss_proto.p))
+
+
+@operation_registry.register_toproto(mc.MeasurePauli)
+def toproto_measurepauli(operation, declcache=None):
+    """Convert a MeasurePauli operation to protobuf format."""
+    return circuit_pb2.Operation(
+        measurepauli=circuit_pb2.MeasurePauli(
+            pauli=pauli_pb2.PauliString(
+                numqubits=operation.num_qubits, pauli=operation.pstring()
+            )
+        )
+    )
+
+
+@operation_registry.register_fromproto("measurepauli")
+def fromproto_measurepauli(measurepauli_proto, declcache=None):
+    """Convert protobuf MeasurePauli to mimiqcircuits MeasurePauli."""
+    return mc.MeasurePauli(measurepauli_proto.pauli.pauli)
 
 
 # ------------ Block & Repeat -----------

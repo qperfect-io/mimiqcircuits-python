@@ -91,6 +91,10 @@ def test_lossy_operator_and_loss_aware_kraus():
     channel = Kraus([survival, op])
 
     assert channel.hasloss()
+    assert channel.haslossybranch()
+    assert not Kraus([Operator(np.eye(2))]).haslossybranch()
+    assert not PauliX(0.1).haslossybranch()
+    assert not AmplitudeDamping(0.1).haslossybranch()
     assert channel.lossoperators() == [op]
     assert channel.survivaloperators() == [survival]
 
@@ -407,3 +411,12 @@ def test_thermal_noise():
         ThermalNoise(T1, T2, time, 1.1)
     with pytest.raises(ValueError, match=r"Value of ne must be between 0 and 1\."):
         ThermalNoise(T1, T2, time, -0.1)
+
+
+@pytest.mark.parametrize(
+    "U", [np.array([[0, 1], [1, 0]]), se.Matrix([[1, 0], [0, se.I]])]
+)
+def test_mixedunitary_repr_with_custom_gates(U):
+    op = MixedUnitary([0.5, 0.5], [GateCustom(U), GateX()])
+    assert 'Custom([' in repr(op)
+    assert 'Custom([' in str(op)

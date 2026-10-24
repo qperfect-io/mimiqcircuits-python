@@ -20,7 +20,8 @@ import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.interactions import GateRZX
 from mimiqcircuits.operations.utils import power_idempotent
 from mimiqcircuits.operations.gates.standard.pauli import GateX
-from symengine import sqrt, I, pi, Matrix
+from symengine import sqrt, I, Matrix
+from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 
 
 class GateECR(mcg.Gate):
@@ -80,7 +81,7 @@ class GateECR(mcg.Gate):
     def _decompose(self, circ, qubits, bits, zvars):
         a, b = qubits
 
-        circ.push(GateRZX(pi / 4), a, b)
+        circ.push(GateRZX(PI_4), a, b)
         circ.push(GateX(), a)
-        circ.push(GateRZX(-pi / 4), a, b)
+        circ.push(GateRZX(NEG_PI_4), a, b)
         return circ

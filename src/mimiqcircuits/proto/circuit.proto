@@ -258,6 +258,7 @@ enum KrausChannelType {
     ProjectiveNoiseX = 10;
     ProjectiveNoiseY = 11;
     ProjectiveNoiseZ = 12;
+    PrepareStateT = 13;
 }
 
 message SimpleKrausChannel {
@@ -319,11 +320,11 @@ enum OperationType {
     Pow = 13;
     SetBit0 = 14;
     SetBit1 = 15;
-    // 16 was QubitLoss, folded into Loss in the loss redesign. The encoder
-    // never emits 16 (certain loss serializes as the Loss message); the
-    // decoder still reads it as Loss() so older circuits keep loading.
-    reserved 16;
-    reserved "QubitLoss";
+    // Decode-only: QubitLoss folded into Loss in the loss redesign. The encoder
+    // never emits 16 (certain loss serializes as the Loss message); the decoder
+    // reads it as Loss() so circuits saved by older versions keep loading. The
+    // name stays defined because decoders reject unknown enum values.
+    QubitLoss = 16 [deprecated = true];
     Reload = 17;
     Check = 18;
     MeasureCheck = 19;
@@ -412,6 +413,10 @@ message Loss {
   Arg p = 1;
 }
 
+message MeasurePauli {
+  PauliString pauli = 1;
+}
+
 message Operation {
     oneof operation {
         SimpleGate simplegate = 1;
@@ -447,6 +452,7 @@ message Operation {
         LossyOperator lossyoperator = 31;
         WhileStatement whilestatement = 32;
         CustomDiagonalGate customdiagonalgate = 33;
+        MeasurePauli measurepauli = 34;
     }
 }
 

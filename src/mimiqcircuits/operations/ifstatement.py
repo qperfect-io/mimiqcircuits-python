@@ -97,7 +97,7 @@ class IfStatement(Operation):
         return True
 
     def supports_canonical_rewrite(self):
-        return True
+        return self.op.supports_canonical_rewrite()
 
     def getparams(self):
         return self.op.getparams()
@@ -144,6 +144,8 @@ class IfStatement(Operation):
         return f"{if_chain} {op} @ {', '.join(parts)}"
 
     def evaluate(self, d):
+        if not self.is_symbolic():
+            return self
         return IfStatement(self.op.evaluate(d), self.bitstring)
 
     def get_operation(self):
@@ -161,43 +163,48 @@ class IfStatement(Operation):
         return max(gw, iw)
 
     def _decompose(self, circuit, qtargets, ctargets, ztargets):
-        op = self.op
-        bs_outer = self.get_bitstring()
-        nb_op = op.num_bits
+        from mimiqcircuits.decomposition.rules import CanonicalRewrite
 
-        # Extract condition bits for the outer IfStatement
-        cond_bits = list(ctargets[nb_op : nb_op + len(bs_outer)])
-
-        # Decompose the inner operation (nested IfStatement will be handled recursively)
-        decomposed = op.decompose()
-        instructions = (
-            decomposed.instructions
-            if hasattr(decomposed, "instructions")
-            else decomposed
+        decomposed = _decompose_ifstatement(
+            CanonicalRewrite(), self, qtargets, ctargets, ztargets
         )
-
-        for inst in instructions:
-            inner_op = inst.operation
-            # nested IfStatement
-            if isinstance(inner_op, mc.IfStatement):
-                bs_inner = inner_op.get_bitstring()
-                # inner condition first, then outer condition
-                merged_bits = bs_inner.bits + bs_outer.bits
-                merged_bs = mc.BitString(merged_bits)
-                nested = mc.IfStatement(inner_op.op, merged_bs)
-                nested._decompose(circuit, qtargets, ctargets, ztargets)
-                continue
-
-            q = [qtargets[i] for i in inst.get_qubits()]
-            b = [ctargets[i] for i in inst.get_bits()]
-            z = [ztargets[i] for i in inst.get_zvars()]
-            # inner op bits first, then condition bits
-            targeted_bits = b + cond_bits
-
-            conditional = mc.IfStatement(inner_op, bs_outer)
-            circuit.push(conditional, *q, *targeted_bits, *z)
-
+        for inst in decomposed:
+            circuit.push(inst.operation, *inst.qubits, *inst.bits, *inst.zvars)
         return circuit
+
+
+def _decompose_ifstatement(basis, op, qubits, bits, zvars):
+    """One decomposition step of the body of an IfStatement, kept conditional.
+
+    Decomposes the body of ``op`` once with ``basis`` (a ``DecompositionBasis``
+    or a ``RewriteRule``) and conditions every resulting instruction on the
+    same bits. Bases reuse it so that a conditional gate follows the same rules
+    as the bare gate. Nested conditions are merged into one IfStatement.
+    """
+    from mimiqcircuits.decomposition.abstract import DecompositionBasis
+
+    inner = op.op
+    condition = op.bitstring
+    nb = inner.num_bits
+    target_bits = list(bits[:nb])
+    condition_bits = list(bits[nb:])
+
+    if isinstance(basis, DecompositionBasis):
+        decomposed = basis.decompose(inner, qubits, target_bits, zvars)
+    else:
+        decomposed = basis.decompose_step(inner, qubits, target_bits, zvars)
+
+    circ = mc.Circuit()
+    for inst in decomposed:
+        body = inst.operation
+        if isinstance(body, mc.IfStatement):
+            # Flatten the if statements, the topmost condition goes to the back.
+            merged = mc.BitString(list(body.bitstring) + list(condition))
+            body = mc.IfStatement(body.op, merged)
+        else:
+            body = mc.IfStatement(body, condition)
+        circ.push(body, *inst.qubits, *inst.bits, *condition_bits, *inst.zvars)
+    return circ
 
 
 __all__ = ["IfStatement"]

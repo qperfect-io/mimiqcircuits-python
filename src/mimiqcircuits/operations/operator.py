@@ -28,7 +28,7 @@ from mimiqcircuits import Operation
 
 class UnexpectedSymbolics(ValueError):
     """Raised when :func:`unwrappedmatrix` hits a parameter that can't be
-    evaluated to a number (Julia parity with ``UnexpectedSymbolics``)."""
+    evaluated to a number."""
 
     def __init__(self, op):
         super().__init__(
@@ -132,6 +132,32 @@ def _to_ndarray(m):
     return np.asarray(m.tolist(), dtype=np.complex128)
 
 
+def _matrix_to_ndarray(op, m):
+    """``complex128`` copy of the matrix ``m`` held by ``op``.
+
+    Raises :class:`UnexpectedSymbolics` when an entry is still symbolic.
+    """
+    if not isinstance(m, np.ndarray):
+        if any(getattr(e, "free_symbols", None) for e in m):
+            raise UnexpectedSymbolics(op)
+    return np.array(_to_ndarray(m), dtype=np.complex128)
+
+
+_UNSET = object()
+
+
+def _canonical_instance(cls):
+    """Default-constructed instance of ``cls``, or ``None`` if it needs arguments."""
+    inst = cls.__dict__.get("_CANONICAL_INSTANCE", _UNSET)
+    if inst is _UNSET:
+        try:
+            inst = cls()
+        except (TypeError, ValueError):
+            inst = None
+        setattr(cls, "_CANONICAL_INSTANCE", inst)
+    return inst
+
+
 class AbstractOperator(Operation):
     r"""Supertype for all N-qubit operators.
 
@@ -201,50 +227,73 @@ class AbstractOperator(Operation):
 
         return isinstance(self, mc.Gate)
 
+    def _hascachedmatrix(self):
+        """Whether this operator's matrix may be stored on its class.
+
+        Two kinds of operator are fully determined by their type: plain
+        operators without parameters, and named wrappers such as ``GateT``
+        (``Power(GateZ(), 1/4)``) or ``GateCX`` whose constructor ignores its
+        arguments. The second kind is recognised by comparing the instance to
+        a default-constructed one, so a wrapper subclass that does take
+        arguments, or a generic ``Control``/``Power`` that cannot be built
+        without them, is never cached.
+        """
+        if not self.iswrapper():
+            return not self._parnames
+        canonical = _canonical_instance(type(self))
+        return canonical is not None and self.__dict__ == canonical.__dict__
+
+    def _classmatrix(self):
+        """The matrix stored on the class, built on first use.
+
+        Only valid when :meth:`_hascachedmatrix` holds. Callers must not
+        mutate the result.
+        """
+        cls = type(self)
+        cached = cls.__dict__.get("_MATRIX_CACHE")
+        if cached is None:
+            cached = _as_se_matrix(self._matrix()).applyfunc(_smart_evalf)
+            # Published only once complete, so a concurrent reader sees
+            # either nothing or the finished matrix; a duplicate build is
+            # harmless because both results are equal.
+            setattr(cls, "_MATRIX_CACHE", cached)
+        return cached
+
     def matrix(self):
         """Return the SymEngine matrix representation of the operator.
 
-        Constant (parameter-free) operators are cached at class level, so
-        repeated calls on, say, ``GateX()`` are O(1). Numeric parametric
+        Operators fully determined by their type (parameter-free gates and
+        named wrappers such as ``GateT`` or ``GateCX``) build their matrix
+        once per class and return a fresh copy of it on each call, so
+        mutating the result never affects later calls. Numeric parametric
         operators build a SymEngine matrix through :meth:`_matrix` and then
-        evaluate each non-zero entry to a floating-point scalar. Genuinely
-        symbolic operators return the raw SymEngine expression untouched —
-        the old ``sympy.simplify`` step is deliberately gone; it was the
-        main hot spot and produced no information the caller couldn't
-        recover with their own simplification pass.
+        evaluate each non-zero entry to a floating-point scalar. Symbolic
+        operators return the SymEngine expressions without simplifying them;
+        callers that want a simplified form apply their own simplification.
 
         Returns:
             symengine.Matrix: The matrix representation.
         """
-        # Wrappers (Control, Inverse, Power, Parallel, RescaledGate) have
-        # no _parnames of their own but carry state through the inner op,
-        # so we can only cache when both are empty.
-        if not self._parnames and not self.iswrapper():
-            cls = type(self)
-            cached = cls.__dict__.get("_MATRIX_CACHE")
-            if cached is None:
-                cached = _as_se_matrix(self._matrix()).applyfunc(_smart_evalf)
-                setattr(cls, "_MATRIX_CACHE", cached)
-            return cached
+        if self._hascachedmatrix():
+            return se.DenseMatrix(self._classmatrix())
 
         # applyfunc(_smart_evalf) is cheap on symbolic entries (a
         # free_symbols check) and converts any literal numeric entry
-        # (``1`` → ``1.0``) the same way the old sympy pipeline did —
+        # (``1`` → ``1.0``) the same way the old sympy pipeline did,
         # without paying for sympy.
         return _as_se_matrix(self._matrix()).applyfunc(_smart_evalf)
 
     def _matrix_numeric(self, *params):
         """Build the matrix for fully-numeric parameters as a NumPy array.
 
-        Default implementation: build the SymEngine matrix through
-        :meth:`_matrix` (applied to a freshly-constructed instance with the
-        unwrapped parameters) and cast to ``complex128``. Gates where this
-        is still too slow should override this to construct the matrix with
-        native ``math``/``cmath`` operations — see
+        ``params`` are the unwrapped values of :meth:`getparams`, for
+        overrides that build the matrix from plain numbers. The default
+        ignores them, builds the SymEngine matrix through :meth:`_matrix` and
+        casts it to ``complex128``; :meth:`unwrappedmatrix` has already
+        checked that no parameter is symbolic. Gates where this is too slow
+        override it with native ``math``/``cmath`` operations — see
         :mod:`mimiqcircuits.numerics`.
         """
-        if params:
-            return _to_ndarray(type(self)(*params)._matrix())
         return _to_ndarray(self._matrix())
 
     def inverse(self):
@@ -257,6 +306,37 @@ class AbstractOperator(Operation):
             NotImplementedError: If the method is called.
         """
         raise NotImplementedError("Cannot invert non-unitary operator")
+
+    def rescale(self, scale):
+        """Return a copy of the operator multiplied by ``scale``.
+
+        Every parameter in :attr:`parnames` is multiplied by ``scale``, which
+        is the right thing for operators linear in their parameters
+        (projectors, sigmas, :class:`DiagonalOp`, :class:`Operator`).
+        Operators that are not linear in their parameters override this.
+
+        Raises:
+            NotImplementedError: If the operator has no parameters to scale.
+        """
+        if not self.parnames:
+            raise NotImplementedError(f"rescale not implemented for {self.opname()}")
+        return type(self)(*(getattr(self, name) * scale for name in self.parnames))
+
+    def rescale_inplace(self, scale):
+        """Multiply the operator by ``scale`` in place and return it.
+
+        In-place counterpart of :meth:`rescale`.
+
+        Raises:
+            NotImplementedError: If the operator has no parameters to scale.
+        """
+        if not self.parnames:
+            raise NotImplementedError(
+                f"rescale_inplace not implemented for {self.opname()}"
+            )
+        for name in self.parnames:
+            setattr(self, name, getattr(self, name) * scale)
+        return self
 
     def power(self, n):
         """Raise an error, as powers of non-unitary operators are not supported.
@@ -275,15 +355,15 @@ class AbstractOperator(Operation):
     def unwrappedmatrix(self):
         """Numeric matrix representation as a ``numpy.ndarray[complex128]``.
 
-        This is the Python analogue of Julia's
-        ``unwrappedmatrix(::AbstractOperator)``: simulators and anything
+        Simulators and anything
         else that wants raw numbers (e.g. TensorWeaver) should call this
         instead of :meth:`matrix`. It bypasses SymEngine entirely for gates
         that override :meth:`_matrix_numeric` — see
         :mod:`mimiqcircuits.numerics` — and otherwise falls back to
         building the SymEngine matrix and casting it.
 
-        Constant gates cache the result at class level.
+        Operators fully determined by their type cache the result at class
+        level as a read-only array.
 
         Raises:
             UnexpectedSymbolics: If any parameter is still symbolic.
@@ -291,7 +371,7 @@ class AbstractOperator(Operation):
         Returns:
             numpy.ndarray: ``complex128`` matrix.
         """
-        if not self._parnames and not self.iswrapper():
+        if self._hascachedmatrix():
             cls = type(self)
             cached = cls.__dict__.get("_UNWRAPPED_CACHE")
             if cached is None:

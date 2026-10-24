@@ -31,6 +31,7 @@ from typing import TYPE_CHECKING
 from mimiqcircuits.decomposition.abstract import DecompositionBasis, RewriteRule
 from mimiqcircuits.decomposition.basis import CanonicalBasis, RuleBasis
 from mimiqcircuits.decomposition.rules import CanonicalRewrite
+from mimiqcircuits.operations.gates.gate import Gate
 
 if TYPE_CHECKING:
     from mimiqcircuits import Circuit, Instruction, Operation
@@ -84,8 +85,7 @@ def _rebuild_with_symbols(op, symbols):
     """Rebuild a (possibly wrapped) operation with symbolic parameters.
 
     Traverses the wrapper chain (Control, Inverse, Power) and reconstructs
-    with symbolic params at the leaf gate. Mirrors Julia's _relax_wrapper_type
-    approach.
+    with symbolic params at the leaf gate.
     """
     import mimiqcircuits as mc
     from mimiqcircuits.gatedecl import GateCall
@@ -124,9 +124,9 @@ def _get_leaf_parnames(op):
 
 
 def _wrap_decomposition(inst, basis, cache):
-    """Wrap a non-terminal instruction into a GateDecl/GateCall.
+    """Wrap a non-terminal gate instruction into a GateDecl/GateCall.
 
-    Mirrors Julia's decompose.jl wrap logic: decomposes the operation one step,
+    Decomposes the operation one step,
     recursively wraps the result, creates a GateDecl from the wrapped body,
     and returns a GateCall instruction.
     """
@@ -205,6 +205,29 @@ def _wrap_decomposition(inst, basis, cache):
     return mc.Instruction(GateCall(decl, concrete_args), qs, bs, zs)
 
 
+def _wrap_block(inst, basis, cache):
+    """Wrap a non-terminal, non-gate instruction into a Block.
+
+    The Block holds the wrapped decomposition of the operation, so the gates
+    in it become GateCalls as usual.
+    """
+    import mimiqcircuits as mc
+
+    op = inst.operation
+    nq, nb, nz = op.num_qubits, op.num_bits, op.num_zvars
+    one_step = basis.decompose(
+        op, tuple(range(nq)), tuple(range(nb)), tuple(range(nz))
+    )
+
+    # Push one by one: the Block constructor deep-copies its instructions,
+    # which would duplicate the cached GateDecls.
+    block = mc.Block(nq, nb, nz)
+    for sub_inst in DecomposeIterator(one_step, basis, wrap=True, cache=cache):
+        block.push(sub_inst)
+
+    return mc.Instruction(block, inst.qubits, inst.bits, inst.zvars)
+
+
 class DecomposeIterator(Iterator["Instruction"]):
     """Iterator that yields instructions from recursive decomposition.
 
@@ -215,8 +238,10 @@ class DecomposeIterator(Iterator["Instruction"]):
     Args:
         source: The source to decompose (Circuit, Instruction, or Operation).
         basis: The target decomposition basis.
-        wrap: If True, wrap non-terminal ops into GateDecl/GateCall instead
-              of flattening.
+        wrap: If True, wrap non-terminal ops instead of flattening them:
+              gates into GateDecl/GateCall, other operations (such as
+              MeasureReset) into a Block holding their wrapped
+              decomposition.
         cache: Shared cache dict for wrapped GateDecls (used when wrap=True).
 
     Example:
@@ -278,7 +303,9 @@ class DecomposeIterator(Iterator["Instruction"]):
                 return inst
 
             if self._wrap:
-                return _wrap_decomposition(inst, self._basis, self._cache)
+                if isinstance(op, Gate):
+                    return _wrap_decomposition(inst, self._basis, self._cache)
+                return _wrap_block(inst, self._basis, self._cache)
 
             # Decompose and push onto stack (reversed to maintain order)
             decomposed = self._basis.decompose(
@@ -303,13 +330,16 @@ def decompose(
         source: The circuit, instruction, or operation to decompose.
         basis: The target decomposition basis. If a RewriteRule is provided,
                it is wrapped in a RuleBasis. Defaults to CanonicalBasis.
-        wrap: If True, wrap non-terminal ops into GateDecl/GateCall instead
-              of flattening them into primitives. This produces a circuit with
-              only terminal ops and GateCalls.
+        wrap: If True, wrap non-terminal ops instead of flattening them
+              into primitives. Gates become a GateCall to a GateDecl, shared
+              between identical gates. Other operations, such as
+              MeasureReset or MeasurePauli, become a Block holding their
+              decomposition, whose gates are wrapped in turn. This produces
+              a circuit with only terminal ops, GateCalls and Blocks.
 
     Returns:
         A new Circuit containing only terminal operations (and GateCalls
-        if wrap=True).
+        and Blocks if wrap=True).
 
     Example:
         >>> from mimiqcircuits import *
@@ -441,7 +471,8 @@ def eachdecomposed(
     Args:
         source: The circuit, instruction, or operation to decompose.
         basis: The target decomposition basis. Defaults to CanonicalBasis.
-        wrap: If True, wrap non-terminal ops into GateDecl/GateCall.
+        wrap: If True, wrap non-terminal gates into GateDecl/GateCall and
+              other non-terminal operations into a Block.
 
     Returns:
         An iterator yielding decomposed instructions.

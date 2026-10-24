@@ -15,9 +15,10 @@
 # limitations under the License.
 #
 
-from symengine import I, cos, sin, exp, pi, eye, Matrix
+from symengine import I, cos, sin, exp, pi, Matrix
 import symengine as se
 import numpy as np
+from functools import reduce
 import mimiqcircuits as mc
 import sympy as sp
 
@@ -42,38 +43,8 @@ def sinpi(x):
     return sin(pi * x)
 
 
-def pmatrixpi(lmbda):
-    return Matrix([[1, 0], [0, cispi(lmbda)]])
-
-
 def pmatrix(lmbda):
     return Matrix([[1, 0], [0, cis(lmbda)]])
-
-
-def ctrl(mat):
-    """Single-control version of ``mat``.
-
-    Dispatches on the input type: ``numpy.ndarray`` in, ``numpy.ndarray``
-    out (fast path); SymEngine matrix in, SymEngine matrix out.
-    """
-    if isinstance(mat, np.ndarray):
-        dim = mat.shape[0]
-        out = np.eye(2 * dim, dtype=mat.dtype)
-        out[dim:, dim:] = mat
-        return out
-
-    dim = mat.nrows()
-    m = eye(2 * dim)
-    m[dim:, dim:] = mat
-    return m
-
-
-def gphase(lmbda):
-    return cis(lmbda)
-
-
-def gphasepi(lmbda):
-    return cispi(lmbda)
 
 
 def umatrix(theta, phi, lmbda, gamma=0):
@@ -99,30 +70,6 @@ def umatrixpi(theta, phi, lmbda, gamma=0):
             [cispi(phi + gamma) * sintheta2, cispi(phi + lmbda + gamma) * costheta2],
         ]
     )
-
-
-def rxmatrixpi(theta):
-    return umatrixpi(theta, -1 / 2, 1 / 2)
-
-
-def rxmatrix(theta):
-    return rxmatrixpi(theta / pi)
-
-
-def rymatrixpi(theta):
-    return umatrixpi(theta, 0, 0)
-
-
-def rymatrix(theta):
-    return rymatrixpi(theta / pi)
-
-
-def rzmatrixpi(lmbda):
-    return gphasepi(-lmbda / 2) * umatrixpi(0, 0, lmbda)
-
-
-def rzmatrix(lmbda):
-    return rzmatrixpi(lmbda / pi)
 
 
 def _apply_local(u, g, targets, nq):
@@ -168,6 +115,57 @@ def _index_permutation(qperm, nq):
     return perm
 
 
+# Entry types for which multiplying by the identity padding (``1.0`` or an
+# exact ``0``) gives the same result however many times, and in whatever
+# order, it is applied. Exact complex numbers are excluded: ``I*1.0*0`` is a
+# ``ComplexDouble`` zero while ``I*0`` is an exact ``0``.
+_NUMERIC_SE_TYPES = (se.Rational, se.RealDouble, se.RealMPFR, se.ComplexDouble)
+
+
+def _isnumeric_se(M):
+    if not isinstance(M, se.DenseMatrix):
+        return False
+    return all(isinstance(x, _NUMERIC_SE_TYPES) for x in M)
+
+
+def _reorder_numeric_se(M, fullqubits, nq, ident):
+    """Numeric-entry counterpart of the SymEngine branch of ``reorder_qubits_matrix``.
+
+    The SymEngine branch pads ``M`` with ``kron(M, ident)`` and then gathers
+    every entry through a basis permutation, doing ``4**nq`` symbolic
+    multiplications and assignments. For numeric entries each output entry is
+    either ``M[a, b] * 1.0`` (where the padding wires agree) or
+    ``M[a, b] * 0`` (where they do not), and SymEngine keeps the kind of zero
+    that product yields: exact ``0`` for real entries, a signed
+    ``ComplexDouble`` zero for complex ones. Precomputing both products for
+    the ``4**k`` entries of ``M`` and gathering them with NumPy index arithmetic
+    gives the same entries, object for object, at a fraction of the cost.
+    """
+    k = M.rows.bit_length() - 1
+    npad = nq - k
+    dim = 1 << nq
+
+    if fullqubits == sorted(fullqubits):
+        perm = np.arange(dim, dtype=np.int64)
+    else:
+        qperm = [(nq - 1) - i for i in reversed(np.argsort(fullqubits))]
+        perm = _index_permutation(qperm, nq)
+
+    entries = list(M)
+    src = perm >> npad
+    idx = src[:, None] * M.cols + src[None, :]
+    if npad == 0:
+        table = entries
+    else:
+        # Identity padding entries in the same SymEngine types the kron uses.
+        one, zero = ident[0, 0], ident[0, 1]
+        table = [x * one for x in entries] + [x * zero for x in entries]
+        pad = perm & ((1 << npad) - 1)
+        idx = np.where(pad[:, None] == pad[None, :], idx, idx + len(entries))
+
+    return se.DenseMatrix([[table[t] for t in row] for row in idx.tolist()])
+
+
 def reorder_qubits_matrix(M, qubits, nq=None):
     if nq is None:
         nq = max(qubits) + 1
@@ -179,10 +177,16 @@ def reorder_qubits_matrix(M, qubits, nq=None):
     if isinstance(M, np.ndarray):
         return _apply_local(np.eye(2**nq, dtype=M.dtype), M, list(qubits), nq)
 
-    # Symbolic matrices keep the SymEngine path.
     fullqubits = list(qubits) + [q for q in range(nq) if q not in qubits]
     ident = mc.GateID().matrix()
 
+    if _isnumeric_se(M) and not (
+        len(qubits) == nq and fullqubits == sorted(fullqubits)
+    ):
+        return _reorder_numeric_se(M, fullqubits, nq, ident)
+
+    # Symbolic matrices, and numeric ones that need no reordering or
+    # padding, take the element-by-element SymEngine path.
     fullM = M
     for _ in range(nq - len(qubits)):
         fullM = kronecker(fullM, ident)
@@ -227,6 +231,26 @@ def kronecker(A, B):
                 for l in range(cols_B):
                     result[i * rows_B + k, j * cols_B + l] = A[i, j] * B[k, l]
     return result
+
+
+# The single-qubit Pauli matrices as numpy arrays, for numerical code that
+# should not go through SymEngine.
+PAULI_MATRICES = {
+    "I": np.eye(2, dtype=complex),
+    "X": np.array([[0, 1], [1, 0]], dtype=complex),
+    "Y": np.array([[0, -1j], [1j, 0]], dtype=complex),
+    "Z": np.array([[1, 0], [0, -1]], dtype=complex),
+}
+
+
+def pauli_string_matrix(s):
+    """Numerical matrix of the Pauli string ``s``, such as ``"XIZ"``.
+
+    Returns a complex ``numpy.ndarray`` equal to ``PauliString(s).matrix()``:
+    the first character is the most significant factor of the Kronecker
+    product.
+    """
+    return reduce(np.kron, (PAULI_MATRICES[p] for p in s))
 
 
 def symbolic_matrix_exponential(A, theta):

@@ -26,18 +26,33 @@ if TYPE_CHECKING:
     from mimiqcircuits import Circuit, Operation
 
 
+# Terminality per operation type, for the types where the type alone decides
+# it. Filled on first use and shared by all instances.
+_TERMINAL_BY_TYPE: dict[type, bool] = {}
+
+
 class FlattenedBasis(DecompositionBasis):
     """Flatten container operations while leaving all other operations untouched."""
 
     def isterminal(self, op: Operation) -> bool:
         """Containers are non-terminal; all other operations are terminal."""
+        t = type(op)
+        known = _TERMINAL_BY_TYPE.get(t)
+        if known is not None:
+            return known
+
         import mimiqcircuits as mc
 
-        if isinstance(op, (mc.GateCall, mc.Block)):
-            return False
+        # An inverse is decided by what it wraps, so it is never cached.
         if isinstance(op, mc.Inverse):
             return not isinstance(op.op, (mc.GateCall, mc.Block))
-        return True
+        # A conditional container is flattened into conditional instructions;
+        # it is decided by its body, so it is never cached either.
+        if isinstance(op, mc.IfStatement):
+            return self.isterminal(op.get_operation())
+        known = not isinstance(op, (mc.GateCall, mc.Block))
+        _TERMINAL_BY_TYPE[t] = known
+        return known
 
     def decompose(
         self,
@@ -47,7 +62,12 @@ class FlattenedBasis(DecompositionBasis):
         zvars: Sequence[int],
     ) -> Circuit:
         """Decompose one container expansion step using FlattenContainers."""
+        import mimiqcircuits as mc
         from mimiqcircuits.decomposition.rules import FlattenContainers
+        from mimiqcircuits.operations.ifstatement import _decompose_ifstatement
+
+        if isinstance(op, mc.IfStatement):
+            return _decompose_ifstatement(self, op, qubits, bits, zvars)
 
         rule = FlattenContainers()
         if rule.matches(op):

@@ -16,10 +16,14 @@
 #
 """Tests for the decomposition framework."""
 
+import math
+
+import numpy as np
 import pytest
 from symengine import pi
 
 import mimiqcircuits as mc
+from mimiqcircuits.matrices import reorder_qubits_matrix
 from mimiqcircuits import (
     Circuit,
     GateH,
@@ -45,9 +49,13 @@ from mimiqcircuits.decomposition import (
     CanonicalBasis,
     CliffordTBasis,
     FlattenedBasis,
+    QASMBasis,
+    StimBasis,
     RuleBasis,
     CanonicalRewrite,
     FlattenContainers,
+    GridSynthRewrite,
+    SolovayKitaevRewrite,
     ToffoliToCliffordTRewrite,
     ZYZRewrite,
     SpecialAngleRewrite,
@@ -62,13 +70,36 @@ from mimiqcircuits.decomposition import (
 class TestRewriteRules:
     """Tests for RewriteRule implementations."""
 
-    def test_canonical_rewrite_matches_non_terminal_only(self):
-        """CanonicalRewrite should match only non-terminal canonical operations."""
+    def test_canonical_rewrite_matches_decomposable_operations(self):
+        """CanonicalRewrite matches every operation with a canonical decomposition."""
         rule = CanonicalRewrite()
         assert rule.matches(GateH())
         assert rule.matches(GateCCX())
         assert not rule.matches(GateCX())
         assert not rule.matches(GateU(pi / 2, 0, pi))
+        assert not rule.matches(mc.Measure())
+        assert not rule.matches(mc.Reset())
+        assert not rule.matches(mc.Delay(0.5))
+        assert not rule.matches(mc.IfStatement(GateU(0.1, 0.2, 0.3), mc.BitString("1")))
+
+    def test_canonical_rewrite_does_not_depend_on_a_basis(self):
+        """A channel that CanonicalBasis keeps terminal is still matched."""
+        rule = CanonicalRewrite()
+        assert CanonicalBasis().isterminal(mc.ResetX())
+        assert rule.matches(mc.ResetX())
+        assert rule.matches(mc.ResetY())
+
+    def test_resetx_expanded_by_canonical_rewrite(self):
+        """A basis that does not keep ResetX expands it with the canonical rewrite."""
+        c = mc.Circuit().push(mc.ResetX(), 0)
+        d = decompose(c, RuleBasis(CanonicalRewrite()))
+        assert [type(i.operation) for i in d] == [mc.GateU, mc.Reset, mc.GateU]
+
+    def test_resetx_under_clifford_t(self):
+        """CliffordTBasis reaches its own terminals on ResetX instead of raising."""
+        c = mc.Circuit().push(mc.ResetX(), 0)
+        d = decompose(c, CliffordTBasis())
+        assert all(CliffordTBasis().isterminal(i.operation) for i in d)
 
     def test_canonical_rewrite_does_not_match_while(self):
         """WhileStatement is non-terminal but not canonically rewriteable."""
@@ -187,6 +218,16 @@ class TestRewriteRules:
         assert isinstance(circ[0].operation, mc.GateH)
 
 
+class TestStimBasis:
+    """Stim basis terminals."""
+
+    def test_depolarizing_terminal(self):
+        basis = StimBasis()
+        assert basis.isterminal(mc.Depolarizing1(0.1))
+        assert basis.isterminal(mc.Depolarizing2(0.1))
+        assert not basis.isterminal(mc.Depolarizing(3, 0.1))
+
+
 class TestDecompositionBases:
     """Tests for DecompositionBasis implementations."""
 
@@ -257,6 +298,345 @@ class TestDecompositionBases:
         decl = mc.GateDecl("Inner", (), inner)
         call = mc.GateCall(decl, ())
         assert not basis.isterminal(call)
+
+
+def _unitary(instructions, n):
+    """Unitary of a list of (operation, qubits) pairs on n qubits."""
+    U = np.eye(2**n, dtype=complex)
+    for op, qs in instructions:
+        M = np.array([[complex(x) for x in row] for row in op.matrix().tolist()])
+        k = len(qs)
+        psi = np.moveaxis(U.reshape([2] * n + [2**n]), list(qs), list(range(k)))
+        psi = np.tensordot(
+            M.reshape([2] * (2 * k)), psi, axes=(range(k, 2 * k), range(k))
+        )
+        U = np.moveaxis(psi, list(range(k)), list(qs)).reshape(2**n, 2**n)
+    return U
+
+
+def _same_up_to_phase(A, B):
+    return np.isclose(abs(np.trace(A.conj().T @ B)), A.shape[0])
+
+
+class TestStimBasis:
+    """Stim gates added with the Stim 1.16 support."""
+
+    basis = StimBasis()
+
+    def test_new_terminals(self):
+        for op in (
+            mc.GateHXY(),
+            mc.GateHYZ(),
+            mc.MeasureXX(),
+            mc.MeasureYY(),
+            mc.MeasureZZ(),
+            mc.MeasurePauli("XYZ"),
+            mc.PauliNoise([0.9, 0.1], ["IXZ", "YYY"]),
+        ):
+            assert self.basis.isterminal(op)
+
+    def test_pauli_rotations_terminal_only_at_half_pi(self):
+        P = mc.PauliString
+        for g in (
+            mc.GateRXX(pi / 2),
+            mc.GateRXX(-pi / 2),
+            mc.GateRYY(pi / 2),
+            mc.GateRZZ(3 * pi / 2),
+            mc.RPauli(P("XIZ"), pi / 2),
+            mc.RPauli(P("Y"), -pi / 2),
+        ):
+            assert self.basis.isterminal(g)
+        for g in (
+            mc.GateRXX(pi),
+            mc.GateRYY(0.3),
+            mc.GateRZZ(0),
+            mc.RPauli(P("XZ"), pi),
+            mc.RPauli(P("II"), pi / 2),
+        ):
+            assert not self.basis.isterminal(g)
+
+    def test_feedback_terminals(self):
+        B = mc.BitString
+        for P in (GateX(), mc.GateY(), mc.GateZ()):
+            assert self.basis.isterminal(mc.IfStatement(P, B("1")))
+            assert not self.basis.isterminal(mc.IfStatement(P, B("0")))
+            assert not self.basis.isterminal(mc.IfStatement(P, B("11")))
+        assert not self.basis.isterminal(mc.IfStatement(GateH(), B("1")))
+
+    def test_depolarizing_terminal(self):
+        assert self.basis.isterminal(mc.Depolarizing1(0.1))
+        assert self.basis.isterminal(mc.Depolarizing2(0.1))
+        assert not self.basis.isterminal(mc.Depolarizing(3, 0.1))
+
+    def test_conditional_pauli_on_zero(self):
+        # P if c == 0 becomes P, then P if c == 1
+        c = Circuit().push(mc.IfStatement(mc.GateY(), mc.BitString("0")), 1, 0)
+        d = decompose(c, self.basis)
+        assert [i.operation for i in d] == [
+            mc.GateY(),
+            mc.IfStatement(mc.GateY(), mc.BitString("1")),
+        ]
+        assert [i.qubits for i in d] == [(1,), (1,)]
+        assert [i.bits for i in d] == [(), (0,)]
+
+    def test_conditional_rotation_by_pi(self):
+        # rotations by multiples of pi become the conditional Pauli they equal
+        c = Circuit().push(mc.IfStatement(GateRX(pi), mc.BitString("1")), 0, 2)
+        d = decompose(c, self.basis)
+        assert [i.operation for i in d] == [
+            mc.IfStatement(GateX(), mc.BitString("1"))
+        ]
+        assert [i.bits for i in d] == [(2,)]
+        c = Circuit().push(mc.IfStatement(GateRZ(-pi), mc.BitString("0")), 0, 0)
+        d = decompose(c, self.basis)
+        assert [i.operation for i in d] == [
+            mc.GateZ(),
+            mc.IfStatement(mc.GateZ(), mc.BitString("1")),
+        ]
+
+    @pytest.mark.parametrize(
+        "op,targets",
+        [
+            (mc.IfStatement(GateX(), mc.BitString("10")), (0, 0, 1)),
+            (mc.IfStatement(GateH(), mc.BitString("1")), (0, 0)),
+            (mc.IfStatement(GateRZ(pi / 2), mc.BitString("1")), (0, 0)),
+            (mc.IfStatement(mc.GateCX(), mc.BitString("1")), (0, 1, 0)),
+        ],
+        ids=str,
+    )
+    def test_other_conditionals_refused(self, op, targets):
+        with pytest.raises(DecompositionError):
+            decompose(Circuit().push(op, *targets), self.basis)
+
+    @pytest.mark.parametrize(
+        "g",
+        [mc.GateRXX(pi), mc.RPauli(mc.PauliString("XZ"), pi), mc.GateRZZ(0)],
+        ids=str,
+    )
+    def test_pauli_rotations_away_from_half_pi_decompose(self, g):
+        d = decompose(Circuit().push(g, 0, 1), self.basis)
+        assert all(self.basis.isterminal(i.operation) for i in d)
+        assert not any(
+            isinstance(i.operation, (mc.GateRXX, mc.GateRZZ, mc.RPauli)) for i in d
+        )
+
+    @pytest.mark.parametrize("basis", [StimBasis(), CliffordTBasis()], ids=repr)
+    def test_phase_only_gateu_dropped(self, basis):
+        """A global phase is dropped, in this basis and in CliffordTBasis."""
+        P = mc.PauliString
+        for op in (GateU(0, 0, 0, 0.3), GateU(0, 0, 0, 0), mc.RPauli(P("I"), 0.3)):
+            assert len(decompose(Circuit().push(op, 0), basis)) == 0
+        assert len(decompose(Circuit().push(mc.RPauli(P("II"), pi / 3), 0, 1), basis)) == 0
+
+    @pytest.mark.parametrize(
+        "basis,nc,gamma,atol",
+        [
+            (StimBasis(), 1, pi / 2, 1e-10),
+            (StimBasis(), 1, pi, 1e-10),
+            (StimBasis(), 2, pi, 1e-10),
+            (CliffordTBasis(), 1, pi / 2, 1e-10),
+            (CliffordTBasis(), 2, pi / 2, 1e-10),
+            # Gridsynth approximates the phase to 1e-10; dropping it would be off by about 0.3.
+            (CliffordTBasis(), 1, 0.3, 1e-8),
+            (CliffordTBasis(), 2, 0.3, 1e-8),
+        ],
+        ids=str,
+    )
+    def test_controlled_phase_only_gateu_keeps_phase(self, basis, nc, gamma, atol):
+        """Under a Control the phase is relative and must be kept."""
+        op = mc.Control(nc, GateU(0, 0, 0, gamma))
+        n = nc + 1
+        d = decompose(Circuit().push(op, *range(n)), basis)
+        assert all(basis.isterminal(i.operation) for i in d)
+        A = _unitary([(op, list(range(n)))], n)
+        B = _unitary([(i.operation, list(i.qubits)) for i in d], n)
+        phase = np.trace(B.conj().T @ A)
+        phase /= abs(phase)
+        assert np.linalg.norm(A - phase * B, 2) < atol
+
+    def test_controlled_non_clifford_phase_refused(self):
+        with pytest.raises(DecompositionError):
+            decompose(Circuit().push(mc.Control(1, GateU(0, 0, 0, 0.3)), 0, 1), self.basis)
+
+
+class TestCliffordTBasisFollowsStim:
+    """CliffordTBasis keeps what StimBasis keeps, plus T, T-dagger, classical
+    operations and conditionals of any of its terminal operations."""
+
+    basis = CliffordTBasis()
+
+    # One instance of every kind of operation.
+    OPS = [
+        mc.GateID(), GateX(), GateY(), GateZ(), GateH(), mc.GateHXY(), mc.GateHYZ(), mc.GateHXZ(),
+        GateS(), mc.GateSDG(), mc.GateSX(), mc.GateSXDG(), mc.GateSY(), mc.GateSYDG(),
+        mc.GateP(0.3), GateRX(0.3), GateRY(pi / 2), GateRZ(pi / 4), mc.GateR(0.3, 0.2),
+        GateU(0.1, 0.2, 0.3), GateU(0, 0, 0, 0.3), mc.GateU1(0.3), mc.GateU2(0.1, 0.2),
+        mc.GateU3(0.1, 0.2, 0.3), mc.GateRNZ(2, 0.3),
+        GateCX(), mc.GateCY(), mc.GateCZ(), mc.GateCH(), mc.GateCS(), mc.GateCSDG(), mc.GateCSX(),
+        mc.GateCSXDG(), mc.GateCP(0.3), mc.GateCRX(0.3), mc.GateCRY(0.3), mc.GateCRZ(0.3),
+        mc.GateCU(0.1, 0.2, 0.3, 0.4), mc.GateSWAP(), mc.GateISWAP(), mc.GateISWAPDG(),
+        mc.GateDCX(), mc.GateECR(), mc.GateRXX(pi / 2), mc.GateRXX(0.3), mc.GateRYY(-pi / 2),
+        mc.GateRYY(0.3), mc.GateRZZ(3 * pi / 2), mc.GateRZZ(pi), mc.GateRZX(0.3),
+        mc.GateXXplusYY(0.1, 0.2), mc.GateXXminusYY(0.1, 0.2),
+        GateCCX(), mc.GateC3X(), mc.GateCCP(0.3), mc.GateCSWAP(),
+        mc.RPauli(mc.PauliString("XYZ"), pi / 2), mc.RPauli(mc.PauliString("II"), pi / 2),
+        mc.RPauli(mc.PauliString("XZ"), 0.3), mc.PauliString("XYZ"),
+        mc.Control(1, GateH()), mc.Control(2, GateU(0, 0, 0, 0.3)), mc.Power(GateX(), 0.5),
+        mc.Parallel(2, GateH()), mc.Repeat(2, GateX()), mc.QFT(2), mc.PhaseGradient(2),
+        mc.Diffusion(2), mc.RescaledGate(GateX(), 0.5),
+        Measure(), mc.MeasureX(), mc.MeasureY(), mc.MeasureZ(), mc.MeasureXX(), mc.MeasureYY(),
+        mc.MeasureZZ(), mc.MeasurePauli("XZ"), Reset(), mc.ResetX(), mc.ResetY(), mc.ResetZ(),
+        mc.MeasureReset(), mc.MeasureResetX(), mc.MeasureResetY(), mc.MeasureResetZ(), Barrier(1),
+        mc.PauliX(0.1), mc.PauliY(0.1), mc.PauliZ(0.1), mc.Depolarizing1(0.1),
+        mc.Depolarizing2(0.1), mc.Depolarizing(3, 0.1), mc.PauliNoise([0.9, 0.1], ["I", "X"]),
+        mc.AmplitudeDamping(0.1), mc.GeneralizedAmplitudeDamping(0.1, 0.2),
+        mc.PhaseAmplitudeDamping(0.1, 0.2, 0.3), mc.ThermalNoise(0.1, 0.2, 0.3, 0.4),
+        mc.ProjectiveNoise("X"), mc.ReadoutErr(0.1, 0.2),
+        mc.Detector(1), mc.ObservableInclude(1), mc.QubitCoordinates([0.0, 0.0]), mc.Tick(),
+        mc.Amplitude(mc.BitString("0")), mc.ExpectationValue(GateZ()), mc.BondDim(),
+        mc.SchmidtRank(), mc.VonNeumannEntropy(), mc.Add(2), mc.Multiply(2), mc.Pow(2),
+        mc.Delay(0.1), mc.Loss(0.1), mc.Reload(), mc.Check(), mc.MeasureCheck(), mc.Lost(),
+        mc.Reloaded(), mc.PrepareStateT(),
+    ]
+
+    @pytest.mark.parametrize("op", OPS, ids=str)
+    def test_same_terminals_as_stim(self, op):
+        assert self.basis.isterminal(op) == StimBasis().isterminal(op)
+
+    def test_t_gates_and_classical(self):
+        for op in (GateT(), mc.GateTDG(), mc.Inverse(GateT())):
+            assert self.basis.isterminal(op)
+            assert not StimBasis().isterminal(op)
+        for op in (mc.Not(), mc.SetBit0(), mc.SetBit1(), mc.And(), mc.Or(), mc.Xor()):
+            assert self.basis.isterminal(op)
+
+    def test_conditionals(self):
+        """A conditional is terminal when its body is, whatever the condition."""
+        for body in (GateX(), GateZ(), GateH(), GateT(), GateCX(), Measure(), mc.ResetX()):
+            for cond in ("1", "0", "10"):
+                assert self.basis.isterminal(mc.IfStatement(body, mc.BitString(cond)))
+        for body in (GateRX(0.3), GateCCX(), GateU(0.1, 0.2, 0.3)):
+            assert not self.basis.isterminal(mc.IfStatement(body, mc.BitString("1")))
+
+    def test_stim_operations_are_kept(self):
+        c = Circuit().push(mc.GateHXY(), 0)
+        c.push(mc.GateRZZ(pi / 2), 0, 1)
+        c.push(mc.RPauli(mc.PauliString("XYZ"), -pi / 2), 0, 1, 2)
+        c.push(mc.MeasurePauli("XZ"), 0, 2, 0)
+        c.push(mc.MeasureResetY(), 1, 1)
+        c.push(mc.ResetX(), 2)
+        c.push(mc.ResetY(), 0)
+        c.push(mc.Depolarizing2(0.1), 0, 1)
+        c.push(mc.Detector(1), 0)
+        assert [i.operation for i in decompose(c, self.basis)] == [i.operation for i in c]
+
+    def test_other_gates_are_decomposed(self):
+        c = Circuit().push(GateCCX(), 0, 1, 2)
+        c.push(mc.GateRXX(pi / 4), 0, 1)
+        c.push(mc.RPauli(mc.PauliString("XZ"), pi), 1, 2)
+        c.push(mc.GateCP(pi / 2), 0, 2)
+        c.push(mc.IfStatement(mc.GateCRZ(pi / 2), mc.BitString("0")), 0, 1, 0)
+        d = decompose(c, self.basis)
+        assert all(self.basis.isterminal(i.operation) for i in d)
+        unitary = [(i.operation, list(i.qubits)) for i in c][:4]
+        decomposed = [(i.operation, list(i.qubits)) for i in d if not isinstance(i.operation, mc.IfStatement)]
+        assert _same_up_to_phase(_unitary(unitary, 3), _unitary(decomposed, 3))
+
+    def test_unsupported_noise_raises(self):
+        with pytest.raises(DecompositionError):
+            decompose(Circuit().push(mc.AmplitudeDamping(0.1), 0), self.basis)
+
+
+class TestConditionalDecomposition:
+    """IfStatement handling in the decomposition bases."""
+
+    ALL_BASES = (
+        CanonicalBasis(),
+        CliffordTBasis(),
+        QASMBasis(),
+        StimBasis(),
+        FlattenedBasis(),
+    )
+
+    @pytest.mark.parametrize("basis", ALL_BASES, ids=repr)
+    def test_feedback_is_terminal(self, basis):
+        """Measure + conditional X and MeasureReset reach terminal operations."""
+        feedback = Circuit().push(Measure(), 0, 0)
+        feedback.push(mc.IfStatement(GateX(), mc.BitString("1")), 1, 0)
+        reset = Circuit().push(mc.MeasureReset(), 0, 0)
+        for c in (feedback, reset):
+            decomposed = decompose(c, basis)
+            assert all(basis.isterminal(i.operation) for i in decomposed)
+
+    def test_stim_refuses_conditional_gates(self):
+        c = Circuit().push(mc.IfStatement(GateH(), mc.BitString("1")), 0, 0)
+        with pytest.raises(DecompositionError):
+            decompose(c, StimBasis())
+
+    @pytest.mark.parametrize(
+        "gate",
+        [GateCCX(), GateRX(pi / 4), mc.GateCSWAP(), GateU(pi / 2, pi / 4, -pi / 4)],
+        ids=str,
+    )
+    def test_clifford_t_conditional_is_exact(self, gate):
+        """A conditional gate decomposes into conditional Clifford+T gates with
+        the same condition, and their product is the original gate."""
+        basis = CliffordTBasis()
+        n = gate.num_qubits
+        qubits = list(range(1, n + 1))
+        c = Circuit().push(mc.IfStatement(gate, mc.BitString("1")), *qubits, 0)
+        decomposed = decompose(c, basis)
+        assert all(isinstance(i.operation, mc.IfStatement) for i in decomposed)
+        assert all(i.operation.bitstring == mc.BitString("1") for i in decomposed)
+        assert all(i.bits == (0,) for i in decomposed)
+        assert all(basis.isterminal(i.operation.op) for i in decomposed)
+        body = [(i.operation.op, [q - 1 for q in i.qubits]) for i in decomposed]
+        assert _same_up_to_phase(
+            _unitary(body, n), _unitary([(gate, list(range(n)))], n)
+        )
+
+    def test_clifford_t_conditional_approximate_rotation(self):
+        """A conditional arbitrary rotation becomes conditional Clifford+T gates."""
+        basis = CliffordTBasis(sk_depth=0)
+        c = Circuit().push(mc.IfStatement(GateRX(0.3), mc.BitString("0")), 0, 2)
+        decomposed = decompose(c, basis)
+        assert len(decomposed) > 0
+        for i in decomposed:
+            assert isinstance(i.operation, mc.IfStatement)
+            assert i.operation.bitstring == mc.BitString("0")
+            assert i.bits == (2,)
+            assert basis.isterminal(i.operation.op)
+
+    def test_nested_conditions_are_merged(self):
+        """A conditional MeasureReset gives one IfStatement per instruction."""
+        op = mc.IfStatement(mc.MeasureReset(), mc.BitString("0"))
+        c = Circuit().push(op, 0, 0, 1)
+        decomposed = decompose_step(c)
+        assert [i.operation for i in decomposed] == [
+            mc.IfStatement(Measure(), mc.BitString("0")),
+            mc.IfStatement(GateX(), mc.BitString("10")),
+        ]
+        assert [i.bits for i in decomposed] == [(0, 1), (0, 1)]
+
+    def test_flattened_conditional_container(self):
+        """FlattenedBasis expands a conditional GateCall into conditional gates."""
+        inner = Circuit().push(GateH(), 0).push(GateCX(), 0, 1)
+        call = mc.GateCall(mc.GateDecl("Inner", (), inner), ())
+        c = Circuit().push(mc.IfStatement(call, mc.BitString("1")), 0, 1, 0)
+        decomposed = decompose(c, FlattenedBasis())
+        assert [i.operation for i in decomposed] == [
+            mc.IfStatement(GateH(), mc.BitString("1")),
+            mc.IfStatement(GateCX(), mc.BitString("1")),
+        ]
+
+    def test_rule_basis_conditional(self):
+        """RuleBasis applies its rule to the body of a conditional."""
+        basis = RuleBasis(ZYZRewrite())
+        op = mc.IfStatement(GateU(pi / 2, pi / 4, pi / 3), mc.BitString("1"))
+        assert not basis.isterminal(op)
+        decomposed = decompose(Circuit().push(op, 0, 0), basis)
+        assert all(isinstance(i.operation, mc.IfStatement) for i in decomposed)
+        assert all(basis.isterminal(i.operation) for i in decomposed)
 
 
 class TestDecomposeFunction:
@@ -371,6 +751,30 @@ class TestDecomposeFunction:
         c.push(mc.MeasureResetX(), 0, 0)
         decomposed = decompose(c)
         assert len(decomposed) >= 1
+
+    def test_measure_reset_decomposition(self):
+        """MeasureReset expands to Measure and a conditional X on the same bit."""
+        c = Circuit().push(mc.MeasureReset(), 2, 1)
+        stepped = decompose_step(c)
+        assert [i.operation for i in stepped] == [
+            mc.Measure(),
+            mc.IfStatement(GateX(), mc.BitString("1")),
+        ]
+        assert [i.qubits for i in stepped] == [(2,), (2,)]
+        assert [i.bits for i in stepped] == [(1,), (1,)]
+
+    def test_clifford_t_measurement_terminals(self):
+        """CliffordTBasis keeps measurements and resets in every Pauli basis."""
+        basis = CliffordTBasis()
+        ops = [
+            mc.Measure(), mc.MeasureX(), mc.MeasureY(), mc.MeasureZZ(),
+            mc.MeasurePauli("XZ"), mc.Reset(), mc.ResetX(), mc.ResetY(),
+            mc.MeasureReset(), mc.MeasureResetX(), mc.MeasureResetY(),
+        ]
+        for op in ops:
+            assert basis.isterminal(op)
+            c = Circuit().push(op, *range(op.num_qubits), *range(op.num_bits))
+            assert [i.operation for i in decompose(c, basis=basis)] == [op]
 
     def test_circuit_decompose_method(self):
         """Circuit.decompose() should use the new framework."""
@@ -525,3 +929,129 @@ class TestDecompositionError:
         c.push(GateH(), 0)
         with pytest.raises(DecompositionError):
             decompose(c, basis)
+
+
+class TestIsTerminalByType:
+    """``isterminal`` caches its answer per operation type, so operations of
+    one type whose answer depends on what they wrap must not share it."""
+
+    def test_repeated_calls_agree(self):
+        from mimiqcircuits.decomposition import QASMBasis, StimBasis
+
+        ops = [GateH(), GateCX(), GateCCX(), GateU(0.1, 0.2, 0.3), GateRX(0.3), Measure()]
+        for basis in (CanonicalBasis(), CliffordTBasis(), QASMBasis(), StimBasis()):
+            first = [basis.isterminal(op) for op in ops]
+            assert [basis.isterminal(op) for op in ops] == first
+
+    @pytest.mark.parametrize("basis_name", ["CanonicalBasis", "QASMBasis"])
+    def test_ifstatement_follows_body(self, basis_name):
+        import mimiqcircuits.decomposition as dec
+
+        basis = getattr(dec, basis_name)()
+        cond = mc.BitString("1")
+        terminal = mc.IfStatement(GateCX(), cond)
+        nonterminal = mc.IfStatement(mc.Control(3, GateH()), cond)
+        assert basis.isterminal(terminal)
+        assert not basis.isterminal(nonterminal)
+        assert basis.isterminal(terminal)
+
+    def test_qasm_gatecall_follows_body(self):
+        from mimiqcircuits.decomposition import QASMBasis
+
+        basis = QASMBasis()
+        good = mc.GateDecl("good", (), Circuit().push(GateH(), 0))
+        bad = mc.GateDecl("bad", (), Circuit().push(mc.Control(3, GateH()), 0, 1, 2, 3))
+        assert basis.isterminal(mc.GateCall(good, ()))
+        assert not basis.isterminal(mc.GateCall(bad, ()))
+        assert basis.isterminal(mc.GateCall(good, ()))
+
+    def test_flattened_inverse_follows_body(self):
+        basis = FlattenedBasis()
+        decl = mc.GateDecl("g", (), Circuit().push(GateH(), 0))
+        assert basis.isterminal(mc.Inverse(GateRX(0.2)))
+        assert not basis.isterminal(mc.Inverse(mc.GateCall(decl, ())))
+        assert basis.isterminal(mc.Inverse(GateRX(0.2)))
+
+
+def _circuit_unitary(circuit, nq):
+    u = np.eye(2**nq, dtype=complex)
+    for inst in circuit:
+        m = reorder_qubits_matrix(inst.operation.matrix(), list(inst.qubits), nq)
+        m = np.array(
+            [[complex(m[i, j]) for j in range(m.cols)] for i in range(m.rows)],
+            dtype=complex,
+        )
+        u = m @ u
+    return u
+
+
+def _equal_up_to_phase(a, b, atol):
+    k = np.unravel_index(np.argmax(np.abs(b)), b.shape)
+    return np.allclose(a, (a[k] / b[k]) * b, atol=atol)
+
+
+class TestCliffordTBasisRotations:
+    """Tests for the rotation synthesis rule of CliffordTBasis."""
+
+    def test_default_is_gridsynth(self):
+        assert isinstance(CliffordTBasis().rotations, GridSynthRewrite)
+
+    def test_default_basis_phase_only_gateu(self):
+        """A phase-only GateU (e.g. from GateHYZ) must not reach the rotations
+        rule, which only accepts GateRZ."""
+        basis = CliffordTBasis()
+        for op, q, b in [(GateU(0, 0, 0, 0.3), [0], []), (mc.GateHYZ(), [0], []), (mc.MeasureY(), [0], [0])]:
+            d = decompose(Circuit().push(op, *q, *b), basis=basis)
+            assert all(basis.isterminal(i.operation) for i in d)
+            assert not any(isinstance(i.operation, mc.GateID) for i in d)
+        assert len(decompose(Circuit().push(GateU(0, 0, 0, 0.3), 0), basis=basis)) == 0
+
+    @pytest.mark.parametrize("gamma", [0.3, math.pi / 3])
+    @pytest.mark.parametrize("nc", [1, 2])
+    def test_controlled_phase_only_gateu_keeps_phase(self, nc, gamma):
+        """Under a Control the phase of GateU(0, 0, 0, gamma) is relative and
+        must survive the decomposition."""
+        op = mc.Control(nc, GateU(0, 0, 0, gamma))
+        nq = nc + 1
+        c = Circuit().push(op, *range(nq))
+        d = decompose(c, basis=CliffordTBasis())
+        assert all(CliffordTBasis().isterminal(i.operation) for i in d)
+        assert _equal_up_to_phase(_circuit_unitary(c, nq), _circuit_unitary(d, nq), atol=1e-8)
+
+    def test_equality(self):
+        assert CliffordTBasis(sk_depth=3) == CliffordTBasis(sk_depth=3)
+        assert hash(CliffordTBasis(sk_depth=3)) == hash(CliffordTBasis(sk_depth=3))
+        assert CliffordTBasis(sk_depth=3) != CliffordTBasis(sk_depth=2)
+        assert CliffordTBasis() == CliffordTBasis()
+        assert CliffordTBasis() != CliffordTBasis(rotations=GridSynthRewrite(epsilon=1e-6))
+
+    def test_sk_depth_selects_solovay_kitaev(self):
+        basis = CliffordTBasis(sk_depth=2)
+        assert isinstance(basis.rotations, SolovayKitaevRewrite)
+        assert basis.rotations.depth == 2
+
+    def test_both_raise(self):
+        with pytest.raises(ValueError):
+            CliffordTBasis(sk_depth=2, rotations=GridSynthRewrite())
+
+    def test_rule_must_match_rz(self):
+        with pytest.raises(ValueError):
+            CliffordTBasis(rotations=ZYZRewrite())
+
+    def test_custom_rotations(self):
+        basis = CliffordTBasis(rotations=GridSynthRewrite(epsilon=1e-4))
+        c = Circuit()
+        c.push(GateRZ(0.3), 0)
+        d = decompose(c, basis)
+        assert all(basis.isterminal(i.operation) for i in d)
+        assert d == decompose_step(GateRZ(0.3), GridSynthRewrite(epsilon=1e-4))
+
+    def test_default_output_gate_set(self):
+        c = Circuit()
+        c.push(GateU(0.3, 0.4, 0.5), 0)
+        c.push(GateRX(0.7), 1)
+        basis = CliffordTBasis()
+        d = decompose(c, basis)
+        assert all(basis.isterminal(i.operation) for i in d)
+        allowed = (GateH, mc.GateS, mc.GateSDG, GateZ, GateT, GateX)
+        assert all(isinstance(i.operation, allowed) for i in d)

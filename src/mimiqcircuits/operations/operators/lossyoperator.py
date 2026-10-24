@@ -20,6 +20,8 @@ import symengine as se
 import numpy as np
 import sympy as sp
 
+from mimiqcircuits.operations.operator import _matrix_to_ndarray
+
 
 def _normalize_lossy(lossy):
     if isinstance(lossy, int):
@@ -43,8 +45,8 @@ class LossyOperator(mc.AbstractOperator):
     computational basis, exactly like :class:`Operator`, while ``lossy`` marks
     which of the operator's local qubits leak when this branch is selected.
 
-    The ``lossy`` indices are local to the operator and use ``1:N`` numbering,
-    following the Julia implementation. They are not circuit-global qubit
+    The ``lossy`` indices are local to the operator and numbered from 1 to
+    ``N``. They are not circuit-global qubit
     indices. When a surrounding :class:`Kraus` channel is applied to circuit
     targets ``(q_1, ..., q_N)``, each local index ``i`` in ``lossy`` maps to
     the corresponding physical target ``q_i``.
@@ -172,7 +174,7 @@ class LossyOperator(mc.AbstractOperator):
         return tuple(targets[q - 1] for q in self.lossy)
 
     def unwrappedmatrix(self):
-        return self.mat
+        return _matrix_to_ndarray(self, self.mat)
 
     def evaluate(self, values):
         evaluated = se.Matrix(
@@ -185,10 +187,6 @@ class LossyOperator(mc.AbstractOperator):
 
     def rescale(self, scale):
         return LossyOperator(self.mat * scale, self.lossy)
-
-    def rescale_inplace(self, scale):
-        self.mat *= scale
-        return self
 
     def __eq__(self, other):
         if type(self) is not type(other):

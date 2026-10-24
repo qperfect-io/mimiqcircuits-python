@@ -27,8 +27,7 @@ Two helpers live here:
   so each grid point gets an independent RNG stream.
 
 The XOR-fold of an :class:`RNGs` bundle into one int is a
-compromise: the underlying simulator PRNGs (Rust ``Rng``, Julia
-``MersenneTwister``) take a single seed, so the four logical
+compromise: the underlying simulator PRNGs take a single seed, so the four logical
 streams collapse to one PRNG until per-stream seeding is plumbed
 end-to-end.
 """

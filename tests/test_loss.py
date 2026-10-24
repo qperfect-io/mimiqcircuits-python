@@ -65,19 +65,6 @@ def test_loss_operations_basic():
     assert MeasureCheck().num_bits == 2
 
 
-def test_deprecated_aliases_map_to_new_ops():
-    with pytest.warns(DeprecationWarning):
-        assert LossErr(0.2) == Loss(0.2)
-    with pytest.warns(DeprecationWarning):
-        assert QubitLoss() == Loss(1.0)
-    with pytest.warns(DeprecationWarning):
-        assert isinstance(QubitReload(), Reload)
-    with pytest.warns(DeprecationWarning):
-        assert isinstance(CheckLoss(), Check)
-    with pytest.warns(DeprecationWarning):
-        assert isinstance(MeasureCheckLoss(), MeasureCheck)
-
-
 def test_sample_losses_resolves_randomness_only():
     # a certain loss is kept as Loss(1.0); everything else passes through
     c = Circuit()
@@ -218,3 +205,19 @@ def test_decorate_rule_instruction_mapping_filters_lost_targets():
     expected.push(Lost(), 1)
     expected.push(GateX(), 0)
     assert resolve_losses(c, lossmodel=model) == expected
+
+
+def test_sample_mixedunitaries_default_rng():
+    # No rng given, and an instruction with z-register targets passes through.
+    c = Circuit()
+    c.push(GateH(), 0)
+    c.push(PauliX(0.5), 0)
+    c.push(MixedUnitary([0.3, 0.7], [GateCX(), GateSWAP()]), 0, 1)
+    c.push(ExpectationValue(GateZ()), 0, 0)
+    s = c.sample_mixedunitaries(ids=True)
+    assert len(s) == len(c)
+    assert s.instructions[1].get_operation() in (GateID(), GateX())
+    assert s.instructions[2].get_operation() in (GateCX(), GateSWAP())
+    assert s.instructions[2].qubits == (0, 1)
+    assert s.instructions[3] == c.instructions[3]
+    assert s.instructions[3].zvars == (0,)

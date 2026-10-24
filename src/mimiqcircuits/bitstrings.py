@@ -27,28 +27,14 @@ def _helper_bitvec_to_int(arr):
 
 # Function to convert a bitarray to an integer
 def bitvec_to_int(arr):
-    if not isinstance(arr, bitarray) or not isinstance(arr, frozenbitarray):
+    # `frozenbitarray` subclasses `bitarray`, so one isinstance covers both.
+    if not isinstance(arr, bitarray):
         raise TypeError("Input must be a bitarray or BitVector.")
     num_bits = len(arr)
     if num_bits > 0:
         return _helper_bitvec_to_int(arr)
     else:
         raise ValueError("Input array is empty.")
-
-
-# Function to convert an integer to a bitarray of given size (pad)
-def int_to_bitvec(x, pad, frozen=True):
-    if not isinstance(x, int):
-        raise TypeError("Input must be an integer.")
-    if x < 0:
-        raise ValueError("Input integer must be non-negative.")
-
-    binary_str = bin(x)[2:].zfill(pad)
-
-    if frozen:
-        return frozenbitarray(binary_str)
-    else:
-        return bitarray(binary_str)
 
 
 class BitString:

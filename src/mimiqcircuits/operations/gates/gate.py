@@ -24,6 +24,13 @@ from mimiqcircuits.operations.repeat import repeat
 
 
 class Gate(AbstractOperator):
+    """Base class for unitary gates.
+
+    A gate acts on qubits only, has a unitary matrix, and can be inverted,
+    raised to a power, controlled and run in parallel. Subclasses provide the
+    matrix and the number of qubits.
+    """
+
     _name = None
 
     _num_qubits = None
@@ -40,6 +47,14 @@ class Gate(AbstractOperator):
     def iswrapper(self):
         return False
 
+    def rescale(self, scale):
+        """Return a :class:`RescaledGate` wrapping this gate with factor ``scale``."""
+        return mc.RescaledGate(self, scale)
+
+    def rescale_inplace(self, scale):
+        """Raise, as a gate cannot be rescaled in place. Use :meth:`rescale`."""
+        raise TypeError("Cannot rescale a gate in place. Use `rescale` instead.")
+
     def inverse(self):
         return mc.Inverse(self)
 
@@ -50,8 +65,10 @@ class Gate(AbstractOperator):
         if len(args) == 0:
             return lz.power(self)
         elif len(args) == 1:
-            pwr = args[0]
-            return self._power(pwr)
+            # Imported here: `power` imports this module.
+            from mimiqcircuits.operations.power import _normalize_exponent
+
+            return self._power(_normalize_exponent(args[0]))
         else:
             raise ValueError("Invalid number of arguments.")
 
@@ -110,14 +127,14 @@ class Gate(AbstractOperator):
             return self
 
         params = self.getparams()
+        newparams = [
+            p if isinstance(p, (int, float)) else p.subs(d) for p in params
+        ]
 
-        for i in range(len(params)):
-            if isinstance(params[i], (int, float)):
-                continue
+        if newparams == params:
+            return self
 
-            params[i] = params[i].subs(d)
-
-        return type(self)(*params)
+        return type(self)(*newparams)
 
     def gettypekey(self):
         return type(self)

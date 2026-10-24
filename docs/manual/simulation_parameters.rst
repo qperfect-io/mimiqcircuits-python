@@ -3,6 +3,31 @@ Simulation Parameters
 
 This page describes the advanced parameters available for fine-tuning the circuit simulations on MIMIQ, particularly for the MPS backend.
 
+All of these are *flags*: each defaults to ``None``, meaning "let the backend
+decide".
+
+They adjust the backend's pipeline rather than replacing it. Each speaks about
+one kind of pass: ``None`` leaves that pass as the backend declared it,
+``False`` drops it, and any other value replaces it with the backend's own
+pass of that kind (the generic one when the backend has none) — or adds that
+one, in the position it belongs, when the backend declared none. Everything the flags say nothing about stands, so ``fuse=False``
+is "the usual pipeline, without the fusion". To prepare a circuit with nothing
+at all, set every flag to ``False``.
+
+The flags have a fixed order among themselves — **remove swaps, canonical
+decompose, fuse, reorder** — which is where a flag puts its pass when the
+backend declared none of that kind: before the first pass that runs later than
+it does, and after any pass no flag names. It is the order these passes have
+always run in, and it matters: decomposing after fusing expands the blocks
+fusion just built.
+
+``passes=`` is appended after that, as given; nothing is deduplicated, so an
+entry of the same kind as a pass already there simply runs too. Dropping the
+backend's one and keeping yours is ``fuse=False`` plus your pass in ``passes=``.
+
+Remote submission still rejects ``passes=`` together with a flag, because the
+server, not the client, owns pass selection there.
+
 General Parameters
 ------------------
 
@@ -10,7 +35,7 @@ fuse
 ~~~~
 
 **Type:** ``bool``
-**Default:** ``False`` (backend dependent)
+**Default:** ``None`` (the backend's choice)
 
 Controls whether to fuse consecutive gates acting on the same qubits into a single gate before execution. This can reduce the total number of operations and potentially improve performance, but might increase the complexity of the individual operations.
 
@@ -18,7 +43,7 @@ canonicaldecompose
 ~~~~~~~~~~~~~~~~~~
 
 **Type:** ``bool``
-**Default:** ``False`` (backend dependent)
+**Default:** ``None`` (the backend's choice)
 
 Controls whether to decompose the circuit into a canonical set of gates (typically ``GateU`` and ``GateCX``). This is often a preliminary step for other optimizations and can help ensure compatibility with specific simulator backends.
 
@@ -26,7 +51,7 @@ remove_swaps
 ~~~~~~~~~~~~
 
 **Type:** ``bool``
-**Default:** ``False`` (backend dependent)
+**Default:** ``None`` (the backend's choice)
 
 Controls whether to automatically remove SWAP gates by permuting the logical-to-physical qubit mapping. When enabled, SWAP gates are absorbed into the qubit ordering rather than being explicitly simulated. This can significantly reduce circuit depth and gate count.
 
@@ -34,7 +59,7 @@ reorderqubits
 ~~~~~~~~~~~~~
 
 **Type:** ``bool`` or ``str``
-**Default:** ``False`` (backend dependent)
+**Default:** ``None`` (the backend's choice)
 
 Controls whether to automatically reorder qubits to minimize long-range interactions in the circuit. This is particularly useful for MPS simulations, where nearest-neighbor gates are significantly more efficient than long-range ones. A good qubit ordering can dramatically reduce bond dimension requirements and improve simulation fidelity.
 

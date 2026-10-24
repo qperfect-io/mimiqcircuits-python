@@ -21,6 +21,11 @@ import mimiqcircuits as mc
 
 
 class AbstractMeasurement(Operation):
+    """Base class for measurement operations, such as ``Measure`` and ``MeasureXX``.
+
+    Readout noise rules match every subclass of it.
+    """
+
     _name = "AbstractMeasurement"
 
     def iswrapper(self):
@@ -77,6 +82,10 @@ class Measure(AbstractMeasurement):
 
     def inverse(self):
         raise TypeError("Measure is not inversible")
+
+    def supports_canonical_rewrite(self):
+        # A primitive: the other measurements decompose into it.
+        return False
 
     def power(self, p):
         raise TypeError("Measure^p is not defined.")

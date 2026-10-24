@@ -26,6 +26,11 @@ if TYPE_CHECKING:
     from mimiqcircuits import Circuit, Operation
 
 
+# Terminality per operation type, filled on first use. Shared by all
+# instances: the canonical gate set does not depend on the basis's state.
+_TERMINAL_BY_TYPE: dict[type, bool] = {}
+
+
 class CanonicalBasis(DecompositionBasis):
     """Decomposition basis targeting the canonical primitive gate set.
 
@@ -73,67 +78,57 @@ class CanonicalBasis(DecompositionBasis):
         Returns:
             True if the operation is terminal.
         """
+        # Terminality depends only on the operation's type, except for the
+        # conditionals, which defer to their body. Caching by type skips the
+        # chain of isinstance checks, each of which goes through ABCMeta.
+        t = type(op)
+        known = _TERMINAL_BY_TYPE.get(t)
+        if known is not None:
+            return known
+
         import mimiqcircuits as mc
 
-        # Core gates
-        if isinstance(op, mc.GateU):
-            return True
-        if isinstance(op, mc.GateCX):
-            return True
+        # IfStatement, WhileStatement: terminal if the inner operation is
+        if isinstance(op, (mc.IfStatement, mc.WhileStatement)):
+            return self.isterminal(op.get_operation())
 
-        # Measurement, reset and Loss operations
-        if isinstance(
+        known = isinstance(
             op,
             (
+                # Core gates
+                mc.GateU,
+                mc.GateCX,
+                # Measurement, reset and Loss operations
                 mc.Measure,
                 mc.Reset,
                 mc.Loss,
                 mc.Reload,
                 mc.Check,
                 mc.MeasureCheck,
+                # Control flow
+                mc.Barrier,
+                # Classical operations
+                mc.AbstractClassical,
+                # Annotations
+                mc.AbstractAnnotation,
+                # Noise channels
+                mc.krauschannel,
+                # Expectation values and entanglement measures
+                mc.ExpectationValue,
+                mc.Amplitude,
+                mc.SchmidtRank,
+                mc.VonNeumannEntropy,
+                mc.BondDim,
+                # Z-register operations
+                mc.Add,
+                mc.Multiply,
+                mc.Pow,
+                # Delay (timing information)
+                mc.Delay,
             ),
-        ):
-            return True
-
-        # Control flow
-        if isinstance(op, mc.Barrier):
-            return True
-
-        # IfStatement: terminal if inner operation is terminal
-        if isinstance(op, mc.IfStatement):
-            return self.isterminal(op.get_operation())
-
-        # WhileStatement: terminal if inner operation is terminal
-        if isinstance(op, mc.WhileStatement):
-            return self.isterminal(op.get_operation())
-
-        # Classical operations
-        if isinstance(op, mc.AbstractClassical):
-            return True
-
-        # Annotations
-        if isinstance(op, mc.AbstractAnnotation):
-            return True
-
-        # Noise channels
-        if isinstance(op, mc.krauschannel):
-            return True
-
-        # Expectation values and entanglement measures
-        if isinstance(op, (mc.ExpectationValue, mc.Amplitude)):
-            return True
-        if isinstance(op, (mc.SchmidtRank, mc.VonNeumannEntropy, mc.BondDim)):
-            return True
-
-        # Z-register operations
-        if isinstance(op, (mc.Add, mc.Multiply, mc.Pow)):
-            return True
-
-        # Delay (timing information)
-        if isinstance(op, mc.Delay):
-            return True
-
-        return False
+        )
+        _TERMINAL_BY_TYPE[t] = known
+        return known
 
     def decompose(
         self,

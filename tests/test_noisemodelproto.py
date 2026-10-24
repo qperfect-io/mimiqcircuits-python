@@ -2,6 +2,7 @@
 #  Protobuf Roundtrip and Integration Tests
 # ------------------------------------------------------------
 import tempfile
+import pytest
 import os
 from mimiqcircuits import *
 
@@ -163,25 +164,25 @@ def test_noisemodel_proto_roundtrip_idle_symbolic_relation():
         assert str(var1) == "t"
 
 
-# def test_noisemodel_proto_customnoise_safe():
-#     nm = NoiseModel(
-#         [
-#             CustomNoiseRule(
-#                 matcher=lambda inst: True,
-#                 generator=lambda inst: Instruction(PauliX(0.01), inst.get_qubits()),
-#                 priority_val=50,
-#                 before=False,
-#             )
-#         ],
-#         name="CustomModel",
-#     )
+def test_noisemodel_proto_customnoise_not_serializable():
+    def is_h(inst):
+        return isinstance(inst.get_operation(), GateH)
 
-#     with tempfile.TemporaryDirectory() as tmp:
-#         path = os.path.join(tmp, "nm_custom.pb")
-#         nm.saveproto(path)
-#         loaded = NoiseModel.loadproto(path)
+    def bitflip(inst):
+        return Instruction(PauliX(0.01), inst.get_qubits())
 
-#         assert isinstance(loaded, NoiseModel)
-#         assert loaded.name == "CustomModel"
-#         assert len(loaded.rules) == 1
-#         assert isinstance(loaded.rules[0], CustomNoiseRule)
+    nm = NoiseModel([CustomNoiseRule(matcher=is_h, generator=bitflip)])
+
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "nm_custom.pb")
+        with pytest.raises(ValueError, match="cannot be serialized"):
+            nm.saveproto(path)
+
+
+def test_noisemodel_proto_customnoise_not_deserializable():
+    from mimiqcircuits.proto import noisemodel_pb2
+    from mimiqcircuits.proto.noisemodelproto import fromproto_custom_noise
+
+    msg = noisemodel_pb2.CustomNoiseRule(matcher="is_h", generator="bitflip")
+    with pytest.raises(ValueError, match="cannot be deserialized"):
+        fromproto_custom_noise(msg)

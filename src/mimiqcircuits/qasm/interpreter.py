@@ -8,15 +8,8 @@ import symengine as se
 
 import mimiqcircuits as mc
 from mimiqcircuits.gatedecl import GateDecl
-from mimiqcircuits.qasm.exceptions import QASMError
 from mimiqcircuits.qasm.parser import QASMExpr, parseopenqasm
-
-
-class QASMStructureError(QASMError):
-    pass
-
 from mimiqcircuits.qasm.exceptions import (
-    QASMError,
     QASMStructureError,
     UndefinedGateError,
     UndefinedRegisterError,
@@ -305,8 +298,8 @@ def interpret_if(istate: InterpreterState, expr: QASMExpr):
     from mimiqcircuits import BitString
     from mimiqcircuits import IfStatement
 
-    # BitString signature: length, val
-    bs = BitString(len(creg), val)
+    # c[0] is the least significant bit of the register's value.
+    bs = BitString.fromint(len(creg), val)
 
     if_op = IfStatement(inst.operation, bs)
 
@@ -400,7 +393,6 @@ def interpret_qop(istate: InterpreterState, expr: QASMExpr):
 
 def interpret_opaque(istate: InterpreterState, expr: QASMExpr):
     # Opaque declaration. We verify it matches standard or fail?
-    # Julia verifies it's in OPAQUE_TO_TYPE.
     unitary = expr.args[0]
     gatecall = unitary.args[0]
     name = gatecall.args[0]

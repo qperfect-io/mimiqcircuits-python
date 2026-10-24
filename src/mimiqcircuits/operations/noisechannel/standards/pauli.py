@@ -182,20 +182,6 @@ class PauliNoise(krauschannel):
     def unitarygates(self):
         return [mc.PauliString(str) for str in self.paulistr]
 
-    def _pauli_to_matrix(self, pauli: str):
-        """Convert a Pauli string to its corresponding matrix representation."""
-        matrices = {
-            "I": mc.GateID().matrix(),
-            "X": mc.GateX().matrix(),
-            "Y": mc.GateY().matrix(),
-            "Z": mc.GateZ().matrix(),
-        }
-        result = matrices[pauli[0]]
-        for char in pauli[1:]:
-            result = np.kron(result, matrices[char])
-
-        return result
-
     @classmethod
     def ismixedunitary(self):
         return True

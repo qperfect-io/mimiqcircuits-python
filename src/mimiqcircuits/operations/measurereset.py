@@ -17,16 +17,16 @@
 """Measure and reset operations."""
 
 import mimiqcircuits as mc
-from mimiqcircuits.operations.operation import Operation
 from mimiqcircuits.operations.measure import AbstractMeasurement
 
 
 class MeasureReset(AbstractMeasurement):
     """MeasureReset operation.
 
-    This operation measures a qubit q, stores the value in a classical bit c,
-    then applies a X operation to the qubit if the measured value is 1, effectively
-    resetting the qubit to the :math:`\\ket{0}` state.
+    Measures a qubit in the Z basis, stores the outcome in a classical bit,
+    then applies :class:`GateX` to the qubit if the outcome is 1, which leaves
+    it in the :math:`\\ket{0}` state. It decomposes into :class:`Measure`
+    followed by an :class:`IfStatement` of :class:`GateX` on that bit.
 
     Examples:
 

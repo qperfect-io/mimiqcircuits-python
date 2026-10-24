@@ -1,5 +1,7 @@
 import pytest
 from mimiqcircuits import Circuit, Not, SetBit0, SetBit1, And, Or, Xor, ParityCheck
+from mimiqcircuits.proto import circuit_pb2
+from mimiqcircuits.proto.circuitproto import fromproto_generalized_operation
 import io
 
 
@@ -48,7 +50,7 @@ def test_proto_roundtrip_io_simple(opclass):
 
 
 @pytest.mark.parametrize(
-    "op", [And(), Or(), Xor(), ParityCheck(), And(5), Or(4), Xor(6), ParityCheck(5)]
+    "op", [And(), Or(), Xor(), And(5), Or(4), Xor(6)]
 )
 def test_proto_roundtrip_io_multibits(op):
     c = Circuit().push(op, *range(op.num_bits))
@@ -62,3 +64,16 @@ def test_proto_roundtrip_io_multibits(op):
     inst = loaded.instructions[0]
     assert isinstance(inst.get_operation(), type(op))
     assert inst.get_operation().num_bits == op.num_bits
+
+
+def test_paritycheck_is_deprecated_alias_of_xor():
+    with pytest.warns(DeprecationWarning):
+        op = ParityCheck(5)
+    assert op == Xor(5)
+
+
+def test_paritycheck_proto_loads_as_xor():
+    pb = circuit_pb2.GeneralizedOperation(
+        mtype=circuit_pb2.GeneralizedOperationType.ParityCheck, numbits=4
+    )
+    assert fromproto_generalized_operation(pb) == Xor(4)

@@ -4,3 +4,4 @@ message BitVector {
     int64 len = 1;
     bytes data = 2;
 }
+

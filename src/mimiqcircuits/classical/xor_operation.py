@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.classical.abstract_classical import AbstractClassical
+from mimiqcircuits.classical.abstract_classical import (
+    AbstractClassical,
+    _format_logical,
+)
 
 
 class Xor(AbstractClassical):
@@ -98,16 +101,7 @@ class Xor(AbstractClassical):
         """
         Formats the operation with its specific target bits.
         """
-        N = self._num_bits
-
-        if N > 6:
-            # Compact view for many bits
-            inputs = ", ".join(str(b) for b in bits[1:])
-            return f"c[{bits[0]}] = ^ @ c[{inputs}]"
-        else:
-            # Expanded view for fewer bits
-            inputs = " ^ ".join(f"c[{b}]" for b in bits[1:])
-            return f"c[{bits[0]}] = {inputs}"
+        return _format_logical("^", bits)
 
 
 __all__ = ["Xor"]

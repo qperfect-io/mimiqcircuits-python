@@ -22,7 +22,9 @@ from mimiqcircuits.operations.gates.standard.deprecated import GateU3
 from mimiqcircuits.operations.utils import control_one_defined
 from mimiqcircuits import numerics as _nm
 import mimiqcircuits as mc
-from symengine import pi, Matrix, cos, sin, I, exp
+from symengine import Matrix, cos, sin, I, exp
+from mimiqcircuits.operations.gates.standard._angles import PI_2, NEG_PI_2
+from mimiqcircuits.operations.power import _scale_by_exponent
 
 
 class GateRX(mcg.Gate):
@@ -87,7 +89,7 @@ class GateRX(mcg.Gate):
         return GateRX(-self.theta)
 
     def _power(self, p):
-        return GateRX(self.theta * p)
+        return GateRX(_scale_by_exponent(self.theta, p))
 
     def isidentity(self):
         if self.theta == 0:
@@ -99,7 +101,7 @@ class GateRX(mcg.Gate):
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(GateU(self.theta, -pi / 2, pi / 2), q)
+        circ.push(GateU(self.theta, NEG_PI_2, PI_2), q)
         return circ
 
 
@@ -165,7 +167,7 @@ class GateRY(mcg.Gate):
         return GateRY(-self.theta)
 
     def _power(self, p):
-        return GateRY(self.theta * p)
+        return GateRY(_scale_by_exponent(self.theta, p))
 
     def isidentity(self):
         if self.theta == 0:
@@ -173,7 +175,7 @@ class GateRY(mcg.Gate):
         return False
 
     def _control(self, n):
-        control_one_defined(n, self, mc.GateCRY(self.theta))
+        return control_one_defined(n, self, mc.GateCRY(self.theta))
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
@@ -238,7 +240,7 @@ class GateRZ(mcg.Gate):
         return GateRZ(-self.lmbda)
 
     def _power(self, p):
-        return GateRZ(self.lmbda * p)
+        return GateRZ(_scale_by_exponent(self.lmbda, p))
 
     def isidentity(self):
         if self.lmbda == 0:
@@ -314,9 +316,9 @@ class GateR(mcg.Gate):
         return GateR(-self.theta, self.phi)
 
     def _power(self, p):
-        return GateR(self.theta * p, self.phi)
+        return GateR(_scale_by_exponent(self.theta, p), self.phi)
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(GateU3(self.theta, self.phi - pi / 2, -self.phi + pi / 2), q)
+        circ.push(GateU3(self.theta, self.phi - PI_2, -self.phi + PI_2), q)
         return circ

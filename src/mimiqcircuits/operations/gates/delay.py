@@ -91,6 +91,10 @@ class Delay(Gate):
     def power(self, _):
         raise ValueError("Cannot raise a Delay gate to any power.")
 
+    def supports_canonical_rewrite(self):
+        # Rewriting a delay into identity gates would lose its duration.
+        return False
+
     def _decompose(self, circ: Circuit, qubits, bitsm, zvars):
         """Decompose the Delay gate into a GateID for the given circuit."""
         for qubit in qubits:

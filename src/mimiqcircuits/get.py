@@ -28,9 +28,7 @@ import os
 from time import sleep
 from mimiqcircuits.circuit import Circuit
 from mimiqcircuits.qcsresults import QCSResults
-from mimiqcircuits.__version__ import __version__
 from mimiqcircuits.remote import RemoteConnection, TYPE_PROTO, TYPE_QASM, TYPE_STIM
-import mimiqcircuits as mc
 
 
 class QCSError:

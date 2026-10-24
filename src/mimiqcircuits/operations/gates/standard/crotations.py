@@ -18,10 +18,10 @@
 
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.u import GateU
-from mimiqcircuits.operations.gates.standard.phase import GateP
+from mimiqcircuits.operations.gates.standard.s import GateS
 from mimiqcircuits.operations.gates.standard.rotations import GateRX, GateRY, GateRZ
 import mimiqcircuits as mc
-from symengine import pi
+from mimiqcircuits.operations.gates.standard._angles import NEG_PI_2
 
 
 @mc.canonical_control(1, GateRX)
@@ -67,7 +67,7 @@ class GateCRX(mc.Control):
         (CRX(2*theta), CRX(-theta))
         >>> GateCRX(theta).decompose()
         2-qubit circuit with 5 instructions:
-        ├── P((1/2)*pi) @ q[1]
+        ├── S @ q[1]
         ├── CX @ q[0], q[1]
         ├── U((-1/2)*theta, 0, 0, 0.0) @ q[1]
         ├── CX @ q[0], q[1]
@@ -102,11 +102,11 @@ class GateCRX(mc.Control):
 def _decompose_gatecrx(gate, circ, qubits, bits, zvars):
     c, t = qubits
     theta = gate.op.theta
-    circ.push(GateP(pi / 2), t)
+    circ.push(GateS(), t)
     circ.push(GateCX(), c, t)
     circ.push(GateU(-theta / 2, 0, 0), t)
     circ.push(GateCX(), c, t)
-    circ.push(GateU(theta / 2, -pi / 2, 0), t)
+    circ.push(GateU(theta / 2, NEG_PI_2, 0), t)
     return circ
 
 

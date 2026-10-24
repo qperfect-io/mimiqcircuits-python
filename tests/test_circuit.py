@@ -439,6 +439,29 @@ def test_is_symbolic():
     assert not fully_evaluated_circuit.is_symbolic()
 
 
+def test_evaluate_reuses_unchanged_instructions():
+    x, y = symbols("x y")
+    c = mc.Circuit()
+    c.push(mc.GateCX(), 0, 1)
+    c.push(mc.GateRY(0.3), 0)
+    c.push(mc.GateRY(y), 0)
+    c.push(mc.Control(2, mc.Inverse(mc.GateRX(x))), 0, 1, 2)
+
+    e = c.evaluate({"x": 1, y: 2})
+
+    # Nothing to substitute: the same instruction objects are reused.
+    assert e[0] is c[0]
+    assert e[1] is c[1]
+    # Symbols are substituted, also inside wrapped operations and by name.
+    assert e[2].operation == mc.GateRY(2)
+    expected = mc.Control(2, mc.Inverse(mc.GateRX(1))).matrix()
+    assert np.allclose(
+        np.array(e[3].operation.matrix().tolist(), dtype=complex),
+        np.array(expected.tolist(), dtype=complex),
+    )
+    assert not e.is_symbolic()
+
+
 # Test symbolics Power
 @pytest.mark.parametrize(
     "test_input,expected",

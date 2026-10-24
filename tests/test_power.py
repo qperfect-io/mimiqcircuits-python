@@ -81,3 +81,64 @@ def test_poweru():
             sp.Matrix(g.matrix()).evalf() ** pwr,
             sp.Matrix(g.power(pwr).matrix().tolist()),
         )
+
+
+def test_power_of_control_moves_inside_the_controls():
+    # (C-U)^p = C-(U^p), so the power is taken on the target gate only.
+    circ = mc.Power(mc.GateCCX(), 0.5).decompose()
+    assert len(circ) == 1
+    assert circ[0].operation == mc.Control(2, mc.GateSX())
+    assert circ[0].qubits == (0, 1, 2)
+
+
+def test_power_of_phasegradient_scales_the_phases():
+    circ = mc.Power(mc.PhaseGradient(2), 0.5).decompose()
+    assert [inst.qubits for inst in circ] == [(1,), (0,)]
+    assert [float(inst.operation.lmbda) for inst in circ] == pytest.approx(
+        [pi / 4, pi / 2]
+    )
+
+
+def test_power_without_single_gate_decomposition_raises():
+    from mimiqcircuits.decomposition import DecompositionError
+
+    # The canonical decomposition of ECR has several gates, so its square
+    # root cannot be taken gate by gate.
+    with pytest.raises(DecompositionError):
+        mc.Power(mc.GateECR(), 0.5).decompose()
+
+
+@pytest.mark.parametrize(
+    "gate", [mc.GateU(0, 0, 0.3), mc.GateU(0, 0, 0.3, 0.2), mc.GateU(0.3, 0.7, 1.1)]
+)
+def test_gateu_power_matches_matrix_power(gate):
+    import numpy as np
+    from scipy.linalg import fractional_matrix_power
+
+    # A diagonal GateU used to give NaN angles, since phi and lambda were
+    # read from its zero off-diagonal entries.
+    m = np.array(gate.matrix().tolist(), dtype=complex)
+    got = np.array(gate._power(0.5).matrix().tolist(), dtype=complex)
+    assert np.allclose(got, fractional_matrix_power(m, 0.5), atol=1e-10)
+
+
+@pytest.mark.parametrize(
+    "build",
+    [
+        lambda x: mc.Power(mc.GateH(), x),
+        lambda x: mc.Power(mc.Power(mc.GateH(), 0.5), x),
+        lambda x: mc.Power(mc.GateH(), 0.5).power(x),
+        lambda x: mc.GateH().power(x),
+        lambda x: mc.GateRX(0.1).power(x),
+        lambda x: mc.Inverse(mc.GateH()).power(x),
+        lambda x: mc.Parallel(2, mc.GateH()).power(x),
+        lambda x: mc.Power(mc.GateH(), 1j),
+    ],
+)
+def test_power_rejects_non_real_exponents(build):
+    with pytest.raises(TypeError, match="real number"):
+        build(se.Symbol("x"))
+
+
+def test_power_accepts_numeric_symbolic_exponents():
+    assert mc.Power(mc.GateH(), se.Rational(1, 2)) == mc.Power(mc.GateH(), 0.5)

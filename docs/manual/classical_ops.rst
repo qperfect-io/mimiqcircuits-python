@@ -88,21 +88,6 @@ The :class:`~mimiqcircuits.Xor` operation computes the exclusive OR (XOR) of the
     c.push(Xor(), 0, 1, 2)
 
 
-Arithmetic
-----------
-
-**Parity Check**
-
-The :class:`~mimiqcircuits.ParityCheck` operation computes the sum of the input bits modulo 2. While functionally similar to XOR, it is often used conceptually for syndrome measurements in error correction.
-
-.. code-block:: python
-
-    # c[0] = (c[1] + c[2]) mod 2
-    c.push(ParityCheck(), 0, 1, 2)
-
-    # Multi-bit parity check
-    c.push(ParityCheck(5), 0, 1, 2, 3, 4)
-
 Reference
 ---------
 
@@ -117,6 +102,4 @@ Reference
 .. autoclass:: mimiqcircuits.Or
     :noindex:
 .. autoclass:: mimiqcircuits.Xor
-    :noindex:
-.. autoclass:: mimiqcircuits.ParityCheck
     :noindex:

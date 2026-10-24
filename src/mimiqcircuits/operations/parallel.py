@@ -19,8 +19,6 @@
 import numpy as np
 from functools import reduce
 from mimiqcircuits.operations.gates.gate import Gate
-import symengine as se
-import sympy as sp
 import mimiqcircuits.lazy as lz
 import mimiqcircuits as mc
 
@@ -96,9 +94,6 @@ class Parallel(Gate):
     def iswrapper(self):
         return True
 
-    def _getparams(self):
-        return self.op.getparams()
-
     def inverse(self):
         return Parallel(self.num_repeats, self.op.inverse())
 
@@ -141,8 +136,9 @@ class Parallel(Gate):
         return f"{tail} {self.op}"
 
     def evaluate(self, d):
-        repeat = self.num_repeats
-        return self.op.evaluate(d).parallel(repeat)
+        if not self.is_symbolic():
+            return self
+        return self.op.evaluate(d).parallel(self.num_repeats)
 
     def gettypekey(self):
         return (Parallel, self.num_repeats, self.op.gettypekey())

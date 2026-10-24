@@ -130,7 +130,7 @@ def test_not_tail():
     assert_matches_reference(proj, samples(4, 16), Tier.PROGRAM)
 
 
-@pytest.mark.parametrize("op", [mc.And(3), mc.Or(3), mc.Xor(3), mc.ParityCheck(3)])
+@pytest.mark.parametrize("op", [mc.And(3), mc.Or(3), mc.Xor(3)])
 def test_logic_tails(op):
     proj = mc.Circuit()
     for q in range(4):
@@ -147,14 +147,11 @@ def test_combined_tail():
     proj.push(mc.And(3), 1, 0, 2)
     proj.push(mc.Or(3), 3, 1, 4)
     proj.push(mc.Xor(3), 4, 3, 5)
-    proj.push(mc.ParityCheck(4), 5, 0, 1, 2)
+    proj.push(mc.Xor(4), 5, 0, 1, 2)
     proj.push(mc.Not(), 5)
     assert_matches_reference(proj, samples(6, 64), Tier.PROGRAM)
 
 
-# ParityCheck is absent: it is the one logic op that does not declare
-# `allow_bit_aliasing`, so a circuit cannot name its target among its
-# operands in the first place.
 @pytest.mark.parametrize("op", [mc.And(3), mc.Or(3), mc.Xor(3)])
 def test_target_that_is_also_an_operand_reads_its_old_value(op):
     proj = mc.Circuit()

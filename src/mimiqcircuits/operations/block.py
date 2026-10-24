@@ -50,7 +50,6 @@ class Block(Operation):
         └── CX @ q[1], q[2]
         <BLANKLINE>
 
-        <BLANKLINE>
         >>> c.push(GateCX(), 1, 3)
         4-qubit circuit with 2 instructions:
         ├── CX @ q[1], q[2]
@@ -64,24 +63,30 @@ class Block(Operation):
         └── MZZ @ q[1:2], c[1]
         <BLANKLINE>
 
+        Each block prints with a unique identifier, shown as ``...`` here.
+
         >>> block = Block(c)
-        >>> block
-        4-qubit, 2-bit block 701215ac8290 with 3 instructions:
+        >>> block  # doctest: +ELLIPSIS
+        4-qubit, 2-bit block ... with 3 instructions:
         ├── CX @ q[1], q[2]
         ├── CX @ q[1], q[3]
         └── MZZ @ q[1:2], c[1]
 
         >>> main = Circuit()
-        >>> main.push(block, 0, 1, 2, 3, 0, 1)
+        >>> main.push(block, 0, 1, 2, 3, 0, 1)  # doctest: +ELLIPSIS
         4-qubit, 2-bit circuit with 1 instruction:
-        └── block 701215ac8290 @ q[0,1,2,3], c[0,1]
+        └── block ... @ q[0,1,2,3], c[0,1]
         <BLANKLINE>
 
+        Decomposing expands the block, and decomposes ``MeasureZZ`` further:
+
         >>> main.decompose()
-        4-qubit, 2-bit circuit with 3 instructions:
+        4-qubit, 2-bit circuit with 5 instructions:
         ├── CX @ q[1], q[2]
         ├── CX @ q[1], q[3]
-        └── MZZ @ q[1:2], c[1]
+        ├── CX @ q[1], q[2]
+        ├── M @ q[2], c[1]
+        └── CX @ q[1], q[2]
         <BLANKLINE>
 
     See Also:
@@ -188,9 +193,17 @@ class Block(Operation):
         # symbolics must be checked by descending into them.
         return any(inst.operation.is_symbolic() for inst in self.instructions)
 
+    def listvars(self):
+        """List the symbolic variables of all the instructions of the block.
+
+        Returns:
+            list: Each ``symengine.Symbol`` once, in no particular order.
+        """
+        return list({v for inst in self.instructions for v in inst.listvars()})
+
     def evaluate(self, d):
-        # Substitute the inner instructions so parameters inside the block are
-        # evaluated too.
+        if not self.is_symbolic():
+            return self
         new_insts = [inst.evaluate(d) for inst in self.instructions]
         return Block(self._nq, self._nc, self._nz, new_insts)
 

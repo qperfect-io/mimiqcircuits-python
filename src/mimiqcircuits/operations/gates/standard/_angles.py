@@ -1,5 +1,4 @@
 #
-# Copyright © 2022-2024 University of Strasbourg. All Rights Reserved.
 # Copyright © 2023-2025 QPerfect. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Fractions of pi used by the gate decompositions, built once.
 
-NAMES_TO_UNICODE = {"lmbda": "λ", "phi": "ϕ", "theta": "θ", "gamma": "γ", "beta": "β"}
+Dividing SymEngine's ``pi`` builds a new expression on every call, which costs
+several times more than the gate that receives it. The expressions are
+immutable, so every decomposition can share these.
+"""
 
-UNICODE_TO_NAMES = {"λ": "lmbda", "ϕ": "phi", "θ": "theta", "γ": "gamma", "β": "beta"}
+from symengine import pi
+
+PI_2 = pi / 2
+PI_4 = pi / 4
+PI_8 = pi / 8
+NEG_PI_2 = -pi / 2
+NEG_PI_4 = -pi / 4
+NEG_PI_8 = -pi / 8

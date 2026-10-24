@@ -99,9 +99,6 @@ class PauliString(mc.Gate):
     def from_string(cls, pauli_expr: str):
         return cls(pauli_expr)
 
-    def __str__(self):
-        return f"PauliString({self.pauli})"
-
     @property
     def num_qubits(self):
         return self._num_qubits
@@ -143,9 +140,7 @@ class PauliString(mc.Gate):
         return circ
 
     def __str__(self):
-        tail = " ⊗ "
-        pauli_str = tail.join(self.pauli)
-        return f"{self.pauli}"
+        return self.pauli
 
     def evaluate(self, d):
         return self

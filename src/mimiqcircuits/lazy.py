@@ -20,6 +20,8 @@ import mimiqcircuits as mc
 
 
 class LazyArg:
+    """Placeholder for an argument of a ``LazyExpr`` that is not known yet. It prints as ``?``."""
+
     def __str__(self):
         return "?"
 
@@ -28,6 +30,25 @@ class LazyArg:
 
 
 class LazyExpr:
+    """Operation whose construction waits for some of its arguments.
+
+    Calling ``control``, ``parallel``, ``power`` or ``repeat`` without the
+    count returns a ``LazyExpr``. Calling it fills the ``LazyArg``
+    placeholders, innermost first, and builds the operation.
+
+    Args:
+        obj: Callable that builds the operation.
+        *args: Its arguments; ``LazyArg()`` marks the ones still missing.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> lazy = control(GateX())
+        >>> lazy
+        lazy control(?, X)
+        >>> lazy(2)
+        C₂X
+    """
+
     def __init__(self, obj, *args):
         self.obj = obj
         self.args = list(args)

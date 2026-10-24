@@ -14,84 +14,35 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.classical.abstract_classical import AbstractClassical
+import warnings
+
+from mimiqcircuits.classical.xor_operation import Xor
 
 
-class ParityCheck(AbstractClassical):
+class ParityCheck:
     """
-    Performs a parity check on N-1 classical bits and stores the result in the first bit.
+    Deprecated alias of :class:`Xor`.
 
-    It computes the sum modulo 2 of the inputs.
+    ``ParityCheck(N)`` returns ``Xor(N)``, which computes the same parity of
+    N-1 classical bits into the first bit, and emits a ``DeprecationWarning``.
+    No object is ever an instance of ``ParityCheck``.
 
     Examples:
+        >>> import warnings
         >>> from mimiqcircuits import *
-        >>> ParityCheck()
-        c[?0] = ⨊ c[?1, ?2]
-        >>> ParityCheck(5)
-        c[?0] = ⨊ c[?1, ?2, ?3, ?4]
-        >>> c = Circuit()
-        >>> c.push(ParityCheck(), 0, 2, 3)
-        4-bit circuit with 1 instruction:
-        └── c[0] = ⨊ c[2, 3]
-        <BLANKLINE>
-        >>> c = Circuit()
-        >>> c.push(ParityCheck(5), 0, 1, 2, 3, 4)
-        5-bit circuit with 1 instruction:
-        └── c[0] = ⨊ c[1, 2, 3, 4]
-        <BLANKLINE>
+        >>> with warnings.catch_warnings():
+        ...     warnings.simplefilter("ignore", DeprecationWarning)
+        ...     ParityCheck(5)
+        c[?0] = c[?1] ^ c[?2] ^ c[?3] ^ c[?4]
     """
 
-    _name = "⨊"
-    _num_bits = 0
-    _num_qubits = 0
-    _num_zvars = 0
-    _num_qregs = 0
-    _num_cregs = 0
-    _num_zregs = 0
-    _qregsizes = []
-    _cregsizes = []
-    _zregsizes = []
-    _parnames = ()
-
-    def __init__(self, N=3):
-        """
-        Initializes a ParityCheck operation.
-
-        Args:
-            N: The total number of classical bits (1 destination + N-1 inputs).
-               Must be 3 or greater. Defaults to 3.
-        """
-        if N < 3:
-            raise ValueError("ParityCheck must act on at least 3 classical bits")
-        super().__init__()
-        self._num_bits = N
-        self._num_cregs = 1
-        self._cregsizes = [N]
-
-    def iswrapper(self):
-        return False
-
-    def __repr__(self):
-        """
-        Returns the string representation of the operation with placeholders.
-        """
-        N = self._num_bits
-        inputs = ", ".join(f"?{i}" for i in range(1, N))
-        return f"c[?0] = ⨊ c[{inputs}]"
-
-    def __str__(self):
-        """
-        Returns the simple string name of the operation.
-        """
-        return self._name
-
-    def format_with_targets(self, qubits, bits, zvars):
-        """
-        Formats the operation with its specific target bits.
-        """
-        creg = bits
-        inputs = ", ".join(str(b) for b in creg[1:])
-        return f"c[{creg[0]}] = ⨊ c[{inputs}]"
+    def __new__(cls, N=3):
+        warnings.warn(
+            "ParityCheck is deprecated, use Xor instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return Xor(N)
 
 
 __all__ = ["ParityCheck"]

@@ -15,7 +15,6 @@
 #
 """Resolution-time taxonomy for operations as classified by a backend.
 
-Mirrors the Julia surface in `AbstractQCSs.jl/src/stochastic_kind.jl`.
 The classification is **backend-dependent**: a ``MixedUnitary`` is
 ``TrajectorySampleable`` for an MPS-style simulator that resolves it
 offline but could be ``RuntimeOnly`` for a simulator that resolves it
@@ -110,7 +109,7 @@ def default_stochastic_kind(op) -> StochasticKind:
     return StochasticKind.Deterministic
 
 
-# ── Free-function helpers (Julia-parity call syntax) ──────────────────────
+# ── Free-function helpers ──────────────────────
 
 
 def stochastic_kind(backend: "Backend", x) -> StochasticKind:

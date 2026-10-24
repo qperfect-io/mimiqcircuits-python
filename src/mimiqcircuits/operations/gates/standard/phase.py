@@ -20,6 +20,7 @@ import mimiqcircuits as mc
 from mimiqcircuits.matrices import pmatrix
 from mimiqcircuits import numerics as _nm
 from mimiqcircuits.operations.utils import control_one_defined
+from mimiqcircuits.operations.power import _scale_by_exponent
 
 
 class GateP(mc.Gate):
@@ -81,7 +82,7 @@ class GateP(mc.Gate):
         return GateP(-self.lmbda)
 
     def _power(self, p):
-        return GateP(self.lmbda * p)
+        return GateP(_scale_by_exponent(self.lmbda, p))
 
     def _control(self, n):
         return control_one_defined(

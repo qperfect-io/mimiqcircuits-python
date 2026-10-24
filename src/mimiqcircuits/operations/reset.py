@@ -75,9 +75,6 @@ class Reset(krauschannel):
     def _matrix(self):
         raise AttributeError("Reset has no attribute 'matrix'.")
 
-    def __str__(self):
-        return f"{self._name}"
-
     def asciiwidth(self, qubits, bits, zvars):
         return 5
 

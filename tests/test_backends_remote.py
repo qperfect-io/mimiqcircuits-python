@@ -656,3 +656,19 @@ def test_can_handle_rejects_anticap_remote_statevector(fake_conn):
 
     sv_backend = MimiqRemoteBackend(fake_conn, algorithm="statevector")
     assert_anticap_rejected(sv_backend)
+
+
+def test_remote_backend_has_no_fuse_threshold(backend):
+    with pytest.raises(TypeError):
+        backend.execute(_bell_circuit(), nsamples=10, fuse_threshold=3)
+
+
+def test_connection_validates_prep_flags():
+    from mimiqcircuits.remote import MimiqConnection
+
+    # Validation runs before any request, so an unconnected instance is enough.
+    conn = MimiqConnection.__new__(MimiqConnection)
+    with pytest.raises(TypeError, match="fuse"):
+        conn.submit(_bell_circuit(), fuse=0)
+    with pytest.raises(TypeError, match="reorderqubits_seed"):
+        conn.submit(_bell_circuit(), reorderqubits_seed=1.5)

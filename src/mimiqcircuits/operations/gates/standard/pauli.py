@@ -22,6 +22,7 @@ from mimiqcircuits.operations.gates.standard.phase import GateP
 from mimiqcircuits.operations.gates.standard.u import GateU
 import mimiqcircuits as mc
 from symengine import pi, I, Matrix
+from mimiqcircuits.operations.gates.standard._angles import PI_2
 
 
 class GateX(mcg.Gate):
@@ -140,7 +141,7 @@ class GateY(mcg.Gate):
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(GateU(pi, pi / 2, pi / 2), q)
+        circ.push(GateU(pi, PI_2, PI_2), q)
         return circ
 
 

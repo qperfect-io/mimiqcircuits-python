@@ -101,6 +101,61 @@ Before executing a circuit that includes symbolic parameters, you need to replac
 
 In this example, :meth:`~mimiqcircuits.AbstractOperator.evaluate` is used to create a new circuit where `theta` is replaced by `π/2` and `phi` by `π/4`.
 
+Running Parameter Sweeps
+------------------------
+.. _running-parameter-sweeps:
+
+To run the same symbolic circuit for many parameter values, describe the sweep with a :class:`~mimiqcircuits.ParameterTable` and pair it with the circuit in a :class:`~mimiqcircuits.SweepExperiment`. In a sweep every point binds the same symbols, so a table stores them once, with one row of values per point. Executing the experiment on a local backend returns one :class:`~mimiqcircuits.QCSResults` per point, in the order of the table.
+
+**Example**:
+
+.. code-block:: python
+
+    from symengine import symbols
+    import numpy as np
+    from mimiqcircuits import *
+
+    theta, phi = symbols("theta phi")
+
+    # A single symbolic circuit with two parameters, followed by a
+    # measurement.
+    c = Circuit()
+    c.push(GateRX(theta), 0)
+    c.push(GateRZ(phi), 0)
+    c.push(Measure(), 0, 0)
+
+    # Every combination of 5 values of theta and 2 values of phi: 10 points.
+    # theta varies slowest, phi fastest.
+    table = gridtable({theta: np.linspace(0, np.pi, 5), phi: [0.0, np.pi / 2]})
+
+    # The experiment checks that the table gives values for exactly the
+    # symbols of the circuit, so a missing or misspelled symbol fails here.
+    ex = SweepExperiment(c, table)
+
+    # `sim` is any local backend.
+    results = sim.execute(ex, nsamples=1000, seed=42)
+
+    # One QCSResults per point. The probability of measuring 1 depends only
+    # on theta: 0 at theta = 0, 1 at theta = pi.
+    for point, res in zip(table, results):
+        ones = sum(bs[0] for bs in res.cstates)
+        print(point[theta], point[phi], ones / len(res.cstates))
+
+Each point runs as a separate execution of the circuit evaluated at that point (``ex[i]``), with all the other arguments of ``execute`` unchanged. Every point gets its own seed, derived from ``seed`` (or ``rng``), so the points are statistically independent, and running the same sweep again with the same ``seed`` gives the same results.
+
+A table can be built in several ways:
+
+- ``ParameterTable([theta, phi], values)`` takes the symbols and an ``(npoints, nsymbols)`` array.
+- ``ParameterTable.from_columns({theta: xs, phi: ys})`` takes one column per symbol, all of the same length: point ``i`` takes the ``i``-th value of each.
+- ``gridtable({theta: xs, phi: ys})`` takes every combination of the values.
+- ``ParameterTable.from_dicts(points)`` takes a list of dictionaries, one per point.
+
+Tables also compose: ``a * b`` is the Cartesian product, ``a.hcat(b)`` pairs the points of two tables of the same length, and ``a.vcat(b)`` appends the points of ``b`` after those of ``a``.
+
+``param_grid`` is a shorthand for the same thing: ``sim.execute(c, param_grid=points)``, with a list of dictionaries, runs exactly like ``sim.execute(SweepExperiment(c, ParameterTable.from_dicts(points)))`` and gives the same results for the same ``seed``. Unlike the experiment, it does not check the dictionaries in advance: a point that leaves a symbol unbound raises an error when it runs. An empty ``param_grid`` runs the circuit once, as if it was not given.
+
+Sweeps run on local backends only. Remote backends raise :class:`NotImplementedError` for ``param_grid``; to run a sweep remotely, submit the list of evaluated circuits, ``list(ex)``.
+
 Reference
 ---------
 

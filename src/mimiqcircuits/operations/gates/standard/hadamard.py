@@ -20,6 +20,7 @@ import mimiqcircuits as mc
 from mimiqcircuits.operations.utils import power_idempotent
 from mimiqcircuits.operations.utils import control_one_defined
 from symengine import pi, sqrt, Matrix, I
+from mimiqcircuits.operations.gates.standard._angles import PI_2, NEG_PI_4
 
 
 class GateH(mc.Gate):
@@ -75,7 +76,7 @@ class GateH(mc.Gate):
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(mc.GateU(pi / 2, 0, pi), q)
+        circ.push(mc.GateU(PI_2, 0, pi), q)
         return circ
 
 
@@ -138,7 +139,7 @@ class GateHXY(mc.Gate):
         circ.push(mc.GateZ(), q)
         circ.push(mc.GateH(), q)
         circ.push(mc.GateS(), q)
-        circ.push(mc.GateU(0, 0, 0, -pi / 4), q)
+        circ.push(mc.GateU(0, 0, 0, NEG_PI_4), q)
         return circ
 
 
@@ -203,7 +204,7 @@ class GateHYZ(mc.Gate):
         circ.push(mc.GateS(), q)
         circ.push(mc.GateH(), q)
         circ.push(mc.GateZ(), q)
-        circ.push(mc.GateU(0, 0, 0, -pi / 4), q)
+        circ.push(mc.GateU(0, 0, 0, NEG_PI_4), q)
         return circ
 
 

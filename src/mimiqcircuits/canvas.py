@@ -21,6 +21,13 @@ import math
 from mimiqcircuits.instruction_extras import _find_unit_range, _string_with_square
 
 
+def _classical_label(operation, bits, zvars):
+    # An operation on classical bits and z-variables only is labelled with its
+    # instruction text, such as ``c[0] = c[1] ^ c[2]``, which already names
+    # every target, rather than with the operation and a list of indices.
+    return str(mc.Instruction(operation, (), tuple(bits), tuple(zvars)))
+
+
 def _gate_name_padding(qubits, bits, zvars):
     nq = len(qubits)
     qubits_padding = 0 if nq in [1, 0] else math.floor(math.log10(nq)) + 2
@@ -376,6 +383,8 @@ class AsciiCircuit:
         self.zvarrow = None
         self.nonerow = None
         self.currentcol = 0
+        # first free column of each canvas row
+        self.frontier = []
 
     def set_current_col(self, col):
         self.currentcol = max(self.currentcol, col)
@@ -396,9 +405,10 @@ class AsciiCircuit:
         self.canvas.reset()
         self.qubitrow = {}
         self.bitrow = None
-        self.zvars = None
+        self.zvarrow = None
         self.nonerow = None
         self.currentcol = 1
+        self.frontier = []
         return self
 
     def draw_wires(self, qubits, bits, zvars):
@@ -458,7 +468,61 @@ class AsciiCircuit:
             self.canvas.draw_double_hline(row + 1, ccol, self.canvas.get_cols() - ccol)
 
         self.set_current_col(ccol + 1)
+
+        # enough rows for the wires, their labels and the row of target-less operations
+        self.frontier = [self.get_current_col()] * ((len(qubits) + 2) * 2 + 4)
         return self
+
+    def row_span(self, instruction):
+        """Canvas rows an instruction blocks.
+
+        Only the qubit rows count, so boxes on neighbouring qubits can share the
+        spacer row between them. Anything touching c or z blocks every row from
+        its topmost qubit down to the last classical row: its double line
+        crosses the qubits below it, and c and z are drawn as single wires, so
+        classical operations are always drawn one after the other. Operations
+        with no targets block everything.
+        """
+        if not isinstance(instruction, mc.Instruction):
+            raise TypeError("Must be an Instruction")
+
+        rows = [self.get_qubit_row(q) for q in instruction.qubits]
+
+        if instruction.bits or instruction.zvars:
+            rows += [r for r in (self.bitrow, self.zvarrow) if r is not None]
+
+        if not rows:
+            return range(len(self.frontier))
+
+        return range(min(rows), max(rows) + 1)
+
+    def groups(self, instructions):
+        """Split instructions into runs drawn starting in a single column.
+
+        A run is consecutive instructions of the same operation type on
+        disjoint rows, such as the ones a single broadcast ``push`` creates, so
+        it reads as one layer even where some of its wires are free earlier.
+        """
+        groups = []
+        used = [False] * len(self.frontier)
+
+        for instruction in instructions:
+            span = self.row_span(instruction)
+
+            if (
+                not groups
+                or type(instruction.get_operation())
+                is not type(groups[-1][0].get_operation())
+                or any(used[r] for r in span)
+            ):
+                groups.append([])
+                used = [False] * len(self.frontier)
+
+            groups[-1].append(instruction)
+            for r in span:
+                used[r] = True
+
+        return groups
 
     def draw_operation(self, operation, qubits, bits=None, zvars=None):
         # Initialize default values for bits and zvars if they are None
@@ -613,11 +677,10 @@ class AsciiCircuit:
                 gateheight = stoprow - startrow + 1
                 midrow = startrow + gateheight // 2
 
-                gw = operation.asciiwidth(qubits, bits, zvars)
-                zstr = f"{','.join(map(str, zvars))} ═> "
+                label = _classical_label(operation, bits, zvars)
+                gw = len(label) + 2
                 self.canvas.draw_box(startrow, ccol, gw, gateheight, clean=True)
-                self.canvas.draw_text(zstr, midrow, ccol + 1)
-                self.canvas.draw_text(str(operation), midrow, ccol + len(zstr) + 1)
+                self.canvas.draw_text(label, midrow, ccol + 1)
 
                 midcol = ccol + gw // 2
                 endcol = ccol + gw
@@ -628,11 +691,10 @@ class AsciiCircuit:
                 gateheight = stoprow - startrow + 1
                 midrow = startrow + gateheight // 2
 
-                gw = operation.asciiwidth(qubits, bits, zvars)
-                bstr = f"{','.join(map(str, bits))} ═> "
+                label = _classical_label(operation, bits, zvars)
+                gw = len(label) + 2
                 self.canvas.draw_box(startrow, ccol, gw, gateheight, clean=True)
-                self.canvas.draw_text(bstr, midrow, ccol + 1)
-                self.canvas.draw_text(str(operation), midrow, ccol + len(bstr) + 1)
+                self.canvas.draw_text(label, midrow, ccol + 1)
 
                 midcol = ccol + gw // 2
                 endcol = ccol + gw
@@ -787,7 +849,6 @@ class AsciiCircuit:
 
         op = parallel.get_operation()
         nq = op.num_qubits
-        nb = op.num_bits
         ccol = self.get_current_col()
 
         for i in range(parallel.num_repeats):

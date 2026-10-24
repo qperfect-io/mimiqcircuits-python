@@ -113,7 +113,7 @@ Here is a simple comprehensive example of executing a QASM file on MIMIQ.
     >>> job = conn.submit("/tmp/deutsch_n2.qasm", algorithm="statevector")
     >>> res = conn.get_result(job)
     >>> res.histogram()
-    {frozenbitarray('10'): 530, frozenbitarray('11'): 470}
+    {bs"10": 530, bs"11": 470}
     >>> from mimiqcircuits.visualization import *
 
     # Visualizing the result

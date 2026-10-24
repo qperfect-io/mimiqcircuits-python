@@ -4,6 +4,8 @@
 
 import re
 
+import pytest
+
 from mimiqcircuits.qasm import loads, dumps, load, dump
 from mimiqcircuits.qasm.lexer import tokenize
 from mimiqcircuits.qasm.parser import parseopenqasm
@@ -277,7 +279,8 @@ def test_single_qubit_parametric_gates():
         (mc.GateRX(0.5), r"rx\(0\.5\)"),
         (mc.GateRY(0.6), r"ry\(0\.6\)"),
         (mc.GateRZ(0.7), r"rz\(0\.7\)"),
-        (mc.GateP(0.8), r"p\(0\.8\)"),
+        # GateP is not in qelib1.inc: it is emitted as a gate definition.
+        (mc.GateP(0.8), r"mimiq_P_\w*\(0\.8\) q\[0\]"),
         (mc.GateU1(1.1), r"u1\(1\.1\)"),
         (mc.GateU2(1.2, 1.3), r"u2\(1\.2,1\.3\)"),
         (mc.GateU3(1.4, 1.5, 1.6), r"u3\(1\.4,1\.5,1\.6\)"),
@@ -297,8 +300,10 @@ def test_controlled_rotation_gates():
         (mc.GateCRX(0.5), r"crx\(0\.5\)"),
         (mc.GateCRY(0.6), r"cry\(0\.6\)"),
         (mc.GateCRZ(0.7), r"crz\(0\.7\)"),
-        (mc.GateCP(0.8), r"cp\(0\.8\)"),
-        (mc.GateCU(0.1, 0.2, 0.3, 0.4), r"cu\(0\.1,0\.2,0\.3,0\.4\)"),
+        # GateCP and GateCU are not in qelib1.inc: they are emitted as gate
+        # definitions.
+        (mc.GateCP(0.8), r"mimiq_CP_\w*\(0\.8\) q"),
+        (mc.GateCU(0.1, 0.2, 0.3, 0.4), r"mimiq_CU_\w*\(0\.1,0\.2,0\.3,0\.4\) q"),
     ]
     for gate, pattern in gates_and_patterns:
         c = mc.Circuit()
@@ -313,11 +318,12 @@ def test_interaction_gates():
     """GateRXX, RYY, RZZ, RZX, XXplusYY, XXminusYY must emit their parameters."""
     gates_and_patterns = [
         (mc.GateRXX(0.5), r"rxx\(0\.5\)"),
-        (mc.GateRYY(0.6), r"ryy\(0\.6\)"),
         (mc.GateRZZ(0.7), r"rzz\(0\.7\)"),
-        (mc.GateRZX(0.8), r"rzx\(0\.8\)"),
-        (mc.GateXXplusYY(0.9, 1.0), r"xxplusyy\(0\.9,1\.0\)"),
-        (mc.GateXXminusYY(1.1, 1.2), r"xxminusyy\(1\.1,1\.2\)"),
+        # Gates outside qelib1.inc are emitted as gate definitions.
+        (mc.GateRYY(0.6), r"mimiq_RYY_\w*\(0\.6\) q"),
+        (mc.GateRZX(0.8), r"mimiq_RZX_\w*\(0\.8\) q"),
+        (mc.GateXXplusYY(0.9, 1.0), r"mimiq_XXplusYY_\w*\(0\.9,1\.0\) q"),
+        (mc.GateXXminusYY(1.1, 1.2), r"mimiq_XXminusYY_\w*\(1\.1,1\.2\) q"),
     ]
     for gate, pattern in gates_and_patterns:
         c = mc.Circuit()
@@ -555,6 +561,89 @@ def test_wrap_decompose_produces_gatecalls():
         )
 
 
+
+@pytest.mark.parametrize(
+    "op",
+    [mc.MeasureReset(), mc.MeasurePauli("XZ"), mc.MeasureResetX(), mc.PrepareStateT()],
+)
+def test_wrap_nonunitary_into_block(op):
+    """Non-unitary operations become a Block holding their decomposition,
+    whose gates are wrapped into a GateDecl."""
+    from mimiqcircuits.decomposition import decompose, QASMBasis
+    from mimiqcircuits.gatedecl import GateCall
+
+    basis = QASMBasis()
+    c = mc.Circuit()
+    c.push(op, *range(op.num_qubits), *range(op.num_bits))
+
+    result = decompose(c, basis, wrap=True)
+    assert len(result) == 1
+    block = result[0].operation
+    assert isinstance(block, mc.Block)
+    assert result[0].qubits == c[0].qubits
+    assert result[0].bits == c[0].bits
+    for inst in block.instructions:
+        o = inst.operation
+        assert basis.isterminal(o) or isinstance(o, (GateCall, mc.Block))
+    assert decompose(result, basis) == decompose(c, basis)
+
+
+def test_wrap_block_keeps_targets():
+    from mimiqcircuits.decomposition import decompose, QASMBasis
+
+    c = mc.Circuit()
+    c.push(mc.MeasureReset(), 2, 1)
+    result = decompose(c, QASMBasis(), wrap=True)
+    assert result[0].qubits == (2,)
+    assert result[0].bits == (1,)
+    assert decompose(result, QASMBasis()) == decompose(c, QASMBasis())
+
+
+def test_wrap_gate_inside_block():
+    """A gate inside a Block is still wrapped."""
+    from mimiqcircuits.decomposition import decompose, QASMBasis
+    from mimiqcircuits.gatedecl import GateCall
+
+    inner = mc.Circuit()
+    inner.push(mc.GateCCP(0.3), 0, 1, 2)
+    c = mc.Circuit()
+    c.push(mc.Block(inner), 0, 1, 2)
+
+    result = decompose(c, QASMBasis(), wrap=True)
+    assert len(result) == 1
+    assert isinstance(result[0].operation, mc.Block)
+    assert isinstance(result[0].operation.instructions[0].operation, GateCall)
+
+
+def test_dumps_block_inline():
+    """OpenQASM 2.0 has no blocks: a Block is written inline on the
+    instruction's targets."""
+    from mimiqcircuits.decomposition import decompose, QASMBasis
+
+    inner = mc.Circuit()
+    inner.push(mc.GateH(), 0)
+    inner.push(mc.Measure(), 1, 0)
+    c = mc.Circuit()
+    c.push(mc.Block(inner), 3, 1, 2)
+
+    s = dumps(c)
+    assert "h q[3];" in s
+    assert "measure q[1] -> c[2];" in s
+    assert loads(s) == decompose(c, QASMBasis())
+
+
+@pytest.mark.parametrize(
+    "op, expected",
+    [
+        (mc.MeasurePauli("XZ"), "measure q[1] -> c[0];"),
+        (mc.PrepareStateT(), "reset q[0];"),
+    ],
+)
+def test_dumps_nonunitary(op, expected):
+    c = mc.Circuit()
+    c.push(op, *range(op.num_qubits), *range(op.num_bits))
+    assert expected in dumps(c)
+
 def test_wrap_reuses_declarations():
     """Two identical non-terminal ops should share one GateDecl in wrapped output."""
     from mimiqcircuits.decomposition import decompose, QASMBasis
@@ -609,3 +698,39 @@ def test_wrap_parametric_wrapper_reuse():
     assert float(args0[0]) != float(args1[0]), (
         "The two GateCalls should have different parameter values"
     )
+
+
+def test_ifstatement_roundtrip():
+    # c[0] is the least significant bit of the register's value.
+    src = 'OPENQASM 2.0;\ninclude "qelib1.inc";\nqreg q[2];\ncreg c[3];\nif(c==1) x q[0];\nif(c==6) cx q[0],q[1];\n'
+    c = loads(src)
+    assert c.instructions[0].operation.bitstring == mc.BitString("100")
+    assert c.instructions[1].operation.bitstring == mc.BitString("011")
+    assert c.instructions[0].bits == (0, 1, 2)
+    assert dumps(c) == src
+
+
+def test_ifstatement_on_part_of_the_register():
+    c = mc.Circuit()
+    c.push(mc.IfStatement(mc.GateX(), mc.BitString("1")), 0, 1)
+    with pytest.raises(mc.qasm.QASMSerializationError, match="whole classical register"):
+        dumps(c)
+
+
+def test_measurereset():
+    c = mc.Circuit()
+    c.push(mc.MeasureReset(), 0, 1)
+    c.push(mc.MeasureResetX(), 1, 0)
+    out = dumps(c)
+    assert "measure q[0] -> c[1];\nreset q[0];" in out
+    assert "measure q[1] -> c[0];\nreset q[1];" in out
+    assert "if" not in out
+
+
+def test_whilestatement_is_refused():
+    from mimiqcircuits.decomposition import DecompositionError
+
+    c = mc.Circuit()
+    c.push(mc.WhileStatement(mc.GateX(), mc.BitString("1")), 0, 0)
+    with pytest.raises(DecompositionError, match="no loops"):
+        dumps(c)

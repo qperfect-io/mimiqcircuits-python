@@ -20,10 +20,15 @@ from mimiqcircuits.operations.utils import control_one_defined
 from mimiqcircuits.operations.gates.standard.pauli import GateY
 from fractions import Fraction
 import mimiqcircuits as mc
-from symengine import pi
+from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 
 
-@mc.canonical_power(GateY, Fraction(1, 2))
+# Fractions are immutable, so all instances share this one: building a
+# Fraction costs more than the rest of the constructor.
+_EXPONENT = Fraction(1, 2)
+
+
+@mc.canonical_power(GateY, _EXPONENT)
 class GateSY(mc.Power):
     r"""Single qubit :math:`\sqrt{Y}` gate.
 
@@ -82,7 +87,7 @@ class GateSY(mc.Power):
 
     def __init__(self, operation=None, exponent=None):
         """Initialize a SY gate."""
-        super().__init__(mc.GateY(), Fraction(1, 2))
+        super().__init__(mc.GateY(), _EXPONENT)
 
     def inverse(self):
         return GateSYDG()
@@ -104,7 +109,7 @@ class GateSY(mc.Power):
         circ.push(mc.GateS(), q)
         circ.push(mc.GateS(), q)
         circ.push(mc.GateH(), q)
-        circ.push(mc.GateU(0, 0, 0, pi / 4), q)
+        circ.push(mc.GateU(0, 0, 0, PI_4), q)
         return circ
 
 
@@ -174,7 +179,7 @@ class GateSYDG(mc.Inverse):
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(mc.GateU(0, 0, 0, -pi / 4), q)
+        circ.push(mc.GateU(0, 0, 0, NEG_PI_4), q)
         circ.push(mc.GateH(), q)
         circ.push(mc.GateSDG(), q)
         circ.push(mc.GateSDG(), q)

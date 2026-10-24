@@ -20,11 +20,6 @@ from mimiqcircuits.operations.krauschannel import krauschannel
 import mimiqcircuits as mc
 
 
-def checknormalizlength(normaliz, length):
-    if len(normaliz) != length:
-        raise ValueError(f"normaliz must be a list or tuple of length {length}.")
-
-
 class ProjectiveNoiseX(krauschannel):
     r"""
     ProjectiveNoiseX()

@@ -24,3 +24,20 @@ class AbstractClassical(Operation):
     """
 
     pass
+
+
+def _format_logical(symbol, bits):
+    """Format a commutative bitwise operation, ``c[t] = c[a] op c[b] ...``.
+
+    When the target is also one of the inputs, the operation updates the bit in
+    place and is written as ``c[t] op= ...`` with that input removed, which is
+    valid because the operation is commutative. More than five inputs are
+    written as ``c[t] = op @ c[a, b, ...]``.
+    """
+    target, inputs = bits[0], list(bits[1:])
+    if len(inputs) > 5:
+        return f"c[{target}] = {symbol} @ c[{', '.join(map(str, inputs))}]"
+    if target in inputs:
+        inputs.remove(target)
+        return f"c[{target}] {symbol}= " + f" {symbol} ".join(f"c[{b}]" for b in inputs)
+    return f"c[{target}] = " + f" {symbol} ".join(f"c[{b}]" for b in inputs)

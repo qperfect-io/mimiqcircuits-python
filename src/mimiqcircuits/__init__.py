@@ -63,12 +63,8 @@ from mimiqcircuits.operations.measure import (
     MeasureZ,
 )
 from mimiqcircuits.operations.reset import Reset, ResetX, ResetY, ResetZ
+from mimiqcircuits.operations.magic import PrepareStateT, PrepareMagic
 from mimiqcircuits.operations.losschannel import (
-    QubitLoss,
-    QubitReload,
-    LossErr,
-    CheckLoss,
-    MeasureCheckLoss,
     Loss,
     Reload,
     Check,
@@ -209,6 +205,7 @@ from mimiqcircuits.operations.noisechannel.standards.projectivenoise import (
     ProjectiveNoiseZ,
 )
 from mimiqcircuits.operations.pairmeasure import MeasureXX, MeasureYY, MeasureZZ
+from mimiqcircuits.operations.measurepauli import MeasurePauli
 from mimiqcircuits.operations.rescaledgates import RescaledGate
 from mimiqcircuits.operations.annotations import (
     AbstractAnnotation,
@@ -247,6 +244,7 @@ from mimiqcircuits.optimization import (
     OptimizationRun,
 )
 from mimiqcircuits.circuittester import CircuitTesterExperiment
+from mimiqcircuits.sweep import ParameterTable, gridtable, SweepExperiment
 
 from mimiqcircuits.get import get_results, get_input, get_inputs, get_result
 from mimiqcircuits.operations.generating_list import (
@@ -293,8 +291,6 @@ from mimiqcircuits.lossmodel import (
 from mimiqcircuits.circuit_extras import remove_unused, remove_swaps
 from mimiqcircuits.symbolics import unwrapvalue, listsymbols, UndefinedValue
 
-from mimiqcircuits.circuittester import CircuitTesterExperiment
-
 # Decomposition framework
 from mimiqcircuits.decomposition import (
     RewriteRule,
@@ -313,13 +309,26 @@ from mimiqcircuits.decomposition import (
     ToZRotationRewrite,
     ToffoliToCliffordTRewrite,
     SolovayKitaevRewrite,
+    GridSynthRewrite,
     decompose,
     decompose_step,
     eachdecomposed,
     DecomposeIterator,
 )
 
+from mimiqcircuits.paulibased import pauli_based_computation
 from mimiqcircuits.fusion import FusePass, fuse_circuit
+from mimiqcircuits.simplify import (
+    DEFAULT_SIMPLIFY_PASSES,
+    SimplifyPass,
+    cancel_inverses,
+    merge_rotations,
+    remove_identities,
+    resynthesize_1q,
+    resynthesize_2q,
+    resynthesize_linear,
+    simplify,
+)
 from mimiqcircuits.backends.concrete_passes import CanonicalDecomposePass
 
 # needed to initialize the registers
@@ -381,6 +390,7 @@ attach_inheritance_tree_to_docstring(
 
 # Export specific classes, and functions.
 __all__ = [
+    "register_control_decomposition",
     "Circuit",
     "CircuitDAG",
     "traverse_by_bfs",
@@ -406,11 +416,8 @@ __all__ = [
     "ResetX",
     "ResetY",
     "ResetZ",
-    "QubitLoss",
-    "QubitReload",
-    "LossErr",
-    "CheckLoss",
-    "MeasureCheckLoss",
+    "PrepareStateT",
+    "PrepareMagic",
     "Loss",
     "Reload",
     "Check",
@@ -542,6 +549,7 @@ __all__ = [
     "MeasureZZ",
     "MeasureXX",
     "MeasureYY",
+    "MeasurePauli",
     "RescaledGate",
     "AbstractAnnotation",
     "Detector",
@@ -571,6 +579,9 @@ __all__ = [
     "OptimizationResults",
     "OptimizationRun",
     "CircuitTesterExperiment",
+    "ParameterTable",
+    "gridtable",
+    "SweepExperiment",
     "get_input",
     "get_inputs",
     "get_result",
@@ -611,10 +622,10 @@ __all__ = [
     "Xor",
     "ParityCheck",
     "AbstractClassical",
-    "CircuitTesterExperiment",
     "CLASSICALOPERATIONS",
     "remove_unused",
     "remove_swaps",
+    "pauli_based_computation",
     "unwrapvalue",
     "listsymbols",
     "UndefinedValue",
@@ -635,6 +646,7 @@ __all__ = [
     "ToZRotationRewrite",
     "ToffoliToCliffordTRewrite",
     "SolovayKitaevRewrite",
+    "GridSynthRewrite",
     "decompose",
     "decompose_step",
     "eachdecomposed",
@@ -643,4 +655,13 @@ __all__ = [
     "FusePass",
     "CanonicalDecomposePass",
     "fuse_circuit",
+    "remove_identities",
+    "cancel_inverses",
+    "merge_rotations",
+    "resynthesize_1q",
+    "resynthesize_2q",
+    "resynthesize_linear",
+    "simplify",
+    "DEFAULT_SIMPLIFY_PASSES",
+    "SimplifyPass",
 ]

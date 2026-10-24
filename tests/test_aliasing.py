@@ -21,11 +21,11 @@ from mimiqcircuits.proto.circuitproto import toproto_circuit, fromproto_circuit
 
 def test_default_traits_reject_aliasing():
     # Default Operation does not allow bit/zvar aliasing.
-    assert mc.ParityCheck.allow_bit_aliasing() is False
+    assert mc.Detector.allow_bit_aliasing() is False
     assert mc.GateX.allow_zvar_aliasing() is False
 
     with pytest.raises(ValueError):
-        mc.Instruction(mc.ParityCheck(), (), (1, 1, 2), ())
+        mc.Instruction(mc.Detector(3), (), (1, 1, 2), ())
 
 
 def test_qubit_uniqueness_never_relaxed():

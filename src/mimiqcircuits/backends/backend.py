@@ -38,9 +38,10 @@ import abc
 import math
 import random
 import time
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Optional, Union
 
+from mimiqcircuits.sweep import SweepExperiment
 from mimiqcircuits.backends.capabilities import (
     AdmissionResult,
     Admissible,
@@ -53,8 +54,6 @@ from mimiqcircuits.backends.capabilities import (
 from mimiqcircuits.backends.compiled import (
     CompiledCircuit,
     CompiledParametricCircuit,
-    DefaultCompiledCircuit,
-    CompileMetadata,
 )
 from mimiqcircuits.backends.fidelity import (
     Fidelity, _to_fidelity, as_lower_bound,
@@ -64,6 +63,7 @@ from mimiqcircuits.backends.passes import (
     PassContext,
     PassPipeline,
     apply_passes,
+    resolve_pipeline,
     RemotePassOrderError,
 )
 from mimiqcircuits.backends.progress import (
@@ -71,6 +71,9 @@ from mimiqcircuits.backends.progress import (
     to_progress,
     execution_progress_callback,
 )
+
+if TYPE_CHECKING:
+    from mimiqcircuits.backends.stochastic_kind import StochasticKind
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -95,27 +98,10 @@ def _circuit_count(circuit, attr_name: str) -> int:
         return 0
 
 
-def _circuit_has_loss(circuit) -> bool:
-    """Return ``True`` if ``circuit`` contains any loss-bearing
-    operation (``Loss``)."""
-    instructions = getattr(circuit, "instructions", None)
-    if instructions is None:
-        return False
-    try:
-        from mimiqcircuits.operations.losschannel import Loss
-    except ImportError:  # pragma: no cover - defensive
-        return False
-    for inst in instructions:
-        op = getattr(inst, "operation", None)
-        if isinstance(op, Loss):
-            return True
-    return False
-
-
 def _circuit_has_kraus(circuit) -> bool:
     """Return ``True`` if ``circuit`` contains any Kraus channel,
     including channels wrapped inside an ``IfStatement`` or
-    ``WhileStatement`` body (matches Julia's `_op_has_kraus` recursion)."""
+    ``WhileStatement`` body."""
     instructions = getattr(circuit, "instructions", None)
     if instructions is None:
         return False
@@ -184,7 +170,7 @@ def _circuit_is_symbolic(circuit) -> bool:
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# RNGs — tagged bundle of seed-streams (matches Julia)
+# RNGs — tagged bundle of seed-streams
 # ──────────────────────────────────────────────────────────────────────────
 
 
@@ -361,8 +347,7 @@ class LossState:
     ``q`` has leaked out of the system.
 
     The register holds no loss *policy*: only the shared runtime-loss driver
-    (:meth:`LocalBackend.evolve_with_loss`) mutates it. Mirrors the Julia
-    ``AbstractQCSs.LossState``.
+    (:meth:`LocalBackend.evolve_with_loss`) mutates it.
     """
 
     def __init__(self, n_or_flags):
@@ -548,7 +533,78 @@ class Backend(abc.ABC):
 
     # ── pass plumbing ──────────────────────────────────────────────────────
     def default_passes(self) -> PassPipeline:
+        """The pipeline this backend wants applied to a circuit before
+        evolution. Empty by default — backends override.
+
+        This is the whole of a backend's involvement in circuit preparation:
+        it declares the passes it expects, and :meth:`execute` adjusts that
+        declaration to match what the caller asked for. A backend never sees
+        the flags; when one asks for a pass, the backend builds it through
+        :meth:`fuse_pass`, :meth:`reorder_pass`,
+        :meth:`canonical_decompose_pass` or :meth:`remove_swaps_pass`.
+        """
         return PassPipeline()
+
+    # One hook per preparation flag. Each returns the pass the flag installs;
+    # a backend with its own pass of that kind overrides the hook, so the flag
+    # retunes that pass instead of swapping in the generic one.
+
+    def fuse_pass(self, *, threshold: Optional[int] = None) -> AbstractPass:
+        """The pass ``execute(fuse=True)`` or ``fuse_threshold=n`` installs.
+
+        Defaults to :class:`~mimiqcircuits.fusion.FusePass` gated on
+        ``threshold`` qubits (``None`` means 0).
+        """
+        from mimiqcircuits.fusion import FusePass
+
+        return FusePass(qubit_threshold=threshold or 0)
+
+    def reorder_pass(
+        self, method: Optional[str] = None, *, seed: Optional[int] = None
+    ) -> AbstractPass:
+        """The pass ``execute(reorderqubits=...)`` installs.
+
+        ``method`` names the requested search, or is ``None`` for
+        ``reorderqubits=True``, which leaves the choice to the backend. There
+        is no generic local reorder pass, so the default raises
+        ``NotImplementedError``.
+        """
+        raise NotImplementedError(
+            "reorderqubits not available for local execution on "
+            f"{type(self).__name__}: no local pass implements it. Submit to a "
+            "remote MIMIQ backend, which runs it server-side, or pass a "
+            "backend-specific pass through `passes=`."
+        )
+
+    def canonical_decompose_pass(self) -> AbstractPass:
+        """The pass ``execute(canonicaldecompose=True)`` installs. Defaults
+        to :class:`~mimiqcircuits.backends.concrete_passes.CanonicalDecomposePass`.
+        """
+        from mimiqcircuits.backends.concrete_passes import CanonicalDecomposePass
+
+        return CanonicalDecomposePass()
+
+    def remove_swaps_pass(self) -> AbstractPass:
+        """The pass ``execute(remove_swaps=True)`` installs.
+
+        There is no generic local remove-swaps pass, so the default raises
+        ``NotImplementedError``.
+        """
+        raise NotImplementedError(
+            "remove_swaps not available for local execution on "
+            f"{type(self).__name__}: no local pass implements it. Submit to a "
+            "remote MIMIQ backend, which runs it server-side, or pass a "
+            "backend-specific pass through `passes=`."
+        )
+
+    def simplify_pass(self) -> AbstractPass:
+        """The pass ``execute(simplify=True)`` installs. Defaults to
+        :class:`~mimiqcircuits.SimplifyPass` with
+        :data:`~mimiqcircuits.DEFAULT_SIMPLIFY_PASSES`.
+        """
+        from mimiqcircuits.simplify import SimplifyPass
+
+        return SimplifyPass()
 
     def accepts_pass(self, p: AbstractPass) -> bool:
         return True
@@ -566,6 +622,12 @@ class Backend(abc.ABC):
         seed: Optional[int] = None,
         rng: Optional[random.Random] = None,
         passes: Optional[PassPipeline] = None,
+        fuse: Optional[bool] = None,
+        canonicaldecompose: Optional[bool] = None,
+        reorderqubits: Optional[Union[bool, str]] = None,
+        remove_swaps: Optional[bool] = None,
+        simplify: Optional[bool] = None,
+        reorderqubits_seed: Optional[int] = None,
         callback=None,
         param_grid: Optional[list[dict]] = None,
         strict_pass_order: bool = True,
@@ -575,12 +637,58 @@ class Backend(abc.ABC):
 
         Pass ``circuit`` as a single :class:`Circuit` or a list of
         circuits — a list returns a list of results in the same shape.
+        On a local backend ``circuit`` can also be a
+        :class:`~mimiqcircuits.SweepExperiment`, which runs the circuit once
+        per point of its table and returns one result per point.
 
         ``seed`` and ``rng`` are mutually exclusive sources of
         randomness; pass at most one. With neither, the backend draws
         fresh entropy. To request specific amplitudes, push
         :class:`Amplitude` instructions into ``circuit`` and read the
         resulting ``results.zstates``.
+
+        The flags — ``fuse``, ``canonicaldecompose``, ``reorderqubits``,
+        ``remove_swaps``, ``simplify`` — adjust the backend's
+        :meth:`default_passes` rather than replacing them. Each speaks about
+        one kind of pass: ``None`` leaves that pass as the backend declared it,
+        ``False`` drops it, and any other value replaces it with the one the
+        flag describes — or adds that one, in the position it belongs, when the
+        backend declared none of that kind. Everything the flags say nothing
+        about stands.
+
+        So ``fuse=False`` is "your pipeline, without the fusion". Local
+        backends also take ``fuse_threshold``: ``fuse_threshold=18`` is "your
+        pipeline, fusing from 18 qubits up". To prepare a circuit with nothing
+        at all, set every flag to ``False`` — a pass no flag names (container
+        flattening, say) survives even that. A flag of the wrong type, such as
+        ``fuse=0``, raises :class:`TypeError`.
+
+        ``simplify=True`` simplifies the circuit before evolution with the
+        backend's :meth:`simplify_pass`, keeping its unitary exactly: inverse
+        pairs cancel, rotations merge, and one- and two-qubit blocks are
+        rewritten with fewer gates. It is off unless asked for.
+
+        The flags have a fixed order among themselves — remove swaps, simplify,
+        canonical decompose, fuse, reorder — which is where a flag puts its
+        pass when the backend declared none of that kind: before the first pass
+        that runs later than it does, and after any pass no flag names.
+
+        ``passes`` are appended after that, as given; nothing is deduplicated,
+        so an entry of the same kind as a pass already there simply runs too.
+        ``reorderqubits_seed`` configures reordering rather than requesting it.
+
+        ``param_grid`` runs a parameter sweep on a local backend: a list of
+        dicts, each mapping the circuit's symbols (or their names) to values,
+        such as ``[{theta: 0.1}, {theta: 0.2}]``. Every dict is substituted
+        into ``circuit`` with :meth:`~mimiqcircuits.Circuit.evaluate` and the
+        result runs as its own execution, with the other arguments unchanged.
+        The call then returns a list of results, one per dict and in the same
+        order (with a list of circuits, one such list per circuit). Each point
+        gets its own seed, derived from ``seed`` or ``rng``, so the points are
+        statistically independent and a sweep repeated with the same ``seed``
+        gives the same results. Every dict must bind all the free symbols of
+        the circuit, or that point raises an error. An empty list runs the circuit once, as if it was not
+        given. Remote backends raise :class:`NotImplementedError`.
         """
         ...
 
@@ -624,7 +732,7 @@ def _loss_segment_role(op, qs, ls):
     """Role of an instruction in the runtime-loss walk, given the loss register:
     ``"event"`` is a loss boundary the driver resolves, ``"buffer"`` joins the
     all-present run, ``"drop"`` is an all-lost op skipped without breaking the
-    run. Mirrors ``_segment_role`` in Julia.
+    run.
     """
     import mimiqcircuits as mc
     from mimiqcircuits.operations.krauschannel import krauschannel
@@ -644,8 +752,7 @@ def _loss_segment_role(op, qs, ls):
 def _next_loss_segment(insts, start, ls):
     """Collect the maximal all-present run from ``start`` under loss register
     ``ls``. Returns ``(run, event_index_or_None, next_index)``; the run stops
-    just before the first loss event (or the circuit end). Mirrors
-    ``_next_segment`` in Julia.
+    just before the first loss event (or the circuit end).
     """
     seg = []
     n = len(insts)
@@ -666,8 +773,7 @@ class LocalBackend(Backend):
     """Base class for simulators that run in the local process.
 
     Subclasses implement a handful of primitives and inherit a full
-    :meth:`execute` driver — the Python analog of the Julia
-    ``AbstractQCSs.execute`` driver. Once the hooks are wired up,
+    :meth:`execute` driver. Once the hooks are wired up,
     routing (sampling-vs-trajectory), the final-block projection
     circuit, loss-sampling pre-pass, and amplitude lookups all work
     without any per-backend duplication.
@@ -722,8 +828,6 @@ class LocalBackend(Backend):
         their per-trajectory sampling internally (inside
         :meth:`prepare_trajectory` or :meth:`evolve`) should
         override to return ``False``.
-
-        Mirrors the Julia ``AbstractQCSs.recompile_per_trajectory``.
         """
         from mimiqcircuits.backends.measure_analysis import any_mixed_unitary
         return any_mixed_unitary(circuit)
@@ -792,8 +896,7 @@ class LocalBackend(Backend):
         so a compressing or fusing backend (MPS/MPO) may override this to
         compress the whole run at once — that all-present guarantee is the
         contract it relies on. The default applies one instruction at a time via
-        :meth:`apply_instruction`, which suits a non-compressing backend. Mirrors
-        ``apply_segment!`` in Julia.
+        :meth:`apply_instruction`, which suits a non-compressing backend.
         """
         fid = 1.0
         for inst in insts:
@@ -810,8 +913,7 @@ class LocalBackend(Backend):
         event]: each run is handed to :meth:`apply_segment` (which a compressing
         backend fuses) before the event after it is resolved, so a lost-qubit op
         can never enter a fused run. Returns ``(state, fidelity)`` where
-        ``fidelity`` is the product of the per-step fidelity factors. Mirrors
-        ``evolve_with_loss!`` in Julia.
+        ``fidelity`` is the product of the per-step fidelity factors.
         """
         ls = state.get_loss_state()
         fid = 1.0
@@ -839,7 +941,6 @@ class LocalBackend(Backend):
     def _resolve_loss_event(self, state, inst, ls, lossmodel, *, rng=None):
         """Resolve a single loss event against the live state and register,
         returning its fidelity factor. The only place loss marks are written.
-        Mirrors ``_resolve_event!`` in Julia.
         """
         import mimiqcircuits as mc
         from mimiqcircuits.lossmodel import lossmodel_rewrite, _loss_fires
@@ -902,59 +1003,22 @@ class LocalBackend(Backend):
 
     # ── execute driver ────────────────────────────────────────────────────
     #
-    # Mirrors `AbstractQCSs.execute` in Julia. Backend-agnostic: runs the
+    # Backend-agnostic: runs the
     # pass pipeline, detects loss sampling, splits off the classical
     # projection, and routes to either `_execute_sampling` or
     # `_execute_trajectories`. Concrete backends inherit this unchanged.
 
-    def _resolve_prep_passes(
-        self,
-        passes,
-        *,
-        fuse,
-        fuse_threshold,
-        canonicaldecompose,
-        reorderqubits,
-        remove_swaps,
-    ):
+    def _resolve_pipeline(self, passes, **flags):
         """Resolve the circuit-preparation pipeline for local execution.
 
-        Mirrors the boolean shorthands of the MIMIQ knobs: an explicit
-        ``passes`` pipeline wins; otherwise the knobs build one; with
-        neither, the backend's :meth:`default_passes` applies.
-        ``reorderqubits`` and ``remove_swaps`` have no local
-        implementation and are rejected here — a remote MIMIQ backend runs
-        them server-side instead.
+        The backend's :meth:`default_passes`, adjusted by the flags, then
+        extended with ``passes``. See
+        :func:`~mimiqcircuits.backends.passes.resolve_pipeline`.
         """
-        knobs_set = (
-            fuse or canonicaldecompose or bool(reorderqubits) or remove_swaps
-        )
-        if passes is not None:
-            if knobs_set:
-                raise ValueError(
-                    "pass either `passes=` or the boolean shorthands "
-                    "(fuse=, canonicaldecompose=, …), not both"
-                )
-            return passes
-        if not knobs_set:
-            return self.default_passes()
-        if reorderqubits or remove_swaps:
-            raise NotImplementedError(
-                "reorderqubits/remove_swaps are not available for local "
-                "execution; submit to a remote MIMIQ backend, which runs "
-                "them server-side"
-            )
-        from mimiqcircuits.fusion import FusePass
-        from mimiqcircuits.backends.concrete_passes import (
-            CanonicalDecomposePass,
-        )
+        return resolve_pipeline(self, passes, **flags)
 
-        prep = []
-        if canonicaldecompose:
-            prep.append(CanonicalDecomposePass())
-        if fuse:
-            prep.append(FusePass(qubit_threshold=fuse_threshold))
-        return PassPipeline(prep)
+    # mimiq-qiskit's local estimator calls the old name; keep it until it moves.
+    _resolve_prep_passes = _resolve_pipeline
 
     def execute(
         self,
@@ -964,11 +1028,13 @@ class LocalBackend(Backend):
         seed: Optional[int] = None,
         rng: Optional[random.Random] = None,
         passes: Optional[PassPipeline] = None,
-        fuse: bool = False,
-        fuse_threshold: int = 0,
-        canonicaldecompose: bool = False,
-        reorderqubits=False,
-        remove_swaps: bool = False,
+        fuse: Optional[bool] = None,
+        fuse_threshold: Optional[int] = None,
+        canonicaldecompose: Optional[bool] = None,
+        reorderqubits: Optional[Union[bool, str]] = None,
+        remove_swaps: Optional[bool] = None,
+        simplify: Optional[bool] = None,
+        reorderqubits_seed: Optional[int] = None,
         callback=None,
         param_grid: Optional[list[dict]] = None,
         strict_pass_order: bool = True,
@@ -976,14 +1042,27 @@ class LocalBackend(Backend):
         num_qubits: Optional[int] = None,
         progress=False,
     ):
+        # A sweep runs through the `param_grid` loop, so it gets the same
+        # per-point seeds as the equivalent `param_grid`.
+        if isinstance(circuit, SweepExperiment):
+            if param_grid:
+                raise TypeError(
+                    "pass either a SweepExperiment or param_grid=, not both"
+                )
+            circuit, param_grid = circuit.circuit, list(circuit.table)
+            if not param_grid:
+                return []
+
         rngs = self._resolve_rngs(seed, rng)
-        passes = self._resolve_prep_passes(
+        passes = self._resolve_pipeline(
             passes,
             fuse=fuse,
             fuse_threshold=fuse_threshold,
             canonicaldecompose=canonicaldecompose,
             reorderqubits=reorderqubits,
             remove_swaps=remove_swaps,
+            simplify=simplify,
+            reorderqubits_seed=reorderqubits_seed,
         )
         prog = to_progress(progress)
 

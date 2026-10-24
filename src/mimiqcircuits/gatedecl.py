@@ -19,7 +19,6 @@ import mimiqcircuits as mc
 from symengine import Symbol
 import symengine as se
 import numpy as np
-import sympy as sp
 
 
 class GateDecl:
@@ -137,8 +136,6 @@ class GateDecl:
             if inst.num_qubits() == 0:
                 raise ValueError("GateDecl instructions must have qubits.")
 
-        nq = circuit.num_qubits()
-        np = len(arguments)
         super().__init__()
 
         self.name = name
@@ -279,6 +276,35 @@ class GateCall(mc.Gate):
 
 
 def gatedecl(name):
+    """Decorator that turns a function returning a circuit into a ``GateDecl``.
+
+    The names of the function's arguments become the symbolic parameters of
+    the declaration; the function is called once with those symbols to build
+    the body. Calling the resulting ``GateDecl`` with values gives a
+    ``GateCall``.
+
+    Args:
+        name: Name of the declared gate.
+
+    Returns:
+        A decorator that returns the ``GateDecl``.
+
+    Raises:
+        ValueError: If the decorated function does not return a ``Circuit``.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> @gatedecl("ansatz")
+        ... def ansatz(theta):
+        ...     return Circuit().push(GateX(), 0).push(GateRX(theta), 1)
+        >>> ansatz
+        gate ansatz(theta) =
+        ├── X @ q[0]
+        └── RX(theta) @ q[1]
+        <BLANKLINE>
+        >>> ansatz(0.5)
+        ansatz(0.5)
+    """
     def decorator(func):
         def get_arg_names(func):
             import inspect

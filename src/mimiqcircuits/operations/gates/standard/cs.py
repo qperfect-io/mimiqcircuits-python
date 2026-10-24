@@ -17,9 +17,9 @@
 """Controlled-S and Controlled-SDG gates."""
 
 from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
-from mimiqcircuits.operations.gates.standard.cphase import GateCP
+from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 import mimiqcircuits as mc
-from symengine import pi
 
 
 @mc.canonical_control(1, GateS)
@@ -59,8 +59,12 @@ class GateCS(mc.Control):
         >>> GateCS().power(2), GateCS().inverse()
         (CZ, C(S†))
         >>> GateCS().decompose()
-        2-qubit circuit with 1 instruction:
-        └── CU(0, 0, (1/2)*pi, 0.0) @ q[0], q[1]
+        2-qubit circuit with 5 instructions:
+        ├── T @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── T† @ q[1]
+        ├── CX @ q[0], q[1]
+        └── T @ q[1]
         <BLANKLINE>
     """
 
@@ -68,12 +72,16 @@ class GateCS(mc.Control):
         """Initialize a CS gate."""
         super().__init__(1, GateS())
 
+    def _decompose(self, circ, qubits, bits, zvars):
+        a, b = qubits
+        circ.push(GateT(), a)
+        circ.push(GateCX(), a, b)
+        circ.push(GateTDG(), b)
+        circ.push(GateCX(), a, b)
+        circ.push(GateT(), b)
+        return circ
 
-@mc.register_control_decomposition(1, mc.GateS)
-def _decompose_gatecs(gate, circ, qubits, bits, zvars):
-    a, b = qubits
-    circ.push(GateCP(pi / 2), a, b)
-    return circ
+
 
 
 @mc.canonical_control(1, GateSDG)
@@ -111,8 +119,12 @@ class GateCSDG(mc.Control):
         >>> GateCSDG().power(2), GateCSDG().inverse()
         (C((S†)**2), CS)
         >>> GateCSDG().decompose()
-        2-qubit circuit with 1 instruction:
-        └── CU(0, 0, (-1/2)*pi, 0.0) @ q[0], q[1]
+        2-qubit circuit with 5 instructions:
+        ├── T† @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── T @ q[1]
+        ├── CX @ q[0], q[1]
+        └── T† @ q[1]
         <BLANKLINE>
     """
 
@@ -120,9 +132,13 @@ class GateCSDG(mc.Control):
         """Initialize a CSDG gate."""
         super().__init__(1, GateSDG())
 
+    def _decompose(self, circ, qubits, bits, zvars):
+        a, b = qubits
+        circ.push(GateTDG(), a)
+        circ.push(GateCX(), a, b)
+        circ.push(GateT(), b)
+        circ.push(GateCX(), a, b)
+        circ.push(GateTDG(), b)
+        return circ
 
-@mc.register_control_decomposition(1, mc.GateSDG)
-def _decompose_gatecsdg(gate, circ, qubits, bits, zvars):
-    a, b = qubits
-    circ.push(GateCP(-pi / 2), a, b)
-    return circ
+

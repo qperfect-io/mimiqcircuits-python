@@ -81,13 +81,6 @@ class Projector0(mc.AbstractOperator):
     def __str__(self):
         return f"P{to_subscript(0)}({self.a})"
 
-    def rescale(self, scale):
-        return Projector0(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale
-        return self
-
     def opsquared(self):
         return Projector0(abs(self.a) ** 2)
 
@@ -149,13 +142,6 @@ class Projector1(mc.AbstractOperator):
     def __str__(self):
         return f"P{to_subscript(1)}({self.a})"
 
-    def rescale(self, scale):
-        return Projector1(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale
-        return self
-
     def opsquared(self):
         return Projector1(abs(self.a) ** 2)
 
@@ -216,13 +202,6 @@ class ProjectorX0(mc.AbstractOperator):
 
     def __str__(self):
         return f"PX{to_subscript(0)}({self.a})"
-
-    def rescale(self, scale):
-        return ProjectorX0(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale
-        return self
 
     def opsquared(self):
         return ProjectorX0(abs(self.a) ** 2)
@@ -286,13 +265,6 @@ class ProjectorX1(mc.AbstractOperator):
     def __str__(self):
         return f"PX{to_subscript(1)}({self.a})"
 
-    def rescale(self, scale):
-        return ProjectorX1(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale
-        return self
-
     def opsquared(self):
         return ProjectorX1(abs(self.a) ** 2)
 
@@ -354,13 +326,6 @@ class ProjectorY0(mc.AbstractOperator):
     def __str__(self):
         return f"PY{to_subscript(0)}({self.a})"
 
-    def rescale(self, scale):
-        return ProjectorY0(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale
-        return self
-
     def opsquared(self):
         return ProjectorY0(abs(self.a) ** 2)
 
@@ -421,13 +386,6 @@ class ProjectorY1(mc.AbstractOperator):
 
     def __str__(self):
         return f"PY{to_subscript(1)}({self.a})"
-
-    def rescale(self, scale):
-        return ProjectorY1(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale
-        return self
 
     def opsquared(self):
         return ProjectorY1(abs(self.a) ** 2)
@@ -491,13 +449,6 @@ class Projector00(mc.AbstractOperator):
     def __str__(self):
         return f"P{to_subscript(0)}{to_subscript(0)}({self.a})"
 
-    def rescale(self, scale):
-        return Projector00(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale
-        return self
-
     def opsquared(self):
         return Projector00(abs(self.a) ** 2)
 
@@ -559,13 +510,6 @@ class Projector01(mc.AbstractOperator):
 
     def __str__(self):
         return f"P{to_subscript(0)}{to_subscript(1)}({self.a})"
-
-    def rescale(self, scale):
-        return Projector01(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale
-        return self
 
     def opsquared(self):
         return Projector01(abs(self.a) ** 2)
@@ -629,13 +573,6 @@ class Projector10(mc.AbstractOperator):
     def __str__(self):
         return f"P{to_subscript(1)}{to_subscript(0)}({self.a})"
 
-    def rescale(self, scale):
-        return Projector10(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale
-        return self
-
     def opsquared(self):
         return Projector10(abs(self.a) ** 2)
 
@@ -697,13 +634,6 @@ class Projector11(mc.AbstractOperator):
 
     def __str__(self):
         return f"P{to_subscript(1)}{to_subscript(1)}({self.a})"
-
-    def rescale(self, scale):
-        return Projector11(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale
-        return self
 
     def opsquared(self):
         return Projector11(abs(self.a) ** 2)

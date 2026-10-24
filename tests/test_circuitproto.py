@@ -325,6 +325,7 @@ class TestKrausChannelConversion:
             mc.ResetX(),
             mc.ResetY(),
             mc.ResetZ(),
+            mc.PrepareStateT(),
             mc.AmplitudeDamping(0.1),
             mc.GeneralizedAmplitudeDamping(0.1, 0.2),
             mc.PhaseAmplitudeDamping(0.1, 0.2, 0.3),
@@ -442,6 +443,7 @@ class TestOperationConversion:
             mc.MeasureXX(),
             mc.MeasureYY(),
             mc.MeasureZZ(),
+            mc.MeasurePauli("XIYZ"),
             mc.MeasureResetX(),
             mc.MeasureResetY(),
             mc.MeasureReset(),
@@ -729,6 +731,8 @@ class TestCircuitConversion:
         circuit.push(mc.GateX().power(0.5), 2)
         circuit.push(mc.Barrier(3), 0, 1, 2)
         circuit.push(mc.MeasureZ(), 0, 0)
+        circuit.push(mc.MeasurePauli("XIYZ"), 2, 1, 3, 0, 1)
+        circuit.push(mc.PrepareStateT(), 3)
 
         proto_circuit = toproto_circuit(circuit)
         restored_circuit = fromproto_circuit(proto_circuit)
@@ -742,6 +746,9 @@ class TestCircuitConversion:
             assert orig_inst.qubits == restored_inst.qubits
             assert orig_inst.bits == restored_inst.bits
             assert orig_inst.zvars == restored_inst.zvars
+
+            if isinstance(orig_inst.operation, mc.MeasurePauli):
+                assert orig_inst.operation == restored_inst.operation
 
             # Check parameters for RZ gate
             if isinstance(orig_inst.operation, mc.GateRZ):

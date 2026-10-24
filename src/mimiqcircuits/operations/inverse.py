@@ -20,7 +20,7 @@ import mimiqcircuits as mc
 import mimiqcircuits.lazy as lz
 from mimiqcircuits.printutils import print_wrapped_parens
 from mimiqcircuits.operations.gates.gate import Gate
-from typing import Type, Dict, Tuple, Any, Union
+from typing import Type, Dict
 
 _inverse_decomposition_registry = {}
 _inverse_aliases_registry = {}
@@ -181,6 +181,9 @@ class Inverse(Gate):
     def iswrapper(self):
         return True
 
+    def get_operation(self):
+        return self.op
+
     def inverse(self):
         return self.op
 
@@ -229,6 +232,8 @@ class Inverse(Gate):
         return np.linalg.inv(self.op.unwrappedmatrix())
 
     def evaluate(self, d):
+        if not self.is_symbolic():
+            return self
         return self.op.evaluate(d).inverse()
 
     def gettypekey(self):

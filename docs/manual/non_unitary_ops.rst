@@ -62,7 +62,7 @@ It is common to measure in the Z basis (:math:`P_0=\ket{0}\bra{0}` and :math:`P_
 How to use measurements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Available measurement operations: :class:`~mimiqcircuits.Measure`, :class:`~mimiqcircuits.MeasureX`, :class:`~mimiqcircuits.MeasureY`, :class:`~mimiqcircuits.MeasureZ`, :class:`~mimiqcircuits.MeasureXX`, :class:`~mimiqcircuits.MeasureYY`, :class:`~mimiqcircuits.MeasureZZ`.
+Available measurement operations: :class:`~mimiqcircuits.Measure`, :class:`~mimiqcircuits.MeasureX`, :class:`~mimiqcircuits.MeasureY`, :class:`~mimiqcircuits.MeasureZ`, :class:`~mimiqcircuits.MeasureXX`, :class:`~mimiqcircuits.MeasureYY`, :class:`~mimiqcircuits.MeasureZZ`, :class:`~mimiqcircuits.MeasurePauli`.
 
 With MIMIQ you can measure the qubits at any point in the circuit (not only at the end of the circuit) using one of the measurement operations (:class:`~mimiqcircuits.Measure`...). You can add it to the circuit like gates using :meth:`~mimiqcircuits.Circuit.push`, but you will need to precise both the index for the quantum register (qubit to measure) and classical register (where to store the result):
 
@@ -97,6 +97,17 @@ You can also use iterators to Measure multiple qubits at once, as for gates:
     <BLANKLINE>
 
 
+:class:`~mimiqcircuits.MeasurePauli` measures a multi-qubit Pauli product observable, such as :math:`X_0 Z_2`, and writes a single outcome bit (``0`` for eigenvalue :math:`+1`, ``1`` for :math:`-1`). It targets one qubit per character of the Pauli string; qubits marked ``I`` are not measured:
+
+.. doctest:: non_unitary
+
+    >>> circuit = Circuit()
+    >>> circuit.push(MeasurePauli("XIZ"), 0, 1, 2, 0)
+    3-qubit, 1-bit circuit with 1 instruction:
+    └── MP(XIZ) @ q[0:2], c[0]
+    <BLANKLINE>
+
+
 .. note:: 
 
     In the absence of any non-unitary operations in the circuit, MIMIQ will sample (and, therefore, measure) all the qubits at the end of the circuit by default, see :doc:`simulation <simulation>` page.
@@ -106,7 +117,7 @@ You can also use iterators to Measure multiple qubits at once, as for gates:
 Reset
 ------------------------------------------------------------------
 
-Available reset operations: :class:`~mimiqcircuits.Reset`, :class:`~mimiqcircuits.ResetX`, :class:`~mimiqcircuits.ResetY`, :class:`~mimiqcircuits.ResetZ`.
+Available reset operations: :class:`~mimiqcircuits.Reset`, :class:`~mimiqcircuits.ResetX`, :class:`~mimiqcircuits.ResetY`, :class:`~mimiqcircuits.ResetZ`, and :class:`~mimiqcircuits.PrepareStateT`, which leaves the qubit in the magic state :math:`T\ket{+}`.
 
 A reset operation consists in measuring the qubits in some basis and then applying an operation conditioned on the measurement outcome to leave the qubits in some pre-defined state. For example, :func:`~mimiqcircuits.Reset` leaves all qubits in :math:`\ket{0}` (by measuring in :math:`Z` and flipping the state if the outcome is `1`).
 
@@ -236,7 +247,7 @@ Operations that opt into bit aliasing today are :class:`~mimiqcircuits.And`, :cl
     >>> # c[0] = c[0] AND c[1]
     >>> circuit.push(And(), 0, 0, 1)
     2-bit circuit with 1 instruction:
-    └── c[0] = c[0] & c[1]
+    └── c[0] &= c[1]
     <BLANKLINE>
 
 Or use a bit both as the condition and as the body's target inside an :class:`~mimiqcircuits.IfStatement`:
@@ -335,7 +346,11 @@ Reference
 
 .. autoclass:: mimiqcircuits.Measure
     :noindex:
+.. autoclass:: mimiqcircuits.MeasurePauli
+    :noindex:
 .. autoclass:: mimiqcircuits.Reset
+    :noindex:
+.. autoclass:: mimiqcircuits.PrepareStateT
     :noindex:
 .. autoclass:: mimiqcircuits.MeasureReset
     :noindex:

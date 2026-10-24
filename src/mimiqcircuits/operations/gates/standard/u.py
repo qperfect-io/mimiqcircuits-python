@@ -21,11 +21,16 @@ from mimiqcircuits.matrices import umatrix
 from mimiqcircuits import numerics as _nm
 from mimiqcircuits.operations.utils import control_one_defined
 import mimiqcircuits as mc
-from sympy import I, pi, sin, cos, acos, Abs, simplify, exp, Expr, log, Matrix
 import numpy as np
 import sympy as sp
 import symengine as se
 from scipy.linalg import expm, logm
+
+
+def _negate(x):
+    # Adding `0.0` turns a negated float zero into `+0.0`, so that `-0.0` and
+    # `0.0` serialize to the same bytes.
+    return -x + 0.0 if isinstance(x, float) else -x
 
 
 class GateU(mcg.Gate):
@@ -102,7 +107,9 @@ class GateU(mcg.Gate):
         return _nm.umatrix(theta, phi, lmbda, gamma)
 
     def inverse(self):
-        return GateU(-self.theta, -self.lmbda, -self.phi, -self.gamma)
+        return GateU(
+            _negate(self.theta), _negate(self.lmbda), _negate(self.phi), _negate(self.gamma)
+        )
 
     def _control(self, n):
         return control_one_defined(
@@ -133,16 +140,26 @@ class GateU(mcg.Gate):
 
         matrix_np = np.array(self.convert_to_numeric(matrix))
 
-        pow_matrix = expm(p * logm(matrix_np))
+        pow_matrix = expm(float(p) * logm(matrix_np))
 
-        # Compute the angles based on the resulting matrix and prevent error raising becouse of division by zero.
-        with np.errstate(divide="ignore"):
-            theta_p = 2 * np.arccos(np.abs(pow_matrix[0, 0]))
-            gamma_p = np.angle(pow_matrix[0, 0])
+        theta_p = 2 * np.arccos(np.clip(np.abs(pow_matrix[0, 0]), 0, 1))
+        gamma_p = np.angle(pow_matrix[0, 0])
+        if abs(np.sin(theta_p / 2)) < 1e-12:
+            # Diagonal matrix: the off-diagonal entries are zero, so phi and
+            # lambda cannot be read from them. Only phi + lambda is fixed (by
+            # the entry [1, 1] = e^{i(phi+lambda+gamma)}), so pick phi = 0 and
+            # put the whole phase in lambda.
+            phi_p = 0.0
+            lambda_p = np.angle(pow_matrix[1, 1]) - gamma_p
+        else:
             phi_p = np.angle(pow_matrix[1, 0] / np.sin(theta_p / 2)) - gamma_p
             lambda_p = np.angle(-pow_matrix[0, 1] / np.sin(theta_p / 2)) - gamma_p
 
         return GateU(theta_p, phi_p, lambda_p, gamma_p)
+
+    def supports_canonical_rewrite(self):
+        # A primitive of the canonical gate set.
+        return False
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]

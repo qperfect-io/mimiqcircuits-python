@@ -33,20 +33,22 @@ class InheritanceTree:
     :class:`Operation`
         :class:`AbstractAnnotation`
             :class:`Detector`
+            :class:`Lost`
             :class:`ObservableInclude`
             :class:`QubitCoordinates`
+            :class:`Reloaded`
             :class:`ShiftCoordinates`
             :class:`Tick`
         :class:`AbstractClassical`
             :class:`And`
             :class:`Not`
             :class:`Or`
-            :class:`ParityCheck`
             :class:`SetBit0`
             :class:`SetBit1`
             :class:`Xor`
         :class:`AbstractMeasurement`
             :class:`Measure`
+            :class:`MeasurePauli`
             :class:`MeasureReset`
             :class:`MeasureResetX`
             :class:`MeasureResetY`
@@ -157,11 +159,12 @@ class InheritanceTree:
         :class:`MeasureCheck`
         :class:`Multiply`
         :class:`Pow`
-        :class:`Reload`
         :class:`ReadoutErr`
+        :class:`Reload`
         :class:`Repeat`
         :class:`SchmidtRank`
         :class:`VonNeumannEntropy`
+        :class:`WhileStatement`
         :class:`krauschannel`
             :class:`AmplitudeDamping`
             :class:`Depolarizing`
@@ -175,6 +178,7 @@ class InheritanceTree:
             :class:`PauliY`
             :class:`PauliZ`
             :class:`PhaseAmplitudeDamping`
+            :class:`PrepareStateT`
             :class:`ProjectiveNoise`
             :class:`ProjectiveNoiseX`
             :class:`ProjectiveNoiseY`
@@ -198,6 +202,10 @@ class InheritanceTree:
         classes = inspect.getmembers(module, inspect.isclass)
 
         for name, cls in classes:
+            # Skip aliases such as the deprecated `PrepareMagic = PrepareStateT`,
+            # so each class appears once under its own name.
+            if name != cls.__name__:
+                continue
             if issubclass(cls, self.base_class) and cls != self.base_class:
                 parent = cls.__bases__[0].__name__
                 self.class_tree[parent].append(name)
@@ -281,27 +289,6 @@ class InheritanceTree:
                 lines.append(f"{next_prefix}{branch_func}{child}")
 
         return "\n".join(lines)
-
-
-def attach_inheritance_tree_to_docstring(
-    base_class,
-    module,
-    target_object=None,
-    title="Hierarchy of Operations",
-    start_from=None,
-):
-    tree = InheritanceTree(base_class)
-    tree.extract_classes(module)
-    tree.extract_gate_functions(module)
-
-    tree_str = tree.generate_ascii_tree(class_name=start_from)
-
-    target = target_object if target_object is not None else base_class
-
-    if target.__doc__ is None:
-        target.__doc__ = ""
-
-    target.__doc__ += f"\n\n{title}:\n{tree_str}"
 
 
 class OPERATIONS:

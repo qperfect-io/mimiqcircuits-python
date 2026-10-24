@@ -24,6 +24,7 @@ from __future__ import annotations
 import math
 import random
 
+import warnings
 import pytest
 
 from mimiqcircuits.backends import (
@@ -719,41 +720,141 @@ def test_canonical_decompose_pass_wraps_decompose():
     assert res.qubit_permutation is None
 
 
-def test_resolve_prep_passes_builds_from_knobs():
+class _DefaultingBackend(_MockBackend):
+    """A backend with real, tuned defaults: it fuses with its own block-width
+    budget above its own threshold."""
+
+    def default_passes(self):
+        from mimiqcircuits import FusePass
+
+        return PassPipeline([FusePass(max_support=5, qubit_threshold=18)])
+
+
+def test_with_nothing_asked_for_the_backend_decides():
     backend = _MockBackend()
-
-    # Neither passes nor knobs → the backend default (empty here).
-    empty = backend._resolve_prep_passes(
-        None, fuse=False, fuse_threshold=0, canonicaldecompose=False,
-        reorderqubits=False, remove_swaps=False)
-    assert len(empty) == 0
-
-    # canonicaldecompose then fuse, in that order; fuse carries the
-    # threshold.
-    pipe = backend._resolve_prep_passes(
-        None, fuse=True, fuse_threshold=3, canonicaldecompose=True,
-        reorderqubits=False, remove_swaps=False)
-    assert [p.spec().name for p in pipe] == ["canonical_decompose", "fuse_gates"]
-    assert dict(pipe[1].spec().parameters)["qubit_threshold"].value == 3
+    assert len(backend.default_passes()) == 0
+    assert len(backend._resolve_pipeline(None)) == 0
+    assert [p.spec().name for p in _DefaultingBackend()._resolve_pipeline(None)] == [
+        "fuse_gates"
+    ]
+    # A seed configures reordering; on its own it is not a request for it.
+    assert [
+        p.spec().name
+        for p in _DefaultingBackend()._resolve_pipeline(None, reorderqubits_seed=9)
+    ] == ["fuse_gates"]
 
 
-def test_resolve_prep_passes_rejects_local_only_knobs():
-    backend = _MockBackend()
-    for knob in ("reorderqubits", "remove_swaps"):
-        with pytest.raises(NotImplementedError):
-            backend._resolve_prep_passes(
-                None, fuse=False, fuse_threshold=0, canonicaldecompose=False,
-                reorderqubits=(knob == "reorderqubits"),
-                remove_swaps=(knob == "remove_swaps"))
+def test_a_flag_adjusts_only_the_pass_it_speaks_about():
+    backend = _DefaultingBackend()
 
+    def names(pipe):
+        return [p.spec().name for p in pipe]
 
-def test_resolve_prep_passes_rejects_passes_plus_knobs():
-    from mimiqcircuits import FusePass
-    backend = _MockBackend()
+    # Replaces the backend's pass of that kind, in place.
+    pipe = backend._resolve_pipeline(None, fuse=True)
+    assert names(pipe) == ["fuse_gates"]
+    assert dict(pipe[0].spec().parameters)["qubit_threshold"].value == 0
+    pipe = backend._resolve_pipeline(None, fuse_threshold=7)
+    assert dict(pipe[0].spec().parameters)["qubit_threshold"].value == 7
+
+    # False drops it, and nothing else.
+    assert len(backend._resolve_pipeline(None, fuse=False)) == 0
     with pytest.raises(ValueError):
-        backend._resolve_prep_passes(
-            PassPipeline([FusePass()]), fuse=True, fuse_threshold=0,
-            canonicaldecompose=False, reorderqubits=False, remove_swaps=False)
+        backend._resolve_pipeline(None, fuse=False, fuse_threshold=7)
+
+    # A kind the backend declared none of is added where it belongs.
+    assert names(backend._resolve_pipeline(None, canonicaldecompose=True)) == [
+        "canonical_decompose", "fuse_gates"
+    ]
+    # Simplify runs before canonical decomposition and fusion.
+    assert names(backend._resolve_pipeline(None, simplify=True)) == [
+        "simplify", "fuse_gates"
+    ]
+    assert names(
+        backend._resolve_pipeline(None, simplify=True, canonicaldecompose=True)
+    ) == ["simplify", "canonical_decompose", "fuse_gates"]
+    with pytest.raises(TypeError):
+        backend._resolve_pipeline(None, simplify=1)
+
+
+def test_local_only_flags_have_no_pass():
+    """reorderqubits / remove_swaps have no local implementation."""
+    backend = _DefaultingBackend()
+    for flag in ("reorderqubits", "remove_swaps"):
+        with pytest.raises(NotImplementedError):
+            backend._resolve_pipeline(None, **{flag: True})
+        # Unset is no request; False only ever drops a pass, so it never needs
+        # one to be built.
+        backend._resolve_pipeline(None, **{flag: None})
+        backend._resolve_pipeline(None, **{flag: False})
+
+
+class _OwnPassesBackend(_MockBackend):
+    """A backend with its own pass types: the flags must build those, never
+    the generic ones."""
+
+    def fuse_pass(self, *, threshold=None):
+        from mimiqcircuits import FusePass
+
+        return FusePass(max_support=5, qubit_threshold=18 if threshold is None else threshold)
+
+    def reorder_pass(self, method=None, *, seed=None):
+        p = _RecordPass("reorder_qubits")
+        p.method, p.seed = method or "sa", seed
+        return p
+
+    def simplify_pass(self):
+        from mimiqcircuits import SimplifyPass
+
+        return SimplifyPass(passes=["cancel_inverses"])
+
+
+def test_a_flag_installs_the_pass_the_backend_builds():
+    backend = _OwnPassesBackend()
+
+    def param(pipe, key):
+        return dict(pipe[0].spec().parameters)[key].value
+
+    pipe = backend._resolve_pipeline(None, fuse=True)
+    assert param(pipe, "max_support") == 5
+    assert param(pipe, "qubit_threshold") == 18
+    assert param(backend._resolve_pipeline(None, fuse_threshold=7), "qubit_threshold") == 7
+
+    # True leaves the choice of search to the backend; a name overrides it.
+    assert backend._resolve_pipeline(None, reorderqubits=True)[0].method == "sa"
+    assert backend._resolve_pipeline(None, reorderqubits="greedy")[0].method == "greedy"
+    pipe = backend._resolve_pipeline(None, reorderqubits=True, reorderqubits_seed=3)
+    assert pipe[0].seed == 3
+
+    # Hooks the backend does not override keep the generic behaviour.
+    assert [p.spec().name for p in backend._resolve_pipeline(None, canonicaldecompose=True)] == [
+        "canonical_decompose"
+    ]
+    with pytest.raises(NotImplementedError):
+        backend._resolve_pipeline(None, remove_swaps=True)
+    assert backend._resolve_pipeline(None, simplify=True)[0].passes == ("cancel_inverses",)
+    assert _DefaultingBackend()._resolve_pipeline(None, simplify=True)[0].passes is None
+
+
+def test_caller_passes_are_appended_as_given():
+    from mimiqcircuits import FusePass
+    backend = _DefaultingBackend()
+    mine = FusePass(qubit_threshold=7)
+
+    pipe = backend._resolve_pipeline(PassPipeline([mine]))
+    assert [p.spec().name for p in pipe] == ["fuse_gates", "fuse_gates"]
+    assert pipe[-1] is mine
+
+    # Flags adjust the defaults first; the caller's passes follow either way,
+    # and nothing warns about the duplicate kind.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        pipe = backend._resolve_pipeline(PassPipeline([mine]), fuse=False)
+    assert [p.spec().name for p in pipe] == ["fuse_gates"]
+    assert pipe[0] is mine
+
+    # An empty pipeline appends nothing.
+    assert len(backend._resolve_pipeline(PassPipeline())) == 1
 
 
 def test_execute_fuse_kwarg_reaches_pipeline():
@@ -776,3 +877,36 @@ def test_execute_fuse_kwarg_reaches_pipeline():
     backend = _RecBackend(fixed_bits=[False])
     backend.execute(c, nsamples=3, fuse=True)
     assert backend.compiled_len == 1
+
+
+@pytest.mark.parametrize(
+    "flags",
+    [
+        {"fuse": 0},
+        {"fuse": 1},
+        {"fuse": "yes"},
+        {"canonicaldecompose": 1},
+        {"remove_swaps": 0.0},
+        {"reorderqubits": 1},
+        {"fuse_threshold": True},
+        {"fuse_threshold": 7.0},
+        {"reorderqubits_seed": True},
+        {"reorderqubits_seed": 1.5},
+    ],
+)
+def test_prep_flags_of_the_wrong_type_raise(flags):
+    with pytest.raises(TypeError):
+        _DefaultingBackend()._resolve_pipeline(None, **flags)
+
+
+def test_prep_flags_accept_numpy_values():
+    import numpy as np
+
+    backend = _OwnPassesBackend()
+    assert len(backend._resolve_pipeline(None, fuse=np.bool_(False))) == 0
+    pipe = backend._resolve_pipeline(None, fuse_threshold=np.int64(7))
+    assert dict(pipe[0].spec().parameters)["qubit_threshold"].value == 7
+    pipe = backend._resolve_pipeline(
+        None, reorderqubits=np.bool_(True), reorderqubits_seed=np.int32(3)
+    )
+    assert pipe[0].seed == 3 and type(pipe[0].seed) is int

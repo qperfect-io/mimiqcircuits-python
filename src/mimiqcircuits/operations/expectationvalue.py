@@ -126,7 +126,8 @@ class ExpectationValue(Operation):
         return f"⟨{self.op}⟩"
 
     def iswrapper(self):
-        return False
+        # As in MimiqCircuitsBase.jl: `get_operation()` returns the observable.
+        return True
 
     def _decompose(self, circ, qubits, bits, zvars):
         return circ.push(self, *qubits, *bits, *zvars)
@@ -142,6 +143,8 @@ class ExpectationValue(Operation):
         return self.op.getparams()
 
     def evaluate(self, d):
+        if not self.is_symbolic():
+            return self
         return ExpectationValue(self.op.evaluate(d))
 
 

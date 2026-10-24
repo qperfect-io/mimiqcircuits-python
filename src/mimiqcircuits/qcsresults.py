@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from mimiqcircuits.proto.qcsrproto import toproto_qcsr, fromproto_qcsr
 
 from mimiqcircuits.bitstrings import bitvec_to_int
 import math
@@ -97,7 +96,9 @@ class QCSResults:
         version (str): The version of the quantum simulator.
         fidelities (list): List of fidelity estimates from different executions.
         avggateerrors (list): List of average multi-qubit gate errors from different executions.
-        cstates (list): List of classical states obtained from executions.
+        cstates (list[BitString]): List of classical states obtained from
+            executions. Always ``BitString``, whether the results come from a
+            local backend or are decoded from protobuf.
         zstates (list): Not used in the current implementation.
         amplitudes (dict): Dictionary of statevector amplitudes for different quantum states.
         timings (dict): Dictionary of timing information for different phases of the computation.
@@ -250,7 +251,7 @@ class QCSResults:
             hist = self.histogram()
             outcomes = sorted(hist, key=hist.get, reverse=True)[0:10]
             for bs in outcomes:
-                html_output += f'<tr><td style="text-align:left;font-family: monospace;">{hex(bitvec_to_int(bs))}</td><td style="text-align:left;font-family: monospace;">{bs.to01()}</td><td style="font-family: monospace;">{hist[bs]}</td></tr>'
+                html_output += f'<tr><td style="text-align:left;font-family: monospace;">{hex(bitvec_to_int(bs.bits))}</td><td style="text-align:left;font-family: monospace;">{bs.to01()}</td><td style="font-family: monospace;">{hist[bs]}</td></tr>'
             html_output += "<tr><td colspan=2><hr></td></tr>"
 
         # Statevector Amplitudes
@@ -277,8 +278,8 @@ class QCSResults:
         """Histogram of the obtained classical states' occurrences.
 
         Returns:
-            A dictionary of classical states (bitarray) and their occurrences
-            (float).
+            A dictionary of classical states (``BitString``) and their
+            occurrences (float).
 
         Raises:
             TypeError: If a non QCSResults object is passed.

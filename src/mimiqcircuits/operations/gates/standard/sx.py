@@ -17,12 +17,17 @@
 """SX (Sqrt(X)) and SXDG gates."""
 
 from fractions import Fraction
-from symengine import pi
 
 import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 
 
-@mc.canonical_power(mc.GateX, Fraction(1, 2))
+# Fractions are immutable, so all instances share this one: building a
+# Fraction costs more than the rest of the constructor.
+_EXPONENT = Fraction(1, 2)
+
+
+@mc.canonical_power(mc.GateX, _EXPONENT)
 class GateSX(mc.Power):
     r"""Single qubit :math:`\sqrt{X}` gate.
 
@@ -60,7 +65,7 @@ class GateSX(mc.Power):
 
     def __init__(self, operation=None, exponent=None):
         """Initialize an SX gate."""
-        super().__init__(mc.GateX(), Fraction(1, 2))
+        super().__init__(mc.GateX(), _EXPONENT)
 
 
 mc.register_power_alias(mc.GateX, 1 / 2, "SX")
@@ -72,7 +77,7 @@ def _decompose_gatesx(self, circ, qubits, bits, zvars):
     circ.push(mc.GateSDG(), q)
     circ.push(mc.GateH(), q)
     circ.push(mc.GateSDG(), q)
-    circ.push(mc.GateU(0, 0, 0, pi / 4), q)
+    circ.push(mc.GateU(0, 0, 0, PI_4), q)
     return circ
 
 
@@ -123,5 +128,5 @@ def _decompose_gatesxdg(self, circ, qubits, bits, zvars):
     circ.push(mc.GateS(), q)
     circ.push(mc.GateH(), q)
     circ.push(mc.GateS(), q)
-    circ.push(mc.GateU(0, 0, 0, -pi / 4), q)
+    circ.push(mc.GateU(0, 0, 0, NEG_PI_4), q)
     return circ

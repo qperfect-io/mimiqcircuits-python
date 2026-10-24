@@ -16,8 +16,7 @@
 
 """Default probe-circuit constructors for the anti-capability harness.
 
-Mirrors the Julia ``_register_default_cap_probes!`` set in
-``AbstractQCSs.jl/src/capabilities.jl``. Each entry maps a capability
+Each entry maps a capability
 token to a zero-argument factory that returns a minimal
 :class:`Circuit` whose execution requires the named capability.
 

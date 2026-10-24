@@ -16,19 +16,15 @@
 """Fast numeric (NumPy/math) gate-matrix builders.
 
 This module mirrors :mod:`mimiqcircuits.matrices` but builds ``numpy.ndarray``
-matrices directly from Python numbers, bypassing SymEngine entirely. It is
-the Python analogue of the ``_matrix(::Type{Gate}, params...)`` methods in
-``MimiqCircuitsBase.jl/src/matrices.jl``.
+matrices directly from Python numbers, bypassing SymEngine entirely.
 
-The helpers ``sinpi``, ``cospi``, ``cispi`` are the Python equivalents of
-Julia's ``sinpi``, ``cospi``, ``cispi`` — they return exact values at
+The helpers ``sinpi``, ``cospi``, ``cispi`` return exact values at
 integer and half-integer arguments, which is what lets
 ``matrix(GateRX(math.pi))`` yield an exactly-unitary result.
 """
 
 from __future__ import annotations
 
-import cmath
 import math
 
 import numpy as np
@@ -39,8 +35,6 @@ import numpy as np
 
 def sinpi(x: float) -> float:
     """Return ``sin(pi * x)``, exact at integers and half-integers.
-
-    Equivalent to Julia's :func:`sinpi`.
     """
     # Reduce to (-1, 1] modulo 2 to expose exact cases.
     r = x - 2.0 * round(x * 0.5)
@@ -55,8 +49,6 @@ def sinpi(x: float) -> float:
 
 def cospi(x: float) -> float:
     """Return ``cos(pi * x)``, exact at integers and half-integers.
-
-    Equivalent to Julia's :func:`cospi`.
     """
     r = x - 2.0 * round(x * 0.5)
     if r == 0.0:
@@ -70,16 +62,12 @@ def cospi(x: float) -> float:
 
 def cispi(x: float) -> complex:
     """Return ``exp(i * pi * x) == cos(pi*x) + i*sin(pi*x)``.
-
-    Equivalent to Julia's :func:`cispi`.
     """
     return complex(cospi(x), sinpi(x))
 
 
 def cis(x: float) -> complex:
     """Return ``exp(i * x) == cos(x) + i*sin(x)``.
-
-    Equivalent to Julia's :func:`cis`.
     """
     return complex(math.cos(x), math.sin(x))
 
@@ -92,13 +80,8 @@ def pmatrix(lmbda: float) -> np.ndarray:
     return np.array([[1.0, 0.0], [0.0, cis(lmbda)]], dtype=np.complex128)
 
 
-def pmatrixpi(lmbda: float) -> np.ndarray:
-    """Phase matrix ``diag(1, e^{i*pi*lmbda})`` as a NumPy array."""
-    return np.array([[1.0, 0.0], [0.0, cispi(lmbda)]], dtype=np.complex128)
-
-
 def umatrix(theta: float, phi: float, lmbda: float, gamma: float = 0.0) -> np.ndarray:
-    """Four-parameter single-qubit unitary — Julia parity with ``umatrix``.
+    """Matrix of ``GateU(theta, phi, lmbda, gamma)``.
 
     Uses ``cospi``/``sinpi`` on the half-angle so that rational multiples of
     ``pi`` in ``theta`` yield exact values.
@@ -163,24 +146,3 @@ def rmatrix(theta: float, phi: float) -> np.ndarray:
         [[c, -1j * ep.conjugate() * s], [-1j * ep * s, c]],
         dtype=np.complex128,
     )
-
-
-# --- Composition ------------------------------------------------------------
-
-
-def ctrl(mat: np.ndarray) -> np.ndarray:
-    """Single-control version of ``mat`` as a NumPy array."""
-    dim = mat.shape[0]
-    out = np.eye(2 * dim, dtype=np.complex128)
-    out[dim:, dim:] = mat
-    return out
-
-
-def kron(*mats: np.ndarray) -> np.ndarray:
-    """Left-to-right Kronecker product of one or more NumPy matrices."""
-    if not mats:
-        raise ValueError("kron requires at least one matrix")
-    result = np.asarray(mats[0], dtype=np.complex128)
-    for m in mats[1:]:
-        result = np.kron(result, m)
-    return result

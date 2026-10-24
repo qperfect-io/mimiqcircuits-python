@@ -13,11 +13,6 @@ from mimiqcircuits.backends.compiled import DefaultCompiledCircuit
 from mimiqcircuits.operations.operators.lossyoperator import LossyOperator
 
 
-def _to_complex_matrix(op):
-    m = op.unwrappedmatrix()
-    return np.array(
-        [[complex(m[r, c]) for c in range(m.cols)] for r in range(m.rows)]
-    )
 
 
 class _LossMockState(State):
@@ -108,7 +103,7 @@ class _LossMockBackend(LocalBackend):
         ops = channel.krausoperators()
         probs = []
         for o in ops:
-            m = _to_complex_matrix(o)
+            m = o.unwrappedmatrix()
             probs.append(float(np.sum(np.abs(m[:, col]) ** 2)))
         r = (rng or random.Random()).random()
         cum = 0.0
@@ -235,3 +230,16 @@ def test_lossmodel_rewrite_matches_apply_helper():
     _apply_lossmodel_rules(out, inst, model, lost, random.Random(0))
     rewritten = lossmodel_rewrite(inst, lost, model, random.Random(0))
     assert [i.get_operation() for i in out] == [i.get_operation() for i in rewritten]
+
+
+def test_lossmodel_rewrite_works_without_rng():
+    from mimiqcircuits.lossmodel import lossmodel_rewrite
+
+    inst = mc.Instruction(mc.GateCX(), (0, 1), (), ())
+    lost = {1: True}
+    model = mc.LossModel([mc.ReplaceRule(mc.GateCX(), mc.Depolarizing1(0.2))])
+
+    out = lossmodel_rewrite(inst, lost, model)
+    assert [i.get_operation() for i in out] == [mc.Depolarizing1(0.2)]
+    assert [i.get_qubits() for i in out] == [(0,)]
+    assert lossmodel_rewrite(inst, lost, mc.LossModel()) == []

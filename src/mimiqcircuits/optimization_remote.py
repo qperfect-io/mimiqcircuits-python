@@ -24,11 +24,9 @@ from mimiqcircuits.__version__ import __version__
 from mimiqcircuits.proto import WIRE_FORMAT_VERSION
 import numpy as np
 from time import sleep
-import mimiqcircuits as mc
 from mimiqcircuits.remote import *
 from mimiqcircuits.optimization import *
 from mimiqcircuits.remote import (
-    RemoteConnection,
     DEFAULT_ALGORITHM,
     DEFAULT_BONDDIM,
     DEFAULT_ENTDIM,

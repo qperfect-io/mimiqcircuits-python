@@ -26,6 +26,11 @@ if TYPE_CHECKING:
     from mimiqcircuits import Circuit, Operation
 
 
+# Terminality per operation type, for the types where the type alone decides
+# it. Filled on first use and shared by all instances.
+_TERMINAL_BY_TYPE: dict[type, bool] = {}
+
+
 class StimBasis(DecompositionBasis):
     """Decomposition basis targeting the Stim stabilizer simulator gate set.
 
@@ -38,9 +43,10 @@ class StimBasis(DecompositionBasis):
 
     The decomposition follows this priority order:
 
-    1. **ZYZRewrite**: ``GateU`` -> ``RZ * RY * RZ``
-    2. **SpecialAngleRewrite** (Clifford-only): Rotations at ``k*pi/2`` -> Clifford gates
-    3. **CanonicalRewrite**: Fallback for other gates
+    1. A ``GateU`` whose angles are all zero (a pure global phase) is dropped.
+    2. **ZYZRewrite**: ``GateU`` -> ``RZ * RY * RZ``
+    3. **SpecialAngleRewrite** (Clifford-only): Rotations at ``k*pi/2`` -> Clifford gates
+    4. **CanonicalRewrite**: Fallback for other gates
 
     Non-Clifford rotations (angles not multiples of pi/2) will raise a
     :class:`DecompositionError`.
@@ -51,7 +57,7 @@ class StimBasis(DecompositionBasis):
     **Single-qubit Clifford gates:**
         - ``GateID``
         - Pauli: ``GateX``, ``GateY``, ``GateZ``
-        - Hadamard: ``GateH``
+        - Hadamard: ``GateH``, ``GateHXY``, ``GateHYZ``
         - Phase gates: ``GateS``, ``GateSDG``
         - Square root gates: ``GateSX``, ``GateSXDG``, ``GateSY``, ``GateSYDG``
 
@@ -60,8 +66,25 @@ class StimBasis(DecompositionBasis):
         - Swap family: ``GateSWAP``, ``GateISWAP``, ``ISWAP†``
         - ``GateDCX``, ``GateECR``
 
+    **Pauli rotations by +-pi/2:**
+        - ``GateRXX``, ``GateRYY``, ``GateRZZ`` with angle +-pi/2
+        - ``RPauli`` with angle +-pi/2 and a non-identity Pauli string
+
+    Angles are compared modulo 2*pi, since a rotation by 3*pi/2 equals a
+    rotation by -pi/2 up to a global phase. Other angles are decomposed.
+
+    **Feedback:**
+        - ``IfStatement`` of ``GateX``, ``GateY`` or ``GateZ`` conditioned on a
+          single bit being ``1``. The same gate conditioned on the bit being
+          ``0`` is decomposed into the gate followed by the gate conditioned on
+          ``1``. Any other conditional operation has its body decomposed while
+          staying conditional, and raises a :class:`DecompositionError` if that
+          does not lead to a conditional Pauli.
+
     **Measurements (all Pauli bases):**
         - ``Measure``, ``MeasureX``, ``MeasureY``
+        - Two-qubit parities: ``MeasureXX``, ``MeasureYY``, ``MeasureZZ``
+        - Pauli products: ``MeasurePauli``
 
     **Resets (all Pauli bases):**
         - ``Reset``, ``ResetX``, ``ResetY``
@@ -72,6 +95,7 @@ class StimBasis(DecompositionBasis):
     **Noise channels:**
         - ``PauliX``, ``PauliY``, ``PauliZ``
         - ``Depolarizing1``, ``Depolarizing2``
+        - ``PauliNoise``
 
     **QEC annotations:**
         - ``Detector``, ``ObservableInclude``, ``QubitCoordinates``
@@ -80,41 +104,60 @@ class StimBasis(DecompositionBasis):
     Stim Gate Mapping
     -----------------
 
-    ==================== =====================
-    MIMIQ Operation      Stim Operation
-    ==================== =====================
-    ``GateID``           ``I``
-    ``GateX``            ``X``
-    ``GateY``            ``Y``
-    ``GateZ``            ``Z``
-    ``GateH``            ``H``
-    ``GateS``            ``S``
-    ``GateSDG``          ``S_DAG``
-    ``GateSX``           ``SQRT_X``
-    ``GateSXDG``         ``SQRT_X_DAG``
-    ``GateSY``           ``SQRT_Y``
-    ``GateSYDG``         ``SQRT_Y_DAG``
-    ``GateCX``           ``CNOT`` / ``CX``
-    ``GateCY``           ``CY``
-    ``GateCZ``           ``CZ``
-    ``GateSWAP``         ``SWAP``
-    ``GateISWAP``        ``ISWAP``
-    ``ISWAP†``           ``ISWAP_DAG``
-    ``GateDCX``          ``DCX`` (custom)
-    ``GateECR``          ``ECR`` (custom)
-    ``Measure``          ``M``
-    ``MeasureX``         ``MX``
-    ``MeasureY``         ``MY``
-    ``Reset``            ``R``
-    ``ResetX``           ``RX``
-    ``ResetY``           ``RY``
-    ``MeasureReset``     ``MR``
-    ``MeasureResetX``    ``MRX``
-    ``MeasureResetY``    ``MRY``
-    ``Detector``         ``DETECTOR``
-    ``ObservableInclude`` ``OBSERVABLE_INCLUDE``
-    ``QubitCoordinates`` ``QUBIT_COORDS``
-    ==================== =====================
+    =========================== =============================================================================
+    MIMIQ Operation             Stim Operation
+    =========================== =============================================================================
+    ``GateID``                  ``I``
+    ``GateX``                   ``X``
+    ``GateY``                   ``Y``
+    ``GateZ``                   ``Z``
+    ``GateH``                   ``H``
+    ``GateHXY``                 ``H_XY``
+    ``GateHYZ``                 ``H_YZ``
+    ``GateS``                   ``S``
+    ``GateSDG``                 ``S_DAG``
+    ``GateSX``                  ``SQRT_X``
+    ``GateSXDG``                ``SQRT_X_DAG``
+    ``GateSY``                  ``SQRT_Y``
+    ``GateSYDG``                ``SQRT_Y_DAG``
+    ``GateCX``                  ``CNOT`` / ``CX``
+    ``GateCY``                  ``CY``
+    ``GateCZ``                  ``CZ``
+    ``GateSWAP``                ``SWAP``
+    ``GateISWAP``               ``ISWAP``
+    ``ISWAP†``                  ``ISWAP_DAG``
+    ``GateDCX``                 ``DCX`` (custom)
+    ``GateECR``                 ``ECR`` (custom)
+    ``GateRXX(+-pi/2)``         ``SQRT_XX`` / ``SQRT_XX_DAG``
+    ``GateRYY(+-pi/2)``         ``SQRT_YY`` / ``SQRT_YY_DAG``
+    ``GateRZZ(+-pi/2)``         ``SQRT_ZZ`` / ``SQRT_ZZ_DAG``
+    ``RPauli(P, +-pi/2)``       ``SPP`` / ``SPP_DAG``
+    ``IfStatement(GateX(), 1)`` ``CX rec[-k] q``
+    ``IfStatement(GateY(), 1)`` ``CY rec[-k] q``
+    ``IfStatement(GateZ(), 1)`` ``CZ rec[-k] q``
+    ``Measure``                 ``M``
+    ``MeasureX``                ``MX``
+    ``MeasureY``                ``MY``
+    ``MeasureXX``               ``MXX``
+    ``MeasureYY``               ``MYY``
+    ``MeasureZZ``               ``MZZ``
+    ``MeasurePauli``            ``MPP``
+    ``Reset``                   ``R``
+    ``ResetX``                  ``RX``
+    ``ResetY``                  ``RY``
+    ``MeasureReset``            ``MR``
+    ``MeasureResetX``           ``MRX``
+    ``MeasureResetY``           ``MRY``
+    ``PauliX``                  ``X_ERROR``
+    ``PauliY``                  ``Y_ERROR``
+    ``PauliZ``                  ``Z_ERROR``
+    ``Depolarizing1``           ``DEPOLARIZE1``
+    ``Depolarizing2``           ``DEPOLARIZE2``
+    ``PauliNoise``              ``PAULI_CHANNEL_1``, ``PAULI_CHANNEL_2`` or ``E`` / ``ELSE_CORRELATED_ERROR``
+    ``Detector``                ``DETECTOR``
+    ``ObservableInclude``       ``OBSERVABLE_INCLUDE``
+    ``QubitCoordinates``        ``QUBIT_COORDS``
+    =========================== =============================================================================
 
     Example:
         >>> from mimiqcircuits import Circuit, GateH, GateS, GateCX
@@ -175,90 +218,83 @@ class StimBasis(DecompositionBasis):
         Returns:
             True if the operation is in the Stim Clifford gate set.
         """
+        t = type(op)
+        known = _TERMINAL_BY_TYPE.get(t)
+        if known is not None:
+            return known
+
         import mimiqcircuits as mc
 
-        # === Single-qubit Clifford gates ===
+        # These are decided by their values, so they never reach the cache.
+        # Pauli rotations by +-pi/2 are Stim's SQRT_XX, SQRT_YY, SQRT_ZZ, SPP.
+        if isinstance(op, (mc.GateRXX, mc.GateRYY, mc.GateRZZ)):
+            return _is_half_pi(op.theta)
+        if isinstance(op, mc.RPauli):
+            return any(p != "I" for p in str(op.pauli)) and _is_half_pi(op.theta)
+        # Depolarizing1 and Depolarizing2 build a Depolarizing.
+        if isinstance(op, mc.Depolarizing):
+            return op.num_qubits in (1, 2)
+        # Feedback: Stim's CX/CY/CZ with a measurement record as control.
+        if isinstance(op, mc.IfStatement):
+            return isinstance(op.op, (mc.GateX, mc.GateY, mc.GateZ)) and _is_one(
+                op.bitstring
+            )
 
-        # Identity
-        if isinstance(op, mc.GateID):
-            return True
-
-        # Pauli gates
-        if isinstance(op, (mc.GateX, mc.GateY, mc.GateZ)):
-            return True
-
-        # Hadamard
-        if isinstance(op, mc.GateH):
-            return True
-
-        # Phase gates: S, Sdg
-        if isinstance(op, (mc.GateS, mc.GateSDG)):
-            return True
-
-        # Square root gates: SX, SXdg
-        if isinstance(op, (mc.GateSX, mc.GateSXDG)):
-            return True
-
-        # SY, SYdg
-        if isinstance(op, (mc.GateSY, mc.GateSYDG)):
-            return True
-
-        # === Two-qubit Clifford gates ===
-
-        # Controlled Pauli: CX, CY, CZ
-        if isinstance(op, (mc.GateCX, mc.GateCY, mc.GateCZ)):
-            return True
-
-        # Swap family
-        if isinstance(op, mc.GateSWAP):
-            return True
-        if isinstance(op, (mc.GateISWAP, mc.GateISWAPDG)):
-            return True
-
-        # DCX and ECR
-        if isinstance(op, (mc.GateDCX, mc.GateECR)):
-            return True
-
-        # === Measurements (all Pauli bases) ===
-
-        if isinstance(op, (mc.Measure, mc.MeasureX, mc.MeasureY)):
-            return True
-
-        # === Resets (all Pauli bases) ===
-
-        if isinstance(op, (mc.Reset, mc.ResetX, mc.ResetY)):
-            return True
-
-        # === Measure-and-reset (all Pauli bases) ===
-
-        if isinstance(op, (mc.MeasureReset, mc.MeasureResetX, mc.MeasureResetY)):
-            return True
-
-        # === Barriers ===
-
-        if isinstance(op, mc.Barrier):
-            return True
-
-        # === Noise channels (Stim supports Pauli noise natively) ===
-
-        # Pauli error channels
-        if isinstance(op, (mc.PauliX, mc.PauliY, mc.PauliZ)):
-            return True
-
-        # Depolarizing noise
-        if isinstance(op, (mc.Depolarizing1, mc.Depolarizing2)):
-            return True
-
-        # === QEC Annotations ===
-
-        if isinstance(op, (mc.Detector, mc.ObservableInclude, mc.QubitCoordinates)):
-            return True
-
-        # Generic annotations
-        if isinstance(op, mc.AbstractAnnotation):
-            return True
-
-        return False
+        known = isinstance(
+            op,
+            (
+                # Single-qubit Cliffords
+                mc.GateID,
+                mc.GateX,
+                mc.GateY,
+                mc.GateZ,
+                mc.GateH,
+                mc.GateHXY,
+                mc.GateHYZ,
+                mc.GateS,
+                mc.GateSDG,
+                mc.GateSX,
+                mc.GateSXDG,
+                mc.GateSY,
+                mc.GateSYDG,
+                # Two-qubit Cliffords
+                mc.GateCX,
+                mc.GateCY,
+                mc.GateCZ,
+                mc.GateSWAP,
+                mc.GateISWAP,
+                mc.GateISWAPDG,
+                mc.GateDCX,
+                mc.GateECR,
+                # Measurements, resets and measure-resets in all Pauli bases
+                mc.Measure,
+                mc.MeasureX,
+                mc.MeasureY,
+                mc.MeasureXX,
+                mc.MeasureYY,
+                mc.MeasureZZ,
+                mc.MeasurePauli,
+                mc.Reset,
+                mc.ResetX,
+                mc.ResetY,
+                mc.MeasureReset,
+                mc.MeasureResetX,
+                mc.MeasureResetY,
+                mc.Barrier,
+                # Pauli noise
+                mc.PauliX,
+                mc.PauliY,
+                mc.PauliZ,
+                mc.PauliNoise,
+                # QEC and generic annotations
+                mc.Detector,
+                mc.ObservableInclude,
+                mc.QubitCoordinates,
+                mc.AbstractAnnotation,
+            ),
+        )
+        _TERMINAL_BY_TYPE[t] = known
+        return known
 
     def decompose(
         self,
@@ -270,9 +306,10 @@ class StimBasis(DecompositionBasis):
         """Decompose a non-terminal operation toward the Stim Clifford gate set.
 
         Applies rules in priority order:
-            1. ZYZRewrite for GateU
-            2. SpecialAngleRewrite (Clifford-only) for rotations at k*pi/2
-            3. CanonicalRewrite as fallback
+            1. Drops a GateU whose angles are all zero (a global phase)
+            2. ZYZRewrite for GateU
+            3. SpecialAngleRewrite (Clifford-only) for rotations at k*pi/2
+            4. CanonicalRewrite as fallback
 
         Non-Clifford rotations (angles not multiples of pi/2) will raise an error.
 
@@ -294,6 +331,19 @@ class StimBasis(DecompositionBasis):
             SpecialAngleRewrite,
             ZYZRewrite,
         )
+        from mimiqcircuits.decomposition.rules.zyz import _iszero
+
+        if isinstance(op, mc.IfStatement):
+            return self._decompose_ifstatement(op, qubits, bits, zvars)
+
+        # A bare GateU with zero angles is only a global phase, so it expands
+        # to nothing; ZYZRewrite refuses it. Under a Control the phase is a
+        # relative phase; that case is a Control, not a GateU, and goes to
+        # CanonicalRewrite.
+        if isinstance(op, mc.GateU) and all(
+            _iszero(p) for p in (op.theta, op.phi, op.lmbda)
+        ):
+            return mc.Circuit()
 
         # Priority 1: GateU -> ZYZ decomposition (RZ * RY * RZ)
         zyz = ZYZRewrite()
@@ -321,6 +371,54 @@ class StimBasis(DecompositionBasis):
         raise DecompositionError(
             f"Operation {op.name} cannot be decomposed into the Stim basis."
         )
+
+    def _decompose_ifstatement(self, op, qubits, bits, zvars):
+        import mimiqcircuits as mc
+        from mimiqcircuits.decomposition.rules import SpecialAngleRewrite
+        from mimiqcircuits.operations.ifstatement import _decompose_ifstatement
+
+        inner = op.op
+        condition = op.bitstring
+
+        if len(condition) != 1:
+            raise DecompositionError(
+                f"IfStatement with a {len(condition)}-bit condition cannot be decomposed "
+                "into the Stim basis. Stim only conditions X, Y and Z gates on a single "
+                "measurement record."
+            )
+
+        # P if c == 0 equals P, then P if c == 1, since P^2 = I.
+        if isinstance(inner, (mc.GateX, mc.GateY, mc.GateZ)):
+            circ = mc.Circuit()
+            circ.push(inner, *qubits)
+            circ.push(mc.IfStatement(inner, mc.BitString("1")), *qubits, *bits)
+            return circ
+
+        if self.isterminal(inner):
+            raise DecompositionError(
+                f"IfStatement of {inner} cannot be decomposed into the Stim basis. "
+                "Stim only conditions X, Y and Z gates on a single measurement record."
+            )
+
+        # Rotations by multiples of pi go straight to the Pauli they equal; the
+        # general pipeline would pass through gates that cannot be conditioned.
+        special_angle_clifford = SpecialAngleRewrite(only_cliffords=True)
+        if special_angle_clifford.matches(inner):
+            return _decompose_ifstatement(
+                special_angle_clifford, op, qubits, bits, zvars
+            )
+
+        return _decompose_ifstatement(self, op, qubits, bits, zvars)
+
+
+def _is_half_pi(theta) -> bool:
+    from mimiqcircuits.decomposition.rules.special_angle import _get_pi_factor
+
+    return _get_pi_factor(theta) in (2, 6)
+
+
+def _is_one(bitstring) -> bool:
+    return len(bitstring) == 1 and bitstring[0]
 
 
 __all__ = ["StimBasis"]

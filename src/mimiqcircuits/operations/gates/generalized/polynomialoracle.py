@@ -80,6 +80,10 @@ class PolynomialOracle(mc.Gate):
             "Matrix representation for PolynomialOracle is not implemented."
         )
 
+    def supports_canonical_rewrite(self):
+        # An oracle for simulators: it has no decomposition into gates.
+        return False
+
     def _decompose(self, circ, qubits, bits, _):
         return circ.push(self, *qubits)
 

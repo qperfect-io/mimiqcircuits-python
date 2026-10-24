@@ -1,33 +1,129 @@
+name: PyPI
+
+# Builds the wheels and the sdist for a tag and publishes them to PyPI.
+#
+# The package contains a compiled extension, so wheels are platform-specific.
+# Each platform gets one abi3 wheel serving CPython 3.10 and newer, plus a
+# wheel for free-threaded CPython 3.14 (`cp314t`), which has no stable ABI to
+# build against and so cannot share the abi3 one.
+
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
-  build:
+  linux:
+    if: github.repository == 'qperfect-io/mimiqcircuits-python'
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            target: x86_64
+          - runner: ubuntu-24.04-arm
+            target: aarch64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      # Built natively inside the PyPA manylinux_2_28 image, which carries every
+      # CPython under /opt/python, free-threaded ones included.
+      - name: Build abi3 wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: "2_28"
+          container: quay.io/pypa/manylinux_2_28_${{ matrix.target }}
+          args: --release --out dist -i /opt/python/cp313-cp313/bin/python
+      - name: Build free-threaded wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: "2_28"
+          container: quay.io/pypa/manylinux_2_28_${{ matrix.target }}
+          args: --release --out dist -i /opt/python/cp314-cp314t/bin/python
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-${{ matrix.target }}
+          path: dist
+
+  macos:
+    if: github.repository == 'qperfect-io/mimiqcircuits-python'
+    strategy:
+      matrix:
+        # Both from an arm64 runner: the x86_64 wheels are cross-compiled.
+        target: [x86_64, aarch64]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: |
+            3.14t
+            3.13
+      - name: Build abi3 wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist -i python3.13
+      - name: Build free-threaded wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist -i python3.14t
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-${{ matrix.target }}
+          path: dist
+
+  windows:
+    if: github.repository == 'qperfect-io/mimiqcircuits-python'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: |
+            3.14t
+            3.13
+      - name: Build abi3 wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x64
+          args: --release --out dist -i python3.13
+      - name: Build free-threaded wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x64
+          args: --release --out dist -i python3.14t
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-x64
+          path: dist
+
+  sdist:
     if: github.repository == 'qperfect-io/mimiqcircuits-python'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3  # Check out the code
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
         with:
-          python-version: '3.11'  # Set your Python version
+          command: sdist
+          args: --out dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist
 
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          poetry config virtualenvs.create false
-          poetry install --no-interaction --no-ansi
-
-      - name: Build Package
-        run: |
-          poetry build
-
+  publish:
+    needs: [linux, macos, windows, sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
       - name: Publish to PyPI
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}  # Store your PyPI token as a secret in GitHub
-        run: |
-          rm -rf dist/
-          poetry publish --build --username __token__ --password $PYPI_TOKEN --no-interaction
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

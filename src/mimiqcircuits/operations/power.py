@@ -17,7 +17,10 @@
 """Power operation."""
 
 from fractions import Fraction
+import math
+import numbers
 from symengine import pi
+import symengine as se
 from mimiqcircuits.printutils import print_wrapped_parens
 import sympy as sp
 import numpy as np
@@ -79,15 +82,48 @@ def canonical_power(inner_gate_type: Type, exponent: Any):
 
 
 def _normalize_exponent(exponent: Any) -> Any:
-    """Normalize exponent to a canonical form for comparison.
+    """Normalize an exponent to its canonical form.
 
-    Converts floats that are exact fractions to Fraction objects.
+    A float that is exactly a fraction with denominator at most 1000 becomes
+    that fraction, or an integer when the denominator is 1 and it fits in
+    int64, so that ``0.5`` and ``Fraction(1, 2)`` build the same operation and
+    serialize to the same bytes.
+    Other real values are returned unchanged.
+
+    Raises:
+        TypeError: if the exponent is not a real number, for example a
+            symbolic or a complex value. A power must be known to build its
+            matrix and to fold nested powers.
     """
-    if isinstance(exponent, float):
+    if isinstance(exponent, (se.Basic, sp.Basic)):
+        if exponent.free_symbols or not exponent.is_real:
+            raise TypeError(f"the exponent of a power must be a real number, not {exponent}")
+        exponent = float(exponent)
+    elif not isinstance(exponent, numbers.Real):
+        raise TypeError(
+            f"the exponent of a power must be a real number, not {exponent!r}"
+        )
+    if isinstance(exponent, float) and math.isfinite(exponent):
         frac = Fraction(exponent).limit_denominator(1000)
         if float(frac) == exponent:
-            return frac
+            if frac.denominator != 1:
+                return frac
+            # Kept as a float past int64, which the protobuf integer field holds.
+            if abs(frac.numerator) < 2**63 - 1:
+                return frac.numerator
     return exponent
+
+
+def _scale_by_exponent(value, exponent):
+    """Return ``value * exponent`` for a parameter scaled by a power.
+
+    SymEngine does not accept a ``Fraction`` operand, so a ``Fraction``
+    exponent is turned into the equivalent SymEngine rational when ``value`` is
+    symbolic. The result stays exact.
+    """
+    if isinstance(exponent, Fraction) and isinstance(value, se.Basic):
+        exponent = se.Rational(exponent.numerator, exponent.denominator)
+    return value * exponent
 
 
 class Power(Gate):
@@ -192,7 +228,7 @@ class Power(Gate):
 
         super().__init__()
 
-        self._exponent = exponent
+        self._exponent = _normalize_exponent(exponent)
         self._op = op
         self._num_qubits = op.num_qubits
         self._num_qregs = op.num_qregs
@@ -200,7 +236,7 @@ class Power(Gate):
         self._parnames = op.parnames
         if isinstance(op, mc.Power):
             self._op = op.op
-            self._exponent = exponent * op.exponent
+            self._exponent = _normalize_exponent(exponent * op.exponent)
 
     @property
     def op(self):
@@ -221,6 +257,9 @@ class Power(Gate):
     def iswrapper(self):
         return True
 
+    def get_operation(self):
+        return self.op
+
     def _power(self, pwr):
         return self.op.power(pwr * self._exponent)
 
@@ -228,8 +267,7 @@ class Power(Gate):
         if len(args) == 0:
             return mc.power(self)
         elif len(args) == 1:
-            exponent = args[0]
-            return self._power(exponent)
+            return self._power(_normalize_exponent(args[0]))
         else:
             raise ValueError("Invalid number of arguments.")
 
@@ -318,8 +356,9 @@ class Power(Gate):
         return self.__str__()
 
     def evaluate(self, d):
-        exponent = self.exponent
-        return self.op.evaluate(d).power(exponent)
+        if not self.is_symbolic():
+            return self
+        return self.op.evaluate(d).power(self.exponent)
 
     def gettypekey(self):
         return (Power, self.op.gettypekey(), self.exponent)
@@ -349,19 +388,33 @@ class Power(Gate):
                 circ.push(base.power(self.exponent), *q)
             return circ
 
-        # try to decompose,
-        # if there is only a gate, maybe it is ok
-        # if the gates are all diagonal then we can continue
-        # otherwise just do nothing and push the same thing
+        # PhaseGradient is a product of commuting phase gates, so its power
+        # scales every phase.
+        if isinstance(self.op, mc.PhaseGradient):
+            return self.op._decompose_power(circ, qubits, self.exponent)
+
+        # (C-U)^p = C-(U^p): the controls pass through the power.
+        if isinstance(self.op, mc.Control):
+            circ.push(
+                mc.Control(self.op.num_controls, self.op.op.power(self.exponent)),
+                *qubits,
+            )
+            return circ
+
+        # A single-gate decomposition can be raised to the power directly.
+        # Anything longer would need the matrix power of the whole circuit.
         cop = self.op._decompose(mc.Circuit(), qubits, bits, zvars)
 
         if len(cop) == 1:
-            circ.push(cop.instructions[0].operation._power(self.exponent), *qubits)
+            inst = cop.instructions[0]
+            circ.push(inst.operation._power(self.exponent), *inst.qubits)
             return circ
 
-        circ.push(self, *qubits)
+        from mimiqcircuits.decomposition.abstract import DecompositionError
 
-        return circ
+        raise DecompositionError(
+            f"Cannot decompose {self}: the decomposition of its base has more than one gate."
+        )
 
     def decompose(self):
         return self._decompose(

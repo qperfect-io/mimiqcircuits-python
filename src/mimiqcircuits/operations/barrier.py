@@ -90,6 +90,11 @@ class Barrier(Operation):
         else:
             raise ValueError("Invalid number of arguments.")
 
+    # copy, deepcopy and pickle rebuild through __new__, which without
+    # arguments returns a LazyExpr instead of a Barrier.
+    def __getnewargs__(self):
+        return (self._num_qubits,)
+
     def inverse(self):
         return self
 

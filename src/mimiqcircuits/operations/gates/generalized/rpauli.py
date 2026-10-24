@@ -116,7 +116,8 @@ class RPauli(Gate):
         return True
 
     def iswrapper(self):
-        return True
+        # Not a wrapper: it holds a Pauli string and an angle, no operation.
+        return False
 
     def _decompose(self, circ: mc.Circuit, qtargets, ctargets=None, ztargets=None):
         s = str(self.pauli)
@@ -154,7 +155,7 @@ class RPauli(Gate):
     def __str__(self):
         return f'R("{str(self.pauli)}", {self.theta})'
 
-    def matrix(self):
+    def _matrix(self):
         from mimiqcircuits.matrices import symbolic_matrix_exponential
 
         theta = self.theta

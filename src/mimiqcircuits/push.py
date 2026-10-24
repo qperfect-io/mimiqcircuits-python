@@ -16,11 +16,29 @@
 #
 
 
-from mimiqcircuits.instruction import Instruction
+from mimiqcircuits.instruction import Instruction, _OPERATION_TYPES
 from mimiqcircuits.operations.operation import Operation
+import mimiqcircuits as mc
 from collections.abc import Iterable
 from itertools import repeat
 import numpy as np
+
+
+# Types already accepted by `_check_pushable`, so the check costs one set
+# lookup per push.
+_PUSHABLE_TYPES = {Instruction}
+
+
+def _check_pushable(operation):
+    # An operator that is not a gate (a projector, `SigmaMinus`, a
+    # `RescaledGate`, ...) is not a physical operation, so it cannot be an
+    # instruction on its own. It belongs inside `ExpectationValue`, a Kraus
+    # channel, and similar.
+    if isinstance(operation, mc.AbstractOperator) and not isinstance(operation, mc.Gate):
+        raise ValueError(
+            f"Cannot add an operator {type(operation).__name__} that is not a gate to the circuit."
+        )
+    _PUSHABLE_TYPES.add(type(operation))
 
 
 def push_instruction_container(container, operation, *args, check_fn=None):
@@ -34,6 +52,42 @@ def push_instruction_container(container, operation, *args, check_fn=None):
         args: target qubits/bits/zvars.
         check_fn: optional validator function (e.g., container._check_instruction_block).
     """
+    # Fast paths for the two common calls: an already-built instruction, and
+    # an operation with plain int targets, which describe exactly one
+    # instruction. Anything else (numpy integers, iterables, bools, bad types)
+    # takes the general path below, which also reports the errors.
+    optype = type(operation)
+    if optype is Instruction and not args:
+        if check_fn:
+            check_fn(operation)
+        container._append_raw(operation)
+        return container
+
+    if optype not in _PUSHABLE_TYPES:
+        _check_pushable(operation)
+
+    if optype in _OPERATION_TYPES or (
+        optype is not Instruction and isinstance(operation, Operation)
+    ):
+        for arg in args:
+            if type(arg) is not int:
+                break
+        else:
+            nq = operation.num_qubits
+            nc = operation.num_bits
+            nz = operation.num_zvars
+            if len(args) != nq + nc + nz:
+                raise ValueError(
+                    f"Wrong number of target qubits/bits/zvars: got {len(args)}, expected {nq}+{nc}+{nz}"
+                )
+            inst = Instruction(
+                operation, args[:nq], args[nq : nq + nc], args[nq + nc :]
+            )
+            if check_fn:
+                check_fn(inst)
+            container._append_raw(inst)
+            return container
+
     args = tuple(int(arg) if isinstance(arg, np.integer) else arg for arg in args)
     nq = nc = nz = 0
     L = len(args)

@@ -75,11 +75,13 @@ class GateCCP(mc.Control):
                 operation when called from Control's canonical creation.
             operation: Ignored (for compatibility).
         """
-        # Detect if called from Control's canonical creation: Control(2, GateP(lmbda))
-        if isinstance(lmbda_or_num_controls, int) and isinstance(
-            num_controls_or_operation, GateP
-        ):
-            lmbda = num_controls_or_operation.lmbda
+        # Detect if called from Control's canonical creation: Control(2, GateP(lmbda)),
+        # or Control(1, GateCP(lmbda)) which flattens to the same gate.
+        inner = num_controls_or_operation
+        if isinstance(inner, mc.Control):
+            inner = inner.op
+        if isinstance(lmbda_or_num_controls, int) and isinstance(inner, GateP):
+            lmbda = inner.lmbda
         else:
             lmbda = lmbda_or_num_controls
         super().__init__(2, GateP(lmbda))

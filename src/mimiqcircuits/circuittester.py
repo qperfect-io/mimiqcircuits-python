@@ -17,8 +17,6 @@
 Circuit tester experiment to check equivalence between two circuits.
 """
 
-from bitarray import frozenbitarray
-
 from mimiqcircuits import Circuit, GateH, GateCX, Measure, inverse
 from mimiqcircuits import BitString
 
@@ -133,7 +131,7 @@ class CircuitTesterExperiment:
         if total_samples == 0:
             return 0.0
 
-        target_state = frozenbitarray("0" * total_qubits)
+        target_state = BitString("0" * total_qubits)
         counts = results.histogram()
 
         # count occurrences of "0...0"

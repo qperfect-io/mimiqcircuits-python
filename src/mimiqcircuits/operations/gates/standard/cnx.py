@@ -17,8 +17,8 @@
 """Controlled-Controlled-X (Toffoli) and C3X gates."""
 
 from mimiqcircuits.operations.gates.standard.pauli import GateX
-from symengine import pi
 import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard._angles import PI_8, NEG_PI_8
 
 
 @mc.canonical_control(2, GateX)
@@ -166,31 +166,31 @@ class GateC3X(mc.Control):
 def _decompose_gatec3x(self, circ, qubits, bits, zvars):
     a, b, c, d = qubits
     circ.push(mc.GateH(), d)
-    circ.push(mc.GateP(pi / 8), qubits)
+    circ.push(mc.GateP(PI_8), qubits)
     circ.push(mc.GateCX(), a, b)
-    circ.push(mc.GateP(-pi / 8), b)
+    circ.push(mc.GateP(NEG_PI_8), b)
     circ.push(mc.GateCX(), a, b)
     circ.push(mc.GateCX(), b, c)
-    circ.push(mc.GateP(-pi / 8), c)
+    circ.push(mc.GateP(NEG_PI_8), c)
     circ.push(mc.GateCX(), a, c)
-    circ.push(mc.GateP(pi / 8), c)
+    circ.push(mc.GateP(PI_8), c)
     circ.push(mc.GateCX(), b, c)
-    circ.push(mc.GateP(-pi / 8), c)
+    circ.push(mc.GateP(NEG_PI_8), c)
     circ.push(mc.GateCX(), a, c)
     circ.push(mc.GateCX(), c, d)
-    circ.push(mc.GateP(-pi / 8), d)
+    circ.push(mc.GateP(NEG_PI_8), d)
     circ.push(mc.GateCX(), b, d)
-    circ.push(mc.GateP(pi / 8), d)
+    circ.push(mc.GateP(PI_8), d)
     circ.push(mc.GateCX(), c, d)
-    circ.push(mc.GateP(-pi / 8), d)
+    circ.push(mc.GateP(NEG_PI_8), d)
     circ.push(mc.GateCX(), a, d)
-    circ.push(mc.GateP(pi / 8), d)
+    circ.push(mc.GateP(PI_8), d)
     circ.push(mc.GateCX(), c, d)
-    circ.push(mc.GateP(-pi / 8), d)
+    circ.push(mc.GateP(NEG_PI_8), d)
     circ.push(mc.GateCX(), b, d)
-    circ.push(mc.GateP(pi / 8), d)
+    circ.push(mc.GateP(PI_8), d)
     circ.push(mc.GateCX(), c, d)
-    circ.push(mc.GateP(-pi / 8), d)
+    circ.push(mc.GateP(NEG_PI_8), d)
     circ.push(mc.GateCX(), a, d)
     circ.push(mc.GateH(), d)
     return circ

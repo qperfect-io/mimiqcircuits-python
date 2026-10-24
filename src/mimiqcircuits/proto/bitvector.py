@@ -20,7 +20,7 @@ from mimiqcircuits.proto.qcsrproto import bitvec_to_bytes, bytes_to_bitvec
 
 
 def toproto_bitvector(bv):
-    return bitvector_pb2.BitVector(len=len(bv), data=bytes(bitvec_to_bytes(bv)))
+    return bitvector_pb2.BitVector(len=len(bv), data=bitvec_to_bytes(bv))
 
 
 def fromproto_bitvector(bv):

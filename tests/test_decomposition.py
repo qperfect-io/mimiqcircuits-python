@@ -121,3 +121,12 @@ def kronecker_product(A, B):
                 A[i, j] * B
             )
     return C
+
+
+def test_polynomialoracle_is_not_decomposable():
+    from mimiqcircuits.decomposition import decompose, DecompositionError
+
+    # An oracle for simulators, without a gate decomposition.
+    c = Circuit().push(PolynomialOracle(2, 2, 1, 2, 3, 4), 0, 1, 2, 3)
+    with pytest.raises(DecompositionError):
+        decompose(c)

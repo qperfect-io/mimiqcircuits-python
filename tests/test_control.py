@@ -129,3 +129,58 @@ def test_control_matrix():
 
     assert control_gate.num_qubits == c_gate.num_qubits == 2
     assert g1 == g2
+
+
+def _circuit_unitary(circuit, n):
+    # Product of the instruction matrices, the first target being the most
+    # significant index as in Gate.matrix().
+    U = np.eye(2**n, dtype=complex)
+    for inst in circuit:
+        m = np.array(inst.operation.matrix().tolist(), dtype=complex)
+        qs = list(inst.qubits)
+        k = len(qs)
+        t = m.reshape([2] * (2 * k))
+        V = U.reshape([2] * n + [2**n])
+        W = np.tensordot(t, V, axes=(list(range(k, 2 * k)), qs))
+        U = np.moveaxis(W, list(range(k)), qs).reshape(2**n, 2**n)
+    return U
+
+
+@pytest.mark.parametrize("ncontrols", [3, 4, 5, 6])
+def test_multicontrol_x_decomposition_is_exact(ncontrols):
+    from mimiqcircuits.decomposition import decompose, CanonicalBasis
+
+    op = mc.Control(ncontrols, mc.GateX())
+    n = ncontrols + 1
+    decomposed = decompose(mc.Circuit().push(op, *range(n)), CanonicalBasis())
+    expected = np.array(op.matrix().tolist(), dtype=complex)
+    assert np.allclose(_circuit_unitary(decomposed, n), expected, atol=1e-10)
+
+
+def test_nested_control_returns_canonical_subclass():
+    # Nested controls are flattened, and the result is the named gate.
+    assert type(mc.Control(1, mc.GateCX())) is mc.GateCCX
+    assert type(mc.Control(2, mc.GateCX())) is mc.GateC3X
+    ccp = mc.Control(1, mc.GateCP(0.3))
+    assert type(ccp) is mc.GateCCP
+    assert ccp.num_controls == 2
+    assert float(ccp.op.lmbda) == 0.3
+
+
+@pytest.mark.parametrize(
+    "gate, cgate",
+    [
+        (mc.GateRX, mc.GateCRX),
+        (mc.GateRY, mc.GateCRY),
+        (mc.GateRZ, mc.GateCRZ),
+    ],
+)
+def test_rotation_control_returns_controlled_gate(gate, cgate):
+    theta = se.Symbol("theta")
+    assert gate(0.3).control(1) == cgate(0.3)
+    assert isinstance(gate(0.3).control(2), mc.Control)
+
+    # Circuit.evaluate re-controls the evaluated inner gate.
+    c = mc.Circuit()
+    c.push(mc.Control(1, gate(theta)), 0, 1)
+    assert c.evaluate({theta: 0.3})[0].operation == cgate(0.3)

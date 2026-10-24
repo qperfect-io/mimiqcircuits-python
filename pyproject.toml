@@ -1,6 +1,7 @@
 [project]
 name = "mimiqcircuits"
-version = "0.28.0"
+# A release bumps this, `version` in Cargo.toml, and both lock files.
+version = "0.30.0"
 description = "User API for MIMIQ by QPerfect. Build quantum circuits, schedule remote simulations, and explore simulation results."
 authors = [{ name = "Guido Masella", email = "guido.masella@qperfect.io" }]
 readme = "README.md"
@@ -11,7 +12,7 @@ dependencies = [
     "bitarray (>=3.10,<4)",
     "symengine (>=0.14.1,<0.15)",
     "sympy (>=1.12,<2)",
-    "protobuf (>=6.30,<7)",
+    "protobuf (>=6.33,<7)",
     "scipy (>1.13,<2)",
     "tqdm (>=4.66,<5)",
 ]
@@ -23,12 +24,30 @@ Repository = "https://github.com/qperfect-io/mimiqcircuits-python"
 
 [project.optional-dependencies]
 visualization = ["matplotlib (>=3.8,<4)"]
-quantanium = ["quantanium (>=1.0,<2)"]
 graph = ["networkx (>=3,<4)"]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["maturin>=1.7,<2"]
+build-backend = "maturin"
+
+[tool.maturin]
+# A mixed project: the Python package is src/mimiqcircuits, and the Rust crate
+# described by Cargo.toml (sources in rust/) is compiled into it as
+# `mimiqcircuits._core`. The wheel is abi3 (CPython 3.10+) except when built
+# by a free-threaded interpreter, which gets a wheel for that version only.
+python-source = "src"
+module-name = "mimiqcircuits._core"
+# Deprecated in pyo3 0.29 in favour of an environment variable that only
+# recent maturin releases set; kept so every maturin the bound admits builds
+# an extension that does not link libpython.
+features = ["pyo3/extension-module"]
+# Repository tooling that building or testing the package does not need.
+exclude = [
+    { path = ".github/**/*", format = "sdist" },
+    { path = ".gitlab-ci.yml", format = "sdist" },
+    { path = "scripts/**/*", format = "sdist" },
+    { path = "logo.svg", format = "sdist" },
+]
 
 [dependency-groups]
 dev = [
@@ -37,6 +56,7 @@ dev = [
     "pytest-accept>=0.1,<0.2",
     "pytest-doctest-import>=0.1,<0.2",
     "pytest-benchmark>=4.0,<5",
+    "mpmath>=1.3,<2",
 ]
 docs = [
     "sphinx>=7.3,<8",
@@ -49,4 +69,13 @@ docs = [
     "sphinx-design>=0.6,<0.7",
     "furo>=2025.12.19",
     "matplotlib>3,<4"
+]
+
+[tool.uv]
+# Rebuild the extension on `uv sync` / `uv run` when the Rust sources change.
+cache-keys = [
+    { file = "pyproject.toml" },
+    { file = "Cargo.toml" },
+    { file = "Cargo.lock" },
+    { file = "rust/**/*.rs" },
 ]

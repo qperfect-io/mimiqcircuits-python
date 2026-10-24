@@ -75,7 +75,7 @@ def toproto_decorate_rule(rule, declcache=None):
     if not isinstance(rule.decoration, mc.Operation):
         raise ValueError(
             "DecorateRule with instruction-list decoration is not serializable. "
-            "The Julia schema only supports Operation decoration."
+            "The wire format only supports Operation decoration."
         )
 
     msg = circuitrules_pb2.CircuitRule()
@@ -101,7 +101,7 @@ def toproto_replace_rule(rule, declcache=None):
     if not isinstance(rule.replacement, mc.Operation):
         raise ValueError(
             "ReplaceRule with instruction-list replacement is not serializable. "
-            "The Julia schema only supports Operation replacement."
+            "The wire format only supports Operation replacement."
         )
 
     msg = circuitrules_pb2.CircuitRule()

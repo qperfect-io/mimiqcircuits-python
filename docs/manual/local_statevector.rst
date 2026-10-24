@@ -1,189 +1,81 @@
-Quantanium
-==========
+Local Statevector Simulation
+============================
 
-On this page you can find all the information to install and use the local statevector simulator Quantanium
+To simulate circuits on your own machine, use **Exaqt**, QPerfect's
+statevector simulator. It is free, ships as the separate package
+``mimiq-exaqt`` on PyPI, and runs MIMIQ circuits directly: no account or
+connection is needed.
+
+Exaqt simulates the full statevector, so memory grows as :math:`2^n` with the
+number of qubits :math:`n`. It is the right tool for debugging and for
+circuits up to a few tens of qubits. For larger circuits, use the
+:doc:`MIMIQ cloud <remote_execution>`.
 
 
-Install quantanium
-----------------------------------------------------
-
-the local statevector quantanium is an optional dependency of mimiqcircuits.
-It can be installed with pip:
+Install Exaqt
+-------------
 
 .. code-block:: shell
 
-    pip3 install mimiqcircuits[quantanium]
+    pip3 install mimiq-exaqt
+
+Wheels are published for Linux (x86_64), macOS (arm64) and Windows (x86_64),
+for Python 3.10 and newer. The package installs as ``mimiq-exaqt`` and is
+imported as ``exaqt``.
 
 
-Basic usage
-----------------------------------------------------
+Run a circuit
+-------------
 
-Quantanium can be used to execute a circuit.
-It must be instantiated before calling the method :code:`execute`.
-Execute will always start from the initial state \|0...0\>.
+Build a circuit with mimiqcircuits as usual, create the simulator, and call
+``execute``. Every execution starts from :math:`|0\dots0\rangle`, and the
+result is a :class:`~mimiqcircuits.QCSResults`, the same type the MIMIQ cloud
+returns.
 
-.. doctest:: python
+.. code-block:: python
 
-    >>> from quantanium import *
-    >>> from mimiqcircuits import *
-    >>> circuit = Circuit()
-    >>> circuit.push(GateH(), 0) 
-    1-qubit circuit with 1 instructions:
-    └── H @ q[0]
-    <BLANKLINE>
+    from mimiqcircuits import *
+    from exaqt import ExaqtQCS
 
-    >>> sim = Quantanium()
-    >>> sim.execute(circuit)
-    QCSResults:
-    ├── simulator: Quantanium StateVector 1.0
-    ├── timings:
-    │    ├── sample time: 0.000122642s
-    │    └── apply time: 4.3511e-05s
-    ├── fidelity estimate: 1
-    ├── average multi-qubit gate error estimate: 0
-    ├── most sampled:
-    │    ├── bs"1" => 527
-    │    └── bs"0" => 473
-    ├── 1 executions
-    ├── 0 amplitudes
-    └── 1000 samples
+    # A Bell pair, measured into two classical bits.
+    circuit = Circuit()
+    circuit.push(GateH(), 0)
+    circuit.push(GateCX(), 0, 1)
+    circuit.push(Measure(), range(2), range(2))
 
-:code:`execute` returns a QCSResult object.
+    sim = ExaqtQCS()
 
-Execute options
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # nsamples sets the number of shots; seed makes the run reproducible.
+    results = sim.execute(circuit, nsamples=1000, seed=123)
+    print(results.histogram())   # about half bs"00", half bs"11"
 
-The :code:`execute` method of Quantanium supports a subset of the options available on MIMIQ remote.
-Here is an example of all the  options available:
-
-.. doctest:: python
-
-    >>> circuit = Circuit()
-    >>> circuit.push(GateH(), 0) 
-    1-qubit circuit with 1 instructions:
-    └── H @ q[0]
-    <BLANKLINE>
-
-    >>> sim = Quantanium()
-    >>> sim.execute(circuit, nsamples=15, seed=123)
-    QCSResults:
-    ├── simulator: Quantanium StateVector 1.0
-    ├── timings:
-    │    ├── sample time: 2.863e-06s
-    │    └── apply time: 1.8508e-05s
-    ├── fidelity estimate: 1
-    ├── average multi-qubit gate error estimate: 0
-    ├── most sampled:
-    │    ├── bs"1" => 10
-    │    └── bs"0" => 5
-    ├── 1 executions
-    ├── 0 amplitudes
-    └── 15 samples
+A seed can also be fixed once, for every execution of the simulator:
+``ExaqtQCS(seed=42)``.
 
 
-Get Statevector
---------------------------------
+Amplitudes and expectation values
+---------------------------------
 
-After running a simulation with execute or evolve you can extract the statevector using the :code:`get_statevector` method.
-Users can not modify the state directly.
+Exaqt does not hand out its state. To read amplitudes or expectation values,
+put :class:`~mimiqcircuits.Amplitude` and
+:class:`~mimiqcircuits.ExpectationValue` operations in the circuit, as you
+would for the cloud. Each one writes its value to a Z-register variable, and
+the values come back in ``results.zstates``.
 
-.. doctest:: python
+.. code-block:: python
 
-    >>> circuit = Circuit()
-    >>> circuit.push(GateH(), 0) 
-    1-qubit circuit with 1 instructions:
-    └── H @ q[0]
-    <BLANKLINE>
+    circuit = Circuit()
+    circuit.push(GateH(), 0)
+    circuit.push(GateCX(), 0, 1)
 
-    >>> sim = Quantanium()
-    >>> sim.execute(circuit, seed=123)
-    QCSResults:
-    ├── simulator: Quantanium StateVector 1.0
-    ├── timings:
-    │    ├── sample time: 7.9968e-05s
-    │    └── apply time: 1.6692e-05s
-    ├── fidelity estimate: 1
-    ├── average multi-qubit gate error estimate: 0
-    ├── most sampled:
-    │    ├── bs"0" => 509
-    │    └── bs"1" => 491
-    ├── 1 executions
-    ├── 0 amplitudes
-    └── 1000 samples
-    >>> sim.get_statevector()
-    [(0.7071067811865475+0j), (0.7071067811865475+0j)]
+    # Amplitude of |00>, stored in z[0].
+    circuit.push(Amplitude(BitString("00")), 0)
 
+    # <ZZ> on qubits 0 and 1, stored in z[1].
+    circuit.push(ExpectationValue(PauliString("ZZ")), 0, 1, 1)
 
-Evolve Statevector
--------------------------------
+    results = ExaqtQCS().execute(circuit)
+    print(results.zstates[0])    # about [0.7071, 1.0]
 
-The state can also be evolved without restarting from the initial state everytime by using the method :code:`evolve`:
-
-.. doctest:: python
-
-    >>> circuit = Circuit()
-    >>> circuit.push(GateH(), 0) 
-    1-qubit circuit with 1 instructions:
-    └── H @ q[0]
-    <BLANKLINE>
-
-    >>> sim = Quantanium()
-    >>> sim.evolve(circuit)
-    >>> sim.evolve(circuit) # apply the circuit again
-    >>> sim.get_statevector()
-    [(0.9999999999999998+0j), (2.2371143170757382e-17+0j)]
-
-
-Parse QASM
--------------------------------
-The local statevector simulator comes with its own OpenQASM 2 parser
-it can be used with :code:`execute`:
-
-
-.. doctest:: python
-
-    >>> qasm = """
-    ... // Implementation of Deutsch algorithm with two qubits for f(x)=x
-    ... // taken from https://github.com/pnnl/QASMBench/blob/master/small/deutsch_n2/deutsch_n2.qasm
-    ... OPENQASM 2.0;
-    ... include "qelib1.inc";
-    ... qreg q[2];
-    ... creg c[2];
-    ... x q[1];
-    ... h q[0];
-    ... h q[1];
-    ... cx q[0],q[1];
-    ... h q[0];
-    ... measure q[0] -> c[0];
-    ... measure q[1] -> c[1];
-    ... """
-
-    # Write the OPENQASM as a file
-    >>> with open("/tmp/deutsch_n2.qasm", "w") as file:
-    ...     file.write(qasm)
-    308
-
-    >>> sim = Quantanium()
-    >>> sim.execute("/tmp/deutsch_n2.qasm")
-    QCSResults:
-    ├── simulator: Quantanium StateVector 1.0
-    ├── timings:
-    │    ├── sample time: 9.8686e-05s
-    │    └── apply time: 3.7855e-05s
-    ├── fidelity estimate: 1
-    ├── average multi-qubit gate error estimate: 0
-    ├── most sampled:
-    │    ├── bs"11" => 527
-    │    └── bs"10" => 473
-    ├── 1 executions
-    ├── 0 amplitudes
-    ├── 0 amplitudes
-    └── 1000 samples
-
-Reference
----------
-
-.. autoclass:: mimiqcircuits.quantanium.Quantanium
-    :noindex:
-
-
+Exaqt's own documentation is bundled with the package. Open it with
+``exaqt docs``.

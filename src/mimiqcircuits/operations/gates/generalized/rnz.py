@@ -99,7 +99,7 @@ class GateRNZ(mcg.Gate):
     def power(self, pwr):
         return type(self)(self.num_qubits, self.theta * pwr)
 
-    def matrix(self):
+    def _matrix(self):
         from mimiqcircuits.matrices import cis
 
         θ = self.theta

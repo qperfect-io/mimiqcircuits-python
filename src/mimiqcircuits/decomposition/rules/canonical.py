@@ -51,11 +51,12 @@ class CanonicalRewrite(RewriteRule):
     def matches(self, op: Operation) -> bool:
         """Check if this rule can decompose the operation.
 
-        Matches operations that are non-terminal in the canonical basis.
-
-        This rule applies to operations that are not already in canonical form
-        (e.g., GateU, GateCX, measurement/reset/barrier, and conditionals
-        whose inner operation is already canonical) do not match.
+        Matches every operation that has a canonical decomposition, that is
+        whose ``supports_canonical_rewrite()`` is true. The answer does not
+        depend on any basis: an operation that :class:`CanonicalBasis` keeps
+        terminal (such as ``ResetX``) still matches, so other bases can expand
+        it. Primitives without a decomposition (``GateU``, ``GateCX``,
+        ``Measure``, ``Reset``, ``Barrier``, ...) do not match.
 
         Args:
             op: The operation to check.
@@ -63,9 +64,7 @@ class CanonicalRewrite(RewriteRule):
         Returns:
             True if the operation should be rewritten by canonical decomposition.
         """
-        from mimiqcircuits.decomposition.basis import CanonicalBasis
-
-        return op.supports_canonical_rewrite() and not CanonicalBasis().isterminal(op)
+        return op.supports_canonical_rewrite()
 
     def decompose_step(
         self,

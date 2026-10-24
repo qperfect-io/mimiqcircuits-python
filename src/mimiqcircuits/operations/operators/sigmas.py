@@ -80,13 +80,6 @@ class SigmaMinus(AbstractOperator):
     def opsquared(self):
         return mc.Projector1(abs(self.a) ** 2)
 
-    def rescale(self, scale):
-        return SigmaMinus(self.a * scale)
-
-    def rescale_inplace(self, scale):
-        self.a *= scale  # Modify the original object in-place
-        return self
-
     def __str__(self):
         return f"{self.opname()}({self.a})"
 
@@ -150,9 +143,6 @@ class SigmaPlus(AbstractOperator):
 
     def opsquared(self):
         return mc.Projector0(abs(self.a) ** 2)
-
-    def rescale(self, scale):
-        return SigmaPlus(self.a * scale)
 
     def __str__(self):
         return f"{self.opname()}({self.a})"

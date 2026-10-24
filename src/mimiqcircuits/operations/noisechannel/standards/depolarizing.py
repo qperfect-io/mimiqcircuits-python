@@ -91,9 +91,8 @@ class Depolarizing(krauschannel):
     """
 
     _name = "Depolarizing"
-    _parnames = ()
+    _parnames = ("p",)
     _num_qubits = None
-    _parnames = ()
 
     def __init__(self, N, p):
         if N < 1:
@@ -103,7 +102,6 @@ class Depolarizing(krauschannel):
         self.N = N
         self.p = p
         self._num_qubits = self.N
-        self._parnames = ("N", "p")
 
     @property
     def parnames(self):
@@ -165,11 +163,31 @@ class Depolarizing(krauschannel):
 
 
 class Depolarizing1(krauschannel):
+    """Single-qubit depolarizing channel, ``Depolarizing(1, p)``.
+
+    Calling ``Depolarizing1(p)`` returns a ``Depolarizing`` instance.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> Depolarizing1(0.1) == Depolarizing(1, 0.1)
+        True
+    """
+
     def __new__(self, p):
         return Depolarizing(1, p)
 
 
 class Depolarizing2(krauschannel):
+    """Two-qubit depolarizing channel, ``Depolarizing(2, p)``.
+
+    Calling ``Depolarizing2(p)`` returns a ``Depolarizing`` instance.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> Depolarizing2(0.1) == Depolarizing(2, 0.1)
+        True
+    """
+
     def __new__(self, p):
         return Depolarizing(2, p)
 

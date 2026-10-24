@@ -17,12 +17,17 @@
 """T and TDG gates."""
 
 from fractions import Fraction
-from symengine import pi
 
 import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 
 
-@mc.canonical_power(mc.GateZ, Fraction(1, 4))
+# Fractions are immutable, so all instances share this one: building a
+# Fraction costs more than the rest of the constructor.
+_EXPONENT = Fraction(1, 4)
+
+
+@mc.canonical_power(mc.GateZ, _EXPONENT)
 class GateT(mc.Power):
     r"""Single qubit T gate.
 
@@ -57,7 +62,7 @@ class GateT(mc.Power):
 
     def __init__(self, operation=None, exponent=None):
         """Initialize a T gate."""
-        super().__init__(mc.GateZ(), Fraction(1, 4))
+        super().__init__(mc.GateZ(), _EXPONENT)
 
 
 mc.register_power_alias(mc.GateZ, 1 / 4, "T")
@@ -66,7 +71,7 @@ mc.register_power_alias(mc.GateZ, 1 / 4, "T")
 @mc.register_power_decomposition(mc.GateZ, 1 / 4)
 def _decompose_gatet(self, circ, qubits, bits, zvars):
     q = qubits[0]
-    circ.push(mc.GateU(0, 0, pi / 4), q)
+    circ.push(mc.GateU(0, 0, PI_4), q)
     return circ
 
 
@@ -111,5 +116,5 @@ class GateTDG(mc.Inverse):
 @mc.register_inverse_decomposition((mc.Power, mc.GateZ, 1 / 4))
 def _decompose_gatetdg(gate, circ, qubits, bits, zvars):
     q = qubits[0]
-    circ.push(mc.GateU(0, 0, -pi / 4), q)
+    circ.push(mc.GateU(0, 0, NEG_PI_4), q)
     return circ

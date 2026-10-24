@@ -23,9 +23,9 @@ z-variable). :class:`CircuitDAG` captures that partial order as a dependency
 graph, which lets callers iterate a circuit in orders other than the literal
 insertion order — for example grouping mutually independent gates into layers.
 
-This mirrors the graph integration of the Julia ``MimiqCircuitsBase``: the
-vertices are instruction positions and an edge ``u -> v`` records that ``v``
-depends on the most recent earlier instruction ``u`` acting on a shared wire.
+The vertices are instruction positions and an edge ``u -> v`` records that
+``v`` depends on the most recent earlier instruction ``u`` acting on a shared
+wire.
 """
 
 from __future__ import annotations

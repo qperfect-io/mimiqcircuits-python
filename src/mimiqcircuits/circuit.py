@@ -20,14 +20,14 @@ from __future__ import (
     annotations,
 )  # Required for postponed evaluation of type hints in Python 3.7+
 import mimiqcircuits as mc
+import symengine as se
 from mimiqcircuits.instruction import Instruction
 import copy
+import operator
 from collections.abc import Iterable
-from itertools import repeat
 import shutil
 from typing import List, Union
 import random
-import numpy as np
 from mimiqcircuits.push import push_instruction_container
 from mimiqcircuits.dag import (
     build_dag,
@@ -88,6 +88,56 @@ def _reorder_op_internals(op, perm):
             new_insts.append(Instruction(new_op, inst.qubits, inst.bits, inst.zvars))
         return Block(op.num_qubits, op.num_bits, op.num_zvars, new_insts)
     return op
+
+
+def _build_instruction(operation, args):
+    """Build the instruction :meth:`Circuit.insert` adds for `operation` on `args`.
+
+    `operation` is an :class:`Instruction` (then `args` must be empty), an
+    :class:`Operation`, or the :class:`Barrier` class (then it spans all of
+    `args`). Targets in `args` are split into qubits, bits and z-variables by
+    the operation's counts.
+
+    Raises:
+        TypeError: If `operation` is not an Operation.
+        ValueError: If `args` does not match the operation's number of targets,
+            or `operation` is an abstract operator that is not a Gate.
+    """
+    L = len(args)
+
+    if isinstance(operation, Instruction):
+        if L != 0:
+            raise ValueError(
+                "No extra arguments allowed when inserting an instruction."
+            )
+        return operation
+
+    if operation == mc.Barrier:
+        return Instruction(mc.Barrier(L), (*args,), ())
+
+    if not isinstance(operation, mc.Operation):
+        raise TypeError("Non Operation object passed to push.")
+
+    # Check if the operation is an abstract operator but not a gate
+    if isinstance(operation, mc.AbstractOperator) and not isinstance(
+        operation, mc.Gate
+    ):
+        raise ValueError(
+            "Cannot add an abstract operator that is not a Gate to the circuit."
+        )
+
+    N = operation.num_qubits
+    M = operation.num_bits
+    Z = operation.num_zvars
+
+    if L != N + M + Z:
+        raise ValueError(
+            f"Wrong number of target qubits and bits, given {L} for a {N} qubits + {M} bits operation + {Z} Z-variables."
+        )
+
+    return Instruction(
+        operation, (*args[:N],), (*args[N : N + M],), (*args[N + M :],)
+    )
 
 
 class Circuit:
@@ -292,12 +342,25 @@ class Circuit:
         flows through a single cache-invalidating path.
         """
         self._instructions.append(instruction)
+        # Same as _invalidate_cache, inlined: this runs once per pushed
+        # instruction.
+        self._graph_valid = False
+        self._resources_valid = False
+
+    def _replace_instructions(self, instructions):
+        """Replace all instructions with already-built ones and invalidate the caches.
+
+        The list is replaced in place, so the Circuit object and any reference
+        to its ``instructions`` list stay valid. Used by passes that rebuild
+        the whole list in one go, such as ``add_noise``. Returns the circuit.
+        """
+        self._instructions[:] = instructions
         self._invalidate_cache()
+        return self
 
     def _ensure_resources(self):
         # Qubit/bit/zvar counts are the largest index used on each register
-        # plus one. Computing all three in a single pass and caching mirrors
-        # the resource cache of the Julia Circuit.
+        # plus one, computed in a single pass for all three and cached.
         if self._resources_valid:
             return
         nq = nb = nz = -1
@@ -362,6 +425,22 @@ class Circuit:
         return self._nb
 
     def getparams(self):
+        """Return the parameters of every instruction, in circuit order.
+
+        Numeric and symbolic parameters are both returned, one entry per
+        parameter of each operation, so a value can appear more than once.
+
+        Returns:
+            list: The parameters of all instructions, concatenated.
+
+        Example:
+            >>> import mimiqcircuits as mc
+            >>> from symengine import symbols
+            >>> theta = symbols("theta")
+            >>> c = mc.Circuit().push(mc.GateRX(theta), 0).push(mc.GateP(0.5), 1)
+            >>> c.getparams()
+            [theta, 0.5]
+        """
         params = []
         for inst in self.instructions:
             if hasattr(inst, "getparams"):
@@ -369,6 +448,35 @@ class Circuit:
         return params
 
     def listvars(self):
+        """List the symbolic variables of all the instructions of the circuit.
+
+        Operations inside a ``Block`` or a wrapper such as ``Control`` are
+        included. Variables already substituted by :meth:`evaluate` are not
+        listed.
+
+        Returns:
+            list: Each ``symengine.Symbol`` once, in no particular order.
+            The list is empty when the circuit has no symbolic parameters.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> from symengine import Symbol
+            >>> theta, phi = Symbol("theta"), Symbol("phi")
+            >>> c = Circuit()
+            >>> c.push(GateRX(theta), 0)
+            1-qubit circuit with 1 instruction:
+            └── RX(theta) @ q[0]
+            <BLANKLINE>
+            >>> c.push(GateRZ(phi), 1)
+            2-qubit circuit with 2 instructions:
+            ├── RX(theta) @ q[0]
+            └── RZ(phi) @ q[1]
+            <BLANKLINE>
+            >>> sorted(c.listvars(), key=str)
+            [phi, theta]
+            >>> c.evaluate({theta: 0.1}).listvars()
+            [phi]
+        """
         return list({v for inst in self.instructions for v in inst.listvars()})
 
     def num_zvars(self):
@@ -634,61 +742,15 @@ class Circuit:
             <BLANKLINE>
         """
         if isinstance(operation, Circuit):
-            for inst in operation.instructions:
-                self._instructions.insert(index, inst)
-                index += 1
-            self._invalidate_cache()
+            # operator.index rejects None and other non-integers, which a
+            # slice would silently accept as "the whole list".
+            index = operator.index(index)
+            # One slice assignment shifts the tail once, rather than once per
+            # inserted instruction.
+            self._instructions[index:index] = operation.instructions
         else:
-            N = 0
-            M = 0
-            Z = 0
-            L = len(args)
-
-            if isinstance(operation, Instruction):
-                if L != 0:
-                    raise ValueError(
-                        "No extra arguments allowed when inserting an instruction."
-                    )
-
-                self._instructions.insert(index, operation)
-                self._invalidate_cache()
-                return self
-
-            if operation == mc.Barrier:
-                N = L
-            else:
-                if not isinstance(operation, mc.Operation):
-                    raise TypeError("Non Operation object passed to push.")
-
-                # Check if the operation is an abstract operator but not a gate
-                if isinstance(operation, mc.AbstractOperator) and not isinstance(
-                    operation, mc.Gate
-                ):
-                    raise ValueError(
-                        "Cannot add an abstract operator that is not a Gate to the circuit."
-                    )
-
-                N = operation.num_qubits
-                M = operation.num_bits
-                Z = operation.num_zvars
-
-            if L != N + M + Z:
-                raise ValueError(
-                    f"Wrong number of target qubits and bits, given {L} for a {N} qubits + {M} bits operation + {Z} Z-variables."
-                )
-
-            if operation == mc.Barrier:
-                self._instructions.insert(
-                    index, Instruction(mc.Barrier(N), (*args,), ())
-                )
-            else:
-                self._instructions.insert(
-                    index,
-                    Instruction(
-                        operation, (*args[:N],), (*args[N : N + M],), (*args[N + M :],)
-                    ),
-                )
-            self._invalidate_cache()
+            self._instructions.insert(index, _build_instruction(operation, args))
+        self._invalidate_cache()
 
         return self
 
@@ -838,6 +900,33 @@ class Circuit:
         return decompose_step(self, rule)
 
     def evaluate(self, d):
+        """Return a copy of the circuit with symbols replaced by values.
+
+        Each instruction is evaluated with ``d``. Symbols that are not in
+        ``d`` stay symbolic. The circuit itself is not modified.
+
+        Args:
+            d: Dictionary from symbols to values.
+
+        Returns:
+            Circuit: A new circuit with the substituted parameters.
+
+        Example:
+            >>> import mimiqcircuits as mc
+            >>> from symengine import symbols
+            >>> theta, phi = symbols("theta phi")
+            >>> c = mc.Circuit().push(mc.GateRX(theta), 0).push(mc.GateRY(phi), 0)
+            >>> c.evaluate({theta: 0.5})
+            1-qubit circuit with 2 instructions:
+            ├── RX(0.5) @ q[0]
+            └── RY(phi) @ q[0]
+            <BLANKLINE>
+        """
+        # symengine rebuilds its internal map from a Python dict on every
+        # `subs` call, so convert once here instead of once per parameter.
+        if isinstance(d, dict):
+            d = se.DictBasic(d)
+
         c = Circuit()
 
         for inst in self.instructions:
@@ -1115,7 +1204,7 @@ class Circuit:
 
         return loadproto(file, Circuit)
 
-    def draw(self):
+    def draw(self, compact=True):
         """
         Draws the entire quantum circuit on the ASCII canvas and handles the layout of various quantum operations.
 
@@ -1126,6 +1215,12 @@ class Circuit:
 
         The method manages different operation types including control, measurement, reset, barrier, parallel, and
         conditional (if) operations using specific drawing methods from the `AsciiCircuit` class.
+
+        Args:
+            compact (bool): If True (the default), instructions on disjoint wires share a column, and consecutive
+                instructions of the same operation type on disjoint wires, such as those from one broadcast `push`,
+                start in the same column. Instructions that touch the classical or Z register are always drawn one
+                after the other. If False, every instruction gets its own column, in circuit order.
 
         Raises:
             TypeError: If any item in the circuit's instructions is not an instance of `Instruction`.
@@ -1144,87 +1239,107 @@ class Circuit:
 
         canvas = mc.AsciiCircuit()
         canvas.draw_wires(range(num_qubits), range(num_bits), range(num_zvars))
+        lastcol = canvas.get_current_col()
 
-        for instruction in self.instructions:
-            if not isinstance(instruction, Instruction):
-                raise TypeError("Must be an Instruction")
+        # Each instruction goes in the first column free on all the rows it
+        # blocks, so independent instructions share columns. Instructions that
+        # block a common row keep their circuit order.
+        if compact:
+            groups = canvas.groups(self.instructions)
+        else:
+            groups = [[instruction] for instruction in self.instructions]
 
-            operation = instruction.get_operation()
-            required_width = operation.asciiwidth(
-                instruction.qubits,
-                instruction.bits if hasattr(instruction, "bits") else [],
-                instruction.zvars if hasattr(instruction, "zvars") else [],
+        for group in groups:
+            rows = [canvas.row_span(instruction) for instruction in group]
+            if compact:
+                col = max(canvas.frontier[r] for span in rows for r in span)
+            else:
+                col = lastcol
+            required_width = max(
+                instruction.get_operation().asciiwidth(
+                    instruction.qubits, instruction.bits, instruction.zvars
+                )
+                for instruction in group
             )
 
-            if required_width > canvas.canvas.get_cols() - canvas.get_current_col():
+            if required_width >= canvas.canvas.get_cols() - col:
                 print(canvas.canvas)
                 print("...")
                 canvas.reset()
                 canvas.draw_wires(range(num_qubits), range(num_bits), range(num_zvars))
+                lastcol = col = canvas.get_current_col()
 
-            if required_width > canvas.canvas.get_cols() - canvas.get_current_col():
+            if required_width >= canvas.canvas.get_cols() - col:
                 raise ValueError(
                     "Cannot draw instruction. Insufficient space on screen."
                 )
 
-            # Handle drawing based on operation type
-            if isinstance(operation, mc.Control):
-                canvas.draw_control(
-                    operation,
-                    instruction.qubits,
-                    instruction.bits if hasattr(instruction, "bits") else [],
-                )
+            for instruction, span in zip(group, rows):
+                canvas.currentcol = col
+                operation = instruction.get_operation()
 
-            elif isinstance(operation, mc.PauliString):
-                canvas.draw_paulistring(
-                    operation,
-                    instruction.qubits,
-                    instruction.bits if hasattr(instruction, "bits") else [],
-                    instruction.zvars if hasattr(instruction, "zvars") else [],
-                )
+                # Handle drawing based on operation type
+                if isinstance(operation, mc.Control):
+                    canvas.draw_control(
+                        operation,
+                        instruction.qubits,
+                        instruction.bits if hasattr(instruction, "bits") else [],
+                    )
 
-            elif isinstance(operation, mc.Reset):
-                canvas.draw_reset(
-                    operation,
-                    instruction.qubits,
-                    instruction.bits if hasattr(instruction, "bits") else [],
-                    instruction.zvars if hasattr(instruction, "zvars") else [],
-                )
+                elif isinstance(operation, mc.PauliString):
+                    canvas.draw_paulistring(
+                        operation,
+                        instruction.qubits,
+                        instruction.bits if hasattr(instruction, "bits") else [],
+                        instruction.zvars if hasattr(instruction, "zvars") else [],
+                    )
 
-            elif isinstance(operation, mc.Barrier):
-                canvas.draw_barrier(
-                    operation,
-                    instruction.qubits,
-                    instruction.bits if hasattr(instruction, "bits") else [],
-                    instruction.zvars if hasattr(instruction, "zvars") else [],
-                )
+                elif isinstance(operation, mc.Reset):
+                    canvas.draw_reset(
+                        operation,
+                        instruction.qubits,
+                        instruction.bits if hasattr(instruction, "bits") else [],
+                        instruction.zvars if hasattr(instruction, "zvars") else [],
+                    )
 
-            elif isinstance(operation, mc.Parallel):
-                canvas.draw_parallel(
-                    operation,
-                    instruction.qubits,
-                    instruction.bits if hasattr(instruction, "bits") else [],
-                    instruction.zvars if hasattr(instruction, "zvars") else [],
-                )
+                elif isinstance(operation, mc.Barrier):
+                    canvas.draw_barrier(
+                        operation,
+                        instruction.qubits,
+                        instruction.bits if hasattr(instruction, "bits") else [],
+                        instruction.zvars if hasattr(instruction, "zvars") else [],
+                    )
 
-            elif isinstance(operation, mc.IfStatement):
-                canvas.draw_ifstatement(
-                    operation,
-                    instruction.qubits,
-                    instruction.bits if hasattr(instruction, "bits") else [],
-                    instruction.zvars if hasattr(instruction, "zvars") else [],
-                )
+                elif isinstance(operation, mc.Parallel):
+                    canvas.draw_parallel(
+                        operation,
+                        instruction.qubits,
+                        instruction.bits if hasattr(instruction, "bits") else [],
+                        instruction.zvars if hasattr(instruction, "zvars") else [],
+                    )
 
-            elif isinstance(operation, mc.Operation):
-                canvas.draw_operation(
-                    operation,
-                    instruction.qubits,
-                    instruction.bits if hasattr(instruction, "bits") else [],
-                    instruction.zvars if hasattr(instruction, "zvars") else [],
-                )
-            else:
-                # Default drawing method for general operations
-                canvas.draw_instruction(instruction)
+                elif isinstance(operation, mc.IfStatement):
+                    canvas.draw_ifstatement(
+                        operation,
+                        instruction.qubits,
+                        instruction.bits if hasattr(instruction, "bits") else [],
+                        instruction.zvars if hasattr(instruction, "zvars") else [],
+                    )
+
+                elif isinstance(operation, mc.Operation):
+                    canvas.draw_operation(
+                        operation,
+                        instruction.qubits,
+                        instruction.bits if hasattr(instruction, "bits") else [],
+                        instruction.zvars if hasattr(instruction, "zvars") else [],
+                    )
+                else:
+                    # Default drawing method for general operations
+                    canvas.draw_instruction(instruction)
+
+                for r in span:
+                    canvas.frontier[r] = canvas.get_current_col()
+                lastcol = max(lastcol, canvas.get_current_col())
 
         print(canvas.canvas)
         return None
@@ -1736,7 +1851,7 @@ class Circuit:
         """
 
         if rng is None:
-            rng = random()
+            rng = random.Random()
 
         scirc = Circuit()
 
@@ -1844,6 +1959,32 @@ class Circuit:
         return sample_loss_scenario(
             self, loss_indices, p=p, rng=rng, lossmodel=lossmodel
         )
+
+    def pauli_based_computation(self, basis=None, magic_states=False):
+        """Rewrite this circuit in Pauli-based computation form.
+
+        Equivalent to ``pauli_based_computation(self, basis, magic_states)``.
+        See :func:`mimiqcircuits.pauli_based_computation` for the arguments,
+        the form of the result and the errors raised.
+
+        Here an X gate followed by a measurement of qubit 0 becomes a
+        measurement of :math:`Z_0` whose bit is then flipped, since
+        :math:`X Z X = -Z`:
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> c = Circuit()
+            >>> _ = c.push(GateX(), 0)
+            >>> _ = c.push(Measure(), 0, 0)
+            >>> c.pauli_based_computation()
+            1-qubit, 1-bit circuit with 2 instructions:
+            ├── MP(Z) @ q[0], c[0]
+            └── c[0] = !c[0]
+            <BLANKLINE>
+        """
+        from mimiqcircuits.paulibased import pauli_based_computation
+
+        return pauli_based_computation(self, basis=basis, magic_states=magic_states)
 
     def remove_unused(self):
         """

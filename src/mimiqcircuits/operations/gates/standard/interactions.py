@@ -20,7 +20,8 @@ import mimiqcircuits as mc
 from mimiqcircuits.matrices import cis
 from mimiqcircuits import numerics as _nm
 import numpy as np
-from symengine import I, Matrix, cos, sin, pi
+from symengine import I, Matrix, cos, sin
+from mimiqcircuits.operations.gates.standard._angles import PI_2, NEG_PI_2
 
 
 class GateRXX(mc.Gate):
@@ -218,13 +219,13 @@ class GateRYY(mc.Gate):
     def _decompose(self, circ, qubits, bits, zvars):
         a, b = qubits
 
-        circ.push(mc.GateRX(pi / 2), a)
-        circ.push(mc.GateRX(pi / 2), b)
+        circ.push(mc.GateRX(PI_2), a)
+        circ.push(mc.GateRX(PI_2), b)
         circ.push(mc.GateCX(), a, b)
         circ.push(mc.GateRZ(self.theta), b)
         circ.push(mc.GateCX(), a, b)
-        circ.push(mc.GateRX(-pi / 2), a)
-        circ.push(mc.GateRX(-pi / 2), b)
+        circ.push(mc.GateRX(NEG_PI_2), a)
+        circ.push(mc.GateRX(NEG_PI_2), b)
 
         return circ
 
@@ -523,18 +524,18 @@ class GateXXplusYY(mc.Gate):
         a, b = qubits
 
         circ.push(mc.GateRZ(self.beta), a)
-        circ.push(mc.GateRZ(-pi / 2), b)
+        circ.push(mc.GateRZ(NEG_PI_2), b)
         circ.push(mc.GateSX(), b)
-        circ.push(mc.GateRZ(pi / 2), b)
+        circ.push(mc.GateRZ(PI_2), b)
         circ.push(mc.GateS(), a)
         circ.push(mc.GateCX(), b, a)
         circ.push(mc.GateRY(-self.theta / 2), b)
         circ.push(mc.GateRY(-self.theta / 2), a)
         circ.push(mc.GateCX(), b, a)
         circ.push(mc.GateSDG(), a)
-        circ.push(mc.GateRZ(-pi / 2), b)
+        circ.push(mc.GateRZ(NEG_PI_2), b)
         circ.push(mc.GateSXDG(), b)
-        circ.push(mc.GateRZ(pi / 2), b)
+        circ.push(mc.GateRZ(PI_2), b)
         circ.push(mc.GateRZ(-self.beta), a)
 
         return circ
@@ -645,18 +646,18 @@ class GateXXminusYY(mc.Gate):
         a, b = qubits
 
         circ.push(mc.GateRZ(-self.beta), b)
-        circ.push(mc.GateRZ(-pi / 2), a)
+        circ.push(mc.GateRZ(NEG_PI_2), a)
         circ.push(mc.GateSX(), a)
-        circ.push(mc.GateRZ(pi / 2), a)
+        circ.push(mc.GateRZ(PI_2), a)
         circ.push(mc.GateS(), b)
         circ.push(mc.GateCX(), a, b)
         circ.push(mc.GateRY(self.theta / 2), a)
         circ.push(mc.GateRY(-self.theta / 2), b)
         circ.push(mc.GateCX(), a, b)
         circ.push(mc.GateSDG(), b)
-        circ.push(mc.GateRZ(-pi / 2), a)
+        circ.push(mc.GateRZ(NEG_PI_2), a)
         circ.push(mc.GateSXDG(), a)
-        circ.push(mc.GateRZ(pi / 2), a)
+        circ.push(mc.GateRZ(PI_2), a)
         circ.push(mc.GateRZ(self.beta), b)
 
         return circ

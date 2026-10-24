@@ -34,8 +34,6 @@ def unwrapvalue(g):
     from a symengine expression. If the expression contains free symbolic
     variables, raises UndefinedValue.
 
-    This is the Python equivalent of Julia's ``unwrapvalue``.
-
     Args:
         g: A numeric value or symengine expression.
 
@@ -83,8 +81,6 @@ def unwrapvalue(g):
 
 def listsymbols(g):
     """Extract all symbolic variables from an expression.
-
-    This is the Python equivalent of Julia's ``listsymbols``.
 
     Args:
         g: A symengine expression, operation, or iterable.

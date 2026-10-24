@@ -54,9 +54,11 @@ Available Rules
 - :class:`SpecialAngleRewrite`: Rotations with special angles -> Clifford+T
 - :class:`ToZRotationRewrite`: Convert RX/RY to RZ + Clifford
 - :class:`ToffoliToCliffordTRewrite`: Toffoli -> Clifford+T decomposition
+- :class:`SolovayKitaevRewrite`: Solovay-Kitaev approximation with Clifford+T
+- :class:`GridSynthRewrite`: Ross-Selinger approximation of RZ with Clifford+T
 
-Examples
---------
+Usage
+-----
 
 Basic decomposition to canonical basis (GateU + GateCX):
 
@@ -133,6 +135,7 @@ from mimiqcircuits.decomposition.basis import (
 from mimiqcircuits.decomposition.rules import (
     CanonicalRewrite,
     FlattenContainers,
+    GridSynthRewrite,
     SolovayKitaevRewrite,
     SpecialAngleRewrite,
     ToZRotationRewrite,
@@ -168,6 +171,7 @@ __all__ = [
     "ToZRotationRewrite",
     "ToffoliToCliffordTRewrite",
     "SolovayKitaevRewrite",
+    "GridSynthRewrite",
     # Main functions
     "decompose",
     "decompose_step",

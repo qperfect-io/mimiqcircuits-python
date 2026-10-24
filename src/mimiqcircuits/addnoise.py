@@ -15,68 +15,25 @@
 #
 
 import mimiqcircuits as mc
-from typing import Callable, Union, Tuple, Sequence, Any
+from mimiqcircuits.circuit import _build_instruction
+from typing import Callable, Union, Any
 
 
-def _insert_generated(circuit, index: int, generated: Any):
-    """
-    Internal helper for inserting generated operations into a circuit.
+def _generated_insert_args(generated: Any) -> tuple:
+    """Turn a generator's output into the arguments of :meth:`Circuit.insert`.
 
-    This function standardizes how new instructions (produced by generator functions)
-    are inserted into the circuit. It accepts either:
-
-    1. An `mc.Instruction` object — inserted directly.
-    2. A tuple specifying what to insert:
-       - `(operation, targets)` => calls `circuit.insert(index, operation, *targets)`
-       - `(operation, qubits, bits?, zvars?)` => concatenates all targets and inserts.
-
-    Examples:
-        >>> from mimiqcircuits import *
-        >>> from mimiqcircuits.addnoise import _insert_generated
-
-        >>> c = Circuit()
-        >>> c.push(GateX(), 0)
-        1-qubit circuit with 1 instruction:
-        └── X @ q[0]
-        <BLANKLINE>
-        >>> c.push(GateZ(), 1)
-        2-qubit circuit with 2 instructions:
-        ├── X @ q[0]
-        └── Z @ q[1]
-        <BLANKLINE>
-
-        # Insert a Hadamard *before* the first gate (index = 0)
-        >>> _insert_generated(c, 0, mc.Instruction(GateH(), (0,)))
-
-        # Insert another Hadamard *after* the first gate (index = 2)
-        >>> _insert_generated(c, 2, (GateH(), [1]))
-
-        # Insert with multiple register types: qubits, bits, and zvars
-        >>> _insert_generated(c, 1, (Measure(), [0], [0]))
-
-        >>> c
-        2-qubit, 1-bit circuit with 5 instructions:
-        ├── H @ q[0]
-        ├── M @ q[0], c[0]
-        ├── X @ q[0]
-        ├── H @ q[1]
-        └── Z @ q[1]
-        <BLANKLINE>
-
-    This design keeps generator functions lightweight and independent
-    of the `mc.Instruction` constructor interface.
-
-    Args:
-        circuit: The circuit in which to insert.
-        index (int): Position at which to insert the new instruction (0-based).
-        generated (Any): Either an `mc.Instruction` or a tuple describing the operation.
+    A generator passed to the ``decorate_on_match_*`` functions returns either
+    an `mc.Instruction`, turned into ``(instruction,)``, or a tuple
+    ``(operation, targets)`` or ``(operation, qubits, bits, zvars)``, turned
+    into ``(operation, *targets)`` with all targets concatenated. This keeps
+    generators independent of the `mc.Instruction` constructor.
 
     Raises:
-        TypeError: If `generated` is neither an `mc.Instruction` nor a valid tuple form.
+        TypeError: If `generated` is neither an `mc.Instruction` nor a
+            non-empty tuple.
     """
     if isinstance(generated, mc.Instruction):
-        circuit.insert(index, generated)
-        return
+        return (generated,)
 
     # allow (operation, targets)
     if isinstance(generated, tuple) and generated:
@@ -93,12 +50,42 @@ def _insert_generated(circuit, index: int, generated: Any):
                     rest.append(part)
             targets = tuple(rest)
 
-        circuit.insert(index, op, *targets)
-        return
+        return (op, *targets)
 
     raise TypeError(
         "Generator must return an mc.Instruction or a tuple like (operation, targets)."
     )
+
+
+def _generated_instructions(generated: Any) -> list:
+    """The instructions a generator's output stands for.
+
+    Accepts the forms described in :func:`_generated_insert_args`, plus a
+    ``(circuit,)`` tuple whose instructions are inserted as they are.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.addnoise import _generated_instructions
+
+        A tuple gives the operation followed by its qubits, bits and zvars:
+
+        >>> _generated_instructions((Measure(), [0], [0]))
+        [M @ q[0], c[0]]
+
+        An instruction is used unchanged:
+
+        >>> _generated_instructions(Instruction(GateH(), (1,)))
+        [H @ q[1]]
+
+    Raises:
+        TypeError: If `generated` is neither an `mc.Instruction` nor a
+            non-empty tuple.
+    """
+    op, *targets = _generated_insert_args(generated)
+    if isinstance(op, mc.Circuit):
+        # Circuit.insert splices a circuit in whole and ignores any targets.
+        return list(op.instructions)
+    return [_build_instruction(op, targets)]
 
 
 def decorate_on_match_single_inplace(
@@ -115,18 +102,21 @@ def decorate_on_match_single_inplace(
         - mc.Instruction
         - (operation, targets)  e.g. (noise_op, inst.qubits)
     """
-    rel = 0 if before else 1
-    i = 0
-    while i < len(circuit.instructions):
-        inst = circuit.instructions[i]
-        if matcher(inst):
-            gen = generator(inst)
-            _insert_generated(circuit, i + rel, gen)
-            # skip original + inserted
-            i += 2
+    # Build the decorated list in one pass. Inserting into the circuit at
+    # each match would shift the whole tail every time, which is quadratic.
+    new_instructions = []
+    for inst in circuit.instructions:
+        if not matcher(inst):
+            new_instructions.append(inst)
+            continue
+        generated = _generated_instructions(generator(inst))
+        if before:
+            new_instructions.extend(generated)
+            new_instructions.append(inst)
         else:
-            i += 1
-    return circuit
+            new_instructions.append(inst)
+            new_instructions.extend(generated)
+    return circuit._replace_instructions(new_instructions)
 
 
 def decorate_on_match_single(
@@ -232,26 +222,34 @@ def decorate_on_match_parallel_inplace(
     In-place: add blocks of generated instructions next to transversal blocks
     of matched instructions.
     """
+    # Blocks are found on the untouched circuit and the result is built in a
+    # new list, so each instruction is copied once rather than shifted at
+    # every insertion.
+    instructions = circuit.instructions
+    new_instructions = []
     i = 0
-    while i < len(circuit.instructions):
-        inst = circuit.instructions[i]
-        if matcher(inst):
-            orig_block, gen_block = _find_transversal_block(
-                circuit, i, matcher, generator
-            )
-            n = len(orig_block)
-
-            if before:
-                for k in range(n):
-                    _insert_generated(circuit, i + k, gen_block[k])
-            else:
-                for k in range(n):
-                    _insert_generated(circuit, i + n + k, gen_block[k])
-
-            i += 2 * n
-        else:
+    while i < len(instructions):
+        inst = instructions[i]
+        if not matcher(inst):
+            new_instructions.append(inst)
             i += 1
-    return circuit
+            continue
+
+        orig_block, gen_block = _find_transversal_block(
+            circuit, i, matcher, generator
+        )
+        generated = []
+        for g in gen_block:
+            generated.extend(_generated_instructions(g))
+
+        if before:
+            new_instructions.extend(generated)
+            new_instructions.extend(orig_block)
+        else:
+            new_instructions.extend(orig_block)
+            new_instructions.extend(generated)
+        i += len(orig_block)
+    return circuit._replace_instructions(new_instructions)
 
 
 def decorate_on_match_parallel(

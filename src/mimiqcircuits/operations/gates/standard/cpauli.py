@@ -70,6 +70,10 @@ class GateCX(mc.Control):
         """
         super().__init__(1, GateX())
 
+    def supports_canonical_rewrite(self):
+        # A primitive of the canonical gate set.
+        return False
+
 
 @mc.register_control_decomposition(1, mc.GateX)
 def _decompose_gatecx(gate, circ, qubits, bits, zvars):

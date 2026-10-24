@@ -120,6 +120,24 @@ class GateCustom(Gate):
     def num_qubits(self):
         return self._num_qubits
 
+    # The matrix entries are the parameters, in column-major order, named by
+    # their linear index. `_parnames` stays empty so
+    # decomposition does not try to rebuild the gate from one symbol per entry.
+    @property
+    def parnames(self):
+        return tuple(range(1, self._U.rows * self._U.cols + 1))
+
+    def getparams(self):
+        return list(self._U.T)
+
+    def getparam(self, pn):
+        # 1-based; a plain index would let 0 and
+        # negative values wrap around to the last entries.
+        params = self.getparams()
+        if not 1 <= pn <= len(params):
+            raise IndexError(f"parameter index must be in 1..{len(params)}, not {pn}")
+        return params[pn - 1]
+
     def inverse(self):
         return GateCustom(self._U.inv())
 
@@ -173,6 +191,8 @@ class GateCustom(Gate):
         return result
 
     def evaluate(self, d):
+        if not self.is_symbolic():
+            return self
         sympy_matrix = sp.Matrix(self._U)
         matrix = sympy_matrix.applyfunc(
             lambda entry: (
@@ -219,4 +239,4 @@ class GateCustom(Gate):
 
 
 
-__all__ = ["Custom"]
+__all__ = ["GateCustom"]

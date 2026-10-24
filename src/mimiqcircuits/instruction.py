@@ -25,8 +25,13 @@ from mimiqcircuits.instruction_extras import (
     _partition,
     _string_with_square,
     _find_unit_range,
-    _allunique,
 )
+
+
+# Operation subclasses already seen by Instruction. Membership in this set is
+# a plain hash lookup, where isinstance against the Operation ABC costs a call
+# through ABCMeta; a type is only added once isinstance has accepted it.
+_OPERATION_TYPES = set()
 
 
 class Instruction:
@@ -57,42 +62,49 @@ class Instruction:
     _zvars = None
 
     def __init__(self, operation, qubits=None, bits=None, zvars=None):
+        # Every check below runs for each instruction a circuit builds, so
+        # they avoid ABCMeta isinstance calls and short-circuit on the common
+        # one- and two-target cases. The checks, their order and their
+        # messages are part of the interface.
         if qubits is None:
-            qubits = tuple()
-
-        if bits is None:
-            bits = tuple()
-
-        if zvars is None:
-            zvars = tuple()
-
-        if not isinstance(qubits, tuple):
+            qubits = ()
+        elif not isinstance(qubits, tuple):
             raise TypeError(
                 f"Target qubits should be given in a tuple of integers. Given {qubits} of type {type(qubits)}."
             )
 
-        if not isinstance(bits, tuple):
+        if bits is None:
+            bits = ()
+        elif not isinstance(bits, tuple):
             raise TypeError(
                 f"Target bits should be given in a tuple of integers. Given {bits} of type {type(bits)}."
             )
 
-        if not isinstance(zvars, tuple):
+        if zvars is None:
+            zvars = ()
+        elif not isinstance(zvars, tuple):
             raise TypeError(
                 f"Target z-variables should be given in a tuple of integers. Given {zvars} of type {type(zvars)}."
             )
 
-        if not isinstance(operation, Operation):
-            raise TypeError(
-                f"Operation must be a subclass of Operation. Given {operation} of type f{type(operation)}"
-            )
+        if type(operation) not in _OPERATION_TYPES:
+            if not isinstance(operation, Operation):
+                raise TypeError(
+                    f"Operation must be a subclass of Operation. Given {operation} of type f{type(operation)}"
+                )
+            _OPERATION_TYPES.add(type(operation))
 
-        if not _allunique(qubits):
+        nq = len(qubits)
+        nb = len(bits)
+        nz = len(zvars)
+
+        if nq > 1 and len(set(qubits)) != nq:
             raise ValueError("Duplicated qubit target in instruction")
 
-        if not operation.allow_bit_aliasing() and not _allunique(bits):
+        if nb > 1 and not operation.allow_bit_aliasing() and len(set(bits)) != nb:
             raise ValueError("Duplicated classical bit target in instruction")
 
-        if not operation.allow_zvar_aliasing() and not _allunique(zvars):
+        if nz > 1 and not operation.allow_zvar_aliasing() and len(set(zvars)) != nz:
             raise ValueError("Duplicated z-variables target in instruction")
 
         for qi in qubits:
@@ -107,19 +119,19 @@ class Instruction:
             if z < 0:
                 raise ValueError("Z-variable target index cannot be negative")
 
-        if len(qubits) != operation.num_qubits:
+        if nq != operation.num_qubits:
             raise ValueError(
-                f"Wrong number of target qubits for operation {operation} wanted  {operation.num_qubits}, given {len(qubits)}"
+                f"Wrong number of target qubits for operation {operation} wanted  {operation.num_qubits}, given {nq}"
             )
 
-        if len(bits) != operation.num_bits:
+        if nb != operation.num_bits:
             raise ValueError(
-                f"Wrong number of target bits for operation {operation} wanted  {operation.num_bits}, given {len(bits)}"
+                f"Wrong number of target bits for operation {operation} wanted  {operation.num_bits}, given {nb}"
             )
 
-        if len(zvars) != operation.num_zvars:
+        if nz != operation.num_zvars:
             raise ValueError(
-                f"Wrong number of z-targets for operation {operation} wanted  {operation.num_zvars}, given {len(zvars)}"
+                f"Wrong number of z-targets for operation {operation} wanted  {operation.num_zvars}, given {nz}"
             )
 
         self._operation = operation
@@ -183,13 +195,14 @@ class Instruction:
     def num_zvars(self):
         return len(self._zvars)
 
-    def get_operation(self):
-        return self.operation
-
     def getparams(self):
         return self.operation.getparams()
 
     def listvars(self):
+        """List the symbolic variables of the operation of the instruction.
+
+        See :meth:`Operation.listvars`.
+        """
         return self.operation.listvars()
 
     def asciiwidth(self):
@@ -242,9 +255,10 @@ class Instruction:
         return self._decompose(mc.Circuit())
 
     def evaluate(self, d):
-        return Instruction(
-            self.operation.evaluate(d), self.qubits, self.bits, self.zvars
-        )
+        op = self.operation.evaluate(d)
+        if op is self.operation:
+            return self
+        return Instruction(op, self.qubits, self.bits, self.zvars)
 
     def matrix(self, nq: int = None):
         """
@@ -258,10 +272,7 @@ class Instruction:
                 raise ValueError("Cannot infer nq: instruction has no qubit targets.")
             nq = max(qubits) + 1
 
-        M = op.matrix()
-        if hasattr(op, "numparams") and op.numparams == 0:
-            return reorder_qubits_matrix(M.copy(), qubits, nq)
-        return reorder_qubits_matrix(M, qubits, nq)
+        return reorder_qubits_matrix(op.matrix(), qubits, nq)
 
     def __str__(self):
         compact = False

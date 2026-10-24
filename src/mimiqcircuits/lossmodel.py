@@ -51,7 +51,9 @@ from mimiqcircuits.symbolics import (
 
 
 def _is_reset(operation: mc.Operation) -> bool:
-    return isinstance(operation, (mc.Reset, mc.ResetX, mc.ResetY, mc.ResetZ))
+    return isinstance(
+        operation, (mc.Reset, mc.ResetX, mc.ResetY, mc.ResetZ, mc.PrepareStateT)
+    )
 
 
 def _supports_symbolic_operation_pattern(operation: mc.Operation) -> bool:
@@ -77,6 +79,7 @@ def _validate_rule_operation_target(operation: mc.Operation):
             mc.ResetX,
             mc.ResetY,
             mc.ResetZ,
+            mc.PrepareStateT,
         ),
     ):
         raise ValueError(
@@ -634,7 +637,7 @@ class LossModel:
         return "\n".join(lines)
 
 
-def lossmodel_rewrite(inst: mc.Instruction, lost, model: LossModel, rng):
+def lossmodel_rewrite(inst: mc.Instruction, lost, model: LossModel, rng=None):
     """Decide how a single instruction touching both lost and present qubits is
     rewritten under a :class:`LossModel`, returning the instructions to emit in
     its place (an empty list when the instruction is dropped).
@@ -645,7 +648,13 @@ def lossmodel_rewrite(inst: mc.Instruction, lost, model: LossModel, rng):
     tried in order, the first matching rule wins, and any emitted instruction
     still touching a lost qubit is filtered out. When no rule matches, the
     instruction is dropped.
+
+    ``rng`` is passed to the generator of a :class:`CustomRule`; the other
+    rules ignore it. It defaults to a fresh ``random.Random()``, as in
+    :func:`lower_losses`.
     """
+    if rng is None:
+        rng = random.Random()
     for rule in model.rules:
         if isinstance(rule, CustomRule):
             if not rule.matches(inst):
@@ -690,7 +699,7 @@ def _sample_loss_probability(op: "mc.Loss"):
 
     # Range is not re-checked here: the `Loss` constructor already rejects
     # out-of-range numeric `p`, and `_loss_fires` treats `p >= 1` as certain
-    # loss, matching the Julia `_loss_fires`.
+    # loss.
     return value
 
 

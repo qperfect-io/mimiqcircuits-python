@@ -49,7 +49,7 @@ reference implementation the compiled form is tested against.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Sequence
+from typing import List, Sequence
 
 import mimiqcircuits as mc
 
@@ -80,7 +80,7 @@ _XOR = "xor"         # (dest, srcs)    cstate[dest] = parity(cstate[srcs])
 
 _FUSABLE = (_GATHER, _CONST)
 
-# The reduction each of And / Or / Xor / ParityCheck applies to its
+# The reduction each of And / Or / Xor applies to its
 # sources, and the value it yields for an empty source list. The empty
 # case mirrors `all(())`, `any(())` and `sum(()) % 2`.
 _REDUCERS = {
@@ -149,7 +149,7 @@ class CompiledProjection:
             ValueError: if `projection` holds an operation outside the
                 classical language, that is anything other than
                 ``Measure``, ``SetBit0``, ``SetBit1``, ``Not``,
-                ``And``, ``Or``, ``Xor`` and ``ParityCheck``.
+                ``And``, ``Or`` and ``Xor``.
         """
         steps: List[tuple] = []
         for inst in projection.instructions:
@@ -259,7 +259,7 @@ def _emit(steps: List[tuple], inst) -> None:
         steps.append((_AND, bits[0], list(bits[1:])))
     elif isinstance(op, mc.Or):
         steps.append((_OR, bits[0], list(bits[1:])))
-    elif isinstance(op, (mc.Xor, mc.ParityCheck)):
+    elif isinstance(op, mc.Xor):
         steps.append((_XOR, bits[0], list(bits[1:])))
     else:
         raise ValueError(

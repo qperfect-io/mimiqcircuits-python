@@ -20,6 +20,7 @@ import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.phase import GateP
 import mimiqcircuits.lazy as lz
 from symengine import pi
+from mimiqcircuits.operations.power import _scale_by_exponent
 
 
 class PhaseGradient(mcg.Gate):
@@ -74,8 +75,11 @@ class PhaseGradient(mcg.Gate):
             raise ValueError("Invalid number of arguments.")
 
     def _decompose(self, circ, qubits, bits, _):
+        return self._decompose_power(circ, qubits, 1)
+
+    def _decompose_power(self, circ, qubits, exponent):
         for i in range(len(qubits) - 1, -1, -1):
-            phase = 1 * pi / 2.0 ** (i)
+            phase = _scale_by_exponent(pi, exponent) / 2**i
             circ.push(GateP(phase), qubits[i])
         return circ
 

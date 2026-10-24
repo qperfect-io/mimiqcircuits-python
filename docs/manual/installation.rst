@@ -10,7 +10,7 @@ By the end of this guide, you’ll be ready to dive into quantum computing with 
 Prerequisites
 -------------
 
-MIMIQ Circuits is compatible with **Python 3.9 or later**. To get started, ensure Python is installed on your system.  
+MIMIQ Circuits is compatible with **Python 3.10 or later**. To get started, ensure Python is installed on your system.  
 Download Python from the `official website <https://wiki.python.org/moin/BeginnersGuide/Download>`_.
 
 For an interactive coding experience, we recommend using **Jupyter**.  
@@ -64,6 +64,12 @@ Use `pip` to install the latest version of MIMIQ Circuits from GitHub:
 
     pip3 install mimiqcircuits
 
+Pre-built wheels are published for Linux (x86_64 and aarch64), macOS (x86_64
+and arm64) and Windows (x86_64). On other platforms, and whenever pip installs
+from source (for example from a git checkout), it compiles the package's Rust
+extension. This needs a Rust toolchain, version 1.85 or newer, which you can
+install from `rustup.rs <https://rustup.rs>`_.
+
 Step 4: Verify the Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -82,11 +88,13 @@ To use visualization functionality or work with Jupyter notebooks, install addit
 
     pip3 install mimiqcircuits[visualization]
 
-To use the local statevector simulator Quantanium:
+To simulate circuits on your own machine, install Exaqt, QPerfect's local statevector simulator. It is free and is published on PyPI as a separate package:
 
 .. code-block:: shell
 
-    pip3 install mimiqcircuits[quantanium]
+    pip3 install mimiq-exaqt
+
+See :doc:`local_statevector` for how to run circuits with it.
 
 Jupyter Kernel Setup
 --------------------
@@ -117,7 +125,16 @@ Follow the instructions on the `uv website <https://github.com/astral-sh/uv>`_ o
 
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
-**2. Clone and Setup**
+**2. Install Rust**
+
+``uv sync`` compiles the package's Rust extension, so a Rust toolchain (1.85 or
+newer) is required. Install it from `rustup.rs <https://rustup.rs>`_ or run:
+
+.. code-block:: shell
+
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+**3. Clone and Setup**
 
 .. code-block:: shell
 
@@ -125,13 +142,13 @@ Follow the instructions on the `uv website <https://github.com/astral-sh/uv>`_ o
     cd mimiqcircuits-python
     uv sync
 
-**3. Run Tests**
+**4. Run Tests**
 
 .. code-block:: shell
 
     uv run pytest
 
-**4. Build Documentation**
+**5. Build Documentation**
 
 .. code-block:: shell
 

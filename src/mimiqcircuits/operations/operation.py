@@ -154,7 +154,8 @@ class Operation(ABC):
                 continue
             if isinstance(param, (se.Basic, sp.Basic)) and param.free_symbols:
                 return True
-        return False
+        inner = getattr(self, "op", None)
+        return isinstance(inner, Operation) and inner.is_symbolic()
 
     def getparam(self, pn):
         if pn not in self.parnames:
@@ -267,10 +268,38 @@ class Operation(ABC):
         return self
 
     def listvars(self):
+        """List the symbolic variables in the parameters of the operation.
+
+        Wrappers such as ``Control``, ``Inverse``, ``Power``, ``Parallel``,
+        ``Repeat``, ``IfStatement`` and ``WhileStatement`` give the variables
+        of the operation they wrap, and a ``Block`` those of all its
+        instructions.
+
+        Returns:
+            list: Each ``symengine.Symbol`` once, in no particular order.
+            The list is empty when the operation has no symbolic parameters.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> from symengine import Symbol
+            >>> theta = Symbol("theta")
+            >>> GateRX(theta).listvars()
+            [theta]
+            >>> Control(2, GateRY(2 * theta)).listvars()
+            [theta]
+            >>> GateH().listvars()
+            []
+        """
         vars = set()
         for param in self.getparams():
             if isinstance(param, se.Basic):
                 vars.update(param.atoms(se.Symbol))
+        # Wrappers (Control, Inverse, Power, Parallel, Repeat, IfStatement, ...)
+        # do not all forward their parameters, so descend into the wrapped
+        # operation directly.
+        inner = getattr(self, "op", None)
+        if isinstance(inner, Operation):
+            vars.update(inner.listvars())
         return list(vars)
 
 

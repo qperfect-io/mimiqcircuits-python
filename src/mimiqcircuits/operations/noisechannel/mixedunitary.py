@@ -16,7 +16,6 @@
 #
 
 import numpy as np
-from typing import List, Union
 import symengine as se
 import mimiqcircuits as mc
 import sympy as sp
@@ -296,7 +295,7 @@ class MixedUnitary(krauschannel):
             # Otherwise, keep the symbolic representation as is
 
             if isinstance(gate, mc.GateCustom):
-                matrix_str = f"Custom([{'; '.join([' '.join(map(str, row)) for row in gate.matrix.tolist()])}])"
+                matrix_str = f"Custom([{'; '.join([' '.join(map(str, row)) for row in gate._matrix().tolist()])}])"
                 repr_string += f'({prob}, "{matrix_str}")'
             else:
                 repr_string += f'({prob}, "{str(gate)}")'

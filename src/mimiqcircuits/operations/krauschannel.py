@@ -256,6 +256,27 @@ class krauschannel(Operation):
             "This method should be implemented for the specific Kraus channel."
         )
 
+    def haslossybranch(self):
+        """Whether any branch of the channel loses qubits when drawn.
+
+        That is whether any of its Kraus operators is a
+        :class:`~mimiqcircuits.LossyOperator`. It is ``False`` for channels
+        without loss branches, such as ``PauliX(0.1)``.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> PauliX(0.1).haslossybranch()
+            False
+            >>> import numpy as np
+            >>> survival = Operator(np.array([[1, 0], [0, np.sqrt(0.8)]]))
+            >>> lossy = LossyOperator(np.array([[0, 0], [0, np.sqrt(0.2)]]))
+            >>> Kraus([survival, lossy]).haslossybranch()
+            True
+        """
+        from mimiqcircuits.operations.operators.lossyoperator import LossyOperator
+
+        return any(isinstance(op, LossyOperator) for op in self.krausoperators())
+
     def squaredkrausoperators(self):
         """
         Returns the square of the Kraus operators (:math:`E_k^\\dagger E_k`).
@@ -355,4 +376,4 @@ class krauschannel(Operation):
             raise ValueError("unitarygates only available for mixed unitary channels.")
 
 
-__all__ = ["Noise"]
+__all__ = ["krauschannel"]

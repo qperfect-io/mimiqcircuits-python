@@ -54,7 +54,7 @@ MIMIQ_COLORS = {
 
 
 def _plothist(outcomes, counts, title, nobitstrings=False):
-    labels = [hex(bitvec_to_int(arr)) for arr in outcomes]
+    labels = [hex(bitvec_to_int(bs.bits)) for bs in outcomes]
     nbars = len(counts)
     nsamples = sum(counts)
 

@@ -1550,7 +1550,7 @@ wheels = [
 
 [[package]]
 name = "mimiqcircuits"
-version = "0.28.0"
+version = "0.30.0"
 source = { editable = "." }
 dependencies = [
     { name = "bitarray" },
@@ -1570,15 +1570,13 @@ graph = [
     { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
-quantanium = [
-    { name = "quantanium" },
-]
 visualization = [
     { name = "matplotlib" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "mpmath" },
     { name = "pytest" },
     { name = "pytest-accept" },
     { name = "pytest-benchmark" },
@@ -1605,17 +1603,17 @@ requires-dist = [
     { name = "mimiqlink", specifier = ">=0.9,<0.10" },
     { name = "networkx", marker = "extra == 'graph'", specifier = ">=3,<4" },
     { name = "numpy", specifier = ">=1.26,<3.0" },
-    { name = "protobuf", specifier = ">=6.30,<7" },
-    { name = "quantanium", marker = "extra == 'quantanium'", specifier = ">=1.0,<2" },
+    { name = "protobuf", specifier = ">=6.33,<7" },
     { name = "scipy", specifier = ">1.13,<2" },
     { name = "symengine", specifier = ">=0.14.1,<0.15" },
     { name = "sympy", specifier = ">=1.12,<2" },
     { name = "tqdm", specifier = ">=4.66,<5" },
 ]
-provides-extras = ["visualization", "quantanium", "graph"]
+provides-extras = ["visualization", "graph"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "mpmath", specifier = ">=1.3,<2" },
     { name = "pytest", specifier = ">=8.2,<9" },
     { name = "pytest-accept", specifier = ">=0.1,<0.2" },
     { name = "pytest-benchmark", specifier = ">=4.0,<5" },
@@ -1942,26 +1940,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/33/9b/9dd6e2db8d49eb24f86acaaa5258e5f4c8ed38209a4ee9de2d1a0ca25045/numpy-2.4.1-pp311-pypy311_pp73-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:2023ef86243690c2791fd6353e5b4848eedaa88ca8a2d129f462049f6d484696", size = 14538937, upload-time = "2026-01-10T06:44:51.498Z" },
     { url = "https://files.pythonhosted.org/packages/53/87/d5bd995b0f798a37105b876350d346eea5838bd8f77ea3d7a48392f3812b/numpy-2.4.1-pp311-pypy311_pp73-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:8361ea4220d763e54cff2fbe7d8c93526b744f7cd9ddab47afeff7e14e8503be", size = 16479830, upload-time = "2026-01-10T06:44:53.931Z" },
     { url = "https://files.pythonhosted.org/packages/5b/c7/b801bf98514b6ae6475e941ac05c58e6411dd863ea92916bfd6d510b08c1/numpy-2.4.1-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:4f1b68ff47680c2925f8063402a693ede215f0257f02596b1318ecdfb1d79e33", size = 12492579, upload-time = "2026-01-10T06:44:57.094Z" },
-]
-
-[[package]]
-name = "nvidia-cublas-cu12"
-version = "12.9.1.4"
-source = { registry = "https://pypi.org/simple" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/82/6c/90d3f532f608a03a13c1d6c16c266ffa3828e8011b1549d3b61db2ad59f5/nvidia_cublas_cu12-12.9.1.4-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:7a950dae01add3b415a5a5cdc4ec818fb5858263e9cca59004bb99fdbbd3a5d6", size = 575006342, upload-time = "2025-06-05T20:04:16.902Z" },
-    { url = "https://files.pythonhosted.org/packages/77/3c/aa88abe01f3be3d1f8f787d1d33dc83e76fec05945f9a28fbb41cfb99cd5/nvidia_cublas_cu12-12.9.1.4-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:453611eb21a7c1f2c2156ed9f3a45b691deda0440ec550860290dc901af5b4c2", size = 581242350, upload-time = "2025-06-05T20:04:51.979Z" },
-    { url = "https://files.pythonhosted.org/packages/45/a1/a17fade6567c57452cfc8f967a40d1035bb9301db52f27808167fbb2be2f/nvidia_cublas_cu12-12.9.1.4-py3-none-win_amd64.whl", hash = "sha256:1e5fee10662e6e52bd71dec533fbbd4971bb70a5f24f3bc3793e5c2e9dc640bf", size = 553153899, upload-time = "2025-06-05T20:13:35.556Z" },
-]
-
-[[package]]
-name = "nvidia-cuda-runtime-cu12"
-version = "12.9.79"
-source = { registry = "https://pypi.org/simple" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/e0/0279bd94539fda525e0c8538db29b72a5a8495b0c12173113471d28bce78/nvidia_cuda_runtime_cu12-12.9.79-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:83469a846206f2a733db0c42e223589ab62fd2fabac4432d2f8802de4bded0a4", size = 3515012, upload-time = "2025-06-05T20:00:35.519Z" },
-    { url = "https://files.pythonhosted.org/packages/bc/46/a92db19b8309581092a3add7e6fceb4c301a3fd233969856a8cbf042cd3c/nvidia_cuda_runtime_cu12-12.9.79-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:25bba2dfb01d48a9b59ca474a1ac43c6ebf7011f1b0b8cc44f54eb6ac48a96c3", size = 3493179, upload-time = "2025-06-05T20:00:53.735Z" },
-    { url = "https://files.pythonhosted.org/packages/59/df/e7c3a360be4f7b93cee39271b792669baeb3846c58a4df6dfcf187a7ffab/nvidia_cuda_runtime_cu12-12.9.79-py3-none-win_amd64.whl", hash = "sha256:8e018af8fa02363876860388bd10ccb89eb9ab8fb0aa749aaf58430a9f7c4891", size = 3591604, upload-time = "2025-06-05T20:11:17.036Z" },
 ]
 
 [[package]]
@@ -2461,32 +2439,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/49/0e/3f0d0d335c6b3abb9b7b723776d0b21fa7f3a6c819a0db6097059aada160/pyzmq-27.1.0-pp311-pypy311_pp73-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:53b40f8ae006f2734ee7608d59ed661419f087521edbfc2149c3932e9c14808c", size = 567747, upload-time = "2025-09-08T23:09:52.698Z" },
     { url = "https://files.pythonhosted.org/packages/a1/cf/f2b3784d536250ffd4be70e049f3b60981235d70c6e8ce7e3ef21e1adb25/pyzmq-27.1.0-pp311-pypy311_pp73-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f605d884e7c8be8fe1aa94e0a783bf3f591b84c24e4bc4f3e7564c82ac25e271", size = 747371, upload-time = "2025-09-08T23:09:54.563Z" },
     { url = "https://files.pythonhosted.org/packages/01/1b/5dbe84eefc86f48473947e2f41711aded97eecef1231f4558f1f02713c12/pyzmq-27.1.0-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:c9f7f6e13dff2e44a6afeaf2cf54cee5929ad64afaf4d40b50f93c58fc687355", size = 544862, upload-time = "2025-09-08T23:09:56.509Z" },
-]
-
-[[package]]
-name = "quantanium"
-version = "1.14.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "mimiqcircuits" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "nvidia-cublas-cu12" },
-    { name = "nvidia-cuda-runtime-cu12" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c4/1c/ca0083ba72bfaa71818dbe2d91ec447ecb0916e495c04da1ec801e2a5aee/quantanium-1.14.2-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:e2e4d75fc5573b44a54a29ae5fc77d105e36a7ad3ab6d1cd092163c8ca4a82ea", size = 3744625, upload-time = "2025-11-19T09:12:31.984Z" },
-    { url = "https://files.pythonhosted.org/packages/96/ed/1cb6201caa5ea1c4d09c69f886808fa3ab90dc098aa7513ade879d28af16/quantanium-1.14.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d50330c0947e5358812cc785bca25e6dbc2240b7df85f792e23f54f9761bedb2", size = 55939152, upload-time = "2025-11-19T09:12:34.492Z" },
-    { url = "https://files.pythonhosted.org/packages/8f/ae/a5b6a8d8465b434c9d5a42e0dd7331bcc782ab4ab0a192026d84762c60b7/quantanium-1.14.2-cp310-cp310-win_amd64.whl", hash = "sha256:d6341b39a56336aafb14e861965c976995ee3697094f0001646cf04160acb0b5", size = 4968419, upload-time = "2025-11-19T09:12:37.161Z" },
-    { url = "https://files.pythonhosted.org/packages/d7/bc/67fec3a663ef43fd889de27c6350ac71e12881b8135033092611481ea74b/quantanium-1.14.2-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:ef7c42d69da136e5b938dfb24db69779b83b4793bbd7f8a6e4441c4c982e7ef9", size = 3745861, upload-time = "2025-11-19T09:12:38.399Z" },
-    { url = "https://files.pythonhosted.org/packages/50/17/311b44e767c642663dc9eb47fa651ba2643be3187b9af8140b82603e1ec2/quantanium-1.14.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:487cd0f1097be6a6ca8d53c25f92fc60059e28203bfccb3e8e64680a2d45b017", size = 55940177, upload-time = "2025-11-19T09:12:40.663Z" },
-    { url = "https://files.pythonhosted.org/packages/cb/71/063829eb2b90defe78c585a5d52a83d50685ecf1989ea2669f92c7e2ff41/quantanium-1.14.2-cp311-cp311-win_amd64.whl", hash = "sha256:de632956feff95799a3c7c10813bc9e1132e8d4f49b4918b63672c5109c9b8cb", size = 4968864, upload-time = "2025-11-19T09:12:43.368Z" },
-    { url = "https://files.pythonhosted.org/packages/ca/44/df23c00fa535c13c6124e906c27657df163bca11b60bdadb89ce6494b5b0/quantanium-1.14.2-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:f4498f5d262148ffa25b9bc164b27e2d16fae5193b49bdc3cbb555a947666152", size = 3746053, upload-time = "2025-11-19T09:12:44.609Z" },
-    { url = "https://files.pythonhosted.org/packages/cf/5e/0c26754810eef7e309658a640717e199d55e264f69cb41a02a7f9aaca7f7/quantanium-1.14.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:92c79871943d4bc7fdfc4ce3fed181fa8f6c8e50b57c1692fd12638c8f033a45", size = 55942584, upload-time = "2025-11-19T09:12:46.841Z" },
-    { url = "https://files.pythonhosted.org/packages/f5/4d/b53cccc8ae65ed52dff785795759b33169494ad59b05e5a8c82bfc09f6d1/quantanium-1.14.2-cp312-cp312-win_amd64.whl", hash = "sha256:b2880e2ac5d58956ce8d5901e9dbc9b51c8451abdf4e9f28097b08f8c5c8dcb1", size = 4969201, upload-time = "2025-11-19T09:12:49.65Z" },
-    { url = "https://files.pythonhosted.org/packages/8a/86/198535a9b9787a1e6bae302f7ca88e518cd0a233b5049ac6eefe60b58b82/quantanium-1.14.2-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:60544c4eca9fbd46938cae2fa384453c85cf88f679809a10bc69ab58c2bd9570", size = 3746012, upload-time = "2025-11-19T09:12:50.933Z" },
-    { url = "https://files.pythonhosted.org/packages/5f/77/2fe4ec2c60d73419833e0ddbfd10e7484d5c43f50688307c015261655c5a/quantanium-1.14.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5e63623f66add39e0537b425f7c92c15ae62883f0b230bb098b5c67a4a8ae0c4", size = 55942520, upload-time = "2025-11-19T09:12:53.205Z" },
-    { url = "https://files.pythonhosted.org/packages/9f/92/37642ee367eb9db4345e5d0002d3e89a4af07f1d3a4c2b9fe5ba1bc163ea/quantanium-1.14.2-cp313-cp313-win_amd64.whl", hash = "sha256:a7a9cf45a47db01ef66e970c39d1f2736d167bd48bfdc7bd270f0137e55d94f6", size = 4969120, upload-time = "2025-11-19T09:12:56.116Z" },
 ]
 
 [[package]]

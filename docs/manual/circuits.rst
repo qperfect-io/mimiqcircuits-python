@@ -504,6 +504,32 @@ Most gates can be decomposed into a combination of `U` and `CX` gates, the :meth
     └── U(pi, 0, pi, 0.0) @ q[0]
     <BLANKLINE>
 
+:meth:`~mimiqcircuits.Circuit.decompose` also takes a target basis from
+:mod:`mimiqcircuits.decomposition`. For example,
+:class:`~mimiqcircuits.decomposition.CliffordTBasis` rewrites the circuit into
+Clifford and T gates. Rotations by multiples of :math:`\pi/4` are decomposed
+exactly. Other rotations are approximated by
+:class:`~mimiqcircuits.decomposition.GridSynthRewrite`, by default to an
+operator-norm error of :math:`10^{-10}` each, and the ``rotations`` argument
+selects a different tolerance or rule:
+
+.. doctest:: python
+
+    >>> from mimiqcircuits.decomposition import CliffordTBasis, GridSynthRewrite
+    >>> circuit = Circuit()
+    >>> circuit.push(GateRZ(0.123), 0)
+    1-qubit circuit with 1 instruction:
+    └── RZ(0.123) @ q[0]
+    <BLANKLINE>
+
+    >>> # approximate the rotation to 1e-10 with Clifford+T gates
+    >>> fine = circuit.decompose(CliffordTBasis())
+
+    >>> # a looser tolerance gives a shorter circuit
+    >>> shorter = circuit.decompose(CliffordTBasis(rotations=GridSynthRewrite(epsilon=1e-4)))
+    >>> len(shorter) < len(fine)
+    True
+
 Dependency graph (DAG) view
 ----------------------------------------------------
 

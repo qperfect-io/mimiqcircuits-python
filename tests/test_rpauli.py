@@ -28,10 +28,11 @@ def test_rpauli_identity_detection():
     assert g_id_zero.isidentity() is True
 
 
-def test_rpauli_isunitary_and_wrapper():
+def test_rpauli_isunitary_and_not_a_wrapper():
     g = RPauli(PauliString("XYZ"), pi / 3)
     assert g.isunitary()
-    assert g.iswrapper()
+    # As in MimiqCircuitsBase.jl: it wraps no operation.
+    assert not g.iswrapper()
 
 
 def test_rpauli_matrix_numeric():

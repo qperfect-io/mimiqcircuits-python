@@ -10,7 +10,7 @@ Once you have built your circuit, you need to execute it. MimiqCircuits offers t
         :link: local_statevector
         :link-type: doc
 
-        Perform exact statevector simulations directly on your local machine using the :class:`~mimiqcircuits.quantanium.Quantanium` backend. Ideal for debugging and small circuits.
+        Perform exact statevector simulations directly on your local machine with Exaqt, QPerfect's free statevector simulator. Ideal for debugging and small circuits.
 
     .. grid-item-card:: :octicon:`cloud` Remote Execution
         :link: remote_execution

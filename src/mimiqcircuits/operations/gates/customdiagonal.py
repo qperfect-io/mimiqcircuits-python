@@ -139,6 +139,23 @@ class GateCustomDiagonal(Gate):
     def num_qubits(self):
         return self._num_qubits
 
+    # The diagonal entries are the parameters, named by their index.
+    # `_parnames` stays empty for the same reason as in
+    # `GateCustom`.
+    @property
+    def parnames(self):
+        return tuple(range(1, len(self._d) + 1))
+
+    def getparams(self):
+        return list(self._d)
+
+    def getparam(self, pn):
+        # 1-based; a plain index would let 0 and
+        # negative values wrap around to the last entries.
+        if not 1 <= pn <= len(self._d):
+            raise IndexError(f"parameter index must be in 1..{len(self._d)}, not {pn}")
+        return self._d[pn - 1]
+
     def inverse(self):
         return GateCustomDiagonal([se.conjugate(x) for x in self._d])
 
@@ -159,6 +176,8 @@ class GateCustomDiagonal(Gate):
         return result
 
     def evaluate(self, d):
+        if not self.is_symbolic():
+            return self
         entries = [
             (
                 entry

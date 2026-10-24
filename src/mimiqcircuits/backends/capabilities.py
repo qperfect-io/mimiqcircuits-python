@@ -29,7 +29,7 @@ instance, and :meth:`Backend.topology` returns one of the
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Callable, Optional
 
 

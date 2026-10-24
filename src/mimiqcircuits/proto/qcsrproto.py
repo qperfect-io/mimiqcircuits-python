@@ -15,35 +15,57 @@
 # limitations under the License.
 #
 from mimiqcircuits.proto import qcsresults_pb2
-from mimiqcircuits.proto import bitvector_pb2
 
 import mimiqcircuits.qcsresults as mq
 
 from mimiqcircuits.bitstrings import BitString
-from bitarray import frozenbitarray
+from bitarray import bitarray, frozenbitarray
 
 
 def bitvec_to_bytes(bv):
-    b = bytearray()
-    for i in range(0, len(bv), 8):
-        val = 0
-        for j in range(8):
-            if i + j >= len(bv):
-                break
-            val += bv[i + j] << j
-        b.append(val)
-    return b
+    """Pack a bit vector into bytes, the layout of a protobuf ``BitVector``.
+
+    Bit ``i`` goes to byte ``i // 8`` at position ``i % 8`` counted from the
+    least significant bit, and the unused high bits of the last byte are zero.
+
+    Accepts a ``BitString``, a ``bitarray`` of either bit order, a string of
+    ``"0"`` and ``"1"`` characters, a numpy array, or any other sequence of
+    0, 1 and booleans. ``bytes`` and ``bytearray`` count as sequences of
+    integers, one bit per element, not as a packed buffer. Returns ``bytes``.
+
+    Raises ``ValueError`` for an element other than 0 or 1, and ``TypeError``
+    for an element that is not an integer or boolean (for example a float).
+    """
+    if isinstance(bv, BitString):
+        bv = bv.bits
+    if isinstance(bv, bitarray):
+        # A little-endian buffer already is the wire layout. Converting a
+        # big-endian one copies bit by bit, keeping the sequence, not the buffer.
+        if bv.endian != "little":
+            bv = bitarray(bv, endian="little")
+    elif isinstance(bv, str):
+        bv = bitarray(bv, endian="little")
+    else:
+        # bitarray reads a bytes-like argument as a packed buffer, so every
+        # other input goes in as a list. numpy's tolist() turns numpy scalars,
+        # which bitarray refuses, into Python ints and bools.
+        items = bv.tolist() if hasattr(bv, "tolist") else list(bv)
+        bv = bitarray(items, endian="little")
+    return bv.tobytes()
 
 
 def bytes_to_bitvec(b, n=None):
-    bitstring = ""
-    for val in b:
-        for i in range(8):
-            bitstring += str((val >> i) & 1)
+    """Unpack the bytes of a protobuf ``BitVector`` into a little-endian
+    ``frozenbitarray``, the inverse of :func:`bitvec_to_bytes`.
+
+    With ``n`` given, keeps only the first ``n`` bits, dropping the padding of
+    the last byte.
+    """
+    bv = bitarray(endian="little")
+    bv.frombytes(b)
     if n is not None:
-        return frozenbitarray(bitstring[:n], endian="little")
-    else:
-        return frozenbitarray(bitstring, endian="little")
+        del bv[n:]
+    return frozenbitarray(bv)
 
 
 def toproto_qcsr(s):
@@ -55,8 +77,7 @@ def toproto_qcsr(s):
     qcs_results.fidelities.extend(s.fidelities)
     qcs_results.avggateerrors.extend(s.avggateerrors)
 
-    for cstate in s.cstates:
-        qcs_results.cstates.extend([toproto_bitvector(cstate)])
+    qcs_results.cstates.extend([toproto_bitvector(cstate) for cstate in s.cstates])
 
     for zstate in s.zstates:
         qcs_results.zstates.extend([toproto_complexvector(zstate)])
@@ -80,7 +101,7 @@ def fromproto_qcsr(s):
         s.version,
         s.fidelities,
         s.avggateerrors,
-        [fromproto_bitvector(cstate) for cstate in s.cstates],
+        [BitString(fromproto_bitvector(cstate)) for cstate in s.cstates],
         [fromproto_complexvector(zstate) for zstate in s.zstates],
         amplitudes={
             key: value
@@ -94,12 +115,12 @@ def fromproto_qcsr(s):
 
 
 def toproto_amplitude(key, value):
-    key_bit_array = frozenbitarray(key)
-    entry = qcsresults_pb2.AmplitudeEntry(
-        key=bitvector_pb2.BitVector(len=len(key_bit_array), data=bytes(key_bit_array)),
+    from mimiqcircuits.proto.bitvector import toproto_bitvector
+
+    return qcsresults_pb2.AmplitudeEntry(
+        key=toproto_bitvector(key),
         val=toproto_complexdouble(value),
     )
-    return entry
 
 
 def fromproto_amplitude(amplitude_entry):

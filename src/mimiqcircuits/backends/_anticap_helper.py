@@ -15,9 +15,8 @@
 #
 
 """Shared helper for the ``test_can_handle_rejects_anticap`` conformance
-test family. Each downstream backend repository (`mimiqengines-python`,
-`tensorweaver-python`, `quantanium-python-rs`, and the in-tree
-:class:`MimiqRemoteBackend`) imports :func:`assert_anticap_rejected`
+test family. Each downstream backend repository, and the in-tree
+:class:`MimiqRemoteBackend`, imports :func:`assert_anticap_rejected`
 and feeds its concrete simulator.
 
 The helper iterates :data:`mimiqcircuits.backends.CAP_PROBES`,

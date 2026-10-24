@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-import warnings
-
 from mimiqcircuits.operations.operation import Operation
 from mimiqcircuits.symbolics import UndefinedValue, unwrapvalue
 
@@ -42,8 +40,7 @@ class Loss(Operation):
     """Loss operation.
 
     A qubit-loss event: the qubit is lost with probability ``p``. ``Loss()`` is
-    ``Loss(1.0)``, a certain loss. It replaces both ``LossErr`` and
-    ``QubitLoss``.
+    ``Loss(1.0)``, a certain loss.
 
     The probability is resolved by :meth:`mimiqcircuits.Circuit.sample_losses`,
     which turns each ``Loss(p)`` into ``Loss(1.0)`` or removes it, and a circuit
@@ -122,8 +119,7 @@ class Reload(Operation):
     """Reload operation.
 
     Re-initialise a qubit to :math:`|0\\rangle` and mark it present. By default
-    a reload always resets, regardless of whether the qubit was lost. It
-    replaces ``QubitReload``.
+    a reload always resets, regardless of whether the qubit was lost.
 
     .. warning::
         This operation is non-reversible.
@@ -169,7 +165,7 @@ class Check(Operation):
 
     Record whether a qubit is present into a classical bit (1 present, 0 lost).
     Like :class:`Measure` records a qubit's value, ``Check`` records its
-    presence; it does not touch the quantum state. It replaces ``CheckLoss``.
+    presence; it does not touch the quantum state.
 
     .. warning::
         This operation is non-reversible.
@@ -217,8 +213,7 @@ class MeasureCheck(Operation):
 
     Measure a qubit if it is present, and record its presence. The first bit is
     the measurement result (0 if lost), the second is the presence (1 present,
-    0 lost). The state is collapsed only when the qubit is present. It replaces
-    ``MeasureCheckLoss``.
+    0 lost). The state is collapsed only when the qubit is present.
 
     .. warning::
         This operation is non-reversible.
@@ -259,29 +254,3 @@ class MeasureCheck(Operation):
 
     def __str__(self):
         return self._name
-
-
-# Deprecated loss operations. The old names map onto the current ones.
-def LossErr(p):
-    warnings.warn("LossErr is deprecated; use Loss(p).", DeprecationWarning, stacklevel=2)
-    return Loss(p)
-
-
-def QubitLoss():
-    warnings.warn("QubitLoss is deprecated; use Loss().", DeprecationWarning, stacklevel=2)
-    return Loss(1.0)
-
-
-def QubitReload():
-    warnings.warn("QubitReload is deprecated; use Reload().", DeprecationWarning, stacklevel=2)
-    return Reload()
-
-
-def CheckLoss():
-    warnings.warn("CheckLoss is deprecated; use Check().", DeprecationWarning, stacklevel=2)
-    return Check()
-
-
-def MeasureCheckLoss():
-    warnings.warn("MeasureCheckLoss is deprecated; use MeasureCheck().", DeprecationWarning, stacklevel=2)
-    return MeasureCheck()

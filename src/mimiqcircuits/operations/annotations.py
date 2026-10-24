@@ -21,10 +21,7 @@ from mimiqcircuits.lazy import LazyExpr, LazyArg
 
 
 class AbstractAnnotation(mc.Operation):
-    r"""AbstractAnnotation
-    ----------------------
-
-    Abstract base class for annotations in quantum circuits.
+    r"""Abstract base class for annotations in quantum circuits.
 
     This class is used as a base for defining various annotation types, such as `Detector`, `QubitCoordinates`,
     `ShiftCoordinates`,`Tick`, `ObservableInclude`, which provide metadata or structural information for quantum circuits.
@@ -39,7 +36,6 @@ class AbstractAnnotation(mc.Operation):
 
 class Detector(AbstractAnnotation):
     r"""Detector operation.
-    ------------------------
 
     An annotation class representing a detector in a quantum circuit.
 
@@ -146,6 +142,7 @@ class Detector(AbstractAnnotation):
         return "Detector"
 
     def get_notes(self):
+        """Return the notes attached to the annotation, as a list of floats."""
         return self.notes
 
     def iswrapper(self):
@@ -202,6 +199,10 @@ class QubitCoordinates(AbstractAnnotation):
         else:
             raise ValueError("Should provide a list of float")
 
+    # See Barrier.__getnewargs__: copies must not go through the lazy form.
+    def __getnewargs__(self):
+        return (list(self.coordinates),)
+
     def __init__(self, coordinates: list):
         self._num_qubits = 1
         self.coordinates = [float(coord) for coord in (coordinates or [])]
@@ -212,6 +213,7 @@ class QubitCoordinates(AbstractAnnotation):
         return "QubitCoordinates"
 
     def get_notes(self):
+        """Return the coordinates of the annotation, as a list of floats."""
         return self.coordinates
 
     def iswrapper(self):
@@ -272,6 +274,10 @@ class ShiftCoordinates(AbstractAnnotation):
         else:
             raise ValueError("Should provide a list of float")
 
+    # See Barrier.__getnewargs__: copies must not go through the lazy form.
+    def __getnewargs__(self):
+        return (list(self.coordinates),)
+
     def __init__(self, *coordinates):
         self._num_qubits = 0
         self._num_bits = 0
@@ -288,6 +294,7 @@ class ShiftCoordinates(AbstractAnnotation):
         return "ShiftCoordinates"
 
     def get_notes(self):
+        """Return the coordinates of the annotation, as a list of floats."""
         return self.coordinates
 
     def iswrapper(self):
@@ -378,6 +385,7 @@ class ObservableInclude(AbstractAnnotation):
         return "ObservableInclude"
 
     def get_notes(self):
+        """Return the notes attached to the annotation, as a list of floats."""
         return self.notes
 
     def iswrapper(self):
@@ -427,6 +435,7 @@ class Tick(AbstractAnnotation):
         return "Tick"
 
     def get_notes(self):
+        """Return the notes of the annotation; this annotation has none, so the list is empty."""
         return []
 
     def iswrapper(self):
@@ -475,6 +484,7 @@ class Lost(AbstractAnnotation):
         return "Lost"
 
     def get_notes(self):
+        """Return the notes of the annotation; this annotation has none, so the list is empty."""
         return []
 
     def iswrapper(self):
@@ -517,6 +527,7 @@ class Reloaded(AbstractAnnotation):
         return "Reloaded"
 
     def get_notes(self):
+        """Return the notes of the annotation; this annotation has none, so the list is empty."""
         return []
 
     def iswrapper(self):

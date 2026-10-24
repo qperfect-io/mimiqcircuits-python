@@ -49,6 +49,8 @@ def _get_pi_factor(val) -> int | None:
 
     # Check for multiples of pi/4
     factor = val / (math.pi / 4)
+    if not math.isfinite(factor):
+        return None
     k = round(factor)
     if math.isclose(val, k * (math.pi / 4), abs_tol=1e-10):
         return k % 8

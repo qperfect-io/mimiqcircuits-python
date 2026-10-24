@@ -47,7 +47,7 @@ class RescaledGate(AbstractOperator, Generic[T]):
         - _matrix(*args): Returns the matrix representation of the rescaled gate.
         - get_scale(): Returns the scaling factor `p`.
         - rescale(p): Returns a new `RescaledGate` with a different scaling factor.
-        - rescale_in_place(p): Rescales the gate in place by multiplying the current `p` with the new value.
+        - rescale_inplace(p): Rescales the gate in place by multiplying the current `p` with the new value.
         - evaluate(d): Substitutes values in the parameters (useful when symbolic values are used).
 
     Examples:
@@ -118,11 +118,13 @@ class RescaledGate(AbstractOperator, Generic[T]):
     def rescale(self, p):
         return RescaledGate(self.gate, self.p * p)
 
-    def rescale_in_place(self, p):
+    def rescale_inplace(self, p):
         self.p *= p
         return self
 
     def evaluate(self, d):
+        if not self.is_symbolic():
+            return self
         return RescaledGate(self.gate.evaluate(d), evaluate(self.p, d))
 
     def __str__(self):

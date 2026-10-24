@@ -10,7 +10,9 @@ from mimiqcircuits.gatedecl import GateCall, GateDecl
 from mimiqcircuits.qasm.exceptions import QASMSerializationError
 from mimiqcircuits.qasm.parser import QASMExpr
 
-# Map mimiqcircuits types to QASM names
+# Map mimiqcircuits types to QASM names. These are the gates QASMBasis keeps
+# terminal: the OpenQASM 2.0 built-ins and the gates of qelib1.inc. Every
+# other gate reaches the serializer wrapped in a gate definition.
 TYPE_TO_NAME = {
     mc.GateU: "U",
     mc.GateCX: "CX",
@@ -18,7 +20,6 @@ TYPE_TO_NAME = {
     mc.GateU2: "u2",
     mc.GateU1: "u1",
     mc.GateID: "id",
-    mc.GateP: "p",
     mc.GateX: "x",
     mc.GateY: "y",
     mc.GateZ: "z",
@@ -30,8 +31,6 @@ TYPE_TO_NAME = {
     mc.GateRX: "rx",
     mc.GateRY: "ry",
     mc.GateRZ: "rz",
-    mc.GateSX: "sx",
-    mc.GateSXDG: "sxdg",
     mc.GateCZ: "cz",
     mc.GateCY: "cy",
     mc.GateSWAP: "swap",
@@ -41,23 +40,9 @@ TYPE_TO_NAME = {
     mc.GateCRX: "crx",
     mc.GateCRY: "cry",
     mc.GateCRZ: "crz",
-    mc.GateCP: "cp",
-    mc.GateCS: "cs",
-    mc.GateCSDG: "csdg",
-    mc.GateCSX: "csx",
-    mc.GateCSXDG: "csxdg",
-    mc.GateCU: "cu",
     mc.GateRXX: "rxx",
     mc.GateRZZ: "rzz",
-    mc.GateRYY: "ryy",
-    mc.GateRZX: "rzx",
     mc.GateC3X: "c3x",
-    mc.GateXXminusYY: "xxminusyy",
-    mc.GateXXplusYY: "xxplusyy",
-    mc.GateDCX: "dcx",
-    mc.GateECR: "ecr",
-    mc.GateISWAP: "iswap",
-    mc.GateCCP: "ccp",
 }
 
 CHAR_REPLACEMENTS = {
@@ -181,6 +166,8 @@ def _sanitize_identifier(name: str) -> str:
 def uses_std_gates(instructions) -> bool:
     for inst in instructions:
         op = inst.operation
+        if isinstance(op, mc.IfStatement):
+            op = op.get_operation()
         # Built-in gates: U, Measure, Reset, Barrier. CX is also built-in.
         if isinstance(op, (mc.GateU, mc.Measure, mc.Reset, mc.Barrier)):
             continue
@@ -222,20 +209,6 @@ def gate_to_qasm(gate: mc.Operation) -> str:
         _require_valid_identifier(gate.decl.name, "gate declaration name")
         return gate.decl.name
 
-    # Map common Power aliases (e.g. X**0.5 -> SX) to QASM names.
-    if isinstance(gate, mc.Power):
-        base = gate.op
-        exp = gate.exponent
-        try:
-            fexp = float(exp)
-        except Exception:
-            fexp = None
-
-        if fexp == 0.5 and isinstance(base, mc.GateX):
-            return TYPE_TO_NAME.get(mc.GateSX, "sx")
-        if fexp == -0.5 and isinstance(base, mc.GateX):
-            return TYPE_TO_NAME.get(mc.GateSXDG, "sxdg")
-
     t = type(gate)
     if t in TYPE_TO_NAME:
         return TYPE_TO_NAME[t]
@@ -268,9 +241,13 @@ def instruction_to_qasm(
     num_qubits: int,
     decl_names: Dict[GateDecl, str] = None,
     sanitize_names: bool = False,
+    num_bits: int = 0,
 ) -> QASMExpr:
     op = inst.operation
     qs = inst.qubits
+
+    if isinstance(op, mc.IfStatement):
+        return _ifstatement_to_qasm(inst, num_qubits, decl_names, num_bits)
 
     if isinstance(op, mc.Measure):
         q_expr = qubits_to_qasm(qs[0], num_qubits)[0]
@@ -303,6 +280,29 @@ def instruction_to_qasm(
     return QASMExpr("unitary", [gate_call] + targets)
 
 
+def _ifstatement_to_qasm(inst, num_qubits, decl_names, num_bits):
+    op = inst.operation
+    inner = op.get_operation()
+    nb = inner.num_bits
+    condbits = list(inst.bits[nb:])
+    # OpenQASM 2.0 compares a whole register with an integer, and the
+    # serializer writes all bits as the single register `c`.
+    if condbits != list(range(num_bits)):
+        raise QASMSerializationError(
+            "OpenQASM 2.0 can only condition on the whole classical register: "
+            f"the condition reads bits {condbits} of a {num_bits}-bit circuit",
+            op,
+        )
+    qop = instruction_to_qasm(
+        mc.Instruction(inner, tuple(inst.qubits), tuple(inst.bits[:nb])),
+        num_qubits,
+        decl_names,
+    )
+    # c[0] is the least significant bit of the register's value.
+    cond = QASMExpr("call", ["==", "c", op.bitstring.tointeger()])
+    return QASMExpr("if", [cond, qop])
+
+
 def collect_gatedecls(
     c: mc.Circuit, sanitize_names: bool = False
 ) -> Dict[GateDecl, str]:
@@ -314,6 +314,8 @@ def collect_gatedecls(
 def _collect_gatedecls(decls: Dict, instructions, sanitize_names: bool = False):
     for inst in instructions:
         op = inst.operation
+        if isinstance(op, mc.IfStatement):
+            op = op.get_operation()
         if isinstance(op, GateCall):
             # If already collected, skip to avoid infinite recursion or re-ordering
             if op.decl in decls:
@@ -392,12 +394,33 @@ def _instruction_to_qasm_gatedecl(
     return QASMExpr("unitary", [gate_call] + target_exprs)
 
 
+def _inline_blocks(instructions):
+    """Yield the instructions with every Block written out in place.
+
+    OpenQASM 2.0 has no blocks, so the instructions of a Block are mapped
+    onto the qubits and bits of the instruction that applies it.
+    """
+    for inst in instructions:
+        op = inst.operation
+        if not isinstance(op, mc.Block):
+            yield inst
+            continue
+        for sub in _inline_blocks(op.instructions):
+            yield mc.Instruction(
+                sub.operation,
+                tuple(inst.qubits[q] for q in sub.qubits),
+                tuple(inst.bits[b] for b in sub.bits),
+                tuple(inst.zvars[z] for z in sub.zvars),
+            )
+
+
 def circuit_to_qasm(c: mc.Circuit, sanitize_names: bool = True) -> QASMExpr:
     from mimiqcircuits.decomposition import decompose
     from mimiqcircuits.decomposition.basis import QASMBasis
 
-    # Decompose with wrapping: produces only terminal ops + GateCalls
-    c = decompose(c, QASMBasis(), wrap=True)
+    # Decompose with wrapping: produces only terminal ops, GateCalls and
+    # Blocks. Blocks are then written inline.
+    c = mc.Circuit(list(_inline_blocks(decompose(c, QASMBasis(), wrap=True))))
 
     n_qubits = c.num_qubits()
     n_cbits = c.num_bits()
@@ -425,7 +448,11 @@ def circuit_to_qasm(c: mc.Circuit, sanitize_names: bool = True) -> QASMExpr:
     instruction_statements = []
     for inst in c.instructions:
         res = instruction_to_qasm(
-            inst, n_qubits, decl_names, sanitize_names=sanitize_names
+            inst,
+            n_qubits,
+            decl_names,
+            sanitize_names=sanitize_names,
+            num_bits=n_cbits,
         )
         if isinstance(res, list):
             instruction_statements.extend(res)
@@ -601,7 +628,3 @@ def dump(
             )
         )
 
-
-# Deprecated/Legacy aliases
-qasmstring = dumps
-qasmsave = dump

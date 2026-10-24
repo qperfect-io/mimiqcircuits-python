@@ -26,6 +26,7 @@ asserts it.
 import pytest
 
 import mimiqcircuits as mc
+from mimiqcircuits.backends.compiled_projection import CompiledProjection
 from mimiqcircuits.backends.measure_analysis import (
     evaluate_projection,
     extract_projection,
@@ -61,7 +62,6 @@ def ops(circuit):
     lambda c: c.push(mc.And(3), 3, 0, 1),
     lambda c: c.push(mc.Or(3), 3, 0, 1),
     lambda c: c.push(mc.Xor(3), 3, 0, 1),
-    lambda c: c.push(mc.ParityCheck(3), 3, 0, 1),
 ])
 def test_a_classical_tail_stays_on_the_sampling_path(tail):
     quantum, _ = extract_projection(ghz(4, tail))
@@ -213,3 +213,72 @@ def test_mid_circuit_measurement_still_needs_trajectories():
     c.push(mc.Measure(), 1, 1)
     quantum, _ = extract_projection(c)
     assert needs_trajectories(quantum)
+
+
+def test_a_measurement_before_gates_on_other_wires_is_absorbed():
+    # Fusion emits orders like this: M q[0] comes out ahead of a gate that
+    # does not touch qubit 0, but it is still a final measurement.
+    c = mc.Circuit()
+    c.push(mc.GateH(), 0)
+    c.push(mc.GateCX(), 0, 1)
+    c.push(mc.Measure(), 0, 0)
+    c.push(mc.GateH(), 1)
+    c.push(mc.Measure(), 1, 1)
+    quantum, projection = extract_projection(c)
+    assert not needs_trajectories(quantum)
+    assert [type(i.operation).__name__ for i in quantum] == ["GateH", "GateCX", "GateH"]
+    assert ops(projection) == [("Measure", (0,), (0,)), ("Measure", (1,), (1,))]
+
+
+def test_a_fused_circuit_stays_on_the_sampling_path():
+    c = mc.Circuit()
+    c.push(mc.GateCX(), 5, 4)
+    c.push(mc.GateRX(0.4), 1)
+    c.push(mc.GateCX(), 1, 0)
+    c.push(mc.GateRX(0.8), 3)
+    c.push(mc.GateCX(), 4, 1)
+    c.push(mc.GateRX(0.2), 2)
+    c.push(mc.GateCX(), 3, 1)
+    for q in (5, 2, 3, 4, 0, 1):
+        c.push(mc.Measure(), q, q)
+    quantum, _ = extract_projection(mc.fuse_circuit(c, 2))
+    assert not needs_trajectories(quantum)
+
+
+def test_a_measurement_before_an_amplitude_stays_in_the_evolved_circuit():
+    # `Amplitude` reads the whole register, so a measurement before it
+    # collapses what it reads, whatever wire it is on.
+    c = mc.Circuit()
+    c.push(mc.GateH(), 0)
+    c.push(mc.GateCX(), 0, 1)
+    c.push(mc.Measure(), 0, 0)
+    c.push(mc.Amplitude(mc.BitString("00")), 0)
+    quantum, _ = extract_projection(c)
+    assert needs_trajectories(quantum)
+
+
+def test_dropping_a_dead_write_keeps_the_register_width():
+    # The Xor is the only instruction on c[2], and SetBit0 overwrites its
+    # target unread, so it is dead. The projection must still span c[2].
+    # q0 never reaches the evolved circuit, so c[0] reads 0.
+    c = mc.Circuit()
+    c.push(mc.Measure(), 0, 0)
+    c.push(mc.Xor(3), 1, 0, 2)
+    c.push(mc.SetBit0(), 1)
+    _, projection = extract_projection(c)
+    assert projection.num_bits() == 3
+    s = mc.BitString("1")
+    assert evaluate_projection(projection, s).to01() == "000"
+    assert CompiledProjection.from_circuit(projection).evaluate(s).to01() == "000"
+
+
+def test_rpauli_before_an_observable():
+    # Used to raise AttributeError here: RPauli claimed to be a wrapper but
+    # holds no `.op`.
+    c = mc.Circuit()
+    c.push(mc.RPauli(mc.PauliString("YX"), 0.3), 0, 1)
+    c.push(mc.ExpectationValue(mc.PauliString("ZZ")), 0, 1, 0)
+    c.push(mc.Measure(), 0, 0)
+    quantum, _ = extract_projection(c)
+    # The expectation value writes a z-var, so it stays in the quantum part.
+    assert any(isinstance(i.operation, mc.ExpectationValue) for i in quantum)

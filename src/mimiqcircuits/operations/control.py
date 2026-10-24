@@ -144,6 +144,12 @@ class Control(Gate):
                 # Let __init__ handle the error
                 return object.__new__(cls)
 
+            # __init__ flattens nested controls, so the canonical subclass
+            # must be looked up for the flattened operation.
+            if isinstance(operation, Control):
+                num_controls = num_controls + operation.num_controls
+                inner_type = type(operation.op)
+
             # Check for canonical subclass
             key = (num_controls, inner_type)
             canonical_cls = _control_canonical_types.get(key)
@@ -374,6 +380,8 @@ class Control(Gate):
         Returns:
             Any: Evaluated operation with controls
         """
+        if not self.is_symbolic():
+            return self
         return self.op.evaluate(d).control(self.num_controls)
 
     def gettypekey(self) -> Tuple:

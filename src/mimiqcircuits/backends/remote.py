@@ -154,8 +154,7 @@ def _wrap_fidelity_by_simulator(sim_string: str, value) -> Fidelity:
         non-trace-preserving Kraus channels (e.g. amplitude damping
         with explicit loss) the renormalising state-vec path does
         not track the surviving-trajectory probability, so
-        ``ExactFidelity`` over-states reliability — same caveat the
-        local ``QuantaniumQCS`` docstring carries.
+        ``ExactFidelity`` over-states reliability.
 
     ``MIMIQ-MPS*``
         → :class:`TruncationLowerBound`. Caveat: when Kraus channels
@@ -428,14 +427,22 @@ class MimiqRemoteBackend(RemoteBackend):
         :class:`QCSResults.fidelities` into typed :class:`Fidelity`
         instances.
         """
+        if kwargs.pop("simplify", None):
+            raise NotImplementedError(
+                "simplify= is not available on the remote service yet; call "
+                "mimiqcircuits.simplify(circuit) before submitting instead"
+            )
         if kwargs:
             raise TypeError(
                 f"unexpected keyword arguments: {sorted(kwargs)}"
             )
 
-        # The flat prep knobs and an explicit `passes` pipeline are two
-        # spellings of the same thing; accepting both would leave their
-        # precedence ambiguous.
+        # Deliberately stricter than local execution, which merges the two
+        # (flags contribute their pass, `passes=` follows, then the backend's
+        # defaults fill in the rest). Here the server owns pass selection: the
+        # knobs go on the wire as options and a pipeline goes as a pipeline,
+        # so a merge would have to happen server-side, where we cannot see it.
+        # Rejecting the pair keeps their precedence from being ambiguous.
         prep_knobs = {
             k: v
             for k, v in (
@@ -449,8 +456,10 @@ class MimiqRemoteBackend(RemoteBackend):
         }
         if prep_knobs and passes is not None and len(passes) > 0:
             raise ValueError(
-                "pass either `passes=` or the boolean shorthands "
-                "(fuse=, reorderqubits=, …), not both"
+                "pass either `passes=` or the preparation flags "
+                "(fuse=, reorderqubits=, …), not both. Local execution merges "
+                "them; remote submission cannot, because the server chooses "
+                "the passes"
             )
 
         if param_grid:

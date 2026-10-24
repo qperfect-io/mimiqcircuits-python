@@ -53,7 +53,7 @@ def cx_decompose(circ, controls, target, ancillas):
             )
 
         circ2 = mc.Circuit()
-        circ2.push(mc.GateCCX(), controls[0], controls[1], ancillas[-(nctrl - 3)])
+        circ2.push(mc.GateCCX(), controls[0], controls[1], ancillas[-(nctrl - 2)])
 
         circ3 = mc.Circuit()
         circ3 = circ3.push(mc.GateCCX(), controls[-1], ancillas[-1], target)
@@ -103,13 +103,11 @@ def control_recursive_decompose(circ, operation, controls, target):
 
     # here target can be used as a free qubit
     cx_decompose(circ, controls[:-1], controls[-1], [target])
-    # circ.push(mc.Control(N - 1, GateX()), *controls)
 
     circ.push(mc.Control(1, Vdag), controls[-1], target)
 
     # here target can be used as a free qubit
     cx_decompose(circ, controls[:-1], controls[-1], [target])
-    # circ.push(mc.Control(N - 1, GateX()), *controls)
 
     if N == 2:
         circ.push(mc.Control(N - 1, V), controls[:-1], target)

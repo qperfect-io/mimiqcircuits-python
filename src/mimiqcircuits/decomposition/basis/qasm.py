@@ -18,6 +18,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import TYPE_CHECKING, Sequence
 
 from mimiqcircuits.decomposition.abstract import DecompositionBasis, DecompositionError
@@ -26,41 +27,101 @@ if TYPE_CHECKING:
     from mimiqcircuits import Circuit, Operation
 
 
+# Terminality per operation type, for the types where the type alone decides
+# it. Filled on first use and shared by all instances.
+_TERMINAL_BY_TYPE: dict[type, bool] = {}
+
+
+@lru_cache(maxsize=None)
+def _qasm_terminal_types():
+    import mimiqcircuits as mc
+
+    return (
+        # OpenQASM 2.0 built-ins
+        mc.GateU,
+        mc.GateCX,
+        # qelib1.inc, single qubit
+        mc.GateU3,
+        mc.GateU2,
+        mc.GateU1,
+        mc.GateID,
+        mc.GateX,
+        mc.GateY,
+        mc.GateZ,
+        mc.GateH,
+        mc.GateS,
+        mc.GateSDG,
+        mc.GateT,
+        mc.GateTDG,
+        mc.GateRX,
+        mc.GateRY,
+        mc.GateRZ,
+        # qelib1.inc, two qubits
+        mc.GateCY,
+        mc.GateCZ,
+        mc.GateCH,
+        mc.GateCRX,
+        mc.GateCRY,
+        mc.GateCRZ,
+        mc.GateSWAP,
+        mc.GateRXX,
+        mc.GateRZZ,
+        # qelib1.inc, three and four qubits
+        mc.GateCCX,
+        mc.GateCSWAP,
+        mc.GateC3X,
+        mc.Barrier,
+    )
+
+
 class QASMBasis(DecompositionBasis):
     """Decomposition basis targeting the OpenQASM 2.0 gate library.
 
-    This basis includes all gates defined in ``qelib1.inc`` (the standard QASM 2.0
-    library) plus common extensions, making it suitable for exporting circuits to
-    QASM format or running on QASM-compatible backends.
+    The terminal gates are the OpenQASM 2.0 built-ins and the gates of the
+    ``qelib1.inc`` include file that have a direct MIMIQ counterpart, so a
+    decomposed circuit can be written as OpenQASM 2.0 and read back by any
+    parser that ships the standard ``qelib1.inc``.
 
     Terminal Operations
     -------------------
 
-    The following gate categories are terminal (not decomposed further):
-
     **Fundamental gates (OpenQASM 2.0 built-in):**
-        - ``GateU``, ``GateCX`` — the universal basis for QASM 2.0
+        - ``GateU``, ``GateCX``
 
     **Single-qubit gates from qelib1.inc:**
         - Legacy U gates: ``GateU3``, ``GateU2``, ``GateU1``
         - Pauli: ``GateID``, ``GateX``, ``GateY``, ``GateZ``
-        - Rotations: ``GateRX``, ``GateRY``, ``GateRZ``
-        - Phase gates: ``GateS``, ``GateSDG``, ``GateT``, ``GateTDG``
         - Hadamard: ``GateH``
-        - Square roots: ``GateSX``, ``GateSXDG``
-        - Phase: ``GateP``
+        - Phase: ``GateS``, ``GateSDG``, ``GateT``, ``GateTDG``
+        - Rotations: ``GateRX``, ``GateRY``, ``GateRZ``
 
     **Two-qubit gates from qelib1.inc:**
-        - ``GateCY``, ``GateCZ``
+        - Controlled Paulis and Hadamard: ``GateCY``, ``GateCZ``, ``GateCH``
+        - Controlled rotations: ``GateCRX``, ``GateCRY``, ``GateCRZ``
         - ``GateSWAP``
-        - ``GateCH``
-        - ``GateCRX``, ``GateCRY``, ``GateCRZ``
-        - ``GateCU``, ``GateCP``
+        - Ising couplings: ``GateRXX``, ``GateRZZ``
+
+    **Three- and four-qubit gates from qelib1.inc:**
+        - ``GateCCX``, ``GateCSWAP``, ``GateC3X``
 
     **Non-unitary operations:**
-        - ``Measure``, ``Reset``
-        - ``Barrier``
-        - Classical operations, annotations
+        - ``Measure``, ``Reset``, ``Barrier``
+        - ``IfStatement`` whose inner operation is terminal
+
+    **Custom gates:**
+        - ``GateCall`` whose declaration contains only terminal operations
+
+    Every other operation is decomposed through :class:`CanonicalRewrite`.
+    Operations that OpenQASM 2.0 cannot express and that have no decomposition
+    into the gates above (noise channels, classical operations, annotations,
+    Z-register operations, ...) raise :class:`DecompositionError`.
+
+    ``MeasureReset`` decomposes into ``Measure`` followed by ``Reset``. This
+    leaves the same state and bit as its canonical decomposition, a
+    measurement and an ``X`` conditioned on its outcome, and unlike that
+    conditional it can be written for a circuit of any number of bits.
+    OpenQASM 2.0 has no loops, so ``WhileStatement`` raises
+    :class:`DecompositionError`.
 
     Example:
         >>> from mimiqcircuits import Circuit, GateH, GateCCX
@@ -91,157 +152,33 @@ class QASMBasis(DecompositionBasis):
         Returns:
             True if the operation is in the QASM gate set.
         """
+        # Terminality depends only on the operation's type, except for gate
+        # calls and conditionals, which are decided by what they wrap. Caching the type-only answers skips the chain of
+        # isinstance checks, each of which goes through ABCMeta.
+        t = type(op)
+        known = _TERMINAL_BY_TYPE.get(t)
+        if known is not None:
+            return known
+
         import mimiqcircuits as mc
 
-        # === Fundamental gates (QASM 2.0 built-in) ===
-        if isinstance(op, mc.GateU):
-            return True
-        if isinstance(op, mc.GateCX):
-            return True
-
-        # === Single-qubit gates from qelib1.inc ===
-
-        # Legacy U gates
-        if isinstance(op, (mc.GateU1, mc.GateU2, mc.GateU3)):
+        # Measure and Reset are matched exactly: their X/Y-basis variants are
+        # not part of OpenQASM 2.0 and must be decomposed.
+        if type(op) in (mc.Measure, mc.Reset):
             return True
 
-        # Pauli gates
-        if isinstance(op, mc.GateID):
-            return True
-        if isinstance(op, (mc.GateX, mc.GateY, mc.GateZ)):
-            return True
-
-        # Rotation gates
-        if isinstance(op, (mc.GateRX, mc.GateRY, mc.GateRZ)):
-            return True
-
-        # Phase gates: S, Sdg, T, Tdg
-        if isinstance(op, (mc.GateS, mc.GateSDG, mc.GateT, mc.GateTDG)):
-            return True
-
-        # Hadamard
-        if isinstance(op, mc.GateH):
-            return True
-
-        # Square root gates: SX, SXdg
-        if isinstance(op, (mc.GateSX, mc.GateSXDG)):
-            return True
-
-        # Phase gate
-        if isinstance(op, mc.GateP):
-            return True
-
-        # === Two-qubit gates from qelib1.inc ===
-
-        # Controlled Pauli: CY, CZ
-        if isinstance(op, (mc.GateCY, mc.GateCZ)):
-            return True
-
-        # SWAP
-        if isinstance(op, mc.GateSWAP):
-            return True
-
-        # Controlled Hadamard
-        if isinstance(op, mc.GateCH):
-            return True
-
-        # Ising coupling / interaction gates
-        if isinstance(
-            op,
-            (
-                mc.GateRXX,
-                mc.GateRZZ,
-                mc.GateRYY,
-                mc.GateRZX,
-                mc.GateXXplusYY,
-                mc.GateXXminusYY,
-            ),
-        ):
-            return True
-
-        # Additional two-qubit gates with QASM names
-        if isinstance(op, (mc.GateDCX, mc.GateECR, mc.GateISWAP)):
-            return True
-
-        # Additional controlled gates with QASM names
-        if isinstance(op, (mc.GateCS, mc.GateCSDG, mc.GateCSX, mc.GateCSXDG)):
-            return True
-
-        # Multi-controlled qelib1 gates
-        if isinstance(op, (mc.GateCCX, mc.GateCSWAP, mc.GateC3X)):
-            return True
-
-        # Controlled rotations (CRX, CRY, CRZ are parametric Control gates)
-        # Check if it's a controlled rotation by checking inner gate type
-        if isinstance(op, mc.Control) and op.num_controls == 1:
-            inner = op.op
-            if isinstance(inner, (mc.GateRX, mc.GateRY, mc.GateRZ)):
-                return True
-            # Controlled U and phase
-            if isinstance(inner, (mc.GateU, mc.GateP)):
-                return True
-
-        # CCP = Control(2, GateP) - has a QASM name
-        if isinstance(op, mc.Control) and op.num_controls == 2:
-            inner = op.op
-            if isinstance(inner, mc.GateP):
-                return True
-
-        # GateCall (custom gate declarations)
         if isinstance(op, mc.GateCall):
             return all(
                 self.isterminal(inst.get_operation()) for inst in op.decl.circuit
             )
 
-        # === Non-unitary operations ===
-
-        # Measurement and reset
-        if isinstance(op, (mc.AbstractMeasurement, mc.Reset)):
-            return True
-        if isinstance(op, mc.MeasureReset):
-            return True
-
-        # Barrier
-        if isinstance(op, mc.Barrier):
-            return True
-
-        # IfStatement: terminal if inner operation is terminal
         if isinstance(op, mc.IfStatement):
             inner_op = op.get_operation()
             return inner_op is not None and self.isterminal(inner_op)
 
-        # WhileStatement: terminal if inner operation is terminal
-        if isinstance(op, mc.WhileStatement):
-            inner_op = op.get_operation()
-            return inner_op is not None and self.isterminal(inner_op)
-
-        # Classical operations
-        if isinstance(op, mc.AbstractClassical):
-            return True
-
-        # Annotations
-        if isinstance(op, mc.AbstractAnnotation):
-            return True
-
-        # Noise channels (for completeness)
-        if isinstance(op, mc.krauschannel):
-            return True
-
-        # Expectation values and entanglement measures
-        if isinstance(op, (mc.ExpectationValue, mc.Amplitude)):
-            return True
-        if isinstance(op, (mc.SchmidtRank, mc.VonNeumannEntropy, mc.BondDim)):
-            return True
-
-        # Z-register operations
-        if isinstance(op, (mc.Add, mc.Multiply, mc.Pow)):
-            return True
-
-        # Delay
-        if isinstance(op, mc.Delay):
-            return True
-
-        return False
+        known = isinstance(op, _qasm_terminal_types())
+        _TERMINAL_BY_TYPE[t] = known
+        return known
 
     def decompose(
         self,
@@ -264,7 +201,20 @@ class QASMBasis(DecompositionBasis):
         Raises:
             DecompositionError: If the operation cannot be decomposed.
         """
+        import mimiqcircuits as mc
         from mimiqcircuits.decomposition.rules import CanonicalRewrite
+
+        if type(op) is mc.MeasureReset:
+            c = mc.Circuit()
+            c.push(mc.Measure(), qubits[0], bits[0])
+            c.push(mc.Reset(), qubits[0])
+            return c
+
+        if isinstance(op, mc.WhileStatement):
+            raise DecompositionError(
+                "WhileStatement cannot be decomposed into the OpenQASM 2.0 basis, "
+                "which has no loops."
+            )
 
         rule = CanonicalRewrite()
         if rule.matches(op):

@@ -116,12 +116,12 @@ class GateISWAPDG(mc.Inverse):
         (ISWAP†**2, ISWAP)
         >>> GateISWAPDG().decompose()
         2-qubit circuit with 6 instructions:
-        ├── H @ q[1]
-        ├── CX @ q[1], q[0]
-        ├── CX @ q[0], q[1]
-        ├── H @ q[0]
+        ├── S† @ q[0]
         ├── S† @ q[1]
-        └── S† @ q[0]
+        ├── H @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── CX @ q[1], q[0]
+        └── H @ q[1]
         <BLANKLINE>
     """
 
@@ -137,10 +137,10 @@ class GateISWAPDG(mc.Inverse):
 
     def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits
-        circ.push(GateH(), t)
-        circ.push(GateCX(), t, c)
-        circ.push(GateCX(), c, t)
-        circ.push(GateH(), c)
-        circ.push(GateSDG(), t)
         circ.push(GateSDG(), c)
+        circ.push(GateSDG(), t)
+        circ.push(GateH(), c)
+        circ.push(GateCX(), c, t)
+        circ.push(GateCX(), t, c)
+        circ.push(GateH(), t)
         return circ

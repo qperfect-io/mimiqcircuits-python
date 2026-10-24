@@ -416,3 +416,16 @@ def test_GateCustom_rejects_bad_sizes():
     for rows in (1, 3, 6):
         with pytest.raises(ValueError):
             mc.GateCustom(np.eye(rows, dtype=complex))
+
+
+@pytest.mark.parametrize(
+    "gate",
+    [mc.GateCustom(np.eye(2)), mc.GateCustomDiagonal([1, 1j])],
+)
+def test_custom_gate_parameters_are_one_based(gate):
+    n = len(gate.getparams())
+    assert gate.getparam(1) == gate.getparams()[0]
+    assert gate.getparam(n) == gate.getparams()[-1]
+    for i in (0, -1, n + 1):
+        with pytest.raises(IndexError):
+            gate.getparam(i)

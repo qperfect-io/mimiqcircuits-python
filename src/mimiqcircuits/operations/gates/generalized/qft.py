@@ -88,7 +88,7 @@ class QFT(mcg.Gate):
 
         for i in range(1, self.num_qubits):
             for j in range(i):
-                angle = pi / (2.0 ** (i - j))
+                angle = pi / 2 ** (i - j)
                 circ.push(GateCP(angle), q[i], q[j])
 
             circ.push(GateH(), q[i])

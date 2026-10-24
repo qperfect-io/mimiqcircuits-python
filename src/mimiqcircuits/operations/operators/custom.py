@@ -20,6 +20,8 @@ import symengine as se
 import numpy as np
 import sympy as sp
 
+from mimiqcircuits.operations.operator import _matrix_to_ndarray
+
 
 class Operator(mc.AbstractOperator):
     r"""N-qubit operator specified by a :math:`2^N \times 2^N` matrix.
@@ -127,8 +129,7 @@ class Operator(mc.AbstractOperator):
         pass
 
     def unwrappedmatrix(self):
-        """Return the matrix unwrapped (if needed)."""
-        return self.mat
+        return _matrix_to_ndarray(self, self.mat)
 
     def __repr__(self):
         """Return a pretty-printed representation."""
@@ -162,16 +163,6 @@ class Operator(mc.AbstractOperator):
         O_dagger = self.mat.T.conjugate()
         squared_matrix = O_dagger * self.mat
         return Operator(squared_matrix)
-
-    def rescale(self, scale):
-        """Return a new rescaled Operator by scaling the matrix."""
-        scaled_matrix = self.mat * scale
-        return Operator(scaled_matrix)
-
-    def rescale_inplace(self, scale):
-        """In-place rescaling of the operator matrix."""
-        self.mat *= scale
-        return self
 
 
 __all__ = ["Operator"]

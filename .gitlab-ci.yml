@@ -1,6 +1,8 @@
 stages:
   - test
+  - build
   - deploy
+  - publish
 
 default:
   image: python:3.13
@@ -10,9 +12,31 @@ variables:
   # default branch advances ahead of the next tagged release.
   # Use scripts/bump-mimiqlink.sh to update.
   MIMIQLINK_REF: "b8f8c415ac9b7b39424ad02555272f34eaead9dd"
+  # Keep the Rust toolchain and the cargo registry inside the project so the
+  # cache below can carry them between jobs.
+  CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+  RUSTUP_HOME: "$CI_PROJECT_DIR/.rustup"
+  # python/index, the internal Python package index. Referenced by id so a
+  # rename of the group or project does not break the upload.
+  PYTHON_INDEX_PROJECT: "186"
 
 .add-mimiqlink: &add-mimiqlink
   - uv add "mimiqlink @ git+https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.qperfect.io/development/mimiq/mimiqlink-python.git@${MIMIQLINK_REF}"
+
+# `uv sync` builds the package with maturin, which compiles the `_core`
+# extension, so every job that installs it needs a Rust toolchain.
+.install-rust: &install-rust
+  - export PATH="$CARGO_HOME/bin:$PATH"
+  - command -v rustup || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --no-modify-path
+  - rustup update stable
+
+.rust-cache: &rust-cache
+  key: rust-toolchain
+  paths:
+    - .cargo/bin
+    - .cargo/registry/index
+    - .cargo/registry/cache
+    - .rustup
 
 test:
   stage: test
@@ -22,13 +46,18 @@ test:
   parallel:
     matrix:
       - PYTHON: ["3.10", "3.13", "3.14t"]
+  cache: *rust-cache
   before_script:
     - pip install uv
+    - *install-rust
     - *add-mimiqlink
   script:
     - apt-get update -qq && apt-get install -y -qq build-essential gfortran libopenblas-dev
     - uv sync --python $PYTHON
     - uv run --python $PYTHON pytest -sxv
+    # The Rust unit tests link libpython, which the image's own interpreter
+    # provides; running them once is enough.
+    - if [ "$PYTHON" = "3.13" ]; then cargo test --release; fi
 
 pages:
   stage: deploy
@@ -43,8 +72,10 @@ pages:
     - if: $CI_COMMIT_BRANCH == "devel"
       variables:
         DOCS_VERSION: "devel"
+  cache: *rust-cache
   before_script:
     - pip install uv
+    - *install-rust
     - *add-mimiqlink
   script:
     - apt-get update -qq && apt-get install -y -qq build-essential gfortran libopenblas-dev
@@ -60,3 +91,132 @@ pages:
     name: pages/$DOCS_VERSION
     url: $CI_PAGES_URL/$DOCS_VERSION
   resource_group: pages-deploy
+
+# ── Release wheels for the internal index ─────────────────────────────────────
+#
+# Public wheels are built on GitHub from the public mirror, which never sees a
+# `-private` tag. These jobs build the same set here (abi3 for CPython 3.10+ and
+# free-threaded 3.14 per platform, plus the sdist) and `publish` uploads them to
+# python/index on `vX.Y.Z-private` tags. A public `vX.Y.Z` is always cut after
+# the `vX.Y.Z-private` of the same version, so the index already holds it.
+#
+# To rebuild a tag from before these jobs existed, or after a failed upload, run
+# a pipeline on `devel` (web UI or API) with RELEASE_REF set to the tag.
+
+.release-build:
+  stage: build
+  interruptible: false
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+-private$/
+    - if: $CI_PIPELINE_SOURCE =~ /^(web|api)$/ && $RELEASE_REF
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+
+.checkout-release-ref: &checkout-release-ref
+  - |
+    if [ -n "$RELEASE_REF" ]; then
+      git fetch --depth 1 origin "refs/tags/$RELEASE_REF:refs/tags/$RELEASE_REF"
+      git checkout -q "$RELEASE_REF"
+    fi
+
+wheel:linux:
+  extends: .release-build
+  image: quay.io/pypa/manylinux_2_28_x86_64
+  before_script:
+    - *checkout-release-ref
+    - *install-rust
+    - /opt/python/cp313-cp313/bin/python -m pip install -q maturin uv
+    - export PATH="/opt/python/cp313-cp313/bin:$PATH"
+  script:
+    - maturin build --release --compatibility manylinux_2_28 --out dist -i /opt/python/cp313-cp313/bin/python
+    - maturin build --release --compatibility manylinux_2_28 --out dist -i /opt/python/cp314-cp314t/bin/python
+    - uv run --no-project --python /opt/python/cp310-cp310/bin/python --with dist/*-abi3-*.whl python -c "import mimiqcircuits"
+
+wheel:macos:
+  extends: .release-build
+  tags: [macos]
+  before_script:
+    - *checkout-release-ref
+    - *install-rust
+    # As on Windows: a preinstalled rustup sets no default under RUSTUP_HOME.
+    - rustup default stable
+    - uv python install 3.10 3.13 3.14t
+  script:
+    - uvx maturin build --release --out dist -i "$(uv python find 3.13)"
+    - uvx maturin build --release --out dist -i "$(uv python find 3.14t)"
+    - uv run --no-project --python 3.10 --with dist/*-abi3-*.whl python -c "import mimiqcircuits"
+
+wheel:windows:
+  extends: .release-build
+  tags: [windows]
+  before_script:
+    - |
+      if ($env:RELEASE_REF) {
+        git fetch --depth 1 origin "refs/tags/$($env:RELEASE_REF):refs/tags/$($env:RELEASE_REF)"
+        git checkout -q $env:RELEASE_REF
+      }
+    - $env:PATH = "$env:CARGO_HOME\bin;" + $env:PATH
+    # The runner may carry its own rustup, which finds no toolchain under this
+    # job's RUSTUP_HOME, so install one into it either way.
+    - if (-not (Get-Command rustup -ErrorAction SilentlyContinue)) { Invoke-WebRequest -UseBasicParsing -Uri https://win.rustup.rs/x86_64 -OutFile rustup-init.exe; .\rustup-init.exe -y --default-toolchain none --profile minimal | Out-Null }
+    - rustup toolchain install stable --profile minimal
+    - rustup default stable
+    - if (-not (Get-Command uv -ErrorAction SilentlyContinue)) { Invoke-WebRequest -UseBasicParsing -Uri https://astral.sh/uv/install.ps1 -OutFile install-uv.ps1; powershell -ExecutionPolicy Bypass -File install-uv.ps1 | Out-Null; $env:PATH = "$env:USERPROFILE\.local\bin;" + $env:PATH }
+    - uv python install 3.10 3.13 3.14t
+  script:
+    - uvx maturin build --release --out dist -i "$(uv python find 3.13)"
+    - uvx maturin build --release --out dist -i "$(uv python find 3.14t)"
+    - uv run --no-project --python 3.10 --with (Get-ChildItem dist\*-abi3-*.whl).FullName python -c "import mimiqcircuits"
+
+sdist:
+  extends: .release-build
+  image: python:3.13
+  variables:
+    # Outside the checkout: the sdist takes every file .gitignore does not
+    # exclude, and the default toolchain lives in the project directory.
+    CARGO_HOME: /root/.cargo
+    RUSTUP_HOME: /root/.rustup
+  before_script:
+    - *checkout-release-ref
+    - *install-rust
+    - pip install -q maturin
+  script:
+    - maturin sdist --out dist
+
+# Uploads all files in one step, so a platform that failed to build leaves no
+# partial release behind. A version already in the index, from an earlier
+# RELEASE_REF rebuild for instance, is skipped rather than uploaded twice.
+publish:
+  stage: publish
+  image: python:3.13
+  interruptible: false
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+-private$/
+    - if: $CI_PIPELINE_SOURCE =~ /^(web|api)$/ && $RELEASE_REF
+  needs: [wheel:linux, wheel:macos, wheel:windows, sdist]
+  script:
+    - REF="${CI_COMMIT_TAG:-$RELEASE_REF}"; VERSION="${REF#v}"; VERSION="${VERSION%-private}"
+    - |
+      for f in dist/*; do
+        case "$(basename "$f")" in
+          mimiqcircuits-"$VERSION"-*.whl|mimiqcircuits-"$VERSION".tar.gz) ;;
+          *) echo "$f does not match version $VERSION from $REF"; exit 1 ;;
+        esac
+      done
+    - ls -1 dist/
+    # The index answers a name it does not hold with a redirect to pypi.org, so
+    # only a 200 means python/index has the package; then look for the version.
+    - INDEX="$CI_API_V4_URL/projects/$PYTHON_INDEX_PROJECT/packages/pypi"
+    - CODE=$(curl -s -o page.html -w '%{http_code}' -u "gitlab-ci-token:$CI_JOB_TOKEN" "$INDEX/simple/mimiqcircuits/")
+    - |
+      if [ "$CODE" = 200 ] && grep -q "mimiqcircuits-$VERSION[-.]" page.html; then
+        echo "mimiqcircuits $VERSION is already in python/index, nothing to upload"
+        exit 0
+      fi
+    - pip install -q twine
+    - twine upload --non-interactive --repository-url "$INDEX" -u gitlab-ci-token -p "$CI_JOB_TOKEN" dist/*

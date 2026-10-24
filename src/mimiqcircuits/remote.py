@@ -22,7 +22,6 @@ import json
 import os
 import shutil
 from mimiqcircuits.circuit import Circuit
-from mimiqcircuits.qcsresults import QCSResults
 from mimiqcircuits.__version__ import __version__
 from mimiqcircuits.proto import WIRE_FORMAT_VERSION
 import numpy as np
@@ -179,14 +178,6 @@ def _file_may_be_stim(filepath: str) -> bool:
     return False
 
 
-class QCSError:
-    def __init__(self, error):
-        self.error = error
-
-    def __repr__(self):
-        return self.error
-
-
 class RemoteConnection:
     """Base class for connections to the Mimiq Server.
 
@@ -288,7 +279,8 @@ class RemoteConnection:
             ValueError: If nsamples exceeds MAX_SAMPLES, bond/entanglement dimensions are out of bounds,
                         or if a circuit contains unevaluated symbolic parameters.
             FileNotFoundError: If a QASM file is not found.
-            TypeError: If the circuits argument is not a Circuit object or a valid file path.
+            TypeError: If the circuits argument is not a Circuit object or a valid file path,
+                       or a preparation flag has the wrong type.
         """
         from mimiqcircuits.circuittester import CircuitTesterExperiment
 
@@ -317,6 +309,21 @@ class RemoteConnection:
                 noisemodel=noisemodel,
                 streaming=streaming,
             )
+
+        from mimiqcircuits.backends.passes import check_prep_flags
+
+        flags = check_prep_flags(
+            fuse=fuse,
+            canonicaldecompose=canonicaldecompose,
+            reorderqubits=reorderqubits,
+            remove_swaps=remove_swaps,
+            reorderqubits_seed=reorderqubits_seed,
+        )
+        fuse = flags["fuse"]
+        canonicaldecompose = flags["canonicaldecompose"]
+        reorderqubits = flags["reorderqubits"]
+        remove_swaps = flags["remove_swaps"]
+        reorderqubits_seed = flags["reorderqubits_seed"]
 
         if nsamples > MAX_SAMPLES:
 
@@ -571,16 +578,6 @@ class RemoteConnection:
         warnings.warn(
             "execute() is deprecated and will be blocking in the future. "
             "Use submit() for non-blocking execution.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.submit(*args, **kwargs)
-
-    def schedule(self, *args, **kwargs):
-        """Deprecated alias for submit."""
-        import warnings
-        warnings.warn(
-            "schedule() is deprecated. Use submit() instead.",
             DeprecationWarning,
             stacklevel=2,
         )

@@ -168,7 +168,7 @@ MIMIQ supports sending quantum circuits to its remote services for execution, ei
 You can submit one or multiple circuits for execution using the :meth:`~mimiqcircuits.MimiqConnection.submit` method. This unified interface simplifies quantum job management, whether you're running a single job or a batch of jobs.
 
 .. deprecated::
-   The ``execute()`` and ``schedule()`` methods are deprecated. Use :meth:`~mimiqcircuits.MimiqConnection.submit` instead for all remote circuit executions.
+   The ``execute()`` method is deprecated. Use :meth:`~mimiqcircuits.MimiqConnection.submit` instead for all remote circuit executions.
 
 **Parameters**:
 
@@ -470,7 +470,7 @@ Here's an example of how to access different fields:
     # Get classical registers of the first 10 samples
     >>> first_samples = res_single.cstates[0:10]
     >>> print(first_samples)
-    [frozenbitarray('01'), frozenbitarray('01'), frozenbitarray('01'), frozenbitarray('01'), frozenbitarray('01'), frozenbitarray('01'), frozenbitarray('01'), frozenbitarray('01'), frozenbitarray('01'), frozenbitarray('01')]
+    [bs"01", bs"01", bs"01", bs"01", bs"01", bs"01", bs"01", bs"01", bs"01", bs"01"]
 
 
 With the output of [:meth:`~mimiqcircuits.MimiqConnection.get_results`]it works the same way,

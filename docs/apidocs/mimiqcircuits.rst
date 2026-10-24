@@ -11,6 +11,7 @@ API Reference
    mimiqcircuits.hamiltonian
    mimiqcircuits.instruction
    mimiqcircuits.operations
+   mimiqcircuits.decomposition
    mimiqcircuits.classical
    mimiqcircuits.lossmodel
    mimiqcircuits.noisemodel

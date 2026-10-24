@@ -44,9 +44,13 @@ pip install mimiqcircuits[visualization]
 pip install "mimiqcircuits @ git+https://github.com/qperfect-io/mimiqcircuits-python.git"
 ```
 
+Installing from git or from a source distribution compiles the package's Rust
+extension, which needs a Rust toolchain, version 1.85 or newer (see
+[rustup.rs](https://rustup.rs)). Installing a published wheel does not.
+
 ### Requirements
 
-- Python 3.8 or higher
+- Python 3.10 or higher
 - Supported on Linux, macOS, and Windows
 
 ## Quick Start

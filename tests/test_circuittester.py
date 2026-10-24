@@ -1,6 +1,5 @@
 from mimiqcircuits import *
 import pytest
-from bitarray import frozenbitarray
 
 
 def test_circuittester_basic_repr():
@@ -54,11 +53,11 @@ def test_interpret_results():
     ex = CircuitTesterExperiment(c1, c2)
 
     # Perfect
-    res_perfect = MockResults({frozenbitarray("00"): 100})
+    res_perfect = MockResults({BitString("00"): 100})
     assert ex.interpret_results(res_perfect) == 1.0
 
     # Imperfect
-    res_bad = MockResults({frozenbitarray("00"): 50, frozenbitarray("11"): 50})
+    res_bad = MockResults({BitString("00"): 50, BitString("11"): 50})
     assert ex.interpret_results(res_bad) == 0.5
 
     # Zero samples
@@ -96,3 +95,25 @@ def test_interpret_results_amplitudes():
     # Empty
     res_empty = MockResults([])
     assert ex.interpret_results(res_empty) == 0.0
+
+
+def test_interpret_results_uses_a_real_qcsresults_histogram():
+    # The mock above can agree with whatever key type `interpret_results`
+    # happens to use. A real QCSResults cannot: its histogram is keyed by
+    # whatever is in `cstates`, which is always a BitString.
+    c = Circuit().push(GateX(), 0)
+    ex = CircuitTesterExperiment(c, c)
+
+    def results(cstates):
+        return QCSResults(
+            simulator="Test",
+            version="0.0.0",
+            cstates=cstates,
+        )
+
+    assert ex.interpret_results(results([BitString("00")] * 100)) == 1.0
+    assert (
+        ex.interpret_results(results([BitString("00")] * 50 + [BitString("11")] * 50))
+        == 0.5
+    )
+    assert ex.interpret_results(results([BitString("11")] * 100)) == 0.0

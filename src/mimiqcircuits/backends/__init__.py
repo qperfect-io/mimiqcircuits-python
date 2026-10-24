@@ -17,9 +17,6 @@
 """
 mimiqcircuits.backends — abstract Backend interface for quantum simulators.
 
-Mirrors the Julia `AbstractQCSs.jl` surface so simulators plug in
-uniformly across both languages.
-
 Module map:
 
     capabilities, limits, topology  -> .capabilities

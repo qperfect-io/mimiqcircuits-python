@@ -16,8 +16,7 @@
 
 """Progress reporting for :meth:`LocalBackend.execute`.
 
-Mirrors the ``AbstractProgress`` sink in Julia ``AbstractQCSs.jl``. The
-``execute`` driver and backends open named stages and advance them; the
+The ``execute`` driver and backends open named stages and advance them; the
 concrete sink decides whether and how to render. :class:`NoProgress` is
 the zero-cost default; :class:`TqdmProgress` draws bars with tqdm.
 

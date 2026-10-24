@@ -124,6 +124,8 @@ class Repeat(Operation):
         return True
 
     def evaluate(self, d):
+        if not self.is_symbolic():
+            return self
         return Repeat(self.repeats, self.op.evaluate(d))
 
     def _decompose(self, circ, qubits, bits, zvars):
@@ -157,6 +159,27 @@ class Repeat(Operation):
 
 
 def repeat(*args):
+    """Build a ``Repeat`` operation, or a lazy one that waits for its count.
+
+    ``repeat(n, op)`` is ``Repeat(n, op)``. ``repeat(op)`` returns a lazy
+    expression; calling it with ``n`` builds ``Repeat(n, op)``.
+
+    Args:
+        *args: ``(n, op)`` or ``(op,)``.
+
+    Returns:
+        Repeat or LazyExpr: The operation, or the lazy expression.
+
+    Raises:
+        TypeError: If called with no arguments or with more than two.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> repeat(3, GateX())
+        ∏³ X
+        >>> repeat(GateX())(3)
+        ∏³ X
+    """
     if len(args) == 1:
         op = args[0]
         return LazyExpr(repeat, LazyArg(), op)

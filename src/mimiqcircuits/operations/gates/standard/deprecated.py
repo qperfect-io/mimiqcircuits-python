@@ -20,6 +20,8 @@ import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.matrices import pmatrix, umatrix
 from symengine import pi
+from mimiqcircuits.operations.gates.standard._angles import PI_2
+from mimiqcircuits.operations.power import _scale_by_exponent
 
 
 class GateU1(mcg.Gate):
@@ -78,7 +80,7 @@ class GateU1(mcg.Gate):
         return GateU1(-self.lmbda)
 
     def _power(self, pwr):
-        return GateU1(pwr * self.lmbda)
+        return GateU1(_scale_by_exponent(self.lmbda, pwr))
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
@@ -144,7 +146,7 @@ class GateU2(mcg.Gate):
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(GateU(pi / 2, self.phi, self.lmbda), q)
+        circ.push(GateU(PI_2, self.phi, self.lmbda), q)
         return circ
 
 

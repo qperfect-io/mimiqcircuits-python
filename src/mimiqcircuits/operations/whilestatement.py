@@ -146,6 +146,8 @@ class WhileStatement(Operation):
         return f"WHILE(c=={self.bitstring.to01()}) {op} @ {', '.join(parts)}"
 
     def evaluate(self, d):
+        if not self.is_symbolic():
+            return self
         return WhileStatement(self.op.evaluate(d), self.bitstring)
 
     def get_operation(self):

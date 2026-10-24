@@ -62,6 +62,12 @@ class RuleBasis(DecompositionBasis):
         Returns:
             True if the rule does not match this operation.
         """
+        import mimiqcircuits as mc
+
+        # A rule that does not handle conditionals itself is applied to their
+        # body.
+        if isinstance(op, mc.IfStatement) and not self.rule.matches(op):
+            return self.isterminal(op.get_operation())
         return not self.rule.matches(op)
 
     def decompose(
@@ -82,6 +88,11 @@ class RuleBasis(DecompositionBasis):
         Returns:
             A Circuit containing the decomposed instructions.
         """
+        import mimiqcircuits as mc
+        from mimiqcircuits.operations.ifstatement import _decompose_ifstatement
+
+        if isinstance(op, mc.IfStatement) and not self.rule.matches(op):
+            return _decompose_ifstatement(self, op, qubits, bits, zvars)
         return self.rule.decompose_step(op, qubits, bits, zvars)
 
     def __repr__(self) -> str:

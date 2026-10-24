@@ -259,7 +259,7 @@ To make a histogram out of the retrieved samples, it suffices to execute
 .. doctest:: quick_start
 
       >>> res.histogram()
-      {frozenbitarray('00000'): 289, frozenbitarray('11111'): 307, frozenbitarray('00001'): 16, frozenbitarray('00111'): 6, frozenbitarray('10000'): 90, frozenbitarray('10011'): 16, frozenbitarray('01100'): 15, frozenbitarray('00011'): 3, frozenbitarray('11110'): 23, frozenbitarray('01111'): 84, frozenbitarray('10111'): 29, frozenbitarray('01110'): 15, frozenbitarray('01000'): 19, frozenbitarray('11100'): 6, frozenbitarray('10001'): 20, frozenbitarray('11101'): 11, frozenbitarray('10010'): 3, frozenbitarray('00100'): 9, frozenbitarray('01001'): 2, frozenbitarray('00010'): 12, frozenbitarray('11011'): 8, frozenbitarray('10100'): 3, frozenbitarray('01101'): 2, frozenbitarray('11010'): 1, frozenbitarray('01011'): 3, frozenbitarray('11001'): 1, frozenbitarray('10101'): 3, frozenbitarray('00101'): 1, frozenbitarray('11000'): 3}
+      {bs"00000": 289, bs"11111": 307, bs"00001": 16, bs"00111": 6, bs"10000": 90, bs"10011": 16, bs"01100": 15, bs"00011": 3, bs"11110": 23, bs"01111": 84, bs"10111": 29, bs"01110": 15, bs"01000": 19, bs"11100": 6, bs"10001": 20, bs"11101": 11, bs"10010": 3, bs"00100": 9, bs"01001": 2, bs"00010": 12, bs"11011": 8, bs"10100": 3, bs"01101": 2, bs"11010": 1, bs"01011": 3, bs"11001": 1, bs"10101": 3, bs"00101": 1, bs"11000": 3}
 
 
 To plot the results use the following:

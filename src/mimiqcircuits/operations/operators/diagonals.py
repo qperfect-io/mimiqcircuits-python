@@ -77,16 +77,6 @@ class DiagonalOp(mc.AbstractOperator):
     def parnames(self):
         return self._parnames
 
-    def rescale(self, scale):
-        """Return a new rescaled DiagonalOp operator."""
-        return DiagonalOp(self.a * scale, self.b * scale)
-
-    def rescale_inplace(self, scale):
-        """In-place rescaling of the DiagonalOp operator."""
-        self.a *= scale
-        self.b *= scale
-        return self
-
     def opsquared(self):
         """Return the operator with each parameter squared."""
         return DiagonalOp(abs(self.a) ** 2, abs(self.b) ** 2)

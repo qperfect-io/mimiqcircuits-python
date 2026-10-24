@@ -273,37 +273,22 @@ def fromproto_set_idle_noise(msg, declcache=None):
 ######## Custom Noise ########
 
 
+# The matcher and generator are arbitrary Python callables, which have no
+# portable representation. Storing their names would decode into a different
+# rule, so both directions refuse instead.
 @noise_registry.register_toproto(mc.CustomNoiseRule)
 def toproto_custom_noise(rule, declcache=None):
-    for label, fn in (("matcher", rule.matcher), ("generator", rule.generator)):
-        name = getattr(fn, "__name__", "")
-        is_anonymous = (not name) or name.startswith("<")
-        if is_anonymous:
-            raise ValueError(
-                f"CustomNoiseRule cannot be serialized with anonymous callables. "
-            )
-    msg = noisemodel_pb2.NoiseRule()
-    msg.custom_noise.matcher = getattr(rule.matcher, "__name__", str(rule.matcher))
-    msg.custom_noise.generator = getattr(
-        rule.generator, "__name__", str(rule.generator)
+    raise ValueError(
+        "CustomNoiseRule holds Python callables and cannot be serialized. "
+        "Remove custom rules from the noise model before saving it."
     )
-    msg.custom_noise.priority = rule.priority_val
-    msg.custom_noise.before = rule.before()
-    if hasattr(msg.custom_noise, "replace"):
-        msg.custom_noise.replace = rule.replaces()
-    return msg
 
 
 @noise_registry.register_fromproto("custom_noise")
 def fromproto_custom_noise(msg, declcache=None):
-    # Restoring arbitrary Python callables is not possible
-    replace = msg.replace if hasattr(msg, "replace") else False
-    return mc.CustomNoiseRule(
-        matcher=lambda inst: True,
-        generator=lambda inst: inst,
-        priority_val=msg.priority,
-        before=msg.before,
-        replace=replace,
+    raise ValueError(
+        "CustomNoiseRule cannot be deserialized: its matcher and generator "
+        "callables are not stored in the file."
     )
 
 

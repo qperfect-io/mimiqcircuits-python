@@ -69,11 +69,17 @@ Get started immediately by installing the package via pip:
 
   pip install mimiqcircuits
 
-Or optionally installing dependencies for the local simulator (quantanium) and visualization (matplotlib) tools:
+Or optionally installing the dependencies for the visualization (matplotlib) tools:
 
 .. code-block:: bash
 
-  pip install mimiqcircuits[quantanium,visualization]
+  pip install mimiqcircuits[visualization]
+
+To simulate circuits locally, install Exaqt, QPerfect's free statevector simulator:
+
+.. code-block:: bash
+
+  pip install mimiq-exaqt
 
 For detailed requirements and setup, see the :doc:`Installation <manual/installation>` page.
 

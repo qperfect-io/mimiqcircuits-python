@@ -447,9 +447,53 @@ methods:
   ``True`` if your backend implements the pass natively inside
   :meth:`compile` or :meth:`evolve`. The pipeline records a marker
   result but does not run the pass.
-- :meth:`~mimiqcircuits.backends.Backend.default_passes` — return
-  the pipeline the backend wants applied when the caller passes
-  ``passes=None``.
+- :meth:`~mimiqcircuits.backends.Backend.default_passes` — return the
+  pipeline your backend wants applied, tuned however you like:
+
+  .. code-block:: python
+
+      def default_passes(self):
+          return PassPipeline([
+              MyStructuralPass(),
+              FusePass(max_support=5, qubit_threshold=18),
+          ])
+
+  That is your whole involvement in circuit preparation: it takes no arguments
+  and never sees the ``execute`` flags. ``execute`` adjusts what you return —
+  a flag drops the pass of its kind, or replaces it with the one your backend
+  builds for that flag (see below) — and appends the caller's ``passes`` after.
+
+  The adjustment is keyed on ``spec().name``, so a pass you declare under a
+  flag's name (``fuse_gates``, ``reorder_qubits``) is the one that flag acts
+  on. A pass under any other name is unreachable by flags and survives even
+  ``fuse=False, reorderqubits=False, …``, which makes it the right place for
+  anything your backend structurally requires — and it keeps its place ahead of
+  anything a flag adds.
+
+  When a flag asks for a pass, your backend builds it. Each flag has a method
+  next to ``default_passes`` that returns its pass:
+  :meth:`~mimiqcircuits.backends.Backend.fuse_pass`,
+  :meth:`~mimiqcircuits.backends.Backend.reorder_pass`,
+  :meth:`~mimiqcircuits.backends.Backend.canonical_decompose_pass` and
+  :meth:`~mimiqcircuits.backends.Backend.remove_swaps_pass`. Override the ones
+  for which you have your own pass, so a flag retunes it instead of swapping in
+  the generic one:
+
+  .. code-block:: python
+
+      def fuse_pass(self, *, threshold=None):
+          # fuse=True keeps the tuned block width; fuse_threshold=n only
+          # moves the threshold.
+          return FusePass(max_support=5, qubit_threshold=threshold or 18)
+
+      def reorder_pass(self, method=None, *, seed=None):
+          # reorderqubits=True gives method=None: pick your default search.
+          return MyReorderPass(method=method or "sa", seed=seed)
+
+  Flags have a fixed order among themselves — remove swaps, canonical
+  decompose, fuse, reorder — and that is where a flag inserts a pass you did
+  not declare. Declaring yours in that order too keeps the pipeline coherent
+  whichever flags a caller sets.
 
 Custom passes subclass
 :class:`~mimiqcircuits.backends.AbstractPass`. A minimal example:
