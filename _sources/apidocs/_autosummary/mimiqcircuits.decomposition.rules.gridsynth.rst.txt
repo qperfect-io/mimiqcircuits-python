@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.rules.gridsynth
+===========================================
+
+.. automodule:: mimiqcircuits.decomposition.rules.gridsynth
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GridSynthRewrite
+   

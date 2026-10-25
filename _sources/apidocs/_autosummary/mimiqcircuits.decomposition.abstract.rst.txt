@@ -1,0 +1,19 @@
+mimiqcircuits.decomposition.abstract
+====================================
+
+.. automodule:: mimiqcircuits.decomposition.abstract
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DecompositionBasis
+      RewriteRule
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      DecompositionError
+   

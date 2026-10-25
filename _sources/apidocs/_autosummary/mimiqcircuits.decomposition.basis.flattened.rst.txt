@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.basis.flattened
+===========================================
+
+.. automodule:: mimiqcircuits.decomposition.basis.flattened
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FlattenedBasis
+   

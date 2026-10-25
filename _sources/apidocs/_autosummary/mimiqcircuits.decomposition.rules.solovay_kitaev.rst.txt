@@ -1,0 +1,35 @@
+mimiqcircuits.decomposition.rules.solovay\_kitaev
+=================================================
+
+.. automodule:: mimiqcircuits.decomposition.rules.solovay_kitaev
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      axis_angle_to_su2
+      extract_rotation_angle
+      extract_rotation_axis
+      find_nearest_in_net
+      find_orthogonal_axes
+      gate_to_matrix
+      gc_decompose
+      generate_epsilon_net
+      get_basic_gates
+      get_sk_cache
+      invert_sequence
+      matrix_to_point
+      operator_norm_distance
+      sequence_to_matrix
+      simplify_sequence
+      sk_approximate
+      to_su2
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SKCacheEntry
+      SolovayKitaevRewrite
+   

@@ -1,0 +1,15 @@
+mimiqcircuits.operations.noisechannel.standards.pauli
+=====================================================
+
+.. automodule:: mimiqcircuits.operations.noisechannel.standards.pauli
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PauliNoise
+      PauliX
+      PauliY
+      PauliZ
+   

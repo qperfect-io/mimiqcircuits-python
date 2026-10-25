@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.rules.to\_z\_rotation
+=================================================
+
+.. automodule:: mimiqcircuits.decomposition.rules.to_z_rotation
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ToZRotationRewrite
+   

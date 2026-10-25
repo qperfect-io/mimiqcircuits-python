@@ -1,0 +1,16 @@
+mimiqcircuits.operations.decompositions.matrix\_decompositions
+==============================================================
+
+.. automodule:: mimiqcircuits.operations.decompositions.matrix_decompositions
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   csd
+   qsd
+   utils
+   zyz

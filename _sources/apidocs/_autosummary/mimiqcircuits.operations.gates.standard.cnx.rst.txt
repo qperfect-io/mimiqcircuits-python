@@ -1,0 +1,13 @@
+mimiqcircuits.operations.gates.standard.cnx
+===========================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.cnx
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateC3X
+      GateCCX
+   

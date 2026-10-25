@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.basis.clifford\_t
+=============================================
+
+.. automodule:: mimiqcircuits.decomposition.basis.clifford_t
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CliffordTBasis
+   

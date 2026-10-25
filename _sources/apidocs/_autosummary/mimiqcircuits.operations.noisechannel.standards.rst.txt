@@ -1,0 +1,17 @@
+mimiqcircuits.operations.noisechannel.standards
+===============================================
+
+.. automodule:: mimiqcircuits.operations.noisechannel.standards
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   ampdamping
+   depolarizing
+   pauli
+   phaseamplitudedamping
+   projectivenoise

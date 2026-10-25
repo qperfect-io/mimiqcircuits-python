@@ -1,0 +1,18 @@
+mimiqcircuits.operations.noisechannel.kraus
+===========================================
+
+.. automodule:: mimiqcircuits.operations.noisechannel.kraus
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      is_valid_power_of_2
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Kraus
+   

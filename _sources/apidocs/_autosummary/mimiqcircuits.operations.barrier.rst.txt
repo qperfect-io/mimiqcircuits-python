@@ -1,0 +1,12 @@
+mimiqcircuits.operations.barrier
+================================
+
+.. automodule:: mimiqcircuits.operations.barrier
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Barrier
+   

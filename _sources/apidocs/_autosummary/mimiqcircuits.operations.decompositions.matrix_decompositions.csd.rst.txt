@@ -1,0 +1,6 @@
+mimiqcircuits.operations.decompositions.matrix\_decompositions.csd
+==================================================================
+
+.. automodule:: mimiqcircuits.operations.decompositions.matrix_decompositions.csd
+
+   

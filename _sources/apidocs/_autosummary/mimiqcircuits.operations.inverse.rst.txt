@@ -1,0 +1,20 @@
+mimiqcircuits.operations.inverse
+================================
+
+.. automodule:: mimiqcircuits.operations.inverse
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      canonical_inverse
+      register_inverse_alias
+      register_inverse_decomposition
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Inverse
+   

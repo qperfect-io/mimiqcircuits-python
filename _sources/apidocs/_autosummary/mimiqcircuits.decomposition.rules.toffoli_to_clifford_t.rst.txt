@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.rules.toffoli\_to\_clifford\_t
+==========================================================
+
+.. automodule:: mimiqcircuits.decomposition.rules.toffoli_to_clifford_t
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ToffoliToCliffordTRewrite
+   
