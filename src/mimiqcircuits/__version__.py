@@ -1,7 +1,4 @@
-from importlib.metadata import version
-
-# Sourced from the installed package metadata (the `version` field in
-# pyproject.toml), so the constant stays in sync with the package
-# itself — no manual bump and no risk of drift like the previous
-# hard-coded literal had.
-__version__ = version("mimiqcircuits")
+# The version is compiled into the native extension from Cargo.toml, which a
+# release bumps together with pyproject.toml. Reading it from there avoids
+# importlib.metadata, which is slow to import.
+from mimiqcircuits._core import __version__  # noqa: F401

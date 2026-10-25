@@ -20,8 +20,8 @@ from abc import abstractmethod
 import numbers
 
 import numpy as np
-import sympy as sp
 import symengine as se
+from mimiqcircuits._sympycheck import _is_basic, _is_sympy_matrix
 
 from mimiqcircuits import Operation
 
@@ -55,7 +55,7 @@ def _try_unwrap(p):
         return complex(p), True
     if isinstance(p, np.generic):
         return p.item(), True
-    if isinstance(p, (se.Basic, sp.Basic)):
+    if _is_basic(p):
         if getattr(p, "free_symbols", None):
             return p, False
         try:
@@ -120,7 +120,7 @@ def _as_se_matrix(m):
     """
     if isinstance(m, np.ndarray):
         return se.Matrix(m.tolist())
-    if isinstance(m, sp.Matrix):
+    if _is_sympy_matrix(m):
         return se.Matrix(m.tolist())
     return m
 

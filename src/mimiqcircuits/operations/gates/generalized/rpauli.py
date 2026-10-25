@@ -19,9 +19,8 @@
 import numpy as np
 from mimiqcircuits.operations.gates.gate import Gate
 import mimiqcircuits as mc
-from scipy.linalg import expm
 import symengine as se
-import sympy as sp
+from mimiqcircuits._sympycheck import _is_basic
 from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
 
 
@@ -162,11 +161,13 @@ class RPauli(Gate):
         mat_sym = self.pauli.matrix()
 
         # Use symbolic exponential if theta is symbolic
-        if isinstance(theta, (se.Basic, sp.Basic)):
+        if _is_basic(theta):
             return symbolic_matrix_exponential(mat_sym, theta)
 
         # Use numerical exponential otherwise
         mat_np = np.array(mat_sym.tolist(), dtype=complex)
+        from scipy.linalg import expm
+
         mat_exp = expm(-1j * theta / 2 * mat_np)
         return se.Matrix(mat_exp.tolist())
 

@@ -19,8 +19,8 @@ import mimiqcircuits as mc
 import numpy as np
 from itertools import product
 import symengine as se
+from mimiqcircuits._sympycheck import _is_basic
 from mimiqcircuits.operations.krauschannel import krauschannel
-import sympy as sp
 
 
 class Depolarizing(krauschannel):
@@ -97,7 +97,7 @@ class Depolarizing(krauschannel):
     def __init__(self, N, p):
         if N < 1:
             raise ValueError("Cannot define a 0-qubit depolarizing noise channel")
-        if not isinstance(p, (se.Basic, sp.Basic)) and (p < 0 or p > 1):
+        if not _is_basic(p) and (p < 0 or p > 1):
             raise ValueError("Probability p needs to be between 0 and 1.")
         self.N = N
         self.p = p

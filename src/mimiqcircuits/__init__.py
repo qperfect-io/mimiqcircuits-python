@@ -228,7 +228,6 @@ from mimiqcircuits.complex import Pow, Add, Multiply
 from mimiqcircuits.operations.block import Block
 from mimiqcircuits.operations.repeat import Repeat, repeat
 
-from mimiqlink import QPERFECT_CLOUD, QPERFECT_DEV, PLANQK_API
 from mimiqcircuits.hamiltonian import (
     Hamiltonian,
     HamiltonianTerm,
@@ -387,6 +386,17 @@ attach_inheritance_tree_to_docstring(
     title="Classical Operations Hierarchy",
     start_from="AbstractClassical",
 )
+
+
+# mimiqlink pulls in the whole HTTP and authentication stack, so its URL
+# constants are resolved on first access instead of at import time.
+def __getattr__(name):
+    if name in ("QPERFECT_CLOUD", "QPERFECT_DEV", "PLANQK_API"):
+        import mimiqlink
+
+        return getattr(mimiqlink, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 # Export specific classes, and functions.
 __all__ = [

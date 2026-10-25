@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.30.1] - 2026-10-26
+
+### Changed
+- `import mimiqcircuits` is about 3.5 times faster (around 150 ms instead of 550 ms): sympy, scipy and mimiqlink are now imported only when a feature that needs them is first used.
+
 ## [0.30.0] - 2026-10-24
 
 ### Added

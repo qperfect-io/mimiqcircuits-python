@@ -16,7 +16,6 @@
 #
 """Kraus channel definitions."""
 
-import sympy as sp
 from mimiqcircuits.operations.operation import Operation
 import symengine as se
 import numpy as np
@@ -97,6 +96,8 @@ class krauschannel(Operation):
 
         if self.numparams() == 0:
             return self.krausmatrices()
+
+        import sympy as sp
 
         params = []
         for name in self.parnames:
@@ -334,6 +335,8 @@ class krauschannel(Operation):
         Returns:
             list: A list of unitary matrices as numerical values.
         """
+        import sympy as sp
+
         matrices = []
 
         for matrix in self.unitarymatrices():

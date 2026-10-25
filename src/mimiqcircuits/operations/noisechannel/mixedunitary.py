@@ -17,8 +17,8 @@
 
 import numpy as np
 import symengine as se
+from mimiqcircuits._sympycheck import _is_basic, _is_sympy_matrix
 import mimiqcircuits as mc
-import sympy as sp
 from mimiqcircuits.operations.krauschannel import krauschannel
 from mimiqcircuits.operations.rescaledgates import RescaledGate
 from mimiqcircuits.operations.gates.custom import GateCustom
@@ -32,7 +32,7 @@ def _is_valid_power_of_2(n):
 def _convert_to_symengine(matrix):
     if isinstance(matrix, np.ndarray):
         return se.Matrix(matrix.tolist())
-    elif isinstance(matrix, sp.Matrix):
+    elif _is_sympy_matrix(matrix):
         return se.Matrix(matrix.tolist())
     elif isinstance(matrix, se.Matrix):
         return matrix
@@ -137,7 +137,7 @@ class MixedUnitary(krauschannel):
                 )
             # Check if there are any symbolic probabilities
             contains_symbolic_probabilities = any(
-                isinstance(p, (se.Basic, sp.Basic)) for p in probabilities
+                _is_basic(p) for p in probabilities
             )
 
             if not contains_symbolic_probabilities:
@@ -149,7 +149,7 @@ class MixedUnitary(krauschannel):
             self.U = []
 
             for U, p in zip(gates_or_matrices, probabilities):
-                if isinstance(U, (np.ndarray, sp.Matrix, se.Matrix)):
+                if isinstance(U, (np.ndarray, se.Matrix)) or _is_sympy_matrix(U):
                     # Convert numpy or sympy matrices to symengine and wrap in GateCustom
                     U = _convert_to_symengine(U)
                     if not _is_valid_power_of_2(U.rows):

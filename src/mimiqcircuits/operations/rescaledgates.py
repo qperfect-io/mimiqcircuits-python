@@ -17,10 +17,10 @@
 """Rescaled gate operation."""
 
 import symengine as se
+from mimiqcircuits._sympycheck import _is_basic
 from typing import TypeVar, Generic
 from mimiqcircuits.operations.operator import AbstractOperator
 from mimiqcircuits.operations.gates.gate import Gate
-import sympy as sp
 
 T = TypeVar("T", bound=Gate)  # T is a type variable bound to Gate
 
@@ -84,7 +84,7 @@ class RescaledGate(AbstractOperator, Generic[T]):
         self._qregsizes = gate._qregsizes
         self._zregsizes = gate._zregsizes
 
-        if not isinstance(p, (se.Basic, sp.Basic)) and (float(p) < 0 or float(p) > 1):
+        if not _is_basic(p) and (float(p) < 0 or float(p) > 1):
             raise ValueError("Value of p must be between 0 and 1.")
         self.gate = gate
         self.p = p
@@ -134,4 +134,4 @@ class RescaledGate(AbstractOperator, Generic[T]):
 
 def evaluate(param, d):
     # Replace symbols in param according to dictionary d, this is just a placeholder
-    return param.subs(d) if isinstance(param, (se.Basic, sp.Basic)) else param
+    return param.subs(d) if _is_basic(param) else param

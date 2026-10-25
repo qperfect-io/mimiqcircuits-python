@@ -33,11 +33,11 @@ from threading import Lock
 from typing import TYPE_CHECKING, Sequence
 
 import numpy as np
-from scipy.spatial import KDTree
 
 from mimiqcircuits.decomposition.abstract import DecompositionError, RewriteRule
 
 if TYPE_CHECKING:
+    from scipy.spatial import KDTree
     from mimiqcircuits import Circuit, Gate, Operation
 
 # =============================================================================
@@ -356,6 +356,8 @@ def generate_epsilon_net(
     points: list[np.ndarray] = [matrix_to_point(I2)]
     sequences: list[list[Gate]] = [[]]
 
+    from scipy.spatial import KDTree
+
     # Build initial KDTree (will be rebuilt periodically)
     tree = KDTree(np.array(points))
     rebuild_interval = 100  # Rebuild tree every N points
@@ -441,6 +443,8 @@ def get_sk_cache(
             basis_gates, max_depth, max_points, min_dist
         )
         points_mat = np.array(points)
+        from scipy.spatial import KDTree
+
         net_tree = KDTree(points_mat)
 
         net_matrices = [sequence_to_matrix(seq) if seq else np.eye(2, dtype=np.complex128)

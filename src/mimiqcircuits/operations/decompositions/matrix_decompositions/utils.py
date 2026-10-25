@@ -17,7 +17,7 @@
 
 import numpy as np
 import symengine as se
-import sympy as sp
+from mimiqcircuits._sympycheck import _is_sympy_matrix
 
 
 def _as_numpy_numeric(U):
@@ -25,7 +25,7 @@ def _as_numpy_numeric(U):
         return U.astype(complex)
 
     try:
-        if isinstance(U, sp.MatrixBase):
+        if _is_sympy_matrix(U):
             if not all(x.is_number for x in U):
                 raise TypeError("Symbolic matrices are not supported for CSD")
             return np.array(U.evalf(), dtype=complex)

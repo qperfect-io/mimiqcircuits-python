@@ -20,7 +20,7 @@ import mimiqcircuits as mc
 from typing import List, Union
 import numpy as np
 import symengine as se
-import sympy as sp
+from mimiqcircuits._sympycheck import _is_basic
 from mimiqcircuits.operations.krauschannel import krauschannel
 from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
 
@@ -105,7 +105,7 @@ class PauliNoise(krauschannel):
                 raise ValueError("All Pauli strings must be of the same length.")
 
         # Check if any probability is symbolic; skip range and sum checks if so
-        if not any(isinstance(prob, (se.Basic, sp.Basic)) for prob in p):
+        if not any(_is_basic(prob) for prob in p):
             if not np.isclose(sum(p), 1, rtol=1e-8):
                 raise ValueError("List of probabilities should add up to 1.")
 
@@ -235,7 +235,7 @@ class PauliX(krauschannel):
     _parnames = ()
 
     def __init__(self, p: Union[float, int]):
-        if not isinstance(p, (se.Basic, sp.Basic)) and (p < 0 or p > 1):
+        if not _is_basic(p) and (p < 0 or p > 1):
             raise ValueError("Probability should be between 0 and 1.")
         self.p = p
         super().__init__()
@@ -319,7 +319,7 @@ class PauliY(krauschannel):
     _parnames = ()
 
     def __init__(self, p: Union[float, int]):
-        if not isinstance(p, (se.Basic, sp.Basic)) and (p < 0 or p > 1):
+        if not _is_basic(p) and (p < 0 or p > 1):
             raise ValueError("Probability should be between 0 and 1.")
         self.p = p
         super().__init__()
@@ -400,7 +400,7 @@ class PauliZ(krauschannel):
     _parnames = ()
 
     def __init__(self, p: Union[float, int]):
-        if not isinstance(p, (se.Basic, sp.Basic)) and (p < 0 or p > 1):
+        if not _is_basic(p) and (p < 0 or p > 1):
             raise ValueError("Probability should be between 0 and 1.")
         self.p = p
         super().__init__()

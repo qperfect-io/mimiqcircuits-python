@@ -37,11 +37,10 @@ def _get_pi_factor(val) -> int | None:
     Returns:
         The factor k if val = k * pi/4, or None if not a special angle.
     """
-    import symengine as se
-    import sympy as sp
+    from mimiqcircuits._sympycheck import _is_basic
 
     # Check for symbolic values
-    if isinstance(val, (se.Basic, sp.Basic)):
+    if _is_basic(val):
         try:
             val = complex(val).real
         except (TypeError, ValueError):

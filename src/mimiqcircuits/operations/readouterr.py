@@ -17,7 +17,7 @@
 
 import numpy as np
 import symengine as se
-import sympy as sp
+from mimiqcircuits._sympycheck import _is_basic, _is_sympy_matrix
 from mimiqcircuits import Operation
 
 
@@ -72,7 +72,7 @@ class ReadoutErr(Operation):
                 mat = p0
             elif isinstance(p0, se.Matrix):
                 mat = np.array(p0.tolist(), dtype=object)
-            elif isinstance(p0, sp.MatrixBase):
+            elif _is_sympy_matrix(p0):
                 mat = np.array(p0.tolist(), dtype=object)
             else:
                 raise TypeError(
@@ -85,7 +85,7 @@ class ReadoutErr(Operation):
             for i in range(2):
                 for j in range(2):
                     val = mat[i, j]
-                    if isinstance(val, (sp.Basic, se.Basic)) and not val.is_Number:
+                    if _is_basic(val) and not val.is_Number:
                         raise TypeError(
                             f"All elements of confusion matrix  must be numeric."
                         )
@@ -106,9 +106,7 @@ class ReadoutErr(Operation):
         self.p0 = p0
         self.p1 = p1
 
-        if not isinstance(self.p0, (sp.Basic, se.Basic)) and not isinstance(
-            self.p1, (sp.Basic, se.Basic)
-        ):
+        if not _is_basic(self.p0) and not _is_basic(self.p1):
             if not (0.0 <= self.p0 <= 1.0):
                 raise ValueError(f"p0 must be in [0,1], got {self.p0}")
             if not (0.0 <= self.p1 <= 1.0):

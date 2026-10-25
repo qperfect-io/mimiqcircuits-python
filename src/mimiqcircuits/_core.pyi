@@ -1,5 +1,7 @@
 """Native extension of mimiqcircuits (compiled from the Rust sources in rust/)."""
 
+__version__: str
+
 def gridsynth(theta: float, epsilon: float, seed: int = 0) -> str:
     """Clifford+T approximation of Rz(theta) up to a global phase.
 

@@ -18,8 +18,8 @@
 import numpy as np
 from typing import List, Union
 import symengine as se
+from mimiqcircuits._sympycheck import _is_sympy_matrix
 import mimiqcircuits as mc
-import sympy as sp
 from mimiqcircuits.operations.krauschannel import krauschannel
 
 
@@ -150,7 +150,7 @@ class Kraus(krauschannel):
 
     def __init__(
         self,
-        E: List[Union[se.Matrix, np.ndarray, sp.Matrix, mc.AbstractOperator]],
+        E: List[Union[se.Matrix, np.ndarray, "sympy.Matrix", mc.AbstractOperator]],
         rtol=1e-12,
     ):
         if len(E) == 0:
@@ -160,7 +160,7 @@ class Kraus(krauschannel):
         for Ek in E:
             if isinstance(Ek, mc.AbstractOperator):
                 Es.append(Ek)
-            elif isinstance(Ek, (se.Matrix, np.ndarray, sp.Matrix)):
+            elif isinstance(Ek, (se.Matrix, np.ndarray)) or _is_sympy_matrix(Ek):
                 Es.append(mc.Operator(self._convert_to_matrix(Ek)))
             else:
                 raise TypeError(f"Unsupported operator type: {type(Ek)}")
@@ -241,7 +241,7 @@ class Kraus(krauschannel):
 
     def _convert_to_matrix(self, operator):
         """Converts matrices to symengine.Matrix, stripping imaginary parts if zero."""
-        if isinstance(operator, (np.ndarray, sp.Matrix)):
+        if isinstance(operator, np.ndarray) or _is_sympy_matrix(operator):
             matrix = se.Matrix(operator.tolist())
         elif isinstance(operator, se.Matrix):
             matrix = operator

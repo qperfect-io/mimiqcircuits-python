@@ -16,7 +16,6 @@
 
 
 import numpy as np
-from scipy.linalg import svd
 import symengine as se
 from .utils import _as_numpy_numeric, _to_symengine_matrix
 
@@ -25,6 +24,7 @@ def _csd_decomposition(U, threshold=1e-6):
     """
     Perform Cosine-Sine Decomposition (CSD) on a unitary matrix U.
     """
+    from scipy.linalg import svd
 
     U = _as_numpy_numeric(U)
 

@@ -19,8 +19,8 @@ import numpy as np
 from typing import Union
 import mimiqcircuits as mc
 import symengine as se
+from mimiqcircuits._sympycheck import _is_basic
 from mimiqcircuits.operations.krauschannel import krauschannel
-import sympy as sp
 
 
 class PhaseAmplitudeDamping(krauschannel):
@@ -68,11 +68,11 @@ class PhaseAmplitudeDamping(krauschannel):
     def __init__(
         self, p: Union[float, int], gamma: Union[float, int], beta: Union[float, int]
     ):
-        if not isinstance(p, (se.Basic, sp.Basic)) and not (0 <= p <= 1):
+        if not _is_basic(p) and not (0 <= p <= 1):
             raise ValueError("Value of p must be between 0 and 1.")
-        if not isinstance(gamma, (se.Basic, sp.Basic)) and not (0 <= gamma <= 1):
+        if not _is_basic(gamma) and not (0 <= gamma <= 1):
             raise ValueError("Value of gamma must be between 0 and 1.")
-        if not isinstance(beta, (se.Basic, sp.Basic)) and not (0 <= beta <= 1):
+        if not _is_basic(beta) and not (0 <= beta <= 1):
             raise ValueError("Value of beta must be between 0 and 1.")
 
         self.p = p
@@ -197,13 +197,13 @@ class ThermalNoise(krauschannel):
         time: Union[float, int],
         ne: Union[float, int],
     ):
-        if not isinstance(T1, (se.Basic, sp.Basic)) and (T1 < 0):
+        if not _is_basic(T1) and (T1 < 0):
             raise ValueError("Value of T1 must be >= 0.")
-        if not isinstance(T2, (se.Basic, sp.Basic)) and (T2 > 2 * T1):
+        if not _is_basic(T2) and (T2 > 2 * T1):
             raise ValueError("Value of T2 must be <= 2 * T1.")
-        if not isinstance(time, (se.Basic, sp.Basic)) and (time < 0):
+        if not _is_basic(time) and (time < 0):
             raise ValueError("Value of time must be >= 0.")
-        if not isinstance(ne, (se.Basic, sp.Basic)) and not (0 <= ne <= 1):
+        if not _is_basic(ne) and not (0 <= ne <= 1):
             raise ValueError("Value of ne must be between 0 and 1.")
 
         self.T1 = T1

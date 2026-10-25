@@ -20,7 +20,6 @@ import symengine as se
 import numpy as np
 from functools import reduce
 import mimiqcircuits as mc
-import sympy as sp
 
 
 # Writing ``cis(x)`` as ``exp(I*x)`` (rather than ``cos(x) + I*sin(x)``) keeps
@@ -257,6 +256,8 @@ def symbolic_matrix_exponential(A, theta):
     """
     Use SymPy to compute symbolic matrix exponential: exp(-i * θ/2 * A)
     """
+    import sympy as sp
+
     A_sympy = sp.Matrix(A.tolist())
     expr = -sp.I * theta / 2 * A_sympy
     return se.Matrix(sp.exp(expr).tolist())

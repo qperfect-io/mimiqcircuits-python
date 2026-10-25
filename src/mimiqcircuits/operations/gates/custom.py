@@ -20,7 +20,6 @@
 import mimiqcircuits as mc
 from mimiqcircuits.operations.gates.gate import Gate
 import symengine as se
-import sympy as sp
 import numpy as np
 from mimiqcircuits.operations.decompositions.matrix_decompositions.utils import  _as_numpy_numeric
 from mimiqcircuits.operations.decompositions.matrix_decompositions.qsd import  _qsd_decomposition
@@ -193,6 +192,8 @@ class GateCustom(Gate):
     def evaluate(self, d):
         if not self.is_symbolic():
             return self
+        import sympy as sp
+
         sympy_matrix = sp.Matrix(self._U)
         matrix = sympy_matrix.applyfunc(
             lambda entry: (

@@ -20,9 +20,9 @@ from fractions import Fraction
 import math
 import numbers
 from symengine import pi
+from mimiqcircuits._sympycheck import _is_basic
 import symengine as se
 from mimiqcircuits.printutils import print_wrapped_parens
-import sympy as sp
 import numpy as np
 import mimiqcircuits as mc
 from mimiqcircuits.operations.gates.gate import Gate
@@ -95,7 +95,7 @@ def _normalize_exponent(exponent: Any) -> Any:
             symbolic or a complex value. A power must be known to build its
             matrix and to fold nested powers.
     """
-    if isinstance(exponent, (se.Basic, sp.Basic)):
+    if _is_basic(exponent):
         if exponent.free_symbols or not exponent.is_real:
             raise TypeError(f"the exponent of a power must be a real number, not {exponent}")
         exponent = float(exponent)
@@ -296,6 +296,8 @@ class Power(Gate):
             raise ValueError("Invalid number of arguments.")
 
     def _matrix(self):
+        import sympy as sp
+
         matrix = sp.Matrix(self.op.matrix().tolist())
         pow_matrix = matrix ** (self.exponent)
         return pow_matrix

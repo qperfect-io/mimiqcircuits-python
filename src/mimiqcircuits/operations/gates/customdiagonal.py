@@ -17,7 +17,6 @@
 
 import numpy as np
 import symengine as se
-import sympy as sp
 
 import mimiqcircuits as mc
 from mimiqcircuits.operations.gates.gate import Gate
@@ -178,6 +177,8 @@ class GateCustomDiagonal(Gate):
     def evaluate(self, d):
         if not self.is_symbolic():
             return self
+        import sympy as sp
+
         entries = [
             (
                 entry

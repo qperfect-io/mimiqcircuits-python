@@ -28,10 +28,9 @@ if TYPE_CHECKING:
 
 def _iszero(val) -> bool:
     """Check if a value is zero (handling symbolic expressions)."""
-    import symengine as se
-    import sympy as sp
+    from mimiqcircuits._sympycheck import _is_basic
 
-    if isinstance(val, (se.Basic, sp.Basic)):
+    if _is_basic(val):
         try:
             return complex(val) == 0
         except (TypeError, ValueError):

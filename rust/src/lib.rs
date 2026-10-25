@@ -58,6 +58,7 @@ fn py_gridsynth(py: Python<'_>, theta: f64, epsilon: f64, seed: u64) -> PyResult
 
 #[pymodule(gil_used = false)]
 fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add_function(wrap_pyfunction!(py_gridsynth, m)?)?;
     m.add_function(wrap_pyfunction!(simplify::py_simplify_circuit, m)?)?;
     m.add_function(wrap_pyfunction!(simplify::py_simplify_code_matrix, m)?)?;

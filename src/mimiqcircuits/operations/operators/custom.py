@@ -17,8 +17,8 @@
 
 import mimiqcircuits as mc
 import symengine as se
+from mimiqcircuits._sympycheck import _is_sympy_matrix
 import numpy as np
-import sympy as sp
 
 from mimiqcircuits.operations.operator import _matrix_to_ndarray
 
@@ -71,7 +71,7 @@ class Operator(mc.AbstractOperator):
 
     def __init__(self, mat):
         # Check if the input is a valid matrix type (symengine, numpy, or sympy)
-        if not isinstance(mat, (se.Matrix, np.ndarray, sp.Matrix)):
+        if not (isinstance(mat, (se.Matrix, np.ndarray)) or _is_sympy_matrix(mat)):
             raise TypeError("Must be a symengine, sympy, or numpy Matrix")
 
         # Convert any numpy or sympy matrices to symengine.Matrix
@@ -108,7 +108,7 @@ class Operator(mc.AbstractOperator):
 
     def _convert_to_symengine_matrix(self, matrix):
         """Helper function to convert numpy or sympy matrices to symengine.Matrix."""
-        if isinstance(matrix, (np.ndarray, sp.Matrix)):
+        if isinstance(matrix, np.ndarray) or _is_sympy_matrix(matrix):
             return se.Matrix(matrix.tolist())
         return matrix
 

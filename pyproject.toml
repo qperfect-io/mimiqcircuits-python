@@ -1,7 +1,7 @@
 [project]
 name = "mimiqcircuits"
 # A release bumps this, `version` in Cargo.toml, and both lock files.
-version = "0.30.0"
+version = "0.30.1"
 description = "User API for MIMIQ by QPerfect. Build quantum circuits, schedule remote simulations, and explore simulation results."
 authors = [{ name = "Guido Masella", email = "guido.masella@qperfect.io" }]
 readme = "README.md"

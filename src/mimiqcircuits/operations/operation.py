@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 import copy
 import mimiqcircuits as mc
 import symengine as se
-import sympy as sp
+from mimiqcircuits._sympycheck import _is_basic
 from mimiqcircuits.canvas import _gate_name_padding
 
 
@@ -152,7 +152,7 @@ class Operation(ABC):
         for param in self.getparams():
             if isinstance(param, (int, float, complex)):
                 continue
-            if isinstance(param, (se.Basic, sp.Basic)) and param.free_symbols:
+            if _is_basic(param) and param.free_symbols:
                 return True
         inner = getattr(self, "op", None)
         return isinstance(inner, Operation) and inner.is_symbolic()

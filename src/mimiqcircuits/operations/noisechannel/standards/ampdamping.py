@@ -20,7 +20,7 @@ from mimiqcircuits.operations.krauschannel import krauschannel
 import mimiqcircuits as mc
 import numpy as np
 import symengine as se
-import sympy as sp
+from mimiqcircuits._sympycheck import _is_basic
 
 
 class AmplitudeDamping(krauschannel):
@@ -63,7 +63,7 @@ class AmplitudeDamping(krauschannel):
     _parnames = ()
 
     def __init__(self, gamma):
-        if not isinstance(gamma, (sp.Basic, se.Basic)) and (gamma < 0 or gamma > 1):
+        if not _is_basic(gamma) and (gamma < 0 or gamma > 1):
             raise ValueError("Value of gamma must be between 0 and 1.")
         self.gamma = gamma
         self._parnames = ("gamma",)
@@ -160,10 +160,10 @@ class GeneralizedAmplitudeDamping(krauschannel):
     _parnames = ()
 
     def __init__(self, p, gamma):
-        if not isinstance(p, (sp.Basic, se.Basic)) and (p < 0 or p > 1):
+        if not _is_basic(p) and (p < 0 or p > 1):
             raise ValueError("Value of p must be between 0 and 1.")
 
-        if not isinstance(gamma, (sp.Basic, se.Basic)) and (gamma < 0 or gamma > 1):
+        if not _is_basic(gamma) and (gamma < 0 or gamma > 1):
             raise ValueError("Value of gamma must be between 0 and 1.")
 
         self.p = p

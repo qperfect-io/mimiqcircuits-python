@@ -22,9 +22,8 @@ from mimiqcircuits import numerics as _nm
 from mimiqcircuits.operations.utils import control_one_defined
 import mimiqcircuits as mc
 import numpy as np
-import sympy as sp
 import symengine as se
-from scipy.linalg import expm, logm
+from mimiqcircuits._sympycheck import _is_basic
 
 
 def _negate(x):
@@ -122,7 +121,7 @@ class GateU(mcg.Gate):
 
         def to_numeric(value):
             if (
-                isinstance(value, (se.Basic, sp.Basic))
+                _is_basic(value)
                 and value == se.pi
                 or value == se.pi
             ):
@@ -139,6 +138,8 @@ class GateU(mcg.Gate):
         matrix = numeric_gate.matrix().tolist()
 
         matrix_np = np.array(self.convert_to_numeric(matrix))
+
+        from scipy.linalg import expm, logm
 
         pow_matrix = expm(float(p) * logm(matrix_np))
 

@@ -16,7 +16,6 @@
 #
 """Remote connection and execution utilities."""
 
-import mimiqlink
 import tempfile
 import json
 import os
@@ -26,6 +25,10 @@ from mimiqcircuits.__version__ import __version__
 from mimiqcircuits.proto import WIRE_FORMAT_VERSION
 import numpy as np
 from time import sleep
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import mimiqlink
 
 # maximum number of samples allowed
 MAX_SAMPLES = 2**16
@@ -184,7 +187,7 @@ class RemoteConnection:
     This class provides common functionality for both MimiqConnection and PlanqkConnection.
     """
 
-    def __init__(self, connection: mimiqlink.AbstractConnection):
+    def __init__(self, connection: "mimiqlink.AbstractConnection"):
         """Initialize a remote connection using a specific connection type.
 
         Args:
@@ -194,6 +197,8 @@ class RemoteConnection:
 
     def __get_timelimit(self):
         """Fetch the maximum time limit for execution from the server."""
+        import mimiqlink
+
         # For MimiqConnection, get from user_limits
         if isinstance(self.connection, mimiqlink.MimiqConnection) and hasattr(
             self.connection, "user_limits"
@@ -678,6 +683,8 @@ class MimiqConnection(RemoteConnection):
                 ``QPERFECT_DEV`` as ``url``, connects to Quantum Hive, which authenticates through
                 Keycloak. Defaults to None.
         """
+        import mimiqlink
+
         if auth_url is not None or url == mimiqlink.QPERFECT_DEV:
             connection = mimiqlink.QhiveConnection(url, auth_url)
         else:
@@ -699,6 +706,8 @@ class PlanqkConnection(RemoteConnection):
             consumer_key (str, optional): The consumer key for PlanQK authentication. Defaults to None.
             consumer_secret (str, optional): The consumer secret for PlanQK authentication. Defaults to None.
         """
+        import mimiqlink
+
         connection = mimiqlink.PlanqkConnection(url, consumer_key, consumer_secret)
         super().__init__(connection)
 
