@@ -847,6 +847,64 @@ class LocalBackend(Backend):
         bound = substitute(compiled.source, params)
         return self.compile(bound)
 
+    def optimize(self, experiment, initparams=None, *, return_history=False, **kwargs):
+        """Minimize a cost read from a parametric circuit by running it on
+        this backend.
+
+        At every step the optimizer proposes values for the circuit's
+        symbols, the circuit is evaluated with them and run with
+        :meth:`execute`, and the cost is the real part of the mean of the
+        z-register ``zregister`` over the samples. Push the quantity to
+        minimize into that register, for example with
+        :meth:`~mimiqcircuits.Circuit.push_expval`.
+
+        Call it with an :class:`~mimiqcircuits.OptimizationExperiment`, a
+        list of them, or a circuit and a dict of initial values for all its
+        symbols plus the experiment's fields as keywords:
+
+        - ``optimizer``: ``"BFGS"``, ``"LBFGS"``, ``"CG"``, ``"NELDERMEAD"``,
+          ``"NEWTON"``, ``"COBYLA"`` (default) or ``"CMAES"``. All but
+          ``"CMAES"`` come from :func:`scipy.optimize.minimize`; ``"CMAES"``
+          needs the ``cmaes`` extra (``pip install 'mimiqcircuits[cmaes]'``).
+        - ``maxiters``: iteration limit, or ``None`` for the optimizer's own.
+        - ``zregister``: index of the z-register holding the cost (default 0).
+        - ``label``: a name for the experiment.
+
+        With an experiment these come from it, and passing them again is an
+        error. ``return_history=True`` also keeps every evaluated point.
+        Every other keyword goes to :meth:`execute` on each evaluation:
+        ``nsamples``, ``seed``, ``fuse``, ``passes`` and so on. With a fixed
+        ``seed`` every evaluation draws the same random numbers, so a noisy
+        cost does not jump between otherwise equal points.
+
+        Returns an :class:`~mimiqcircuits.OptimizationResults` with the
+        lowest-cost :class:`~mimiqcircuits.OptimizationRun` and, with
+        ``return_history=True``, every evaluated run in order. A list of
+        experiments returns a list of results in the same order.
+
+        Raises :class:`ValueError` for an unknown optimizer or a
+        ``zregister`` the circuit does not have.
+
+        Example:
+            .. code-block:: python
+
+                from symengine import symbols
+                import mimiqcircuits as mc
+
+                theta = symbols("theta")
+                c = mc.Circuit().push(mc.GateRY(theta), 0)
+                # The cost is <Z> on qubit 0, written to z-register 0.
+                c.push(mc.ExpectationValue(mc.GateZ()), 0, 0)
+
+                res = backend.optimize(c, {theta: 0.1}, optimizer="NELDERMEAD",
+                                       nsamples=1, seed=1)
+                res.get_best().cost  # close to -1, reached at theta = pi
+        """
+        from mimiqcircuits.backends.optimize import optimize
+
+        return optimize(self, experiment, initparams,
+                        return_history=return_history, **kwargs)
+
     def compile_progress(self, circuit, progress):
         """Compile ``circuit`` while optionally emitting a compression
         stage. The default ignores ``progress`` and defers to

@@ -404,6 +404,19 @@ wheels = [
 ]
 
 [[package]]
+name = "cma"
+version = "4.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/86/d7/c92532c0a2922aacb3b7e0cf0fde5d2ba3f67c30692c8f9c4c35b9b42b68/cma-4.5.0.tar.gz", hash = "sha256:5e6774388d4a3798116bf9aff7684cf44d59f966d868f375e61811f74e132934", size = 335637, upload-time = "2026-09-13T21:49:14.757Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7a/c2/859dcb6fc39476c78fde66005883edaab09f3fc561fa52a3b9d4cc036937/cma-4.5.0-py3-none-any.whl", hash = "sha256:9b37fa8bd541f1f4cf8e2cc4f98e6f02ec89d6d39ded8ec8a90d4f44c88c62c8", size = 347222, upload-time = "2026-09-13T21:49:13.51Z" },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -1550,7 +1563,7 @@ wheels = [
 
 [[package]]
 name = "mimiqcircuits"
-version = "0.30.1"
+version = "0.31.0"
 source = { editable = "." }
 dependencies = [
     { name = "bitarray" },
@@ -1566,6 +1579,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+cmaes = [
+    { name = "cma" },
+]
 graph = [
     { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -1599,8 +1615,9 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "bitarray", specifier = ">=3.10,<4" },
+    { name = "cma", marker = "extra == 'cmaes'", specifier = ">=4.4,<5" },
     { name = "matplotlib", marker = "extra == 'visualization'", specifier = ">=3.8,<4" },
-    { name = "mimiqlink", specifier = ">=0.9,<0.10" },
+    { name = "mimiqlink", specifier = ">=0.10,<0.11" },
     { name = "networkx", marker = "extra == 'graph'", specifier = ">=3,<4" },
     { name = "numpy", specifier = ">=1.26,<3.0" },
     { name = "protobuf", specifier = ">=6.33,<7" },
@@ -1609,7 +1626,7 @@ requires-dist = [
     { name = "sympy", specifier = ">=1.12,<2" },
     { name = "tqdm", specifier = ">=4.66,<5" },
 ]
-provides-extras = ["visualization", "graph"]
+provides-extras = ["visualization", "graph", "cmaes"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -1635,16 +1652,16 @@ docs = [
 
 [[package]]
 name = "mimiqlink"
-version = "0.9.0"
+version = "0.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-keycloak" },
     { name = "requests" },
     { name = "tabulate" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fc/e2/3e54faeedf9f525a74d40aa3795b12c8d186b3c32286a30e0a5dab9aabea/mimiqlink-0.9.0.tar.gz", hash = "sha256:6146969483e08742429c43fedc204700ad2607c3d0881aa652cbfaf37604eaf7", size = 83722, upload-time = "2026-09-11T09:56:11.818Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/75/70/127695130b60829033d69cd14e1b95d15e4baae33b15d0254f3766c2958d/mimiqlink-0.10.0.tar.gz", hash = "sha256:9d1c285ca43d5faf49639c9807422f66443233dc958fef265a3aeca2caee375b", size = 84105, upload-time = "2026-10-31T21:27:21.541Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/8f/13382891a9cdd72ea0ee15bd7fa15e6047525e42ce18410edfdf72dbfa7a/mimiqlink-0.9.0-py3-none-any.whl", hash = "sha256:cf8970e86e6fd448c3d196464c34efc34cb742a5f012a4726b7de1eabd46f1fb", size = 89440, upload-time = "2026-09-11T09:56:12.825Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/05/f429cd2961240d9c82cfe674fda7990e81a68321265bc4917b6c7c3e4961/mimiqlink-0.10.0-py3-none-any.whl", hash = "sha256:612cc44c36b2c82dab2dd2894c370d15e3b2e16f38da7cbbfd7da58070287f5d", size = 89841, upload-time = "2026-10-31T21:27:22.726Z" },
 ]
 
 [[package]]

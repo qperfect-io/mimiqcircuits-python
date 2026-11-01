@@ -679,13 +679,15 @@ class MimiqConnection(RemoteConnection):
 
         Args:
             url (str, optional): The URL of the Mimiq server. Defaults to None (using default cloud URL).
-            auth_url (str, optional): The URL of the authentication server. Giving one, or giving
-                ``QPERFECT_DEV`` as ``url``, connects to Quantum Hive, which authenticates through
-                Keycloak. Defaults to None.
+            auth_url (str, optional): The URL of the authentication server. Giving one, or
+                giving ``QPERFECT_CLOUD_V2`` or ``QPERFECT_DEV`` as ``url``, connects to Quantum
+                Hive, which authenticates through Keycloak. The known URLs pick their own
+                authentication server, so ``auth_url`` is only needed for other deployments.
+                Defaults to None.
         """
         import mimiqlink
 
-        if auth_url is not None or url == mimiqlink.QPERFECT_DEV:
+        if auth_url is not None or url in (mimiqlink.QPERFECT_CLOUD_V2, mimiqlink.QPERFECT_DEV):
             connection = mimiqlink.QhiveConnection(url, auth_url)
         else:
             connection = mimiqlink.MimiqConnection(url)

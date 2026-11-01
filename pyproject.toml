@@ -1,14 +1,14 @@
 [project]
 name = "mimiqcircuits"
 # A release bumps this, `version` in Cargo.toml, and both lock files.
-version = "0.30.1"
+version = "0.31.0"
 description = "User API for MIMIQ by QPerfect. Build quantum circuits, schedule remote simulations, and explore simulation results."
 authors = [{ name = "Guido Masella", email = "guido.masella@qperfect.io" }]
 readme = "README.md"
 requires-python = ">=3.10,<4"
 dependencies = [
     "numpy (>=1.26,<3.0)",
-    "mimiqlink (>=0.9,<0.10)",
+    "mimiqlink (>=0.10,<0.11)",
     "bitarray (>=3.10,<4)",
     "symengine (>=0.14.1,<0.15)",
     "sympy (>=1.12,<2)",
@@ -25,6 +25,7 @@ Repository = "https://github.com/qperfect-io/mimiqcircuits-python"
 [project.optional-dependencies]
 visualization = ["matplotlib (>=3.8,<4)"]
 graph = ["networkx (>=3,<4)"]
+cmaes = ["cma (>=4.4,<5)"]
 
 [build-system]
 requires = ["maturin>=1.7,<2"]

@@ -233,6 +233,10 @@ class _MimiqJob:
             self._request_id, interval=self._interval
         )
         for r in results:
+            # Optimization jobs return OptimizationResults, which carry no
+            # fidelities of their own.
+            if not hasattr(r, "fidelities"):
+                continue
             sim_id = getattr(r, "simulator", "") or ""
             r.fidelities = [
                 _wrap_fidelity_by_simulator(sim_id, v)
@@ -605,6 +609,55 @@ class MimiqRemoteBackend(RemoteBackend):
         if not isinstance(circuit, list) and len(results) == 1:
             return results[0]
         return results
+
+    def optimize(
+        self,
+        experiment,
+        initparams=None,
+        *,
+        return_history: bool = False,
+        seed: Optional[int] = None,
+        rng=None,
+        **kwargs,
+    ):
+        """Run optimization experiments on the cloud and wait for the results.
+
+        Takes the same arguments as :meth:`LocalBackend.optimize`: an
+        :class:`~mimiqcircuits.OptimizationExperiment`, a list of them, or a
+        circuit with its initial parameters and the experiment fields
+        (``optimizer``, ``maxiters``, ``zregister``, ``label``) as keywords.
+        The server runs the optimizer with the backend's ``algorithm``.
+
+        The other keywords go to the connection's ``optimize``: ``nsamples``,
+        ``timelimit``, ``bonddim``, ``entdim``, ``mpscutoff``, ``fuse``,
+        ``reorderqubits``, ``reorderqubits_seed``, ``canonicaldecompose``,
+        ``remove_swaps``. ``seed`` and ``rng`` are mutually exclusive.
+
+        Returns an :class:`~mimiqcircuits.OptimizationResults`, or a list of
+        them for a list of experiments. A list with more than one experiment
+        needs ``algorithm="mps"`` or ``"statevector"``; with ``"auto"`` it
+        raises :class:`ValueError`.
+        """
+        from mimiqcircuits.backends.optimize import as_experiments
+
+        if not callable(getattr(self._connection, "optimize", None)):
+            raise TypeError(
+                f"{type(self._connection).__name__} cannot run optimization "
+                "jobs: it has no optimize(...) method"
+            )
+        experiments, single = as_experiments(experiment, initparams, kwargs)
+        request_id = self._connection.optimize(
+            experiments,
+            label=self.label or "pyapi_remote_backend",
+            algorithm=self.algorithm,
+            history=return_history,
+            seed=normalize_seed(None, self._resolve_rngs(seed, rng)),
+            **kwargs,
+        )
+        results = _MimiqJob(
+            self._connection, request_id, interval=self.poll_interval
+        ).wait()
+        return results[0] if single else results
 
     def __repr__(self) -> str:
         return (

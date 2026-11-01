@@ -11,7 +11,7 @@ variables:
   # Pin mimiqlink-python to a specific commit so CI does not break when its
   # default branch advances ahead of the next tagged release.
   # Use scripts/bump-mimiqlink.sh to update.
-  MIMIQLINK_REF: "b8f8c415ac9b7b39424ad02555272f34eaead9dd"
+  MIMIQLINK_REF: "95dcf78426ed9902a8f85a235c92f19a02dc2225"
   # Keep the Rust toolchain and the cargo registry inside the project so the
   # cache below can carry them between jobs.
   CARGO_HOME: "$CI_PROJECT_DIR/.cargo"

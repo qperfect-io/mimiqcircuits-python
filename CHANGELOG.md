@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-11-01
+
+### Added
+- `QPERFECT_CLOUD_V2`, the URL of the Quantum Hive production deployment, is exported from `mimiqcircuits`.
+- `LocalBackend.optimize(experiment)` and `LocalBackend.optimize(circuit, initparams, optimizer=..., maxiters=..., zregister=...)` run an `OptimizationExperiment` on a local backend and return `OptimizationResults`, matching `optimize(qcs, ...)` in AbstractQCSs.jl. Every other keyword goes to `execute`; `return_history=True` keeps every evaluated point.
+- The `BFGS`, `LBFGS`, `CG`, `NELDERMEAD`, `NEWTON` and `COBYLA` optimizers come from scipy. `CMAES` needs the new `cmaes` extra: `pip install 'mimiqcircuits[cmaes]'`.
+- `MimiqRemoteBackend.optimize` takes the same arguments as `LocalBackend.optimize`, runs the experiments on the cloud with the backend's `algorithm` and label, and waits for the `OptimizationResults`. Both accept a list of experiments and return a list of results.
+
+### Changed
+- `MimiqConnection(url=QPERFECT_CLOUD_V2)` and `MimiqConnection(url=QPERFECT_DEV)` connect to Quantum Hive with the matching authentication server, so `auth_url` is only needed for other deployments. Requires `mimiqlink` 0.10.
+
 ## [0.30.1] - 2026-10-26
 
 ### Changed

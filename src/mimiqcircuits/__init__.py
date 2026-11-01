@@ -391,7 +391,7 @@ attach_inheritance_tree_to_docstring(
 # mimiqlink pulls in the whole HTTP and authentication stack, so its URL
 # constants are resolved on first access instead of at import time.
 def __getattr__(name):
-    if name in ("QPERFECT_CLOUD", "QPERFECT_DEV", "PLANQK_API"):
+    if name in ("QPERFECT_CLOUD", "QPERFECT_CLOUD_V2", "QPERFECT_DEV", "PLANQK_API"):
         import mimiqlink
 
         return getattr(mimiqlink, name)
@@ -544,6 +544,7 @@ __all__ = [
     "Kraus",
     "MixedUnitary",
     "QPERFECT_CLOUD",
+    "QPERFECT_CLOUD_V2",
     "QPERFECT_DEV",
     "PLANQK_API",
     "Amplitude",

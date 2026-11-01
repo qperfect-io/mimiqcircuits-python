@@ -28,6 +28,8 @@ from typing import Optional
 
 import pytest
 
+import mimiqcircuits as mc
+
 from mimiqcircuits import Circuit, GateCX, GateH, Measure
 from mimiqcircuits.backends import (
     AbstractPass,
@@ -672,3 +674,103 @@ def test_connection_validates_prep_flags():
         conn.submit(_bell_circuit(), fuse=0)
     with pytest.raises(TypeError, match="reorderqubits_seed"):
         conn.submit(_bell_circuit(), reorderqubits_seed=1.5)
+
+
+# ── optimize ────────────────────────────────────────────────────────────────
+
+
+class _FakeOptimizeConnection(_FakeRemoteConnection):
+    """Adds the ``optimize`` entry point; results are OptimizationResults."""
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.last_optimize_args: tuple = ()
+        self.last_optimize_kwargs: dict = {}
+
+    def optimize(self, experiments, **kwargs) -> str:
+        self.last_optimize_args = (experiments,)
+        self.last_optimize_kwargs = dict(kwargs)
+        self._n_results = len(experiments)
+        return "req-opt"
+
+    def _make_result(self):
+        from mimiqcircuits import OptimizationResults
+
+        return OptimizationResults()
+
+
+def _opt_circuit():
+    import mimiqcircuits as mc
+    from symengine import symbols
+
+    x = symbols("x")
+    c = Circuit().push(GateH(), 0)
+    c.push(mc.GateRX(x), 0)
+    c.push(mc.ExpectationValue(mc.GateZ()), 0, 0)
+    return c, x
+
+
+def test_optimize_submits_experiment_and_returns_results():
+    from mimiqcircuits import OptimizationExperiment, OptimizationResults
+
+    conn = _FakeOptimizeConnection()
+    backend = MimiqRemoteBackend(conn, algorithm="mps", label="test")
+    c, x = _opt_circuit()
+
+    res = backend.optimize(c, {x: 0.1}, optimizer="BFGS", maxiters=7,
+                           return_history=True, seed=3, nsamples=50, bonddim=32)
+
+    assert isinstance(res, OptimizationResults)
+    (experiments,) = conn.last_optimize_args
+    assert len(experiments) == 1
+    ex = experiments[0]
+    assert isinstance(ex, OptimizationExperiment)
+    assert (ex.optimizer, ex.maxiters) == ("BFGS", 7)
+    kw = conn.last_optimize_kwargs
+    assert kw["algorithm"] == "mps"
+    assert kw["label"] == "test"
+    assert kw["history"] is True
+    assert kw["nsamples"] == 50
+    assert kw["bonddim"] == 32
+    assert isinstance(kw["seed"], int)
+
+
+def test_optimize_list_returns_list():
+    from mimiqcircuits import OptimizationExperiment
+
+    conn = _FakeOptimizeConnection()
+    backend = MimiqRemoteBackend(conn, algorithm="mps")
+    c, x = _opt_circuit()
+    exs = [OptimizationExperiment(c, {x: v}) for v in (0.1, 0.2)]
+
+    res = backend.optimize(exs)
+    assert isinstance(res, list) and len(res) == 2
+    assert conn.last_optimize_args == (exs,)
+
+
+def test_optimize_same_seed_same_wire_seed():
+    conn = _FakeOptimizeConnection()
+    backend = MimiqRemoteBackend(conn, algorithm="mps")
+    c, x = _opt_circuit()
+    backend.optimize(c, {x: 0.1}, seed=11)
+    first = conn.last_optimize_kwargs["seed"]
+    backend.optimize(c, {x: 0.1}, seed=11)
+    assert conn.last_optimize_kwargs["seed"] == first
+
+
+def test_optimize_needs_connection_with_optimize(fake_conn):
+    backend = MimiqRemoteBackend(fake_conn, algorithm="mps")
+    c, x = _opt_circuit()
+    with pytest.raises(TypeError, match="optimize"):
+        backend.optimize(c, {x: 0.1})
+
+
+def test_known_qhive_urls_pick_their_auth_server():
+    import mimiqlink
+
+    v2 = mc.MimiqConnection(mc.QPERFECT_CLOUD_V2).connection
+    assert isinstance(v2, mimiqlink.QhiveConnection)
+    assert v2.auth_url == "https://mimiq.qperfect.io/auth/"
+    dev = mc.MimiqConnection(mc.QPERFECT_DEV).connection
+    assert dev.auth_url == "https://mimiqfast.qperfect.io/auth/"
+    assert isinstance(mc.MimiqConnection().connection, mimiqlink.MimiqConnection)
