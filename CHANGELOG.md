@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.31.1] - 2026-11-01
+
+### Build
+- The development lock file is refreshed to current dependency versions, picking up security fixes in pillow, tornado, urllib3, cryptography, protobuf and others.
+- The `pytest` dev dependency now accepts version 9.
+
 ## [0.31.0] - 2026-11-01
 
 ### Added
