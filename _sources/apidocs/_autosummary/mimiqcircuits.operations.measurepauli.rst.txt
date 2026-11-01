@@ -1,0 +1,12 @@
+mimiqcircuits.operations.measurepauli
+=====================================
+
+.. automodule:: mimiqcircuits.operations.measurepauli
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MeasurePauli
+   

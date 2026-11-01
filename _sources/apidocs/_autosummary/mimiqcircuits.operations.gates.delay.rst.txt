@@ -1,0 +1,12 @@
+mimiqcircuits.operations.gates.delay
+====================================
+
+.. automodule:: mimiqcircuits.operations.gates.delay
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Delay
+   

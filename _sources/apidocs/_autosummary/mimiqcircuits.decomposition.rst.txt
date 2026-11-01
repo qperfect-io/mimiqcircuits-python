@@ -1,0 +1,16 @@
+﻿mimiqcircuits.decomposition
+===========================
+
+.. automodule:: mimiqcircuits.decomposition
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   abstract
+   basis
+   decompose
+   rules

@@ -1,0 +1,26 @@
+﻿mimiqcircuits.lossmodel
+=======================
+
+.. automodule:: mimiqcircuits.lossmodel
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      lossmodel_rewrite
+      lower_losses
+      resolve_losses
+      sample_loss_scenario
+      sample_losses
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomRule
+      DecorateRule
+      DropRule
+      LossModel
+      ReplaceRule
+   

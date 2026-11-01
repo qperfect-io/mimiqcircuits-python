@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.rules.special\_angle
+================================================
+
+.. automodule:: mimiqcircuits.decomposition.rules.special_angle
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SpecialAngleRewrite
+   

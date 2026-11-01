@@ -1,0 +1,13 @@
+mimiqcircuits.backends.optimize
+===============================
+
+.. automodule:: mimiqcircuits.backends.optimize
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      as_experiments
+      optimize
+   

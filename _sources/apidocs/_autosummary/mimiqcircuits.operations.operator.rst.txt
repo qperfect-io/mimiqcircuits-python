@@ -1,0 +1,18 @@
+mimiqcircuits.operations.operator
+=================================
+
+.. automodule:: mimiqcircuits.operations.operator
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AbstractOperator
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      UnexpectedSymbolics
+   

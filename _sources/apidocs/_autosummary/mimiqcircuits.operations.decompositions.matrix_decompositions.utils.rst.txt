@@ -1,0 +1,6 @@
+mimiqcircuits.operations.decompositions.matrix\_decompositions.utils
+====================================================================
+
+.. automodule:: mimiqcircuits.operations.decompositions.matrix_decompositions.utils
+
+   

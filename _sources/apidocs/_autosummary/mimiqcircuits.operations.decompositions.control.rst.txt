@@ -1,0 +1,14 @@
+mimiqcircuits.operations.decompositions.control
+===============================================
+
+.. automodule:: mimiqcircuits.operations.decompositions.control
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      control_decompose
+      control_recursive_decompose
+      cx_decompose
+   

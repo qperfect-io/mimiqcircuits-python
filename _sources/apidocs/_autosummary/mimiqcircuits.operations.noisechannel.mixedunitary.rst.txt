@@ -1,0 +1,12 @@
+mimiqcircuits.operations.noisechannel.mixedunitary
+==================================================
+
+.. automodule:: mimiqcircuits.operations.noisechannel.mixedunitary
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MixedUnitary
+   

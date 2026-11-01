@@ -1,0 +1,6 @@
+mimiqcircuits.decomposition.decompose
+=====================================
+
+.. currentmodule:: mimiqcircuits.decomposition
+
+.. autofunction:: decompose

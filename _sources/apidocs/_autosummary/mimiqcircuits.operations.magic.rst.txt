@@ -1,0 +1,13 @@
+mimiqcircuits.operations.magic
+==============================
+
+.. automodule:: mimiqcircuits.operations.magic
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PrepareMagic
+      PrepareStateT
+   

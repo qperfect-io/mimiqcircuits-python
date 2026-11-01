@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.rules.canonical
+===========================================
+
+.. automodule:: mimiqcircuits.decomposition.rules.canonical
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CanonicalRewrite
+   

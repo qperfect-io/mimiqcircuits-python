@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.basis.rule\_basis
+=============================================
+
+.. automodule:: mimiqcircuits.decomposition.basis.rule_basis
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RuleBasis
+   

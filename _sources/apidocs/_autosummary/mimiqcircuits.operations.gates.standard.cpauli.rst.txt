@@ -1,0 +1,14 @@
+mimiqcircuits.operations.gates.standard.cpauli
+==============================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.cpauli
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateCX
+      GateCY
+      GateCZ
+   

@@ -1,0 +1,6 @@
+mimiqcircuits.operations.decompositions.matrix\_decompositions.qsd
+==================================================================
+
+.. automodule:: mimiqcircuits.operations.decompositions.matrix_decompositions.qsd
+
+   

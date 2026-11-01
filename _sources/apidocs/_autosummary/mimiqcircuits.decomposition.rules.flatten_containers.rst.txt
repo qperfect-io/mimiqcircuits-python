@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.rules.flatten\_containers
+=====================================================
+
+.. automodule:: mimiqcircuits.decomposition.rules.flatten_containers
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FlattenContainers
+   
