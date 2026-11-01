@@ -2,7 +2,7 @@ from mimiqcircuits import *
 import pytest
 
 
-def test_circuittester_basic_repr():
+def test_equivalence_basic_repr():
     c1 = Circuit()
     c1.push(Control(3, GateX()), *range(0, 4))
 
@@ -16,7 +16,7 @@ def test_circuittester_basic_repr():
     assert c2.num_qubits() == 5
 
     # Create the experiment
-    ex = CircuitTesterExperiment(c1, c2)
+    ex = EquivalenceExperiment(c1, c2)
 
     # Build the circuit
     tester = ex.build_circuit()
@@ -28,7 +28,7 @@ def test_circuittester_basic_repr():
 def test_interpret_results():
     c1 = Circuit()
     c2 = Circuit()
-    ex = CircuitTesterExperiment(c1, c2)
+    ex = EquivalenceExperiment(c1, c2)
 
     # Mock results with histogram method
     class MockResults:
@@ -50,7 +50,7 @@ def test_interpret_results():
     # Non-empty circuits
     c1 = Circuit().push(GateX(), 0)
     c2 = Circuit().push(GateX(), 0)
-    ex = CircuitTesterExperiment(c1, c2)
+    ex = EquivalenceExperiment(c1, c2)
 
     # Perfect
     res_perfect = MockResults({BitString("00"): 100})
@@ -69,7 +69,7 @@ def test_interpret_results_amplitudes():
     c1 = Circuit().push(GateX(), 0)
     c2 = Circuit().push(GateX(), 0)
 
-    ex = CircuitTesterExperiment(c1, c2, method="amplitudes")
+    ex = EquivalenceExperiment(c1, c2, method="amplitudes")
 
     # Verify build_circuit uses Amplitude
     built_c = ex.build_circuit()
@@ -102,7 +102,7 @@ def test_interpret_results_uses_a_real_qcsresults_histogram():
     # happens to use. A real QCSResults cannot: its histogram is keyed by
     # whatever is in `cstates`, which is always a BitString.
     c = Circuit().push(GateX(), 0)
-    ex = CircuitTesterExperiment(c, c)
+    ex = EquivalenceExperiment(c, c)
 
     def results(cstates):
         return QCSResults(
@@ -117,3 +117,10 @@ def test_interpret_results_uses_a_real_qcsresults_histogram():
         == 0.5
     )
     assert ex.interpret_results(results([BitString("11")] * 100)) == 0.0
+
+
+def test_circuittester_is_deprecated_alias():
+    c = Circuit().push(GateX(), 0)
+    with pytest.warns(DeprecationWarning, match="EquivalenceExperiment"):
+        ex = CircuitTesterExperiment(c, c)
+    assert isinstance(ex, EquivalenceExperiment)

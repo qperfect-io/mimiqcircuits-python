@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.31.2] - 2026-11-01
+
+### Changed
+- `CircuitTesterExperiment` is renamed `EquivalenceExperiment`, after what it checks. Its methods and arguments are unchanged, and it lives in `mimiqcircuits.equivalence`.
+
+### Deprecated
+- `CircuitTesterExperiment` still works as an alias of `EquivalenceExperiment`, with a deprecation warning, and will be removed in a future release.
+
+### Docs
+- The "Circuit Tester" use case is now "Circuit Equivalence", at `usecases/equivalence`.
+
 ## [0.31.1] - 2026-11-01
 
 ### Build

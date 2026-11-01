@@ -14,14 +14,16 @@
 # limitations under the License.
 #
 """
-Circuit tester experiment to check equivalence between two circuits.
+Experiment to check equivalence between two circuits.
 """
+
+import warnings
 
 from mimiqcircuits import Circuit, GateH, GateCX, Measure, inverse
 from mimiqcircuits import BitString
 
 
-class CircuitTesterExperiment:
+class EquivalenceExperiment:
     r"""
     Represents a circuit equivalence checking experiment.
 
@@ -39,7 +41,7 @@ class CircuitTesterExperiment:
         >>> from mimiqcircuits import *
         >>> c1 = Circuit().push(GateX(), 0)
         >>> c2 = Circuit().push(GateX(), 0)
-        >>> exp = CircuitTesterExperiment(c1, c2, method="samples")
+        >>> exp = EquivalenceExperiment(c1, c2, method="samples")
         >>> # To execute: conn.execute(exp)
     """
 
@@ -97,7 +99,7 @@ class CircuitTesterExperiment:
 
     def interpret_results(self, results):
         """
-        Verifies the results of the circuit tester experiment. Returns the probability of the all-zero state.
+        Verifies the results of the equivalence experiment. Returns the probability of the all-zero state.
 
         Args:
             results (QCSResults): Results from the execution.
@@ -150,3 +152,15 @@ class CircuitTesterExperiment:
         s += f"│   └── b: {self.c2._header()}\n"
         s += f"└── compare {self.method}"
         return s
+
+
+class CircuitTesterExperiment(EquivalenceExperiment):
+    """Deprecated alias of :class:`EquivalenceExperiment`."""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "CircuitTesterExperiment is deprecated, use EquivalenceExperiment",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(*args, **kwargs)

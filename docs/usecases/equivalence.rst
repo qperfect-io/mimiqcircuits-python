@@ -29,7 +29,7 @@ Choi-State Analysis (Implemented in MIMIQ)
 
 The **Choi–Jamiołkowski isomorphism** allows representing a quantum channel (or unitary) as a quantum state. This method enables exact verification using :math:`2n` qubits for an :math:`n`-qubit unitary.
 
-**MIMIQ Circuits implements this method** via the :class:`~mimiqcircuits.CircuitTesterExperiment` class.
+**MIMIQ Circuits implements this method** via the :class:`~mimiqcircuits.EquivalenceExperiment` class.
 
 The procedure involves:
 
@@ -71,7 +71,7 @@ The construction of the Choi state :math:`(U \otimes I)|\Phi^+\rangle` follows t
 Usage Guide
 -----------
 
-MIMIQ provides a built-in workflow for equivalence checking using the :class:`~mimiqcircuits.CircuitTesterExperiment`.
+MIMIQ provides a built-in workflow for equivalence checking using the :class:`~mimiqcircuits.EquivalenceExperiment`.
 
 **1. Define the circuits**
 
@@ -100,7 +100,7 @@ Define the two circuits you wish to compare. They can be identical or structural
 
 **2. Create the Experiment**
 
-Instantiate a :class:`~mimiqcircuits.CircuitTesterExperiment` with the two circuits.
+Instantiate a :class:`~mimiqcircuits.EquivalenceExperiment` with the two circuits.
 
 You can choose between two verification methods by setting the ``method`` parameter:
 
@@ -109,13 +109,13 @@ You can choose between two verification methods by setting the ``method`` parame
 
 .. code-block:: python
 
-    from mimiqcircuits import CircuitTesterExperiment
+    from mimiqcircuits import EquivalenceExperiment
 
     # Default method="samples"
-    exp = CircuitTesterExperiment(c1, c2)
+    exp = EquivalenceExperiment(c1, c2)
 
     # Alternative: use method="amplitudes"
-    exp_amp = CircuitTesterExperiment(c1, c2, method="amplitudes")
+    exp_amp = EquivalenceExperiment(c1, c2, method="amplitudes")
 
 **3. Run the Equivalence Check**
 

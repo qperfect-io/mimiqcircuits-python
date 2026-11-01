@@ -12,8 +12,8 @@ Explore specific examples and workflows for using MimiqCircuits.
 
         Variational Quantum Eigensolver example.
 
-    .. grid-item-card:: :octicon:`check-circle` Circuit Tester
-        :link: circuit_tester
+    .. grid-item-card:: :octicon:`check-circle` Circuit Equivalence
+        :link: equivalence
         :link-type: doc
 
         Methodologies for automating equivalence testing.
@@ -70,7 +70,7 @@ Explore specific examples and workflows for using MimiqCircuits.
     :hidden:
 
     vqe
-    circuit_tester
+    equivalence
     demos/QFT/qft
     demos/Grover/grover
     demos/KPZ/kpz

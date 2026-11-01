@@ -287,9 +287,9 @@ class RemoteConnection:
             TypeError: If the circuits argument is not a Circuit object or a valid file path,
                        or a preparation flag has the wrong type.
         """
-        from mimiqcircuits.circuittester import CircuitTesterExperiment
+        from mimiqcircuits.equivalence import EquivalenceExperiment
 
-        if isinstance(circuits, CircuitTesterExperiment):
+        if isinstance(circuits, EquivalenceExperiment):
             c = circuits.build_circuit()
             return self.submit(
                 c,
@@ -594,11 +594,11 @@ class RemoteConnection:
         **kwargs,
     ):
         """
-        Executes a CircuitTesterExperiment and verifies the results.
+        Executes an EquivalenceExperiment and verifies the results.
         Blocks until execution is complete.
 
         Args:
-            experiment (CircuitTesterExperiment): The experiment to run.
+            experiment (EquivalenceExperiment): The experiment to run.
             **kwargs: Arguments passed to execute.
 
         Returns:

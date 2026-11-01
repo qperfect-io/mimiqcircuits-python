@@ -242,7 +242,7 @@ from mimiqcircuits.optimization import (
     OptimizationResults,
     OptimizationRun,
 )
-from mimiqcircuits.circuittester import CircuitTesterExperiment
+from mimiqcircuits.equivalence import EquivalenceExperiment, CircuitTesterExperiment
 from mimiqcircuits.sweep import ParameterTable, gridtable, SweepExperiment
 
 from mimiqcircuits.get import get_results, get_input, get_inputs, get_result
@@ -589,6 +589,7 @@ __all__ = [
     "OptimizationExperiment",
     "OptimizationResults",
     "OptimizationRun",
+    "EquivalenceExperiment",
     "CircuitTesterExperiment",
     "ParameterTable",
     "gridtable",
