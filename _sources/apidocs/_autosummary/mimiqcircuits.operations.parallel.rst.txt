@@ -1,0 +1,18 @@
+mimiqcircuits.operations.parallel
+=================================
+
+.. automodule:: mimiqcircuits.operations.parallel
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      to_superscript
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Parallel
+   

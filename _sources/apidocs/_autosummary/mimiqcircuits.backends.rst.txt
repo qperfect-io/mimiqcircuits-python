@@ -1,0 +1,24 @@
+﻿mimiqcircuits.backends
+======================
+
+.. automodule:: mimiqcircuits.backends
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   backend
+   capabilities
+   compiled
+   compiled_projection
+   concrete_passes
+   fidelity
+   measure_analysis
+   optimize
+   passes
+   progress
+   remote
+   stochastic_kind

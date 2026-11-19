@@ -1,0 +1,21 @@
+mimiqcircuits.qasm.exceptions
+=============================
+
+.. automodule:: mimiqcircuits.qasm.exceptions
+
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      DuplicateRegisterError
+      ParseError
+      QASMArgumentError
+      QASMError
+      QASMSerializationError
+      QASMStructureError
+      QASMVersionError
+      TokenError
+      UndefinedGateError
+      UndefinedRegisterError
+   

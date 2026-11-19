@@ -1,0 +1,51 @@
+mimiqcircuits.qasm.parser
+=========================
+
+.. automodule:: mimiqcircuits.qasm.parser
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      parse_arg
+      parse_arglist
+      parse_barrier
+      parse_decl
+      parse_expr
+      parse_expr_atom
+      parse_expr_factor
+      parse_expr_power
+      parse_expr_product
+      parse_expr_sum
+      parse_exprlist
+      parse_exprlist_paren
+      parse_gatecall
+      parse_gatedecl
+      parse_goplist
+      parse_id
+      parse_idlist
+      parse_idlist_paren
+      parse_if
+      parse_include
+      parse_integer_value
+      parse_measure
+      parse_opaquedecl
+      parse_program
+      parse_qop
+      parse_real_value
+      parse_reset
+      parse_statement
+      parse_unaryop
+      parse_unsigned_value
+      parse_uop
+      parse_version
+      parseopenqasm
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ParserState
+      QASMExpr
+   

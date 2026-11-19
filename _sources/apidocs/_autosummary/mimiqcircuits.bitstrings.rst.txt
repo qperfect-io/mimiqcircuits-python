@@ -1,0 +1,18 @@
+﻿mimiqcircuits.bitstrings
+========================
+
+.. automodule:: mimiqcircuits.bitstrings
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      bitvec_to_int
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BitString
+   

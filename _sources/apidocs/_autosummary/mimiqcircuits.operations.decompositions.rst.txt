@@ -1,0 +1,14 @@
+mimiqcircuits.operations.decompositions
+=======================================
+
+.. automodule:: mimiqcircuits.operations.decompositions
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   control
+   matrix_decompositions

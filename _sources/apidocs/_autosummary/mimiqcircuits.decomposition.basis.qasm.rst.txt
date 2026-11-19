@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.basis.qasm
+======================================
+
+.. automodule:: mimiqcircuits.decomposition.basis.qasm
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      QASMBasis
+   

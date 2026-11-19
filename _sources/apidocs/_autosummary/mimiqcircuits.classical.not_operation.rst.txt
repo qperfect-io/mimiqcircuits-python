@@ -1,0 +1,12 @@
+mimiqcircuits.classical.not\_operation
+======================================
+
+.. automodule:: mimiqcircuits.classical.not_operation
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Not
+   

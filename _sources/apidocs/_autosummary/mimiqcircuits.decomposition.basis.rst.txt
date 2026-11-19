@@ -1,0 +1,18 @@
+mimiqcircuits.decomposition.basis
+=================================
+
+.. automodule:: mimiqcircuits.decomposition.basis
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   canonical
+   clifford_t
+   flattened
+   qasm
+   rule_basis
+   stim

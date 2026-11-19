@@ -1,0 +1,18 @@
+﻿mimiqcircuits.fusion
+====================
+
+.. automodule:: mimiqcircuits.fusion
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      fuse_circuit
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FusePass
+   

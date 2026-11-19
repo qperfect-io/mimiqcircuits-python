@@ -1,0 +1,12 @@
+mimiqcircuits.classical.paritycheck
+===================================
+
+.. automodule:: mimiqcircuits.classical.paritycheck
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ParityCheck
+   

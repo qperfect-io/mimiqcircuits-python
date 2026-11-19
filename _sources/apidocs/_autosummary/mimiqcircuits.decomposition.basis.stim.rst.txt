@@ -1,0 +1,12 @@
+mimiqcircuits.decomposition.basis.stim
+======================================
+
+.. automodule:: mimiqcircuits.decomposition.basis.stim
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      StimBasis
+   

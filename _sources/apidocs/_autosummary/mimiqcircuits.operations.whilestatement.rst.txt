@@ -1,0 +1,12 @@
+mimiqcircuits.operations.whilestatement
+=======================================
+
+.. automodule:: mimiqcircuits.operations.whilestatement
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      WhileStatement
+   

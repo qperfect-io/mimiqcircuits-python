@@ -1,0 +1,6 @@
+﻿mimiqcircuits.blockdecl
+=======================
+
+.. currentmodule:: mimiqcircuits
+
+.. autofunction:: blockdecl

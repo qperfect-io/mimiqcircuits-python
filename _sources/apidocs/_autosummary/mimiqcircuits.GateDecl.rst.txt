@@ -1,0 +1,31 @@
+﻿mimiqcircuits.GateDecl
+======================
+
+.. currentmodule:: mimiqcircuits
+
+.. autoclass:: GateDecl
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~GateDecl.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~GateDecl.num_ancillas
+      ~GateDecl.num_bits
+      ~GateDecl.num_qubits
+      ~GateDecl.num_zvars
+   
+   

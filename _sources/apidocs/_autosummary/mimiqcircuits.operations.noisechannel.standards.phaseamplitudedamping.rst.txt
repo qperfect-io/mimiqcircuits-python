@@ -1,0 +1,13 @@
+mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping
+=====================================================================
+
+.. automodule:: mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PhaseAmplitudeDamping
+      ThermalNoise
+   

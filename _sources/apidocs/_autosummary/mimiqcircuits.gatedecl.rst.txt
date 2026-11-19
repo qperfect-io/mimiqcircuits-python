@@ -1,0 +1,6 @@
+﻿mimiqcircuits.gatedecl
+======================
+
+.. currentmodule:: mimiqcircuits
+
+.. autofunction:: gatedecl

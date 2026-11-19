@@ -1,0 +1,22 @@
+mimiqcircuits.qasm.serializer
+=============================
+
+.. automodule:: mimiqcircuits.qasm.serializer
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      args_to_qasm
+      circuit_to_qasm
+      collect_gatedecls
+      dump
+      dumps
+      gate_to_qasm
+      gatedecl_to_qasm
+      instruction_to_qasm
+      print_qasm_expr
+      qubits_to_qasm
+      uses_std_gates
+   

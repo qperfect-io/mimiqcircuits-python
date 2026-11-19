@@ -1,0 +1,19 @@
+mimiqcircuits.operations.gates.generalized
+==========================================
+
+.. automodule:: mimiqcircuits.operations.gates.generalized
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   diffusion
+   paulistring
+   phasegradient
+   polynomialoracle
+   qft
+   rnz
+   rpauli

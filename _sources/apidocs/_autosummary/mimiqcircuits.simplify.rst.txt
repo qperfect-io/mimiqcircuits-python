@@ -1,0 +1,6 @@
+﻿mimiqcircuits.simplify
+======================
+
+.. currentmodule:: mimiqcircuits
+
+.. autofunction:: simplify

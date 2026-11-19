@@ -1,0 +1,13 @@
+mimiqcircuits.operations.gates.standard.sy
+==========================================
+
+.. automodule:: mimiqcircuits.operations.gates.standard.sy
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GateSY
+      GateSYDG
+   

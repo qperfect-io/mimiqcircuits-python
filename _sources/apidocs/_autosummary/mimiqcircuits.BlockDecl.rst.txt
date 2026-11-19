@@ -1,0 +1,31 @@
+﻿mimiqcircuits.BlockDecl
+=======================
+
+.. currentmodule:: mimiqcircuits
+
+.. autoclass:: BlockDecl
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~BlockDecl.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~BlockDecl.num_ancillas
+      ~BlockDecl.num_bits
+      ~BlockDecl.num_qubits
+      ~BlockDecl.num_zvars
+   
+   

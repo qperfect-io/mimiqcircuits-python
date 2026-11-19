@@ -1,0 +1,19 @@
+﻿mimiqcircuits.addnoise
+======================
+
+.. automodule:: mimiqcircuits.addnoise
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      add_noise
+      add_noise_inplace
+      decorate
+      decorate_inplace
+      decorate_on_match_parallel
+      decorate_on_match_parallel_inplace
+      decorate_on_match_single
+      decorate_on_match_single_inplace
+   

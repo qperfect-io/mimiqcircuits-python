@@ -1,0 +1,20 @@
+﻿mimiqcircuits.optimization
+==========================
+
+.. automodule:: mimiqcircuits.optimization
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      check_optimization_args
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OptimizationExperiment
+      OptimizationResults
+      OptimizationRun
+   

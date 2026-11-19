@@ -1,0 +1,23 @@
+mimiqcircuits.qasm.tokens
+=========================
+
+.. automodule:: mimiqcircuits.qasm.tokens
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      is_keyword
+      is_literal
+      is_operator
+      is_unaryop
+      keyword_string
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Token
+      TokenKind
+   

@@ -1,0 +1,20 @@
+mimiqcircuits.decomposition.rules
+=================================
+
+.. automodule:: mimiqcircuits.decomposition.rules
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   canonical
+   flatten_containers
+   gridsynth
+   solovay_kitaev
+   special_angle
+   to_z_rotation
+   toffoli_to_clifford_t
+   zyz

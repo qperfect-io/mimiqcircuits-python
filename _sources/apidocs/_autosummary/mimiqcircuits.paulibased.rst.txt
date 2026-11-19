@@ -1,0 +1,12 @@
+﻿mimiqcircuits.paulibased
+========================
+
+.. automodule:: mimiqcircuits.paulibased
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      pauli_based_computation
+   

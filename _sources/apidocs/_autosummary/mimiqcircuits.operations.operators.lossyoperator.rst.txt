@@ -1,0 +1,12 @@
+mimiqcircuits.operations.operators.lossyoperator
+================================================
+
+.. automodule:: mimiqcircuits.operations.operators.lossyoperator
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LossyOperator
+   

@@ -1,0 +1,19 @@
+﻿mimiqcircuits.sweep
+===================
+
+.. automodule:: mimiqcircuits.sweep
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      gridtable
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ParameterTable
+      SweepExperiment
+   

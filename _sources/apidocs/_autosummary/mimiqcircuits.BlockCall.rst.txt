@@ -1,0 +1,58 @@
+﻿mimiqcircuits.BlockCall
+=======================
+
+.. currentmodule:: mimiqcircuits
+
+.. autoclass:: BlockCall
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~BlockCall.__init__
+      ~BlockCall.allow_bit_aliasing
+      ~BlockCall.allow_zvar_aliasing
+      ~BlockCall.asciiwidth
+      ~BlockCall.copy
+      ~BlockCall.decompose
+      ~BlockCall.deepcopy
+      ~BlockCall.evaluate
+      ~BlockCall.get_operation
+      ~BlockCall.getparam
+      ~BlockCall.getparams
+      ~BlockCall.is_symbolic
+      ~BlockCall.isidentity
+      ~BlockCall.isopalias
+      ~BlockCall.isunitary
+      ~BlockCall.iswrapper
+      ~BlockCall.listvars
+      ~BlockCall.numparams
+      ~BlockCall.supports_canonical_rewrite
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~BlockCall.arguments
+      ~BlockCall.cregsizes
+      ~BlockCall.decl
+      ~BlockCall.name
+      ~BlockCall.num_ancillas
+      ~BlockCall.num_bits
+      ~BlockCall.num_cregs
+      ~BlockCall.num_qregs
+      ~BlockCall.num_qubits
+      ~BlockCall.num_zvars
+      ~BlockCall.parnames
+      ~BlockCall.qregsizes
+      ~BlockCall.zregsizes
+   
+   

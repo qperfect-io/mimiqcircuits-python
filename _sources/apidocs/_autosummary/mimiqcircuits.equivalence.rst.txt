@@ -1,0 +1,13 @@
+﻿mimiqcircuits.equivalence
+=========================
+
+.. automodule:: mimiqcircuits.equivalence
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CircuitTesterExperiment
+      EquivalenceExperiment
+   
