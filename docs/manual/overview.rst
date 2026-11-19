@@ -54,7 +54,7 @@ In the latter case, a fidelity helps the user estimate the accuracy of the appro
 The circuits are executed remotely, using a Cloud Service that gives the user access to large resources and high-performance hardware.
 Details on the cloud interface are discussed in the :doc:`cloud execution </manual/remote_execution>` page.
 
-MIMIQ uses its own `Protobuf` based format to export and import circuits defined through the MIMIQ language.
+MIMIQ uses its own Protobuf based format to export and import circuits defined through the MIMIQ language.
 However, it also allows to import and execute circuits from files written in `OpenQASM` or `Stim` format. This is all discussed in the :doc:`import-export </manual/import_export>`.
 
 The :doc:`last section </manual/special_topics>` discuss some special topics such as bitstrings.

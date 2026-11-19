@@ -18,30 +18,31 @@
 
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.phase import GateP
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import (
+    Control,
+    canonical_control,
+    register_control_decomposition,
+)
 
 
-@mc.canonical_control(1, GateP)
-class GateCP(mc.Control):
+@canonical_control(1, GateP)
+class GateCP(Control):
     r"""Two qubit Controlled-Phase gate.
 
     By convention, the first qubit is the control and the second is
-    the target
+    the target.
 
-    See Also :class:`GateP`
+    Matrix Representation:
+        .. math::
+            \operatorname{CP}(\lambda) = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & 1 & 0 \\
+                0 & 0 & 0 & e^{i\lambda}
+            \end{pmatrix}
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{CP}(\lambda) = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & 1 & 0 \\
-            0 & 0 & 0 & e^{i\lambda}
-        \end{pmatrix}
-
-    Parameters:
-        lmbda: Phase angle in radians.
+    Args:
+        lmbda: Phase angle :math:`\lambda` in radians, numeric or symbolic.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -60,6 +61,8 @@ class GateCP(mc.Control):
         12-qubit circuit with 1 instruction:
         └── CP(lambda) @ q[10], q[11]
         <BLANKLINE>
+        >>> GateCP(lmbda).power(2), GateCP(lmbda).inverse()
+        (CP(2*lambda), CP(-lambda))
         >>> GateCP(lmbda).decompose()
         2-qubit circuit with 5 instructions:
         ├── P((1/2)*lambda) @ q[0]
@@ -68,17 +71,24 @@ class GateCP(mc.Control):
         ├── CX @ q[0], q[1]
         └── P((1/2)*lambda) @ q[1]
         <BLANKLINE>
+
+    See Also:
+        :class:`GateP`, :class:`GateCCP`
     """
 
     def __init__(self, lmbda_or_num_controls, num_controls_or_operation=None, operation=None):
         """Initialize a CP gate.
 
+        Called directly as ``GateCP(lmbda)``. The signature also accepts
+        ``GateCP(1, GateP(lmbda))``, the form :class:`Control` uses to build
+        its canonical subclass.
+
         Args:
-            lmbda_or_num_controls: Phase angle in radians when called directly,
-                or num_controls when called from Control's canonical creation.
-            num_controls_or_operation: Ignored when called directly, or the GateP
-                operation when called from Control's canonical creation.
-            operation: Ignored (for compatibility).
+            lmbda_or_num_controls: Phase angle in radians, or the number of
+                controls (always 1) in the ``Control`` form.
+            num_controls_or_operation: Unused when called directly, or the
+                ``GateP`` whose angle is taken in the ``Control`` form.
+            operation: Unused.
         """
         # Detect if called from Control's canonical creation: Control(1, GateP(lmbda))
         if isinstance(lmbda_or_num_controls, int) and isinstance(num_controls_or_operation, GateP):
@@ -88,7 +98,7 @@ class GateCP(mc.Control):
         super().__init__(1, GateP(lmbda))
 
 
-@mc.register_control_decomposition(1, mc.GateP)
+@register_control_decomposition(1, GateP)
 def _decompose_gatecp(gate, circ, qubits, bits, zvars):
     c, t = qubits
     lmbda2 = gate.op.lmbda / 2

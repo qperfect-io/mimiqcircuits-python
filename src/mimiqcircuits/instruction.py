@@ -17,7 +17,6 @@
 """Instruction class and utilities."""
 
 from mimiqcircuits.operations.operation import Operation
-import mimiqcircuits as mc
 import copy
 import numpy as np
 from mimiqcircuits.matrices import reorder_qubits_matrix
@@ -35,25 +34,39 @@ _OPERATION_TYPES = set()
 
 
 class Instruction:
-    """Initializes an instruction of a quantum circuit.
+    """An operation together with the qubits, bits and z-variables it acts on.
+
+    Instructions are the elements of a :class:`Circuit`. They are usually
+    created by :meth:`Circuit.push`; build one directly to push it later or to
+    insert it at a given position. An instruction cannot be modified after it
+    is created.
 
     Args:
-        operation (Operation): The operation applied by the instruction.
-        qubits (tuple of int): The qubits to apply the quantum operation to.
-        bits (tuple of int): The classical bits to apply the quantum operation to.
+        operation (Operation): The operation to apply.
+        qubits (tuple of int): The target qubits, as many as
+            ``operation.num_qubits``. Defaults to ``()``.
+        bits (tuple of int): The target classical bits, as many as
+            ``operation.num_bits``. Defaults to ``()``.
+        zvars (tuple of int): The target z-variables, as many as
+            ``operation.num_zvars``. Defaults to ``()``.
 
     Raises:
-        TypeError: If operation is not a subclass of Gate or qubits is not a tuple.
-        ValueError: If qubits contains less than 1 or more than 2 elements.
+        TypeError: If ``operation`` is not an :class:`Operation`, or a target
+            group is not a tuple.
+        ValueError: If a target group has the wrong length, an index is
+            negative, or a qubit is repeated. Repeated bits or z-variables are
+            refused too, unless the operation allows them.
 
     Examples:
-
         >>> from mimiqcircuits import *
-        >>> Instruction(GateX(),(0,),())
+        >>> Instruction(GateX(), (0,))
         X @ q[0]
-        >>> Instruction(Barrier(4),(0,1,2,3),())
+        >>> # a measurement targets one qubit and one classical bit
+        >>> Instruction(Measure(), (2,), (0,))
+        M @ q[2], c[0]
+        >>> # consecutive targets are shown as a range
+        >>> Instruction(Barrier(4), (0, 1, 2, 3))
         Barrier @ q[0:3]
-
     """
 
     _operation = None
@@ -141,6 +154,7 @@ class Instruction:
 
     @property
     def operation(self):
+        """The operation applied by the instruction (read-only)."""
         return self._operation
 
     @operation.setter
@@ -149,6 +163,7 @@ class Instruction:
 
     @property
     def qubits(self):
+        """The target qubits, as a tuple of int (read-only)."""
         return self._qubits
 
     @qubits.setter
@@ -157,6 +172,7 @@ class Instruction:
 
     @property
     def bits(self):
+        """The target classical bits, as a tuple of int (read-only)."""
         return self._bits
 
     @bits.setter
@@ -165,6 +181,7 @@ class Instruction:
 
     @property
     def zvars(self):
+        """The target z-variables, as a tuple of int (read-only)."""
         return self._zvars
 
     @zvars.setter
@@ -175,27 +192,38 @@ class Instruction:
         return str(self)
 
     def get_operation(self):
+        """Return the operation of the instruction. Same as :attr:`operation`."""
         return self._operation
 
     def get_qubits(self):
+        """Return the target qubits. Same as :attr:`qubits`."""
         return self._qubits
 
     def get_bits(self):
+        """Return the target classical bits. Same as :attr:`bits`."""
         return self._bits
 
     def get_zvars(self):
+        """Return the target z-variables. Same as :attr:`zvars`."""
         return self._zvars
 
     def num_qubits(self):
+        """Return the number of target qubits."""
         return len(self._qubits)
 
     def num_bits(self):
+        """Return the number of target classical bits."""
         return len(self._bits)
 
     def num_zvars(self):
+        """Return the number of target z-variables."""
         return len(self._zvars)
 
     def getparams(self):
+        """Return the parameters of the operation, as a list.
+
+        See :meth:`Operation.getparams`.
+        """
         return self.operation.getparams()
 
     def listvars(self):
@@ -219,50 +247,111 @@ class Instruction:
         )
 
     def inverse(self):
+        """Return the instruction applying the inverse operation on the same targets.
+
+        Raises:
+            TypeError: If the operation has no inverse, such as a measurement.
+            NotImplementedError: If the operation is a Kraus channel.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> Instruction(GateS(), (1,)).inverse()
+            S† @ q[1]
+        """
         return Instruction(self.operation.inverse(), self.qubits, self.bits)
 
     def isunitary(self):
-        """
-        Check if Instruction is unitary.
-
-        Returns:
-            bool: True if Instruction is unitary, False otherwise.
-
-        """
+        """Return ``True`` if the operation of the instruction is unitary."""
         return self.operation.isunitary()
 
     def copy(self):
-        """Creates a shallow copy of the instruction.
-            To create a full copy use deepcopy() instead.
+        """Return a shallow copy of the instruction.
 
-        Returns:
-            Instruction: A new Instruction object containing references to the same attributes as the original circuit
+        The copy shares its operation with the original. Use :meth:`deepcopy`
+        to copy the operation too.
         """
         return copy.copy(self)
 
     def deepcopy(self):
-        """Creates a copy of the object and for all its attributes
-
-        Returns:
-            Instruction: A new Instruction object fully identical the original circuit
-        """
+        """Return a deep copy of the instruction, operation included."""
         return copy.deepcopy(self)
 
     def _decompose(self, circ):
         return self.operation._decompose(circ, self.qubits, self.bits, self.zvars)
 
     def decompose(self):
-        return self._decompose(mc.Circuit())
+        """Return a circuit with one decomposition step of the operation.
+
+        The operation is replaced by the instructions of its own
+        decomposition, placed on the instruction's targets. Operations that
+        have no simpler form, such as ``GateU`` or ``GateCX``, come back
+        unchanged. Use :meth:`Circuit.decompose` to decompose to a basis.
+
+        Returns:
+            Circuit: The decomposed instruction.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> Instruction(GateCZ(), (0, 1)).decompose()
+            2-qubit circuit with 3 instructions:
+            ├── H @ q[1]
+            ├── CX @ q[0], q[1]
+            └── H @ q[1]
+            <BLANKLINE>
+        """
+        from mimiqcircuits.circuit import Circuit
+        return self._decompose(Circuit())
 
     def evaluate(self, d):
+        """Return the instruction with symbols replaced by values from ``d``.
+
+        Symbols not in ``d`` stay symbolic. When nothing changes, the
+        instruction itself is returned.
+
+        Args:
+            d (dict): Map from symbols to values.
+
+        Returns:
+            Instruction: The evaluated instruction.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> from symengine import Symbol
+            >>> theta = Symbol("theta")
+            >>> Instruction(GateRX(theta), (0,)).evaluate({theta: 0.5})
+            RX(0.5) @ q[0]
+        """
         op = self.operation.evaluate(d)
         if op is self.operation:
             return self
         return Instruction(op, self.qubits, self.bits, self.zvars)
 
     def matrix(self, nq: int = None):
-        """
-        Return the matrix of this instruction, expanded and reordered to act on `nq` qubits if specified.
+        """Return the matrix of the instruction on the full register of ``nq`` qubits.
+
+        The matrix of the operation is placed on the target qubits and
+        extended with the identity on the other ones.
+
+        Args:
+            nq: The number of qubits of the register. Defaults to one more
+                than the largest target qubit.
+
+        Returns:
+            The ``2**nq`` by ``2**nq`` matrix, as a symengine matrix.
+
+        Raises:
+            ValueError: If ``nq`` is not given and the instruction has no
+                target qubits.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> # X on qubit 0 of a 2-qubit register: X ⊗ I
+            >>> Instruction(GateX(), (0,)).matrix(2)
+            [0, 0, 1.0, 0]
+            [0, 0, 0, 1.0]
+            [1.0, 0, 0, 0]
+            [0, 1.0, 0, 0]
+            <BLANKLINE>
         """
         op = self.get_operation()
         qubits = self.get_qubits()

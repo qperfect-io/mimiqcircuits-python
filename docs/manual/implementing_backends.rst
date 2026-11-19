@@ -231,12 +231,9 @@ function. The example below shows every required piece.
             return complex(1.0 / (2 ** self._nq) ** 0.5)
 
         def sample(self, nsamples: int,
-                   rng: Optional[random.Random] = None, *,
-                   seed: Optional[int] = None) -> list:
-            if rng is not None and seed is not None:
-                raise TypeError("pass either rng= or seed=, not both")
+                   rng: Optional[random.Random] = None) -> list:
             if rng is None:
-                rng = random.Random(seed)  # `seed=None` → fresh entropy.
+                rng = random.Random()  # No generator → fresh entropy.
             return [
                 BitString([rng.randint(0, 1) for _ in range(self._nq)])
                 for _ in range(nsamples)

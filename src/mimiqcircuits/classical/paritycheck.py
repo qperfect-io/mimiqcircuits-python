@@ -20,8 +20,7 @@ from mimiqcircuits.classical.xor_operation import Xor
 
 
 class ParityCheck:
-    """
-    Deprecated alias of :class:`Xor`.
+    """Deprecated alias of :class:`Xor`.
 
     ``ParityCheck(N)`` returns ``Xor(N)``, which computes the same parity of
     N-1 classical bits into the first bit, and emits a ``DeprecationWarning``.

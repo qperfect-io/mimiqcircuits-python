@@ -16,7 +16,12 @@
 
 import numpy as np
 
-import mimiqcircuits as mc
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.gates.standard.pauli import GateX
+from mimiqcircuits.operations.gates.standard.phase import GateP
+from mimiqcircuits.operations.gates.standard.rotations import GateRY, GateRZ
+from mimiqcircuits.operations.gates.standard.u import GateU
 from .zyz import _zyz_decomposition
 from .csd import _csd_decomposition
 from .utils import _as_numpy_numeric
@@ -39,7 +44,7 @@ def _qsd_decomposition(U):
     #  CSD on MSB 
     L0, L1, R0, R1, theta = _csd_decomposition(U)
 
-    circ = mc.Circuit()
+    circ = Circuit()
 
     sub_targets = list(range(1, nb_qubits))
 
@@ -64,8 +69,8 @@ def _qsd_decomposition(U):
 
 def _decompose_1q(U, target):
     theta, phi, lam, gamma = _zyz_decomposition(U)
-    c = mc.Circuit()
-    c.push(mc.GateU(theta, phi, lam, gamma), target)
+    c = Circuit()
+    c.push(GateU(theta, phi, lam, gamma), target)
     return c, 0.0
 
 
@@ -84,7 +89,7 @@ def _append_multiplexed_unitary(circ, U0, U1, control, targets):
         phase0 = g0 + (p0 + l0) / 2.0
         phase1 = g1 + (p1 + l1) / 2.0
 
-        circ.push(mc.GateP(phase1 - phase0), control)
+        circ.push(GateP(phase1 - phase0), control)
 
         return phase0
 
@@ -100,15 +105,15 @@ def _append_multiplexed_unitary_recursive(circ, U0, U1, control, targets):
 
     mapping = {i: targets[i] for i in range(len(targets))}
 
-    circ.push(mc.GateX(), control)
+    circ.push(GateX(), control)
     for inst in c0:
         circ.push(*_add_control_remapped(inst, control, mapping))
-    circ.push(mc.GateX(), control)
+    circ.push(GateX(), control)
 
     for inst in c1:
         circ.push(*_add_control_remapped(inst, control, mapping))
 
-    circ.push(mc.GateP(p1 - p0), control)
+    circ.push(GateP(p1 - p0), control)
 
     return p0
 
@@ -117,7 +122,7 @@ def _add_control_remapped(inst, control_qubit, mapping):
     op = inst.get_operation()
     q = list(inst.get_qubits())
     new_q = [mapping[i] for i in q]
-    return (mc.Control(1, op), control_qubit, *new_q)
+    return (Control(1, op), control_qubit, *new_q)
 
 
 def _append_multiplexed_ry(circ, angles, target, controls, eps=1e-10):
@@ -125,7 +130,7 @@ def _append_multiplexed_ry(circ, angles, target, controls, eps=1e-10):
     n = len(angles)
 
     if k == 0:
-        circ.push(mc.GateRY(angles[0]), target)
+        circ.push(GateRY(angles[0]), target)
         return
 
     for i in range(n):
@@ -142,12 +147,12 @@ def _append_multiplexed_ry(circ, angles, target, controls, eps=1e-10):
                 active_x.append(bit_pos)
 
         for idx in active_x:
-            circ.push(mc.GateX(), controls[idx])
+            circ.push(GateX(), controls[idx])
 
-        circ.push(mc.Control(k, mc.GateRY(angle)), *controls, target)
+        circ.push(Control(k, GateRY(angle)), *controls, target)
 
         for idx in active_x:
-            circ.push(mc.GateX(), controls[idx])
+            circ.push(GateX(), controls[idx])
 
 
 def _append_multiplexed_rz(circ, angles, target, controls, eps=1e-10):
@@ -155,7 +160,7 @@ def _append_multiplexed_rz(circ, angles, target, controls, eps=1e-10):
     n = len(angles)
 
     if k == 0:
-        circ.push(mc.GateRZ(angles[0]), target)
+        circ.push(GateRZ(angles[0]), target)
         return
 
     for i in range(n):
@@ -172,9 +177,9 @@ def _append_multiplexed_rz(circ, angles, target, controls, eps=1e-10):
                 active_x.append(bit_pos)
 
         for idx in active_x:
-            circ.push(mc.GateX(), controls[idx])
+            circ.push(GateX(), controls[idx])
 
-        circ.push(mc.Control(k, mc.GateRZ(angle)), *controls, target)
+        circ.push(Control(k, GateRZ(angle)), *controls, target)
 
         for idx in active_x:
-            circ.push(mc.GateX(), controls[idx])
+            circ.push(GateX(), controls[idx])

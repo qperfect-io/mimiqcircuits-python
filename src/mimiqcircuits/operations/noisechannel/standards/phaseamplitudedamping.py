@@ -15,9 +15,10 @@
 # limitations under the License.
 #
 
-import numpy as np
 from typing import Union
-import mimiqcircuits as mc
+from mimiqcircuits.operations.operators.diagonals import DiagonalOp
+from mimiqcircuits.operations.operators.projectors import Projector0
+from mimiqcircuits.operations.operators.sigmas import SigmaMinus, SigmaPlus
 import symengine as se
 from mimiqcircuits._sympycheck import _is_basic
 from mimiqcircuits.operations.krauschannel import krauschannel
@@ -26,7 +27,7 @@ from mimiqcircuits.operations.krauschannel import krauschannel
 class PhaseAmplitudeDamping(krauschannel):
     r"""One-qubit phase amplitude damping noise channel.
 
-    This channel is defined by:
+    The channel maps a density matrix :math:`\rho` to
 
     .. math::
         \mathcal{E}(\rho) =
@@ -35,25 +36,28 @@ class PhaseAmplitudeDamping(krauschannel):
             (1-2\beta)\sqrt{1-\gamma}\rho_{10} & (1-\gamma)\rho_{11} + (1-p)\gamma
         \end{pmatrix}
 
-    Here, :math:`p, \gamma, \beta \in [0,1]`.
+    with :math:`p, \gamma, \beta \in [0,1]`. It is the same channel as
+    ``GeneralizedAmplitudeDamping(p, gamma)`` followed by ``PauliZ(beta)``.
+    :meth:`krausmatrices` returns a Kraus representation.
 
-    This channel is equivalent to a `GeneralizedAmplitudeDamping(p, \gamma)` channel
-    (see :class:`GeneralizedAmplitudeDamping`), followed by a `PauliZ(\beta)`
-    channel (see :class:`PauliZ`).
+    Args:
+        p: Weight of the decay towards :math:`|0\rangle`, in :math:`[0, 1]`.
+        gamma: Damping probability, in :math:`[0, 1]`.
+        beta: Phase flip probability, in :math:`[0, 1]`.
 
-    Use :func:`krausmatrices` to see a Kraus matrix representation of the channel.
+    Any of the parameters may be symbolic; the range checks then apply only to
+    the numeric ones.
+
+    Raises:
+        ValueError: If a numeric parameter is outside :math:`[0, 1]`.
 
     See Also:
         :class:`AmplitudeDamping`, :class:`GeneralizedAmplitudeDamping`,
-        :class:`ThermalNoise`.
-
-    Parameters:
-        p (float): Probability parameter, must be in the range [0, 1].
-        γ (float): Damping parameter, must be in the range [0, 1].
-        β (float): Phase flip parameter, must be in the range [0, 1].
+        :class:`ThermalNoise`, :class:`PauliZ`
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # p = 0.1, gamma = 0.2, beta = 0.3 on qubit 1
         >>> c = Circuit()
         >>> c.push(PhaseAmplitudeDamping(0.1, 0.2, 0.3), 1)
         2-qubit circuit with 1 instruction:
@@ -82,6 +86,18 @@ class PhaseAmplitudeDamping(krauschannel):
         self._parnames = ("p", "gamma", "beta")
 
     def evaluate(self, d={}):
+        """Return a copy with symbols in the parameters substituted by values.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            PhaseAmplitudeDamping: A new channel; each parameter becomes a
+            float when it is fully numeric.
+
+        Raises:
+            ValueError: If a substituted parameter is outside :math:`[0, 1]`.
+        """
         attributes = ["p", "gamma", "beta"]
         evaluated_values = {}
 
@@ -126,17 +142,20 @@ class PhaseAmplitudeDamping(krauschannel):
         p = self.p
         gamma = self.gamma
         beta = self.beta
-        K = np.sqrt(1 - gamma) * (1 - 2 * beta) / (1 - gamma * p)
-        pref1 = np.sqrt(1 - gamma * p)
-        pref2 = np.sqrt(1 - gamma * (1 - p) - (1 - gamma * p) * K**2)
-        pref3 = np.sqrt(gamma * p)
-        pref4 = np.sqrt(gamma * (1 - p))
+        # (1 - gamma) / (1 - gamma * p) is 1 at p == 1; dividing would give 0/0
+        # once gamma rounds to 1, e.g. ThermalNoise with time >> T1.
+        ratio = 1 if p == 1 else (1 - gamma) / (1 - gamma * p)
+        pref1 = se.sqrt(1 - gamma * p)
+        pref1K = (1 - 2 * beta) * se.sqrt(ratio)
+        pref2 = se.sqrt(1 - gamma * (1 - p) - ratio * (1 - 2 * beta) ** 2)
+        pref3 = se.sqrt(gamma * p)
+        pref4 = se.sqrt(gamma * (1 - p))
 
         return [
-            mc.DiagonalOp(pref1 * K, pref1),
-            mc.Projector0(pref2),
-            mc.SigmaMinus(pref3),
-            mc.SigmaPlus(pref4),
+            DiagonalOp(pref1K, pref1),
+            Projector0(pref2),
+            SigmaMinus(pref3),
+            SigmaPlus(pref4),
         ]
 
     @property
@@ -161,24 +180,33 @@ class ThermalNoise(krauschannel):
         \end{pmatrix}
 
     where :math:`\Gamma_1 = 1/T_1` and :math:`\Gamma_2 = 1/T_2`, and the parameters must fulfill
-    :math:`T_1 \geq 0`, :math:`T_2 \leq 2 T_1`, :math:`t \geq 0`, and :math:`0 \leq n_e \leq 1`.
+    :math:`T_1 > 0`, :math:`0 < T_2 \leq 2 T_1`, :math:`t \geq 0`, and :math:`0 \leq n_e \leq 1`.
 
-    These parameters can be related to the ones used to define the :class:`PhaseAmplitudeDamping`
-    channel through :math:`p = 1-n_e`, :math:`\gamma = 1-e^{-\Gamma_1 t}`, and
+    The parameters of the equivalent :class:`PhaseAmplitudeDamping` channel are
+    :math:`p = 1-n_e`, :math:`\gamma = 1-e^{-\Gamma_1 t}`, and
     :math:`\beta = \frac{1}{2}(1-e^{-(\Gamma_2-\Gamma_1/2)t})`.
+
+    Args:
+        T1: Longitudinal relaxation time :math:`T_1`, greater than 0.
+        T2: Transverse relaxation (dephasing) time :math:`T_2`, greater
+            than 0 and at most :math:`2 T_1`.
+        time: Duration :math:`t` over which the noise acts, at least 0.
+        ne: Excited-state population :math:`n_e` at thermal equilibrium with
+            the environment, in :math:`[0, 1]`.
+
+    Any of the parameters may be symbolic; the checks then apply only to the
+    numeric ones.
+
+    Raises:
+        ValueError: If a numeric parameter breaks one of the constraints above.
 
     See Also:
         :class:`PhaseAmplitudeDamping`, :class:`AmplitudeDamping`,
-        :class:`GeneralizedAmplitudeDamping`.
-
-    Parameters:
-        T₁ (float): Longitudinal relaxation rate, must be greater than or equal to 0.
-        T₂ (float): Transversal relaxation rate, must be less than or equal to `2 * T₁`.
-        t (float): Time duration of the gate, must be greater than or equal to 0.
-        nₑ (float): Excitation fraction when in thermal equilibrium with the environment, must be in the range [0, 1].
+        :class:`GeneralizedAmplitudeDamping`
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # T1 = 0.5, T2 = 0.6, t = 1.2, ne = 0.3 on qubit 1
         >>> c = Circuit()
         >>> c.push(ThermalNoise(0.5, 0.6, 1.2, 0.3), 1)
         2-qubit circuit with 1 instruction:
@@ -197,9 +225,11 @@ class ThermalNoise(krauschannel):
         time: Union[float, int],
         ne: Union[float, int],
     ):
-        if not _is_basic(T1) and (T1 < 0):
-            raise ValueError("Value of T1 must be >= 0.")
-        if not _is_basic(T2) and (T2 > 2 * T1):
+        if not _is_basic(T1) and (T1 <= 0):
+            raise ValueError("Value of T1 must be > 0.")
+        if not _is_basic(T2) and (T2 <= 0):
+            raise ValueError("Value of T2 must be > 0.")
+        if not (_is_basic(T1) or _is_basic(T2)) and (T2 > 2 * T1):
             raise ValueError("Value of T2 must be <= 2 * T1.")
         if not _is_basic(time) and (time < 0):
             raise ValueError("Value of time must be >= 0.")
@@ -214,6 +244,19 @@ class ThermalNoise(krauschannel):
         self._parnames = ("T1", "T2", "time", "ne")
 
     def evaluate(self, d={}):
+        """Return a copy with symbols in the parameters substituted by values.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            ThermalNoise: A new channel; each parameter becomes a float when it
+            is fully numeric.
+
+        Raises:
+            ValueError: If a substituted parameter breaks the constraints of
+                the class.
+        """
         # List of attributes to evaluate
         attributes = ["T1", "T2", "time", "ne"]
         evaluated_values = {}
@@ -240,15 +283,6 @@ class ThermalNoise(krauschannel):
         evaluated_ne = evaluated_values["ne"]
 
         # Perform checks only if values are numeric
-        if isinstance(evaluated_T1, (float, int)) and evaluated_T1 < 0:
-            raise ValueError("Value of `T1` must be >= 0 after evaluation.")
-        if isinstance(evaluated_T2, (float, int)) and evaluated_T2 > 2 * evaluated_T1:
-            raise ValueError("Value of `T2` must be <= 2 * T1 after evaluation.")
-        if isinstance(evaluated_time, (float, int)) and evaluated_time < 0:
-            raise ValueError("Value of `time` must be >= 0 after evaluation.")
-        if isinstance(evaluated_ne, (float, int)) and not (0 <= evaluated_ne <= 1):
-            raise ValueError("Value of `ne` must be between 0 and 1 after evaluation.")
-
         # Return a new instance with evaluated parameters
         return ThermalNoise(evaluated_T1, evaluated_T2, evaluated_time, evaluated_ne)
 
@@ -260,8 +294,8 @@ class ThermalNoise(krauschannel):
         Gamma2 = 1 / self.T2
 
         p = 1 - self.ne
-        gamma = 1 - np.exp(-Gamma1 * self.time)
-        beta = 0.5 * (1 - np.exp(-(Gamma2 - Gamma1 / 2) * self.time))
+        gamma = 1 - se.exp(-Gamma1 * self.time)
+        beta = 0.5 * (1 - se.exp(-(Gamma2 - Gamma1 / 2) * self.time))
 
         pad = PhaseAmplitudeDamping(p, gamma, beta)
         return pad.krausoperators()

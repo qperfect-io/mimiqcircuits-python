@@ -78,14 +78,26 @@ napoleon_use_rtype = True
 napoleon_preprocess_types = False
 napoleon_type_aliases = None
 napoleon_attr_annotations = True
+# Docstring headings beyond Napoleon's built-in ones (Args, Returns, Examples, ...).
+# Keep this list short: any other heading renders as a plain paragraph.
+napoleon_custom_sections = [
+    "Supported Operations",
+    "Matrix Representation",
+]
+
+# -- Cross-references --------------------------------------------------------
+
+# Single backticks are a cross-reference to a Python object, rendered as code.
+# Without this they render as italic text.
+default_role = "py:obj"
+# Show `GateH` instead of `mimiqcircuits.operations.gates.standard.hadamard.GateH`.
+add_module_names = False
 
 # -- Autodoc settings --------------------------------------------------------
 
 autodoc_default_options = {
     "members": True,
     "member-order": "bysource",
-    "special-members": "__init__",
-    "undoc-members": True,
     "exclude-members": "__weakref__",
     "show-inheritance": True,
 }
@@ -118,10 +130,10 @@ latex_elements = {
 
 html_theme = "furo"
 html_title = f"{project} v{release}"
-html_logo = "_static/qperfect_logo.png"
 html_static_path = ["_static"]
 html_css_files = [
-    "custom.css",
+    "mimiq/fonts.css",
+    "mimiq/furo.css",
 ]
 
 # Pygments syntax highlighting themes
@@ -134,60 +146,10 @@ html_theme_options = {
     "announcement": f"The MIMIQ Update 2026 is out! Update now to the latest <strong>v{release}</strong> version.",
     # TOC depth
     "navigation_with_keys": True,
-    # Light mode CSS variables
-    "light_css_variables": {
-        # Brand
-        "color-brand-primary": "#990066",
-        "color-brand-content": "#990066",
-        # Inline code
-        "color-inline-code-background": "rgba(153, 0, 102, 0.08)",
-        # Admonitions
-        "color-admonition-background": "#f8f9fc",
-        # API
-        "color-api-name": "#990066",
-        "color-api-pre-name": "#4b5563",
-        # Fonts
-        "font-stack": "'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji",
-        "font-stack--headings": "'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji",
-        "font-stack--monospace": "'JetBrains Mono', 'Courier New', Courier, monospace",
-        "font-weight--headings": "600",
-    },
-    # Dark mode CSS variables
-    "dark_css_variables": {
-        # Brand
-        "color-brand-primary": "#d94faa",
-        "color-brand-content": "#d94faa",
-        # Backgrounds
-        "color-background-primary": "#0f1117",
-        "color-background-secondary": "#161922",
-        "color-background-border": "#2d3548",
-        # Foreground
-        "color-foreground-primary": "#f3f4f6",
-        "color-foreground-secondary": "#d1d5db",
-        "color-foreground-muted": "#9ca3af",
-        # Sidebar
-        "color-sidebar-background": "#0d0f14",
-        "color-sidebar-background-border": "#1f2937",
-        "color-sidebar-link-text": "#e5e7eb",
-        "color-sidebar-link-text--top-level": "#ffffff",
-        "color-sidebar-item-background--current": "rgba(217, 79, 170, 0.15)",
-        "color-sidebar-item-background--hover": "rgba(217, 79, 170, 0.08)",
-        # Inline code
-        "color-inline-code-background": "rgba(249, 168, 212, 0.15)",
-        # Admonitions
-        "color-admonition-background": "#1a1f2c",
-        # API
-        "color-api-background": "#1a1f2c",
-        "color-api-name": "#d94faa",
-        "color-api-pre-name": "#9ca3af",
-        # Highlighted text
-        "color-highlight-on-target": "rgba(255, 215, 0, 0.15)",
-        # Fonts
-        "font-stack": "'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji",
-        "font-stack--headings": "'Rajdhani', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji",
-        "font-stack--monospace": "'JetBrains Mono', 'Courier New', Courier, monospace",
-        "font-weight--headings": "600",
-    },
+    # The logo already names the project.
+    "light_logo": "logo.svg",
+    "dark_logo": "logo-dark.svg",
+    "sidebar_hide_name": True,
     # Footer icons
     "footer_icons": [
         {

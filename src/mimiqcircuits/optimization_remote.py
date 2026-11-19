@@ -38,6 +38,7 @@ from mimiqcircuits.remote import (
     TYPE_PROTO,
     MIN_BONDDIM,
     MIN_ENTDIM,
+    _set_exec_opts,
 )
 
 
@@ -60,44 +61,103 @@ def optimize_impl(
     history=False,
     force=False,
     debug=False,
+    mpsmethod=None,
+    mpotraversal=None,
+    streaming=None,
 ):
-    r"""
-    Submit one or more quantum optimization experiments to the remote execution backend.
+    r"""Submit optimization experiments to the MIMIQ service.
 
-    This function prepares and launches one or more `OptimizationExperiment` instances
-    using the specified algorithm and execution parameters. It handles input serialization,
-    temporary workspace creation, and submission via the `RemoteConnection`.
+    This is the implementation of ``RemoteConnection.optimize``; ``self`` is
+    the connection. The experiments are saved to Protobuf files in a
+    temporary folder, sent with the request, and the call returns without
+    waiting. Fetch the :class:`~mimiqcircuits.OptimizationResults` with the
+    connection's ``get_results``.
 
     Args:
-        experiments (OptimizationExperiment or list of OptimizationExperiment): A single `OptimizationExperiment` or a list of experiments to optimize.
-        label (str, optional): A label for the execution. Defaults to `"pyapi_v" + __version__`.
-        algorithm (str, optional): Optimization algorithm to use. One of `"mps"`, `"statevector"`, or `"auto"`. Defaults to `"auto"`.
-        nsamples (int, optional): Number of samples used to estimate expectation values. Defaults to `DEFAULT_SAMPLES`.
-        timelimit (int, optional): Maximum execution time in minutes. If `None`, uses the backend’s default.
-        bonddim (int, optional): Bond dimension for MPS simulation. Used only if algorithm is `"mps"` or `"auto"`.
-        entdim (int, optional): Entanglement dimension for MPS simulation. Used only if algorithm is `"mps"` or `"auto"`.
-        mpscutoff (float, optional): Singular value truncation cutoff for MPS simulation. Smaller values give higher accuracy at increased cost. Defaults to `None` (let the remote service decide).
-        remove_swaps (bool, optional): Whether to remove SWAP gates. If `None`, backend chooses automatically.
-        canonicaldecompose (bool, optional): Whether to decompose the circuit into GateU and GateCX. If `None`, backend chooses automatically.
-        fuse (bool, optional): Whether to fuse single-qubit gates. If `None`, backend chooses automatically.
-        reorderqubits (bool, optional): Whether to reorder qubits before execution. If `None`, backend chooses automatically.
-        reorderqubits_seed (int, optional): Independent seed for the qubit reordering RNG, allowing reproducible reordering independently of the simulation seed. Defaults to `None` (uses main seed).
-        seed (int, optional): Seed for random number generation. If `None`, a random seed is chosen.
-        history (bool, optional): If `True`, records the full optimization trajectory. Defaults to `False`.
-        force (bool, optional): If `True`, bypasses entdim range checks. Use with caution.
-        debug (bool, optional): If `True`, keeps the temporary working directory for debugging. Defaults to `False`.
-    Raises:
-        ValueError: If any parameters are out of allowed bounds, or no experiments are provided.
-        TypeError: If any item in `experiments` is not an `OptimizationExperiment`.
+        self (RemoteConnection): The connection to submit through.
+        experiments (OptimizationExperiment or list): One experiment, or a
+            list of them.
+        label (str): Label of the job. Defaults to ``"pyapi_v"`` followed by
+            the package version.
+        algorithm (str): Simulator to evaluate the cost with: ``"auto"``,
+            ``"mps"`` or ``"statevector"``. Defaults to ``"auto"``.
+        nsamples (int): Number of shots per evaluation.
+        timelimit (int): Time limit of the job in minutes. ``None`` uses the
+            largest allowed.
+        bonddim (int): Bond dimension of the MPS simulator. ``None`` uses the
+            default with ``"mps"`` and ``"auto"``.
+        entdim (int): Entanglement dimension of the MPS simulator. ``None``
+            uses the default with ``"mps"`` and ``"auto"``.
+        mpscutoff (float): Singular-value cutoff of the MPS simulator.
+            ``None`` lets the service choose.
+        remove_swaps (bool): Server-side SWAP removal. ``None`` lets the
+            service choose.
+        canonicaldecompose (bool): Server-side decomposition into the
+            canonical gate set. ``None`` lets the service choose.
+        fuse (bool): Server-side gate fusion. ``None`` lets the service
+            choose.
+        reorderqubits (bool or str): Server-side qubit reordering, or the
+            name of the reordering method. ``None`` lets the service choose.
+        reorderqubits_seed (int): Seed of the reordering, separate from the
+            simulation seed. ``None`` uses the simulation seed.
+        seed (int): Seed of the simulation. ``None`` draws one at random.
+        history (bool): Also return every evaluated run. Defaults to
+            ``False``.
+        force (bool): Allow an ``entdim`` below the minimum, with a printed
+            warning. Defaults to ``False``.
+        debug (bool): Keep the temporary folder after the process exits, and
+            print a notice. Defaults to ``False``.
+        mpsmethod (str): MPO application method of the MPS simulator:
+            ``"dmpo"``, ``"vmpoa"`` or ``"vmpob"``. ``None`` lets the service
+            choose.
+        mpotraversal (str): MPO compression traversal: ``"sequential"``,
+            ``"bfs"`` or ``"frontierpack"``. ``None`` lets the service
+            choose.
+        streaming (bool): Use the streaming MPS simulator. ``None`` lets the
+            service choose.
 
     Returns:
-        str: Remote job identifier (job ID or label) returned by the backend.
+        The identifier of the submitted job.
 
-    Notes:
-        - If `algorithm="auto"` and multiple experiments are provided, an error is raised.
-        - Temporary files are created in a workspace and deleted automatically unless `debug=True`.
-        - All experiments are serialized to protobuf before submission.
+    Raises:
+        ValueError: If no experiment is given, more than one is given with
+            ``algorithm="auto"``, or an option is out of range
+            (``nsamples``, ``timelimit``, ``bonddim``, ``entdim``,
+            ``mpscutoff``, ``mpsmethod``, ``mpotraversal``).
+        TypeError: If an item of ``experiments`` is not an
+            :class:`~mimiqcircuits.OptimizationExperiment`, or a preparation
+            flag has the wrong type.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from symengine import symbols
+        >>> theta = symbols("theta")
+        >>> c = Circuit().push(GateRY(theta), 0)
+        >>> c.push(ExpectationValue(GateZ()), 0, 0)  # doctest: +ELLIPSIS
+        1-qubit, 1-zvar circuit with 2 instructions:
+        ...
+        >>> ex = OptimizationExperiment(c, {theta: 0.1})
+        >>> conn = MimiqConnection()
+        >>> conn.connect()  # doctest: +SKIP
+        >>> job = conn.optimize(ex, algorithm="statevector", nsamples=1)  # doctest: +SKIP
+        >>> res = conn.get_results(job)[0]  # doctest: +SKIP
+        >>> res.get_best().cost  # doctest: +SKIP
     """
+    from mimiqcircuits.backends.passes import check_prep_flags
+
+    flags = check_prep_flags(
+        fuse=fuse,
+        canonicaldecompose=canonicaldecompose,
+        reorderqubits=reorderqubits,
+        remove_swaps=remove_swaps,
+        reorderqubits_seed=reorderqubits_seed,
+    )
+    fuse = flags["fuse"]
+    canonicaldecompose = flags["canonicaldecompose"]
+    reorderqubits = flags["reorderqubits"]
+    remove_swaps = flags["remove_swaps"]
+    reorderqubits_seed = flags["reorderqubits_seed"]
+
     if nsamples > MAX_SAMPLES:
         raise ValueError(f"nsamples must be less than {MAX_SAMPLES}")
 
@@ -175,20 +235,17 @@ def optimize_impl(
             raise ValueError("mpscutoff must be non-negative")
         pars["mpsCutoff"] = mpscutoff
 
-    if remove_swaps is not None:
-        pars["removeSwaps"] = remove_swaps
-
-    if canonicaldecompose is not None:
-        pars["canonicalDecompose"] = canonicaldecompose
-
-    if fuse is not None:
-        pars["fuse"] = fuse
-
-    if reorderqubits is not None:
-        pars["reorderQubits"] = reorderqubits
-
-    if reorderqubits_seed is not None:
-        pars["reorderQubitsSeed"] = reorderqubits_seed
+    _set_exec_opts(
+        pars,
+        mpsmethod=mpsmethod,
+        mpotraversal=mpotraversal,
+        streaming=streaming,
+        remove_swaps=remove_swaps,
+        canonicaldecompose=canonicaldecompose,
+        fuse=fuse,
+        reorderqubits=reorderqubits,
+        reorderqubits_seed=reorderqubits_seed,
+    )
 
     pars_file = os.path.join(tmpdir, "optimize.json")
     with open(pars_file, "w") as f:

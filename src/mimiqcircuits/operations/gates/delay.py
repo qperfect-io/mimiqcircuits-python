@@ -16,52 +16,45 @@
 #
 """Delay gate operation."""
 
-from mimiqcircuits import Gate, GateID, Circuit
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.operations.gates.gate import Gate
+from mimiqcircuits.operations.gates.standard.id import GateID
 
 
 class Delay(Gate):
-    r"""
-    Delay(t)
+    r"""Single qubit delay gate.
 
-    1-qubit delay gate
+    Acts as the identity. The duration ``t`` does not change the action of
+    the gate: it marks idle time, so a noise model can attach idle noise to
+    it and use ``t`` to set its strength. A delay is never rewritten into
+    other gates by canonical rewriting, so the duration is kept. It cannot be
+    inverted or raised to a power.
 
-    This gate is equivalent to a GateID gate, except that it is parametrized by
-    a time parameter `t`. The parameter does not affect the action of the gate. The only
-    purpose of this gate is to act as a placeholder to indicate idle noise, in
-    which case the parameter `t` can later be used to further specify the noise properties.
+    Matrix Representation:
+        .. math::
+            \operatorname{Delay}(t) =
+            \begin{pmatrix}
+                1 & 0 \\
+                0 & 1
+            \end{pmatrix}
 
-    The gate can be created by calling `Delay(t)` where `t` is a number.
-
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{Delay}(t) =
-        \begin{pmatrix}
-            1 & 0 \\
-            0 & 1
-        \end{pmatrix}
-
+    Args:
+        t: Duration of the delay. Defaults to ``1``.
 
     Examples:
+        >>> from mimiqcircuits import *
         >>> Delay(0.3)
         Delay(0.3)
-
-        >>> delay_gate = Delay(0.1)
-        >>> delay_gate.matrix()
+        >>> Delay(0.1).matrix()
         [1.0, 0]
         [0, 1.0]
         <BLANKLINE>
-
         >>> c = Circuit()
-        >>> c.push(delay_gate, 0)
+        >>> c.push(Delay(0.1), 0)
         1-qubit circuit with 1 instruction:
         └── Delay(0.1) @ q[0]
         <BLANKLINE>
-
-        Decomposition
-
-        >>> delay_gate = Delay(0.2)
-        >>> delay_gate.decompose()
+        >>> Delay(0.2).decompose()
         1-qubit circuit with 1 instruction:
         └── ID @ q[0]
         <BLANKLINE>
@@ -72,7 +65,7 @@ class Delay(Gate):
     _num_qregs = 1
     _num_cregs = 0
     _num_bits = 0
-    _parnames = "t"
+    _parnames = ("t",)
 
     def __init__(self, t: float = 1):
         self.t = t
@@ -86,13 +79,23 @@ class Delay(Gate):
         return GateID().matrix()
 
     def inverse(self):
+        """Raise, as a delay cannot be inverted.
+
+        Raises:
+            ValueError: Always.
+        """
         raise ValueError("Cannot invert a Delay gate.")
 
     def power(self, _):
+        """Raise, as a delay cannot be raised to a power.
+
+        Raises:
+            ValueError: Always.
+        """
         raise ValueError("Cannot raise a Delay gate to any power.")
 
     def supports_canonical_rewrite(self):
-        # Rewriting a delay into identity gates would lose its duration.
+        """Return ``False``: rewriting a delay into identity gates would lose its duration."""
         return False
 
     def _decompose(self, circ: Circuit, qubits, bitsm, zvars):

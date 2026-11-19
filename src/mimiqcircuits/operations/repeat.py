@@ -22,24 +22,40 @@ from mimiqcircuits.lazy import LazyArg, LazyExpr
 
 
 class Repeat(Operation):
-    r"""Repeat operation: applies the same operation multiple times.
+    r"""Operation applied several times in a row on the same targets.
 
-    Repeats a given quantum operation `n` times on the same qubits, bits, and z-variables.
-    This is useful for constructing repeated sequences of the same gate without manually duplicating it.
+    ``Repeat(n, op)`` applies ``op`` ``n`` times on the same qubits, bits and
+    z-variables. Unlike :class:`Power`, it works for any operation, not only
+    gates, and keeps the repetitions explicit: decomposing it gives ``n``
+    copies of ``op``.
+
+    The ``repeat`` method of a gate and the :func:`repeat` function are
+    shorthands for it.
+
+    Args:
+        repeats (int): Number of repetitions, zero or more.
+        op (Operation): The operation to repeat.
+
+    Raises:
+        ValueError: If ``repeats`` is not a non-negative ``int``.
+        TypeError: If ``op`` is not an operation.
 
     Examples:
 
         >>> from mimiqcircuits import *
         >>> from symengine import *
+        >>> # five X gates in a row
         >>> Repeat(5, GateX())
         ∏⁵ X
 
         >>> Repeat(3, GateRX(Symbol("x")))
         ∏³ RX(x)
 
+        >>> # nested repeats are kept as they are
         >>> Repeat(2, Repeat(3, GateX()))
         ∏² ∏³ X
 
+        >>> # without a count, repeat() returns a lazy expression
         >>> Parallel(2, GateH()).repeat()
         lazy repeat(?, ⨷ ² H)
 
@@ -52,6 +68,7 @@ class Repeat(Operation):
         └── ∏² X @ q[0]
         <BLANKLINE>
 
+        >>> # decomposing gives the individual repetitions
         >>> Repeat(2, GateX()).decompose()
         1-qubit circuit with 2 instructions:
         ├── X @ q[0]
@@ -64,11 +81,6 @@ class Repeat(Operation):
         ├── SWAP @ q[0:1]
         └── SWAP @ q[0:1]
         <BLANKLINE>
-
-    .. note::
-
-        The `repeat` function is a shorthand that may return other types (e.g., `Power`)
-        if simplifications apply. It returns a `Repeat` instance only when appropriate.
     """
 
     _name = "Repeat"
@@ -97,24 +109,57 @@ class Repeat(Operation):
         self._parnames = op.parnames
 
     def get_operation(self):
+        """Return the repeated operation, :attr:`op`."""
         return self.op
 
     def getparam(self, name):
+        """Return the parameter ``name`` of the repeated operation."""
         return self.op.getparam(name)
 
     def getparams(self):
+        """Return the parameters of the repeated operation."""
         return self.op.getparams()
 
     def power(self, pow):
+        """Return the repetitions of ``op`` raised to ``pow``.
+
+        Args:
+            pow: The exponent.
+
+        Returns:
+            Repeat: ``Repeat(repeats, op.power(pow))``.
+        """
         return Repeat(self.repeats, self.op.power(pow))
 
     def parallel(self, repeat):
+        """Return the repetitions of ``repeat`` parallel copies of ``op``.
+
+        Args:
+            repeat: Number of parallel copies.
+
+        Returns:
+            Repeat: ``Repeat(repeats, op.parallel(repeat))``.
+        """
         return Repeat(self.repeats, self.op.parallel(repeat))
 
     def control(self, repeat):
+        """Return the repetitions of ``op`` controlled by ``repeat`` qubits.
+
+        Args:
+            repeat: Number of control qubits.
+
+        Returns:
+            Repeat: ``Repeat(repeats, op.control(repeat))``.
+        """
         return Repeat(self.repeats, self.op.control(repeat))
 
     def inverse(self):
+        """Return the repetitions of the inverse of ``op``.
+
+        Returns:
+            Repeat: ``Repeat(repeats, op.inverse())``. Fails when ``op``
+            has no inverse.
+        """
         return Repeat(self.repeats, self.op.inverse())
 
     def iswrapper(self):

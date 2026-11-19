@@ -16,7 +16,10 @@
 #
 
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.id import GateID
+from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
+from mimiqcircuits.operations.operators.custom import Operator
+from mimiqcircuits.operations.rescaledgates import RescaledGate
 from typing import List, Union
 import numpy as np
 import symengine as se
@@ -26,10 +29,9 @@ from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
 
 
 class PauliNoise(krauschannel):
-    r"""N-qubit Pauli noise channel specified by a list of probabilities and Pauli
-    gates.
+    r"""N-qubit Pauli noise channel given by probabilities and Pauli strings.
 
-    A Pauli channel is defined by:
+    A Pauli channel is defined by
 
     .. math::
         \mathcal{E}(\rho) = \sum_k p_k P_k \rho P_k,
@@ -38,36 +40,45 @@ class PauliNoise(krauschannel):
     defined as tensor products of one-qubit Pauli operators. The probabilities must fulfill
     :math:`\sum_k p_k = 1`.
 
-    This channel is a mixed unitary channel (see :func:`ismixedunitary`).
+    This channel is a mixed unitary channel (see :meth:`ismixedunitary`).
+    :class:`Depolarizing`, :class:`PauliX`, :class:`PauliY` and :class:`PauliZ`
+    are special cases of it.
+
+    Args:
+        p: Probabilities, one per Pauli string. Numeric values must lie in
+            :math:`[0, 1]` and add up to 1; the checks are skipped when any
+            value is symbolic.
+        paulistr: Pauli strings, all of the same length :math:`N`, made of the
+            characters ``"I"``, ``"X"``, ``"Y"`` and ``"Z"``. :math:`N` is the
+            number of qubits of the channel.
+
+    Raises:
+        ValueError: If ``paulistr`` is empty, the two lists have different
+            lengths, the strings have different lengths or are not valid Pauli
+            strings, or the numeric probabilities are out of range or do not
+            add up to 1.
 
     See Also:
-        :class:`Depolarizing`, :class:`PauliX`, :class:`PauliY`, :class:`PauliZ`,
-        which are special cases of PauliNoise.
-
-    Parameters:
-        p (list): List of probabilities that must add up to 1.
-        paulistrings (list): List of strings, each of length :math:`N`, with each character
-            being either `"I"`, `"X"`, `"Y"`, or `"Z"`. The number of qubits is equal to :math:`N`.
-
-    The lengths of `p` and `paulistrings` must be the same.
+        :class:`Depolarizing`, :class:`PauliX`, :class:`PauliY`,
+        :class:`PauliZ`, :class:`PauliString`
 
     Examples:
-        PauliNoise channels can be defined for any number of qubits,
-        and for any number of Pauli strings:
-
         >>> from mimiqcircuits import *
+        >>> # one qubit: identity with probability 0.8, X or Y with 0.1 each
         >>> c = Circuit()
         >>> c.push(PauliNoise([0.8, 0.1, 0.1], ["I", "X", "Y"]), 1)
         2-qubit circuit with 1 instruction:
         └── PauliNoise((0.8, pauli"I"), (0.1, pauli"X"), (0.1, pauli"Y")) @ q[1]
         <BLANKLINE>
 
+        >>> # two qubits: XY with probability 0.9, nothing with 0.1
         >>> c.push(PauliNoise([0.9, 0.1], ["XY", "II"]), 1, 2)
         3-qubit circuit with 2 instructions:
         ├── PauliNoise((0.8, pauli"I"), (0.1, pauli"X"), (0.1, pauli"Y")) @ q[1]
         └── PauliNoise((0.9, pauli"XY"), (0.1, pauli"II")) @ q[1]
         <BLANKLINE>
 
+        >>> # any number of qubits and of Pauli strings
         >>> c.push(PauliNoise([0.5, 0.2, 0.2, 0.1], ["IXIX", "XYXY", "ZZZZ", "IXYZ"]), 1, 2, 3, 4)
         5-qubit circuit with 3 instructions:
         ├── PauliNoise((0.8, pauli"I"), (0.1, pauli"X"), (0.1, pauli"Y")) @ q[1]
@@ -124,6 +135,18 @@ class PauliNoise(krauschannel):
         return self._parnames
 
     def evaluate(self, d={}):
+        """Return a copy with symbols in the probabilities substituted by values.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            PauliNoise: A new channel with the same Pauli strings.
+
+        Raises:
+            ValueError: If a substituted probability is outside :math:`[0, 1]`
+                or the probabilities are all numeric and do not add up to 1.
+        """
         # Substitute and evaluate each probability expression if possible
         evaluated_p = [
             (
@@ -154,7 +177,7 @@ class PauliNoise(krauschannel):
         return PauliNoise(evaluated_p, [str(s) for s in self.paulistr])
 
     def krausmatrices(self):
-        probabilities = np.sqrt(self.probabilities())
+        probabilities = [se.sqrt(p) for p in self.probabilities()]
         unitary_matrices = self.unitarymatrices()
         # Element-wise multiplication
         return [
@@ -163,10 +186,10 @@ class PauliNoise(krauschannel):
         ]
 
     def krausoperators(self):
-        probabilities = np.sqrt(self.probabilities())
+        probabilities = [se.sqrt(p) for p in self.probabilities()]
         pauli_strings = self.unitarygates()
         return [
-            mc.RescaledGate(pauli, prob)
+            RescaledGate(pauli, prob)
             for pauli, prob in zip(pauli_strings, probabilities)
         ]
 
@@ -180,7 +203,7 @@ class PauliNoise(krauschannel):
         ]
 
     def unitarygates(self):
-        return [mc.PauliString(str) for str in self.paulistr]
+        return [PauliString(str) for str in self.paulistr]
 
     @classmethod
     def ismixedunitary(self):
@@ -213,16 +236,19 @@ class PauliX(krauschannel):
 
     where :math:`0 \leq p \leq 1`.
 
-    This channel is a mixed unitary channel (see :func:`ismixedunitary`),
-    and is a special case of :class:`PauliNoise`.
+    This channel is a mixed unitary channel (see :meth:`ismixedunitary`),
+    and is a special case of :class:`PauliNoise`: ``PauliX(p)`` acts like
+    ``PauliNoise([1-p, p], ["I", "X"])``.
 
-    `PauliX(p)` is equivalent to `PauliNoise([1-p, p], ["I", "X"])`.
+    Args:
+        p: Probability of a bit flip error, in :math:`[0, 1]`; may be symbolic.
 
-    Parameters:
-        p (float): Probability of a bit flip error, must be in the range [0, 1].
+    Raises:
+        ValueError: If a numeric ``p`` is outside :math:`[0, 1]`.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # apply X to qubit 1 with probability 0.1
         >>> c = Circuit()
         >>> c.push(PauliX(0.1), 1)
         2-qubit circuit with 1 instruction:
@@ -242,7 +268,7 @@ class PauliX(krauschannel):
         self._parnames = ("p",)
 
     def krausmatrices(self):
-        probabilities = np.sqrt(self.probabilities())
+        probabilities = [se.sqrt(p) for p in self.probabilities()]
         unitary_matrices = self.unitarymatrices()
         # Element-wise multiplication
         return [
@@ -251,6 +277,17 @@ class PauliX(krauschannel):
         ]
 
     def evaluate(self, d={}):
+        """Return a copy with symbols in ``p`` substituted by values.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            A new channel of the same type.
+
+        Raises:
+            ValueError: If the substituted ``p`` is outside :math:`[0, 1]`.
+        """
         # Substitute and evaluate `self.p` using the provided dictionary `d`
         evaluated_p = (
             float(self.p.subs(d).evalf())
@@ -268,7 +305,7 @@ class PauliX(krauschannel):
         return type(self)(evaluated_p)
 
     def krausoperators(self):
-        return [mc.Operator(Ek) for (Ek) in self.krausmatrices()]
+        return [Operator(Ek) for (Ek) in self.krausmatrices()]
 
     def probabilities(self):
         return [1 - self.p, self.p]
@@ -277,7 +314,7 @@ class PauliX(krauschannel):
         return [Uk.matrix() for Uk in self.unitarygates()]
 
     def unitarygates(self):
-        return [mc.GateID(), mc.GateX()]
+        return [GateID(), GateX()]
 
     @staticmethod
     def ismixedunitary():
@@ -297,16 +334,19 @@ class PauliY(krauschannel):
 
     where :math:`0 \leq p \leq 1`.
 
-    This channel is a mixed unitary channel (see :func:`ismixedunitary`),
-    and is a special case of :class:`PauliNoise`.
+    This channel is a mixed unitary channel (see :meth:`ismixedunitary`),
+    and is a special case of :class:`PauliNoise`: ``PauliY(p)`` acts like
+    ``PauliNoise([1-p, p], ["I", "Y"])``.
 
-    `PauliY(p)` is equivalent to `PauliNoise([1-p, p], ["I", "Y"])`.
+    Args:
+        p: Probability of a bit-phase flip error, in :math:`[0, 1]`; may be symbolic.
 
-    Parameters:
-        p (float): Probability of a bit-phase flip error, must be in the range [0, 1].
+    Raises:
+        ValueError: If a numeric ``p`` is outside :math:`[0, 1]`.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # apply Y to qubit 1 with probability 0.1
         >>> c = Circuit()
         >>> c.push(PauliY(0.1), 1)
         2-qubit circuit with 1 instruction:
@@ -323,9 +363,20 @@ class PauliY(krauschannel):
             raise ValueError("Probability should be between 0 and 1.")
         self.p = p
         super().__init__()
-        self._parnames = "p"
+        self._parnames = ("p",)
 
     def evaluate(self, d={}):
+        """Return a copy with symbols in ``p`` substituted by values.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            A new channel of the same type.
+
+        Raises:
+            ValueError: If the substituted ``p`` is outside :math:`[0, 1]`.
+        """
         evaluated_p = (
             float(self.p.subs(d).evalf())
             if hasattr(self.p, "subs") and self.p.subs(d).is_number
@@ -340,7 +391,7 @@ class PauliY(krauschannel):
         return type(self)(evaluated_p)
 
     def krausmatrices(self):
-        probabilities = np.sqrt(self.probabilities())
+        probabilities = [se.sqrt(p) for p in self.probabilities()]
         unitary_matrices = self.unitarymatrices()
         # Element-wise multiplication
         return [
@@ -349,7 +400,7 @@ class PauliY(krauschannel):
         ]
 
     def krausoperators(self):
-        return [mc.Operator(Ek) for (Ek) in self.krausmatrices()]
+        return [Operator(Ek) for (Ek) in self.krausmatrices()]
 
     def probabilities(self):
         return [1 - self.p, self.p]
@@ -358,7 +409,7 @@ class PauliY(krauschannel):
         return [Uk.matrix() for Uk in self.unitarygates()]
 
     def unitarygates(self):
-        return [mc.GateID(), mc.GateY()]
+        return [GateID(), GateY()]
 
     @staticmethod
     def ismixedunitary():
@@ -378,16 +429,19 @@ class PauliZ(krauschannel):
 
     where :math:`0 \leq p \leq 1`.
 
-    This channel is a mixed unitary channel (see :func:`ismixedunitary`),
-    and is a special case of :class:`PauliNoise`.
+    This channel is a mixed unitary channel (see :meth:`ismixedunitary`),
+    and is a special case of :class:`PauliNoise`: ``PauliZ(p)`` acts like
+    ``PauliNoise([1-p, p], ["I", "Z"])``.
 
-    `PauliZ(p)` is equivalent to `PauliNoise([1-p, p], ["I", "Z"])`.
+    Args:
+        p: Probability of a phase flip error, in :math:`[0, 1]`; may be symbolic.
 
-    Parameters:
-        p (float): Probability of a phase flip error, must be in the range [0, 1].
+    Raises:
+        ValueError: If a numeric ``p`` is outside :math:`[0, 1]`.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # apply Z to qubit 1 with probability 0.1
         >>> c = Circuit()
         >>> c.push(PauliZ(0.1), 1)
         2-qubit circuit with 1 instruction:
@@ -404,9 +458,20 @@ class PauliZ(krauschannel):
             raise ValueError("Probability should be between 0 and 1.")
         self.p = p
         super().__init__()
-        self._parnames = "p"
+        self._parnames = ("p",)
 
     def evaluate(self, d={}):
+        """Return a copy with symbols in ``p`` substituted by values.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            A new channel of the same type.
+
+        Raises:
+            ValueError: If the substituted ``p`` is outside :math:`[0, 1]`.
+        """
         evaluated_p = (
             float(self.p.subs(d).evalf())
             if hasattr(self.p, "subs") and self.p.subs(d).is_number
@@ -421,7 +486,7 @@ class PauliZ(krauschannel):
         return type(self)(evaluated_p)
 
     def krausmatrices(self):
-        probabilities = np.sqrt(self.probabilities())
+        probabilities = [se.sqrt(p) for p in self.probabilities()]
         unitary_matrices = self.unitarymatrices()
         # Element-wise multiplication
         return [
@@ -430,7 +495,7 @@ class PauliZ(krauschannel):
         ]
 
     def krausoperators(self):
-        return [mc.Operator(Ek) for (Ek) in self.krausmatrices()]
+        return [Operator(Ek) for (Ek) in self.krausmatrices()]
 
     def probabilities(self):
         return [1 - self.p, self.p]
@@ -439,7 +504,7 @@ class PauliZ(krauschannel):
         return [Uk.matrix() for Uk in self.unitarygates()]
 
     def unitarygates(self):
-        return [mc.GateID(), mc.GateZ()]
+        return [GateID(), GateZ()]
 
     @staticmethod
     def ismixedunitary():

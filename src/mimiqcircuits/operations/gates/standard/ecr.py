@@ -25,17 +25,18 @@ from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 
 
 class GateECR(mcg.Gate):
-    r"""Two qubit ECR (echo) gate.
+    r"""Two qubit echoed cross-resonance (ECR) gate.
 
-    **Matrix representation:**
+    The gate is its own inverse.
 
-    .. math::
-        \operatorname{ECR} =\begin{pmatrix}
-            0 & \frac{1}{\sqrt{2}} & 0 & \frac{i}{\sqrt{2}} \\
-            \frac{1}{\sqrt{2}} & 0 & \frac{-i}{\sqrt{2}} & 0 \\
-            0 & \frac{i}{\sqrt{2}} & 0 & \frac{1}{\sqrt{2}} \\
-            \frac{-i}{\sqrt{2}} & 0 & \frac{1}{\sqrt{2}} & 0
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{ECR} = \frac{1}{\sqrt{2}} \begin{pmatrix}
+                0 & 0 & 1 & i \\
+                0 & 0 & i & 1 \\
+                1 & -i & 0 & 0 \\
+                -i & 1 & 0 & 0
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *

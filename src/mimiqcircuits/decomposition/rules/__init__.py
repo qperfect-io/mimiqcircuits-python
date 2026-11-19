@@ -16,15 +16,16 @@
 #
 """Rewrite rules for quantum circuit decomposition.
 
-Available rules:
-    - :class:`CanonicalRewrite`: Uses built-in gate decomposition methods
-    - :class:`FlattenContainers`: Flattens GateCall/Block containers
-    - :class:`ZYZRewrite`: ZYZ Euler angle decomposition
-    - :class:`SpecialAngleRewrite`: Decompose rotations with special angles to Clifford+T
-    - :class:`ToZRotationRewrite`: Convert RX/RY to RZ + Clifford gates
-    - :class:`ToffoliToCliffordTRewrite`: Optimal Toffoli -> Clifford+T rewrite
-    - :class:`SolovayKitaevRewrite`: Solovay-Kitaev approximation with Clifford+T
-    - :class:`GridSynthRewrite`: Ross-Selinger approximation of RZ with Clifford+T
+The available rules are:
+
+- :class:`CanonicalRewrite`: Uses built-in gate decomposition methods
+- :class:`FlattenContainers`: Flattens GateCall/Block/BlockCall containers
+- :class:`ZYZRewrite`: ZYZ Euler angle decomposition
+- :class:`SpecialAngleRewrite`: Decompose rotations with special angles to Clifford+T
+- :class:`ToZRotationRewrite`: Convert RX/RY to RZ + Clifford gates
+- :class:`ToffoliToCliffordTRewrite`: Toffoli -> Clifford+T with 7 T gates
+- :class:`SolovayKitaevRewrite`: Solovay-Kitaev approximation with Clifford+T
+- :class:`GridSynthRewrite`: Ross-Selinger approximation of RZ with Clifford+T
 """
 
 from mimiqcircuits.decomposition.rules.canonical import CanonicalRewrite

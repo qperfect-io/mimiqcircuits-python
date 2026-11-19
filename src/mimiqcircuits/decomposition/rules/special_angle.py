@@ -25,7 +25,8 @@ from typing import TYPE_CHECKING, Sequence
 from mimiqcircuits.decomposition.abstract import DecompositionError, RewriteRule
 
 if TYPE_CHECKING:
-    from mimiqcircuits import Circuit, Operation
+    from mimiqcircuits.circuit import Circuit
+    from mimiqcircuits.operations.operation import Operation
 
 
 def _get_pi_factor(val) -> int | None:
@@ -43,7 +44,7 @@ def _get_pi_factor(val) -> int | None:
     if _is_basic(val):
         try:
             val = complex(val).real
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, RuntimeError):
             return None
 
     # Check for multiples of pi/4
@@ -58,52 +59,68 @@ def _get_pi_factor(val) -> int | None:
 
 @dataclass(frozen=True, slots=True)
 class SpecialAngleRewrite(RewriteRule):
-    """Rewrite rule for decomposing rotations with special angles to Clifford+T.
+    """Rewrite rule that turns rotations by multiples of ``pi/4`` into Clifford+T gates.
 
-    Decomposes single-qubit rotations whose angle is a multiple of pi/4 into
-    explicit Clifford or Clifford+T gates.
-
-    This rule only matches rotations with angles k*pi/4 (or k*pi/2 in Clifford-only
-    mode). Generic rotations with arbitrary angles are not matched.
+    A rotation by ``k*pi/4`` equals, up to a global phase, a short product of
+    Clifford gates and at most one ``T`` (``T†``, or ``T`` conjugated into the
+    X or Y axis). This rule writes that product out exactly. For example
+    ``RZ(pi/4)`` becomes ``T``, ``RZ(pi/2)`` becomes ``S`` and ``RX(pi)``
+    becomes ``X``. Angles are compared to a multiple of ``pi/4`` with a
+    relative tolerance of ``1e-9`` (absolute ``1e-10`` near zero), modulo
+    ``2*pi``. Other angles are not matched.
 
     Args:
-        only_cliffords: If True, only match angles k*pi/2 (Clifford gates only).
-                       If False (default), match angles k*pi/4 (Clifford+T).
+        only_cliffords: If ``True``, match only angles ``k*pi/2``, whose
+            rewrite uses Clifford gates only. Defaults to ``False``, which
+            matches every ``k*pi/4``.
 
-    Supported operations:
-        - ``GateRX(theta)`` where theta = k*pi/4
-        - ``GateRY(theta)`` where theta = k*pi/4
-        - ``GateRZ(lambda)`` where lambda = k*pi/4
+    Supported Operations:
+        - ``GateRX(theta)`` with ``theta = k*pi/4``
+        - ``GateRY(theta)`` with ``theta = k*pi/4``
+        - ``GateRZ(lambda)`` with ``lambda = k*pi/4``
 
-    Example:
-        >>> from mimiqcircuits import GateRZ
-        >>> from mimiqcircuits.decomposition import SpecialAngleRewrite
+    Examples:
+        >>> from mimiqcircuits import *
         >>> from symengine import pi
         >>> rule = SpecialAngleRewrite()
-        >>> rule.matches(GateRZ(pi/4))  # True, decomposes to T
-        True
-        >>> rule.matches(GateRZ(0.123))  # False, not a special angle
+        >>> # 3*pi/4 is a special angle: RZ(3*pi/4) is S followed by T
+        >>> rule.decompose_step(GateRZ(3*pi/4), [0], [], [])
+        1-qubit circuit with 2 instructions:
+        ├── S @ q[0]
+        └── T @ q[0]
+        <BLANKLINE>
+        >>> # an arbitrary angle is not matched
+        >>> rule.matches(GateRZ(0.123))
+        False
+        >>> # pi/4 needs a T gate, which the Clifford-only mode refuses
+        >>> SpecialAngleRewrite(only_cliffords=True).matches(GateRZ(pi/4))
         False
     """
 
     only_cliffords: bool = False
 
     def matches(self, op: Operation) -> bool:
-        """Check if this rule can decompose the operation.
+        """Check whether an operation is a rotation by a special angle.
 
         Args:
             op: The operation to check.
 
         Returns:
-            True if the operation is a rotation with a special angle.
+            ``True`` for a ``GateRX``, ``GateRY`` or ``GateRZ`` whose angle is
+            a multiple of ``pi/4``, or of ``pi/2`` when ``only_cliffords`` is
+            set.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.operations.gates.standard.rotations import (
+            GateRX,
+            GateRY,
+            GateRZ,
+        )
 
-        if isinstance(op, mc.GateRX):
+        if isinstance(op, GateRX):
             k = _get_pi_factor(op.theta)
-        elif isinstance(op, mc.GateRY):
+        elif isinstance(op, GateRY):
             k = _get_pi_factor(op.theta)
-        elif isinstance(op, mc.GateRZ):
+        elif isinstance(op, GateRZ):
             k = _get_pi_factor(op.lmbda)
         else:
             return False
@@ -124,26 +141,37 @@ class SpecialAngleRewrite(RewriteRule):
         bits: Sequence[int],
         zvars: Sequence[int],
     ) -> Circuit:
-        """Decompose the rotation to Clifford+T gates.
+        """Rewrite a rotation by a multiple of ``pi/4`` as Clifford+T gates.
+
+        The result equals the rotation up to a global phase, and is empty for
+        a multiple of ``2*pi``.
 
         Args:
-            op: The rotation operation to decompose.
-            qubits: Qubit indices for the operation.
+            op: The ``GateRX``, ``GateRY`` or ``GateRZ`` to rewrite.
+            qubits: Qubit index the rotation acts on.
             bits: Classical bit indices (unused).
             zvars: Z-variable indices (unused).
 
         Returns:
-            A Circuit containing the decomposed instructions.
+            A new :class:`~mimiqcircuits.Circuit` with the rewrite.
 
         Raises:
-            DecompositionError: If the operation cannot be decomposed.
+            DecompositionError: If :meth:`matches` refuses ``op``.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.circuit import Circuit
+        from mimiqcircuits.operations.gates.standard.rotations import (
+            GateRX,
+            GateRY,
+            GateRZ,
+        )
 
-        circ = mc.Circuit()
+        if not self.matches(op):
+            raise DecompositionError(f"SpecialAngleRewrite cannot decompose {op}")
+
+        circ = Circuit()
         q = qubits[0]
 
-        if isinstance(op, mc.GateRZ):
+        if isinstance(op, GateRZ):
             k = _get_pi_factor(op.lmbda)
             if k is None:
                 raise DecompositionError(
@@ -151,7 +179,7 @@ class SpecialAngleRewrite(RewriteRule):
                 )
             self._decompose_rz(circ, q, k)
 
-        elif isinstance(op, mc.GateRX):
+        elif isinstance(op, GateRX):
             k = _get_pi_factor(op.theta)
             if k is None:
                 raise DecompositionError(
@@ -159,7 +187,7 @@ class SpecialAngleRewrite(RewriteRule):
                 )
             self._decompose_rx(circ, q, k)
 
-        elif isinstance(op, mc.GateRY):
+        elif isinstance(op, GateRY):
             k = _get_pi_factor(op.theta)
             if k is None:
                 raise DecompositionError(
@@ -176,7 +204,9 @@ class SpecialAngleRewrite(RewriteRule):
 
     def _decompose_rz(self, circ: Circuit, q: int, k: int) -> None:
         """Decompose RZ(k*pi/4) to Clifford+T gates."""
-        import mimiqcircuits as mc
+        from mimiqcircuits.operations.gates.standard.pauli import GateZ
+        from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+        from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
 
         # RZ decomposition table for k in {0,1,...,7}:
         #   k=0: identity
@@ -191,37 +221,40 @@ class SpecialAngleRewrite(RewriteRule):
             case 0:
                 pass  # identity
             case 1:
-                circ.push(mc.GateT(), q)
+                circ.push(GateT(), q)
             case 2:
-                circ.push(mc.GateS(), q)
+                circ.push(GateS(), q)
             case 3:
-                circ.push(mc.GateS(), q)
-                circ.push(mc.GateT(), q)
+                circ.push(GateS(), q)
+                circ.push(GateT(), q)
             case 4:
-                circ.push(mc.GateZ(), q)
+                circ.push(GateZ(), q)
             case 5:
-                circ.push(mc.GateZ(), q)
-                circ.push(mc.GateT(), q)
+                circ.push(GateZ(), q)
+                circ.push(GateT(), q)
             case 6:
-                circ.push(mc.GateSDG(), q)
+                circ.push(GateSDG(), q)
             case 7:
-                circ.push(mc.GateTDG(), q)
+                circ.push(GateTDG(), q)
 
     def _decompose_rx(self, circ: Circuit, q: int, k: int) -> None:
         """Decompose RX(k*pi/4) to Clifford+T gates."""
-        import mimiqcircuits as mc
+        from mimiqcircuits.operations.gates.standard.hadamard import GateH
+        from mimiqcircuits.operations.gates.standard.pauli import GateX
+        from mimiqcircuits.operations.gates.standard.sx import GateSX, GateSXDG
+        from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
 
         # TX = RX(pi/4) = H*T*H
         def push_tx():
-            circ.push(mc.GateH(), q)
-            circ.push(mc.GateT(), q)
-            circ.push(mc.GateH(), q)
+            circ.push(GateH(), q)
+            circ.push(GateT(), q)
+            circ.push(GateH(), q)
 
         # TXdg = RX(-pi/4) = H*Tdg*H
         def push_txdg():
-            circ.push(mc.GateH(), q)
-            circ.push(mc.GateTDG(), q)
-            circ.push(mc.GateH(), q)
+            circ.push(GateH(), q)
+            circ.push(GateTDG(), q)
+            circ.push(GateH(), q)
 
         # RX decomposition table for k in {0,1,...,7}:
         #   k=0: identity
@@ -238,39 +271,43 @@ class SpecialAngleRewrite(RewriteRule):
             case 1:
                 push_tx()
             case 2:
-                circ.push(mc.GateSX(), q)
+                circ.push(GateSX(), q)
             case 3:
-                circ.push(mc.GateSX(), q)
+                circ.push(GateSX(), q)
                 push_tx()
             case 4:
-                circ.push(mc.GateX(), q)
+                circ.push(GateX(), q)
             case 5:
-                circ.push(mc.GateX(), q)
+                circ.push(GateX(), q)
                 push_tx()
             case 6:
-                circ.push(mc.GateSXDG(), q)
+                circ.push(GateSXDG(), q)
             case 7:
                 push_txdg()
 
     def _decompose_ry(self, circ: Circuit, q: int, k: int) -> None:
         """Decompose RY(k*pi/4) to Clifford+T gates."""
-        import mimiqcircuits as mc
+        from mimiqcircuits.operations.gates.standard.hadamard import GateH
+        from mimiqcircuits.operations.gates.standard.pauli import GateY
+        from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+        from mimiqcircuits.operations.gates.standard.sy import GateSY, GateSYDG
+        from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
 
         # TY = RY(pi/4) = Sdg*H*T*H*S
         def push_ty():
-            circ.push(mc.GateSDG(), q)
-            circ.push(mc.GateH(), q)
-            circ.push(mc.GateT(), q)
-            circ.push(mc.GateH(), q)
-            circ.push(mc.GateS(), q)
+            circ.push(GateSDG(), q)
+            circ.push(GateH(), q)
+            circ.push(GateT(), q)
+            circ.push(GateH(), q)
+            circ.push(GateS(), q)
 
         # TYdg = RY(-pi/4) = Sdg*H*Tdg*H*S
         def push_tydg():
-            circ.push(mc.GateSDG(), q)
-            circ.push(mc.GateH(), q)
-            circ.push(mc.GateTDG(), q)
-            circ.push(mc.GateH(), q)
-            circ.push(mc.GateS(), q)
+            circ.push(GateSDG(), q)
+            circ.push(GateH(), q)
+            circ.push(GateTDG(), q)
+            circ.push(GateH(), q)
+            circ.push(GateS(), q)
 
         # RY decomposition table for k in {0,1,...,7}:
         #   k=0: identity
@@ -287,17 +324,17 @@ class SpecialAngleRewrite(RewriteRule):
             case 1:
                 push_ty()
             case 2:
-                circ.push(mc.GateSY(), q)
+                circ.push(GateSY(), q)
             case 3:
-                circ.push(mc.GateSY(), q)
+                circ.push(GateSY(), q)
                 push_ty()
             case 4:
-                circ.push(mc.GateY(), q)
+                circ.push(GateY(), q)
             case 5:
-                circ.push(mc.GateY(), q)
+                circ.push(GateY(), q)
                 push_ty()
             case 6:
-                circ.push(mc.GateSYDG(), q)
+                circ.push(GateSYDG(), q)
             case 7:
                 push_tydg()
 

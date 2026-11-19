@@ -52,3 +52,11 @@ def test_generalized_gates(gate):
     m = gate.unwrappedmatrix()
     assert m.dtype == np.complex128
     assert np.allclose(m, _as_array(gate.matrix()))
+
+
+def test_paulistring_unwrappedmatrix():
+    m = mc.PauliString("XZ").unwrappedmatrix()
+    z = np.diag([1, -1])
+    x = np.array([[0, 1], [1, 0]])
+    assert m.dtype == np.complex128
+    assert np.allclose(m, np.kron(x, z))

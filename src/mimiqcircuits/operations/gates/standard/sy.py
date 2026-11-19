@@ -19,7 +19,12 @@
 from mimiqcircuits.operations.utils import control_one_defined
 from mimiqcircuits.operations.gates.standard.pauli import GateY
 from fractions import Fraction
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+from mimiqcircuits.operations.gates.standard.u import GateU
+from mimiqcircuits.operations.inverse import Inverse, canonical_inverse
+from mimiqcircuits.operations.power import Power, canonical_power
 from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 
 
@@ -28,51 +33,34 @@ from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 _EXPONENT = Fraction(1, 2)
 
 
-@mc.canonical_power(GateY, _EXPONENT)
-class GateSY(mc.Power):
+@canonical_power(GateY, _EXPONENT)
+class GateSY(Power):
     r"""Single qubit :math:`\sqrt{Y}` gate.
 
-    See Also:
-        :class:`GateSYDG`, :class:`GateY`, :class:`Power`
+    Equal to ``GateY().power(1/2)``.
 
-    **Matrix Representation**
-
-    .. math::
-        \operatorname{SY} =
-        \sqrt{\operatorname{Y}} =
-        \frac{1}{2}
-        \begin{pmatrix}
-            1+i & -1-i \\
-            1+i & 1+i
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{SY} = \sqrt{\operatorname{Y}} = \frac{1}{2} \begin{pmatrix}
+                1+i & -1-i \\
+                1+i & 1+i
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateSY()
         SY
-
         >>> GateSY().matrix()
         [0.5 + 0.5*I, -0.5 - 0.5*I]
         [0.5 + 0.5*I, 0.5 + 0.5*I]
         <BLANKLINE>
-
-        >>> c = Circuit()
-        >>> c.push(GateSY(), 1)
-        2-qubit circuit with 1 instruction:
-        └── SY @ q[1]
+        >>> c = Circuit().push(GateSY(), 0)
+        >>> c
+        1-qubit circuit with 1 instruction:
+        └── SY @ q[0]
         <BLANKLINE>
-
-        >>> c.push(GateSY(), 2)
-        3-qubit circuit with 2 instructions:
-        ├── SY @ q[1]
-        └── SY @ q[2]
-        <BLANKLINE>
-
-        >>> power(GateSY(), 2)
-        Y**1
-
-    **Decomposition**
-
+        >>> GateSY().power(2), GateSY().inverse()
+        (Y**1, SY†)
         >>> GateSY().decompose()
         1-qubit circuit with 4 instructions:
         ├── S @ q[0]
@@ -81,13 +69,15 @@ class GateSY(mc.Power):
         └── U(0, 0, 0, (1/4)*pi) @ q[0]
         <BLANKLINE>
 
+    See Also:
+        :class:`GateSYDG`, :class:`GateY`, :class:`Power`
     """
 
     _name = "SY"
 
     def __init__(self, operation=None, exponent=None):
-        """Initialize a SY gate."""
-        super().__init__(mc.GateY(), _EXPONENT)
+        """Initialize a SY gate. The arguments are unused."""
+        super().__init__(GateY(), _EXPONENT)
 
     def inverse(self):
         return GateSYDG()
@@ -96,73 +86,63 @@ class GateSY(mc.Power):
         return True
 
     def _control(self, n):
-        return control_one_defined(n, self, mc.Control(1, GateSY()))
+        return control_one_defined(n, self, Control(1, GateSY()))
 
     def _power(self, p):
-        return mc.Power(self, p)
+        return Power(self, p)
 
     def __str__(self):
         return f"{self.name}"
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(mc.GateS(), q)
-        circ.push(mc.GateS(), q)
-        circ.push(mc.GateH(), q)
-        circ.push(mc.GateU(0, 0, 0, PI_4), q)
+        circ.push(GateS(), q)
+        circ.push(GateS(), q)
+        circ.push(GateH(), q)
+        circ.push(GateU(0, 0, 0, PI_4), q)
         return circ
 
 
-@mc.canonical_inverse(GateSY)
-class GateSYDG(mc.Inverse):
-    r"""Single qubit :math:`\sqrt{Y}^\dagger` gate (conjugate transpose of the :math:`\sqrt{Y}` gate).
+@canonical_inverse(GateSY)
+class GateSYDG(Inverse):
+    r"""Single qubit :math:`\sqrt{Y}^\dagger` gate, the inverse of :class:`GateSY`.
 
-    See Also:
-        :class:`GateSY`, :class:`GateY`, :class:`Power`, :class:`Inverse`
-
-    **Matrix Representation**
-
-    .. math::
-        \operatorname{SYDG} =
-        \sqrt{\operatorname{Y}}^\dagger =
-        \frac{1}{2}
-        \begin{pmatrix}
-            1-i & 1-i \\
-            -1+i & 1-i
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{SYDG} = \sqrt{\operatorname{Y}}^\dagger = \frac{1}{2} \begin{pmatrix}
+                1-i & 1-i \\
+                -1+i & 1-i
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
         >>> GateSYDG()
         SY†
-
         >>> GateSYDG().matrix()
         [0.5 - 0.5*I, 0.5 - 0.5*I]
         [-0.5 + 0.5*I, 0.5 - 0.5*I]
         <BLANKLINE>
-
-        >>> c = Circuit()
-        >>> c.push(GateSYDG(), 1)
-        2-qubit circuit with 1 instruction:
-        └── SY† @ q[1]
+        >>> c = Circuit().push(GateSYDG(), 0)
+        >>> c
+        1-qubit circuit with 1 instruction:
+        └── SY† @ q[0]
+        <BLANKLINE>
+        >>> GateSYDG().power(2), GateSYDG().inverse()
+        (SY†**2, SY)
+        >>> GateSYDG().decompose()
+        1-qubit circuit with 4 instructions:
+        ├── U(0, 0, 0, (-1/4)*pi) @ q[0]
+        ├── H @ q[0]
+        ├── S† @ q[0]
+        └── S† @ q[0]
         <BLANKLINE>
 
-        >>> c.push(GateSYDG(), 2)
-        3-qubit circuit with 2 instructions:
-        ├── SY† @ q[1]
-        └── SY† @ q[2]
-        <BLANKLINE>
-
-        >>> power(GateSYDG(), 2)
-        SY†**2
-
-        >>> inverse(GateSYDG())
-        SY
-
+    See Also:
+        :class:`GateSY`, :class:`GateY`, :class:`Inverse`
     """
 
     def __init__(self, operation=None):
-        """Initialize a SYDG gate."""
+        """Initialize a SYDG gate. The argument is unused."""
         super().__init__(GateSY())
 
     def inverse(self):
@@ -172,15 +152,15 @@ class GateSYDG(mc.Inverse):
         return True
 
     def _power(self, p):
-        return mc.Power(self, p)
+        return Power(self, p)
 
     def _control(self, n):
-        return control_one_defined(n, self, mc.Control(1, GateSYDG()))
+        return control_one_defined(n, self, Control(1, GateSYDG()))
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
-        circ.push(mc.GateU(0, 0, 0, NEG_PI_4), q)
-        circ.push(mc.GateH(), q)
-        circ.push(mc.GateSDG(), q)
-        circ.push(mc.GateSDG(), q)
+        circ.push(GateU(0, 0, 0, NEG_PI_4), q)
+        circ.push(GateH(), q)
+        circ.push(GateSDG(), q)
+        circ.push(GateSDG(), q)
         return circ

@@ -57,26 +57,52 @@ class ParameterTable:
     dictionary ready for :meth:`~mimiqcircuits.Circuit.evaluate`, and
     ``t[i:j]`` or ``t[[i, j]]`` is the table of the selected points;
     :meth:`listvars` gives the symbols and :meth:`to_numpy` the values.
-    Iterating over a table gives its points.
+    Iterating over a table gives its points. A table is immutable and
+    hashable.
+
+    Args:
+        symbols: The symbols, or their names.
+        values: An array-like of shape ``(npoints, len(symbols))``.
+
+    Raises:
+        ValueError: If ``values`` has the wrong shape, a symbol appears twice,
+            or a symbol is not a plain variable.
 
     Examples:
-        >>> from symengine import symbols
         >>> from mimiqcircuits import *
+        >>> from symengine import symbols
         >>> theta, phi = symbols("theta phi")
+
+        Three points, given as one column of values per symbol.
+
         >>> t = ParameterTable.from_columns({theta: [0.0, 0.5, 1.0], phi: [0.0, 0.25, 0.5]})
         >>> t
         ParameterTable with 3 points over (theta, phi):
         ├── theta = 0.0, phi = 0.0
         ├── theta = 0.5, phi = 0.25
         └── theta = 1.0, phi = 0.5
+
+        A point is a dictionary, ready for
+        :meth:`~mimiqcircuits.Circuit.evaluate`.
+
         >>> t[1][phi]
         0.25
+
+        Multiplying two tables gives every combination of their points.
+
         >>> ParameterTable.from_columns({theta: [0.0, 1.0]}) * ParameterTable.from_columns({phi: [0.0, 0.5]})
         ParameterTable with 4 points over (theta, phi):
         ├── theta = 0.0, phi = 0.0
         ├── theta = 0.0, phi = 0.5
         ├── theta = 1.0, phi = 0.0
         └── theta = 1.0, phi = 0.5
+
+        :meth:`hcat` pairs points instead.
+
+        >>> ParameterTable.from_columns({theta: [0.0, 1.0]}).hcat(ParameterTable.from_columns({phi: [5.0, 6.0]}))
+        ParameterTable with 2 points over (theta, phi):
+        ├── theta = 0.0, phi = 5.0
+        └── theta = 1.0, phi = 6.0
     """
 
     __slots__ = ("_symbols", "_values")
@@ -103,6 +129,17 @@ class ParameterTable:
         ``{theta: xs, phi: ys}``. All the columns must have the same length,
         and point ``i`` takes the ``i``-th value of each. For every combination
         of the values instead, use :func:`gridtable`.
+
+        Args:
+            columns: A mapping from symbol (or name) to its values.
+
+        Returns:
+            The new :class:`ParameterTable`, with the symbols in the order of
+            ``columns``.
+
+        Raises:
+            ValueError: If ``columns`` is empty or the columns have
+                different lengths.
         """
         columns = list(dict(columns).items())
         if not columns:
@@ -122,6 +159,27 @@ class ParameterTable:
 
         Every dictionary must bind the same symbols. Symbols are ordered by
         name, since dictionaries give no order of their own.
+
+        Args:
+            points: A list of dictionaries mapping symbols (or names) to
+                values, such as the ``param_grid`` of
+                :meth:`~mimiqcircuits.backends.Backend.execute`.
+
+        Returns:
+            The new :class:`ParameterTable`.
+
+        Raises:
+            ValueError: If ``points`` is empty, a point names a symbol twice,
+                or two points bind different symbols.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> from symengine import symbols
+            >>> theta, phi = symbols("theta phi")
+            >>> ParameterTable.from_dicts([{theta: 2.0, phi: 1.0}, {"theta": 3.0, "phi": 4.0}])
+            ParameterTable with 2 points over (phi, theta):
+            ├── phi = 1.0, theta = 2.0
+            └── phi = 4.0, theta = 3.0
         """
         converted = []
         for i, p in enumerate(points):
@@ -187,7 +245,18 @@ class ParameterTable:
         return ParameterTable(self._symbols + other._symbols, values)
 
     def hcat(self, *others):
-        """Pair the points of tables of the same length, side by side."""
+        """Pair the points of tables of the same length, side by side.
+
+        Args:
+            *others: Tables with as many points as this one and no symbol in
+                common with it or each other.
+
+        Returns:
+            A table whose point ``i`` joins point ``i`` of every table.
+
+        Raises:
+            ValueError: If the lengths differ or a symbol is repeated.
+        """
         out = self
         for other in others:
             out._check_disjoint(other)
@@ -202,7 +271,17 @@ class ParameterTable:
         return out
 
     def vcat(self, *others):
-        """Append the points of tables over the same symbols, in any order."""
+        """Append the points of other tables after those of this one.
+
+        Args:
+            *others: Tables over the same symbols, in any column order.
+
+        Returns:
+            A table with the columns of this one and the points of all.
+
+        Raises:
+            ValueError: If a table has different symbols.
+        """
         out = self
         for other in others:
             if set(out._symbols) != set(other._symbols):
@@ -253,9 +332,19 @@ def gridtable(columns):
     with each ``phi``, then ``theta = 1`` with each ``phi``. It is the same as
     multiplying the one-column tables with ``*``.
 
+    Args:
+        columns: A mapping from symbol (or name) to its values.
+
+    Returns:
+        The :class:`ParameterTable` with ``prod(len(v) for v in
+        columns.values())`` points.
+
+    Raises:
+        ValueError: If ``columns`` is empty.
+
     Examples:
-        >>> from symengine import symbols
         >>> from mimiqcircuits import *
+        >>> from symengine import symbols
         >>> theta, phi = symbols("theta phi")
         >>> gridtable({theta: [0.0, 1.0], phi: [0.0, 2.0, 4.0]})
         ParameterTable with 6 points over (theta, phi):
@@ -285,25 +374,46 @@ class SweepExperiment:
 
     ``len(ex)`` is the number of points, ``ex[i]`` is the circuit evaluated at
     point ``i``, ``ex[i:j]`` or ``ex[[i, j]]`` is the experiment over the
-    selected points, and
-    iterating over the experiment gives the evaluated circuits
-    in order. Executing it on a local backend returns one
-    :class:`~mimiqcircuits.QCSResults` per point.
+    selected points, and iterating over the experiment gives the evaluated
+    circuits in order. ``backend.execute(ex)`` on a
+    :class:`~mimiqcircuits.backends.LocalBackend` runs every point and
+    returns one :class:`~mimiqcircuits.QCSResults` per point, each with its
+    own seed derived from ``seed``.
+
+    Args:
+        circuit: The symbolic circuit. It is not copied.
+        table: The :class:`ParameterTable` of values.
+
+    Raises:
+        TypeError: If ``table`` is not a :class:`ParameterTable`.
+        ValueError: If the circuit has no symbols, or the table misses a
+            symbol of the circuit or has one the circuit does not use.
 
     Examples:
-        >>> from symengine import symbols, pi
         >>> from mimiqcircuits import *
+        >>> from symengine import symbols
         >>> theta = symbols("theta")
         >>> c = Circuit().push(GateRX(theta), 0)
+
+        Sweep the angle over three values.
+
         >>> ex = SweepExperiment(c, ParameterTable.from_columns({theta: [0.0, 0.5, 1.0]}))
         >>> ex
         SweepExperiment:
         ├── circuit: 1-qubit circuit with 1 instruction
         └── table: ParameterTable(3 points over (theta))
+        >>> len(ex)
+        3
+
+        Each point is the circuit with the angle bound.
+
         >>> ex[1]
         1-qubit circuit with 1 instruction:
         └── RX(0.5) @ q[0]
         <BLANKLINE>
+
+        Run it with ``backend.execute(ex, nsamples=1000, seed=1)`` to get a
+        list of three results.
     """
 
     __slots__ = ("_circuit", "_table")
@@ -362,12 +472,15 @@ class SweepExperiment:
         return self._table.listvars()
 
     def num_qubits(self):
+        """Return the number of qubits of the circuit."""
         return self._circuit.num_qubits()
 
     def num_bits(self):
+        """Return the number of classical bits of the circuit."""
         return self._circuit.num_bits()
 
     def num_zvars(self):
+        """Return the number of z-variables of the circuit."""
         return self._circuit.num_zvars()
 
     def __repr__(self):
@@ -381,6 +494,23 @@ class SweepExperiment:
         )
 
     __str__ = __repr__
+
+    def saveproto(self, file):
+        """Save the experiment to a Protobuf (.pb) file or file-like object.
+
+        Returns the number of bytes written. See
+        :func:`~mimiqcircuits.proto.protoio.saveproto`.
+        """
+        from mimiqcircuits.proto.protoio import saveproto
+
+        return saveproto(self, file)
+
+    @staticmethod
+    def loadproto(file):
+        """Load a :class:`SweepExperiment` saved with :meth:`saveproto`."""
+        from mimiqcircuits.proto.protoio import loadproto
+
+        return loadproto(file, SweepExperiment)
 
 
 __all__ = ["ParameterTable", "gridtable", "SweepExperiment"]

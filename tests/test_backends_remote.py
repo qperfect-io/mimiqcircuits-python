@@ -774,3 +774,97 @@ def test_known_qhive_urls_pick_their_auth_server():
     dev = mc.MimiqConnection(mc.QPERFECT_DEV).connection
     assert dev.auth_url == "https://mimiqfast.qperfect.io/auth/"
     assert isinstance(mc.MimiqConnection().connection, mimiqlink.MimiqConnection)
+
+
+def test_legacy_service_warns_unless_silenced(monkeypatch):
+    import warnings
+
+    monkeypatch.delenv("MIMIQ_V2_WARNING", raising=False)
+    with pytest.warns(FutureWarning, match="MIMIQ_V2_WARNING"):
+        mc.MimiqConnection()
+    # Quantum Hive (V2) connections never warn
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", FutureWarning)
+        mc.MimiqConnection(mc.QPERFECT_CLOUD_V2)
+    for value in ("off", "False", "no", "0"):
+        monkeypatch.setenv("MIMIQ_V2_WARNING", value)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", FutureWarning)
+            mc.MimiqConnection()
+
+
+# ── execution options shared by submit and optimize ────────────────────────
+
+
+def test_set_exec_opts():
+    from mimiqcircuits.remote import _set_exec_opts
+
+    # None leaves the choice to the server, so the key is not sent at all.
+    assert _set_exec_opts({}) == {}
+
+    pars = _set_exec_opts(
+        {}, mpsmethod="dmpo", mpotraversal="frontierpack", streaming=False, fuse=True
+    )
+    assert pars == {
+        "mpsMethod": "dmpo",
+        "mpoTraversal": "frontierpack",
+        "streaming": False,
+        "fuse": True,
+    }
+
+    with pytest.raises(ValueError, match="mpsmethod"):
+        _set_exec_opts({}, mpsmethod="zipup")
+    with pytest.raises(ValueError, match="mpotraversal"):
+        _set_exec_opts({}, mpotraversal="dfs")
+
+
+class _RecordingInner:
+    """Inner connection that keeps the parameters file of the last request."""
+
+    def request(self, *args):
+        import json
+
+        files = args[-1]
+        with open(files[1]) as f:
+            self.pars = json.load(f)
+        return "req-opt"
+
+
+def _optimize_connection():
+    from mimiqcircuits.remote import MimiqConnection
+
+    conn = MimiqConnection.__new__(MimiqConnection)
+    conn.connection = _RecordingInner()
+    return conn
+
+
+def test_connection_optimize_writes_exec_opts():
+    c, x = _opt_circuit()
+    conn = _optimize_connection()
+
+    conn.optimize(
+        mc.OptimizationExperiment(c, {x: 0.1}),
+        algorithm="mps",
+        mpsmethod="vmpob",
+        mpotraversal="bfs",
+        streaming=True,
+        reorderqubits="greedy",
+    )
+
+    pars = conn.connection.pars
+    assert pars["mpsMethod"] == "vmpob"
+    assert pars["mpoTraversal"] == "bfs"
+    assert pars["streaming"] is True
+    assert pars["reorderQubits"] == "greedy"
+
+
+def test_connection_optimize_validates_prep_flags():
+    c, x = _opt_circuit()
+    ex = mc.OptimizationExperiment(c, {x: 0.1})
+    conn = _optimize_connection()
+
+    # Same checks as submit: fuse=0 would otherwise reach the server as "set".
+    with pytest.raises(TypeError, match="fuse"):
+        conn.optimize(ex, fuse=0)
+    with pytest.raises(TypeError, match="reorderqubits_seed"):
+        conn.optimize(ex, reorderqubits_seed=1.5)

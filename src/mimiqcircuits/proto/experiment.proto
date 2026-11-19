@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+import "circuit.proto";
+
+// Values of a sweep, row-major: the value of symbol j at point i is
+// values[i * len(symbols) + j]. npoints is explicit so a table with no
+// symbols keeps its length.
+message ParameterTable {
+    repeated Symbol symbols = 1;
+    uint64 npoints = 2;
+    repeated double values = 3;
+}
+
+message SweepExperiment {
+    Circuit circuit = 1;
+    ParameterTable table = 2;
+}
+
+enum EquivalenceMethod {
+    SAMPLES = 0;
+    AMPLITUDES = 1;
+}
+
+message EquivalenceExperiment {
+    Circuit c1 = 1;
+    Circuit c2 = 2;
+    EquivalenceMethod method = 3;
+}

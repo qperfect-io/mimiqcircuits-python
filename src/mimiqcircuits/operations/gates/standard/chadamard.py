@@ -16,26 +16,32 @@
 #
 """Controlled-Hadamard gate."""
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import (
+    Control,
+    canonical_control,
+    register_control_decomposition,
+)
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX
+from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
 
 
-@mc.canonical_control(1, GateH)
-class GateCH(mc.Control):
+@canonical_control(1, GateH)
+class GateCH(Control):
     r"""Two qubit Controlled-Hadamard gate.
 
     By convention, the first qubit is the control and the second is
-    the target
+    the target.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{CH} = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & \frac{1}{\sqrt{2}}  & \frac{1}{\sqrt{2}}  \\
-            0 & 0 & \frac{1}{\sqrt{2}}  & -\frac{1}{\sqrt{2}}
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{CH} = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & \frac{1}{\sqrt{2}}  & \frac{1}{\sqrt{2}}  \\
+                0 & 0 & \frac{1}{\sqrt{2}}  & -\frac{1}{\sqrt{2}}
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -64,24 +70,23 @@ class GateCH(mc.Control):
         ├── H @ q[1]
         └── S† @ q[1]
         <BLANKLINE>
-
     """
 
     def __init__(self, num_controls=1, operation=None):
-        """Initialize a CH gate."""
+        """Initialize a CH gate. The arguments are unused."""
         super().__init__(1, GateH())
 
 
-@mc.register_control_decomposition(1, mc.GateH)
+@register_control_decomposition(1, GateH)
 def _decompose_gatech(gate, circ, qubits, bits, zvars):
     c, t = qubits
 
-    circ.push(mc.GateS(), t)
-    circ.push(mc.GateH(), t)
-    circ.push(mc.GateT(), t)
-    circ.push(mc.GateCX(), c, t)
-    circ.push(mc.GateTDG(), t)
-    circ.push(mc.GateH(), t)
-    circ.push(mc.GateSDG(), t)
+    circ.push(GateS(), t)
+    circ.push(GateH(), t)
+    circ.push(GateT(), t)
+    circ.push(GateCX(), c, t)
+    circ.push(GateTDG(), t)
+    circ.push(GateH(), t)
+    circ.push(GateSDG(), t)
 
     return circ

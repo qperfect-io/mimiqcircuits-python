@@ -6,7 +6,43 @@ from typing import Any, Dict, List, Set, Union
 
 import symengine as se
 
-import mimiqcircuits as mc
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.operations.barrier import Barrier
+from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.gates.standard.chadamard import GateCH
+from mimiqcircuits.operations.gates.standard.cnp import GateCCP
+from mimiqcircuits.operations.gates.standard.cnx import GateC3X, GateCCX
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX, GateCY, GateCZ
+from mimiqcircuits.operations.gates.standard.cphase import GateCP
+from mimiqcircuits.operations.gates.standard.crotations import GateCRX, GateCRY, GateCRZ
+from mimiqcircuits.operations.gates.standard.cs import GateCS, GateCSDG
+from mimiqcircuits.operations.gates.standard.cswap import GateCSWAP
+from mimiqcircuits.operations.gates.standard.csx import GateCSX, GateCSXDG
+from mimiqcircuits.operations.gates.standard.cu import GateCU
+from mimiqcircuits.operations.gates.standard.dcx import GateDCX
+from mimiqcircuits.operations.gates.standard.deprecated import GateU1, GateU2, GateU3
+from mimiqcircuits.operations.gates.standard.ecr import GateECR
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.gates.standard.id import GateID
+from mimiqcircuits.operations.gates.standard.interactions import (
+    GateRXX,
+    GateRYY,
+    GateRZX,
+    GateRZZ,
+    GateXXminusYY,
+    GateXXplusYY,
+)
+from mimiqcircuits.operations.gates.standard.iswap import GateISWAP
+from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
+from mimiqcircuits.operations.gates.standard.phase import GateP
+from mimiqcircuits.operations.gates.standard.rotations import GateRX, GateRY, GateRZ
+from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+from mimiqcircuits.operations.gates.standard.swap import GateSWAP
+from mimiqcircuits.operations.gates.standard.sx import GateSX, GateSXDG
+from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
+from mimiqcircuits.operations.gates.standard.u import GateU
+from mimiqcircuits.operations.measure import Measure
+from mimiqcircuits.operations.reset import Reset
 from mimiqcircuits.gatedecl import GateDecl
 from mimiqcircuits.qasm.parser import QASMExpr, parseopenqasm
 from mimiqcircuits.qasm.exceptions import (
@@ -27,81 +63,81 @@ class InterpreterState:
     pending_gates: Dict[str, Any] = field(default_factory=dict)
     compiling_gates: Set[str] = field(default_factory=set)
     vars_map: Dict[str, Any] = field(default_factory=dict)
-    circuit: mc.Circuit = field(default_factory=mc.Circuit)
+    circuit: Circuit = field(default_factory=Circuit)
 
 
 OPAQUE_TO_TYPE = {
-    "U": mc.GateU,
-    "CX": mc.GateCX,
-    "u3": mc.GateU3,
-    "u2": mc.GateU2,
-    "u1": mc.GateU1,
-    "u": mc.GateU,
-    "cx": mc.GateCX,
-    "id": mc.GateID,
-    "p": mc.GateP,
-    "x": mc.GateX,
-    "y": mc.GateY,
-    "z": mc.GateZ,
-    "h": mc.GateH,
-    "s": mc.GateS,
-    "sdg": mc.GateSDG,
-    "t": mc.GateT,
-    "tdg": mc.GateTDG,
-    "rx": mc.GateRX,
-    "ry": mc.GateRY,
-    "rz": mc.GateRZ,
-    "sx": mc.GateSX,
-    "sxdg": mc.GateSXDG,
-    "cz": mc.GateCZ,
-    "cy": mc.GateCY,
-    "swap": mc.GateSWAP,
-    "ch": mc.GateCH,
-    "ccx": mc.GateCCX,
-    "cswap": mc.GateCSWAP,
-    "crx": mc.GateCRX,
-    "cry": mc.GateCRY,
-    "crz": mc.GateCRZ,
+    "U": GateU,
+    "CX": GateCX,
+    "u3": GateU3,
+    "u2": GateU2,
+    "u1": GateU1,
+    "u": GateU,
+    "cx": GateCX,
+    "id": GateID,
+    "p": GateP,
+    "x": GateX,
+    "y": GateY,
+    "z": GateZ,
+    "h": GateH,
+    "s": GateS,
+    "sdg": GateSDG,
+    "t": GateT,
+    "tdg": GateTDG,
+    "rx": GateRX,
+    "ry": GateRY,
+    "rz": GateRZ,
+    "sx": GateSX,
+    "sxdg": GateSXDG,
+    "cz": GateCZ,
+    "cy": GateCY,
+    "swap": GateSWAP,
+    "ch": GateCH,
+    "ccx": GateCCX,
+    "cswap": GateCSWAP,
+    "crx": GateCRX,
+    "cry": GateCRY,
+    "crz": GateCRZ,
     # "cu1": mc.Control(1, mc.GateU1) - Needs special handling as factory
-    "cp": mc.GateCP,
+    "cp": GateCP,
     # "cu3": mc.Control(1, mc.GateU3)
-    "cs": mc.GateCS,
-    "csdg": mc.GateCSDG,
-    "csx": mc.GateCSX,
-    "csxdg": mc.GateCSXDG,
-    "cu": mc.GateCU,
-    "rxx": mc.GateRXX,
-    "rzz": mc.GateRZZ,
-    "ryy": mc.GateRYY,
-    "rzx": mc.GateRZX,
-    "c3x": mc.GateC3X,
+    "cs": GateCS,
+    "csdg": GateCSDG,
+    "csx": GateCSX,
+    "csxdg": GateCSXDG,
+    "cu": GateCU,
+    "rxx": GateRXX,
+    "rzz": GateRZZ,
+    "ryy": GateRYY,
+    "rzx": GateRZX,
+    "c3x": GateC3X,
     # "c4x": Control(4, GateX)
     # "c3sqrtx": Control(3, GateSX)
-    "xxminusyy": mc.GateXXminusYY,
-    "xxplusyy": mc.GateXXplusYY,
-    "dcx": mc.GateDCX,
-    "ecr": mc.GateECR,
-    "iswap": mc.GateISWAP,
-    "uphase": mc.GateU,  # Alias?
-    "ccp": mc.GateCCP,
+    "xxminusyy": GateXXminusYY,
+    "xxplusyy": GateXXplusYY,
+    "dcx": GateDCX,
+    "ecr": GateECR,
+    "iswap": GateISWAP,
+    "uphase": GateU,  # Alias?
+    "ccp": GateCCP,
 }
 
 
 # Special gate factories for composed gates
 def create_cu1(*args):
-    return mc.Control(1, mc.GateU1(*args))
+    return Control(1, GateU1(*args))
 
 
 def create_cu3(*args):
-    return mc.Control(1, mc.GateU3(*args))
+    return Control(1, GateU3(*args))
 
 
 def create_c4x(*args):
-    return mc.Control(4, mc.GateX())
+    return Control(4, GateX())
 
 
 def create_c3sqrtx(*args):
-    return mc.Control(3, mc.GateSX())
+    return Control(3, GateSX())
 
 
 SPECIAL_FACTORIES = {
@@ -239,12 +275,12 @@ def interpret_measure(istate: InterpreterState, expr: QASMExpr):
     qtarget = interpret_targets(istate, expr.args[0])
     ctarget = interpret_targets(istate, expr.args[1])
 
-    istate.circuit.push(mc.Measure(), qtarget, ctarget)
+    istate.circuit.push(Measure(), qtarget, ctarget)
 
 
 def interpret_reset(istate: InterpreterState, expr: QASMExpr):
     target = interpret_targets(istate, expr.args[0])
-    istate.circuit.push(mc.Reset(), target)
+    istate.circuit.push(Reset(), target)
 
 
 def interpret_barrier(istate: InterpreterState, expr: QASMExpr):
@@ -256,7 +292,7 @@ def interpret_barrier(istate: InterpreterState, expr: QASMExpr):
         else:
             targets.append(t)
 
-    istate.circuit.push(mc.Barrier(len(targets)), *targets)
+    istate.circuit.push(Barrier(len(targets)), *targets)
 
 
 def interpret_if(istate: InterpreterState, expr: QASMExpr):
@@ -283,7 +319,7 @@ def interpret_if(istate: InterpreterState, expr: QASMExpr):
         lastcreg=istate.lastcreg,
         gates=istate.gates,
         vars_map=istate.vars_map,
-        circuit=mc.Circuit(),
+        circuit=Circuit(),
     )
 
     interpret_qop(sub_istate, expr.args[1])
@@ -295,8 +331,8 @@ def interpret_if(istate: InterpreterState, expr: QASMExpr):
 
     inst = sub_istate.circuit.instructions[0]
 
-    from mimiqcircuits import BitString
-    from mimiqcircuits import IfStatement
+    from mimiqcircuits.bitstrings import BitString
+    from mimiqcircuits.operations.ifstatement import IfStatement
 
     # c[0] is the least significant bit of the register's value.
     bs = BitString.fromint(len(creg), val)
@@ -331,7 +367,7 @@ def interpret_gatedecl(istate: InterpreterState, expr: QASMExpr):
         pending_gates=istate.pending_gates,
         compiling_gates=istate.compiling_gates,
         vars_map=new_vars,
-        circuit=mc.Circuit(),
+        circuit=Circuit(),
     )
 
     block = expr.args[1]
@@ -401,7 +437,7 @@ def interpret_opaque(istate: InterpreterState, expr: QASMExpr):
         raise QASMArgumentError(f"Unsupported opaque gate {name}")
 
 
-def interpret(expr: QASMExpr) -> mc.Circuit:
+def interpret(expr: QASMExpr) -> Circuit:
     istate = InterpreterState()
 
     if expr.head != "program":
@@ -433,29 +469,95 @@ def interpret(expr: QASMExpr) -> mc.Circuit:
     return istate.circuit
 
 
-def loads(s: str, includedirs: List[str] = None) -> mc.Circuit:
-    """Parse and interpret an OpenQASM 2.0 string.
+def loads(s: str, includedirs: List[str] = None) -> Circuit:
+    """Read an OpenQASM 2.0 program from a string.
+
+    Quantum registers are laid out one after the other on the circuit's
+    qubits in order of declaration, and classical registers likewise on its
+    bits. ``include`` files are looked up in the current directory, then in
+    the directory of files bundled with the package (which provides
+    ``qelib1.inc``), then in ``includedirs``.
 
     Args:
-        s (str): The OpenQASM 2.0 string.
-        includedirs (List[str], optional): List of directories to search for included files.
+        s: The OpenQASM 2.0 source.
+        includedirs: Extra directories to search for included files.
+            Defaults to None.
 
     Returns:
-        mc.Circuit: The interpreted circuit.
+        Circuit: The circuit described by the program.
+
+    Raises:
+        ParseError: If the source is not valid OpenQASM 2.0 syntax or an
+            included file is not found.
+        QASMError: If the program cannot be interpreted, for example because
+            it uses an undeclared gate or register (see the subclasses in
+            :mod:`mimiqcircuits.qasm`).
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits import qasm
+
+        A Bell-state program using gates from ``qelib1.inc``.
+
+        >>> src = '''
+        ... OPENQASM 2.0;
+        ... include "qelib1.inc";
+        ... qreg q[2];
+        ... creg c[2];
+        ... h q[0];
+        ... cx q[0],q[1];
+        ... measure q -> c;
+        ... '''
+        >>> qasm.loads(src)
+        2-qubit, 2-bit circuit with 4 instructions:
+        ├── H @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── M @ q[0], c[0]
+        └── M @ q[1], c[1]
+        <BLANKLINE>
     """
     expr = parseopenqasm(s, includedirs)
     return interpret(expr)
 
 
-def load(filename: str, includedirs: List[str] = None) -> mc.Circuit:
-    """Parse and interpret an OpenQASM 2.0 file.
+def load(filename: str, includedirs: List[str] = None) -> Circuit:
+    """Read an OpenQASM 2.0 program from a file.
+
+    Same as :func:`loads` on the file's content, with the file's own
+    directory added to the front of ``includedirs``.
 
     Args:
-        filename (str): Path to the OpenQASM 2.0 file.
-        includedirs (List[str], optional): List of directories to search for included files.
+        filename: The path of the file.
+        includedirs: Extra directories to search for included files.
+            Defaults to None.
 
     Returns:
-        mc.Circuit: The interpreted circuit.
+        Circuit: The circuit described by the program.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        ParseError: If the source is not valid OpenQASM 2.0 syntax or an
+            included file is not found.
+        QASMError: If the program cannot be interpreted.
+
+    Examples:
+        Write a circuit to a file with :func:`~mimiqcircuits.qasm.dump` and
+        read it back.
+
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits import qasm
+        >>> import os, tempfile
+        >>> c = Circuit()
+        >>> c.push(GateH(), 0)
+        1-qubit circuit with 1 instruction:
+        └── H @ q[0]
+        <BLANKLINE>
+        >>> path = os.path.join(tempfile.mkdtemp(), "circuit.qasm")
+        >>> qasm.dump(c, path)
+        >>> qasm.load(path)
+        1-qubit circuit with 1 instruction:
+        └── H @ q[0]
+        <BLANKLINE>
     """
     import os
 

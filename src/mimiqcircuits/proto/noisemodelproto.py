@@ -15,7 +15,19 @@
 #
 
 from mimiqcircuits.proto import noisemodel_pb2
-import mimiqcircuits as mc
+from mimiqcircuits.noisemodel import (
+    CustomNoiseRule,
+    ExactOperationInstanceQubitNoise,
+    ExactQubitReadoutNoise,
+    GlobalReadoutNoise,
+    IdleNoise,
+    NoiseModel,
+    OperationInstanceNoise,
+    SetIdleQubitNoise,
+    SetOperationInstanceQubitNoise,
+    SetQubitReadoutNoise,
+)
+from mimiqcircuits.operations.operation import Operation
 
 from mimiqcircuits.proto.circuitproto import (
     toproto_operation,
@@ -78,7 +90,7 @@ noise_registry = NoiseProtoRegistry()
 ######## Readout Noise #############
 
 
-@noise_registry.register_toproto(mc.GlobalReadoutNoise)
+@noise_registry.register_toproto(GlobalReadoutNoise)
 def toproto_global_readout(rule, declcache=None):
     msg = noisemodel_pb2.NoiseRule()
     msg.global_readout.noise.CopyFrom(toproto_operation(rule.noise))
@@ -87,10 +99,10 @@ def toproto_global_readout(rule, declcache=None):
 
 @noise_registry.register_fromproto("global_readout")
 def fromproto_global_readout(msg, declcache=None):
-    return mc.GlobalReadoutNoise(fromproto_operation(msg.noise))
+    return GlobalReadoutNoise(fromproto_operation(msg.noise))
 
 
-@noise_registry.register_toproto(mc.ExactQubitReadoutNoise)
+@noise_registry.register_toproto(ExactQubitReadoutNoise)
 def toproto_exact_qubit_readout(rule, declcache=None):
     msg = noisemodel_pb2.NoiseRule()
     msg.exact_qubit_readout.noise.CopyFrom(toproto_operation(rule.noise))
@@ -100,13 +112,13 @@ def toproto_exact_qubit_readout(rule, declcache=None):
 
 @noise_registry.register_fromproto("exact_qubit_readout")
 def fromproto_exact_qubit_readout(msg, declcache=None):
-    return mc.ExactQubitReadoutNoise(
+    return ExactQubitReadoutNoise(
         tuple(q - 1 for q in msg.qubits),
         fromproto_operation(msg.noise),
     )
 
 
-@noise_registry.register_toproto(mc.SetQubitReadoutNoise)
+@noise_registry.register_toproto(SetQubitReadoutNoise)
 def toproto_set_qubit_readout(rule, declcache=None):
     msg = noisemodel_pb2.NoiseRule()
     msg.set_qubit_readout.noise.CopyFrom(toproto_operation(rule.noise))
@@ -116,7 +128,7 @@ def toproto_set_qubit_readout(rule, declcache=None):
 
 @noise_registry.register_fromproto("set_qubit_readout")
 def fromproto_set_qubit_readout(msg, declcache=None):
-    return mc.SetQubitReadoutNoise(
+    return SetQubitReadoutNoise(
         tuple(q - 1 for q in msg.qubits),
         fromproto_operation(msg.noise),
     )
@@ -125,7 +137,7 @@ def fromproto_set_qubit_readout(msg, declcache=None):
 ######### Operation Instance Noise ############
 
 
-@noise_registry.register_toproto(mc.OperationInstanceNoise)
+@noise_registry.register_toproto(OperationInstanceNoise)
 def toproto_operation_instance_noise(rule, declcache=None):
     msg = noisemodel_pb2.NoiseRule()
     msg.operation_instance_noise.operation.CopyFrom(toproto_operation(rule.operation))
@@ -137,7 +149,7 @@ def toproto_operation_instance_noise(rule, declcache=None):
 
 @noise_registry.register_fromproto("operation_instance_noise")
 def fromproto_operation_instance_noise(msg, declcache=None):
-    return mc.OperationInstanceNoise(
+    return OperationInstanceNoise(
         fromproto_operation(msg.operation),
         fromproto_operation(msg.noise),
         before=msg.before,
@@ -145,7 +157,7 @@ def fromproto_operation_instance_noise(msg, declcache=None):
     )
 
 
-@noise_registry.register_toproto(mc.ExactOperationInstanceQubitNoise)
+@noise_registry.register_toproto(ExactOperationInstanceQubitNoise)
 def toproto_exact_operation_instance_noise(rule, declcache=None):
     msg = noisemodel_pb2.NoiseRule()
     msg.exact_operation_instance_noise.operation.CopyFrom(
@@ -160,7 +172,7 @@ def toproto_exact_operation_instance_noise(rule, declcache=None):
 
 @noise_registry.register_fromproto("exact_operation_instance_noise")
 def fromproto_exact_operation_instance_noise(msg, declcache=None):
-    return mc.ExactOperationInstanceQubitNoise(
+    return ExactOperationInstanceQubitNoise(
         fromproto_operation(msg.operation),
         tuple(q - 1 for q in msg.qubits),
         fromproto_operation(msg.noise),
@@ -169,7 +181,7 @@ def fromproto_exact_operation_instance_noise(msg, declcache=None):
     )
 
 
-@noise_registry.register_toproto(mc.SetOperationInstanceQubitNoise)
+@noise_registry.register_toproto(SetOperationInstanceQubitNoise)
 def toproto_set_operation_instance_noise(rule, declcache=None):
     msg = noisemodel_pb2.NoiseRule()
     msg.set_operation_instance_noise.operation.CopyFrom(
@@ -184,7 +196,7 @@ def toproto_set_operation_instance_noise(rule, declcache=None):
 
 @noise_registry.register_fromproto("set_operation_instance_noise")
 def fromproto_set_operation_instance_noise(msg, declcache=None):
-    return mc.SetOperationInstanceQubitNoise(
+    return SetOperationInstanceQubitNoise(
         fromproto_operation(msg.operation),
         tuple(q - 1 for q in msg.qubits),
         fromproto_operation(msg.noise),
@@ -196,13 +208,13 @@ def fromproto_set_operation_instance_noise(msg, declcache=None):
 ######### Idle Noise ############
 
 
-@noise_registry.register_toproto(mc.IdleNoise)
+@noise_registry.register_toproto(IdleNoise)
 def toproto_idle_noise(rule, declcache=None):
     msg = noisemodel_pb2.NoiseRule()
     rel = msg.idle_noise.relation
 
     # constant noise: IdleNoise(op)
-    if isinstance(rule.relation, mc.Operation):
+    if isinstance(rule.relation, Operation):
         rel.operation.CopyFrom(toproto_operation(rule.relation))
         return msg
 
@@ -227,16 +239,16 @@ def fromproto_idle_noise(msg, declcache=None):
         # IdleNoise(var => op)
         relation = (vars_[0], op)
 
-    return mc.IdleNoise(relation)
+    return IdleNoise(relation)
 
 
-@noise_registry.register_toproto(mc.SetIdleQubitNoise)
+@noise_registry.register_toproto(SetIdleQubitNoise)
 def toproto_set_idle_noise(rule, declcache=None):
     msg = noisemodel_pb2.NoiseRule()
     rel = msg.set_idle_noise.relation
 
     # constant noise SetIdleQubitNoise(op, qubits)
-    if isinstance(rule.relation, mc.Operation):
+    if isinstance(rule.relation, Operation):
         rel.operation.CopyFrom(toproto_operation(rule.relation))
         msg.set_idle_noise.qubits.extend(q + 1 for q in rule.qubits)
         return msg
@@ -267,7 +279,7 @@ def fromproto_set_idle_noise(msg, declcache=None):
     else:
         relation = (vars_[0], op)
 
-    return mc.SetIdleQubitNoise(relation, qubits)
+    return SetIdleQubitNoise(relation, qubits)
 
 
 ######## Custom Noise ########
@@ -276,7 +288,7 @@ def fromproto_set_idle_noise(msg, declcache=None):
 # The matcher and generator are arbitrary Python callables, which have no
 # portable representation. Storing their names would decode into a different
 # rule, so both directions refuse instead.
-@noise_registry.register_toproto(mc.CustomNoiseRule)
+@noise_registry.register_toproto(CustomNoiseRule)
 def toproto_custom_noise(rule, declcache=None):
     raise ValueError(
         "CustomNoiseRule holds Python callables and cannot be serialized. "
@@ -318,7 +330,7 @@ def toproto_noisemodel(model):
 
 def fromproto_noisemodel(msg):
     """Convert a NoiseModel protobuf message back into a NoiseModel."""
-    nm = mc.NoiseModel(name=msg.name)
+    nm = NoiseModel(name=msg.name)
     for rmsg in msg.rules:
         nm.add_rule(fromproto_NoiseRule(rmsg))
     return nm

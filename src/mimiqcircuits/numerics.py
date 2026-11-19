@@ -19,8 +19,8 @@ This module mirrors :mod:`mimiqcircuits.matrices` but builds ``numpy.ndarray``
 matrices directly from Python numbers, bypassing SymEngine entirely.
 
 The helpers ``sinpi``, ``cospi``, ``cispi`` return exact values at
-integer and half-integer arguments, which is what lets
-``matrix(GateRX(math.pi))`` yield an exactly-unitary result.
+integer and half-integer arguments, so that for example
+``GateRX(math.pi).unwrappedmatrix()`` has exact zeros on the diagonal.
 """
 
 from __future__ import annotations
@@ -34,8 +34,7 @@ import numpy as np
 
 
 def sinpi(x: float) -> float:
-    """Return ``sin(pi * x)``, exact at integers and half-integers.
-    """
+    """Return ``sin(pi * x)``, exact at integers and half-integers."""
     # Reduce to (-1, 1] modulo 2 to expose exact cases.
     r = x - 2.0 * round(x * 0.5)
     if r == 0.0 or r == 1.0 or r == -1.0:
@@ -48,8 +47,7 @@ def sinpi(x: float) -> float:
 
 
 def cospi(x: float) -> float:
-    """Return ``cos(pi * x)``, exact at integers and half-integers.
-    """
+    """Return ``cos(pi * x)``, exact at integers and half-integers."""
     r = x - 2.0 * round(x * 0.5)
     if r == 0.0:
         return 1.0
@@ -61,14 +59,12 @@ def cospi(x: float) -> float:
 
 
 def cispi(x: float) -> complex:
-    """Return ``exp(i * pi * x) == cos(pi*x) + i*sin(pi*x)``.
-    """
+    """Return ``exp(i * pi * x)``, exact at integers and half-integers."""
     return complex(cospi(x), sinpi(x))
 
 
 def cis(x: float) -> complex:
-    """Return ``exp(i * x) == cos(x) + i*sin(x)``.
-    """
+    """Return ``exp(i * x)`` as ``complex(cos(x), sin(x))``."""
     return complex(math.cos(x), math.sin(x))
 
 
@@ -81,13 +77,15 @@ def pmatrix(lmbda: float) -> np.ndarray:
 
 
 def umatrix(theta: float, phi: float, lmbda: float, gamma: float = 0.0) -> np.ndarray:
-    """Matrix of ``GateU(theta, phi, lmbda, gamma)``.
+    """Return the matrix of ``GateU(theta, phi, lmbda, gamma)`` as a NumPy array.
 
-    Uses ``cospi``/``sinpi`` on the half-angle so that rational multiples of
-    ``pi`` in ``theta`` yield exact values.
+    Uses ``cospi``/``sinpi`` on the half-angle, so the cosine and sine terms
+    are exact at ``theta = math.pi`` and at most small integer multiples of
+    it.
     """
     # Divide-by-pi trick: math.pi / math.pi == 1.0 exactly in IEEE 754, so
-    # theta == k * math.pi gives theta / 2 / math.pi == k / 2 exactly.
+    # theta == k * math.pi gives theta / 2 / math.pi == k / 2 exactly for
+    # most small k (k = 11 is the first that rounds).
     half = theta / 2.0 / math.pi
     c = cospi(half)
     s = sinpi(half)
@@ -101,7 +99,7 @@ def umatrix(theta: float, phi: float, lmbda: float, gamma: float = 0.0) -> np.nd
 
 
 def umatrixpi(theta: float, phi: float, lmbda: float, gamma: float = 0.0) -> np.ndarray:
-    """Like :func:`umatrix`, but arguments are already pre-divided by ``pi``."""
+    """Same as :func:`umatrix`, with all angles given in units of ``pi``."""
     c = cospi(theta / 2.0)
     s = sinpi(theta / 2.0)
     return np.array(
@@ -114,7 +112,7 @@ def umatrixpi(theta: float, phi: float, lmbda: float, gamma: float = 0.0) -> np.
 
 
 def rxmatrix(theta: float) -> np.ndarray:
-    """RX(theta) as a NumPy array, exact at rational multiples of pi."""
+    """Return the matrix of ``GateRX(theta)`` as a NumPy array, exact at the same angles as :func:`umatrix`."""
     half = theta / 2.0 / math.pi
     c = cospi(half)
     s = sinpi(half)
@@ -122,7 +120,7 @@ def rxmatrix(theta: float) -> np.ndarray:
 
 
 def rymatrix(theta: float) -> np.ndarray:
-    """RY(theta) as a NumPy array, exact at rational multiples of pi."""
+    """Return the matrix of ``GateRY(theta)`` as a NumPy array, exact at the same angles as :func:`umatrix`."""
     half = theta / 2.0 / math.pi
     c = cospi(half)
     s = sinpi(half)
@@ -130,14 +128,14 @@ def rymatrix(theta: float) -> np.ndarray:
 
 
 def rzmatrix(lmbda: float) -> np.ndarray:
-    """RZ(lmbda) as a NumPy array, exact at rational multiples of pi."""
+    """Return the matrix of ``GateRZ(lmbda)`` as a NumPy array, exact at the same angles as :func:`umatrix`."""
     half = lmbda / 2.0 / math.pi
     e = cispi(half)
     return np.array([[e.conjugate(), 0.0], [0.0, e]], dtype=np.complex128)
 
 
 def rmatrix(theta: float, phi: float) -> np.ndarray:
-    """Axis-arbitrary single-qubit rotation ``R(theta, phi)``."""
+    """Return the matrix of ``GateR(theta, phi)`` as a NumPy array."""
     half = theta / 2.0 / math.pi
     c = cospi(half)
     s = sinpi(half)

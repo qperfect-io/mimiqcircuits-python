@@ -530,6 +530,126 @@ selects a different tolerance or rule:
     >>> len(shorter) < len(fine)
     True
 
+Ancillas
+~~~~~~~~
+
+By default a decomposition only uses the qubits of the operation it
+decomposes. Some operations have much shorter decompositions when they may use
+other qubits as well. The bases :class:`~mimiqcircuits.CanonicalBasis`,
+:class:`~mimiqcircuits.CliffordTBasis` and :class:`~mimiqcircuits.QASMBasis`
+take three options for that, all off by default:
+
+* ``borrow=True`` lets a decomposition borrow qubits of the circuit that the
+  operation does not act on. A borrowed qubit can be in any state, even
+  entangled, and the decomposition leaves it exactly as it found it.
+* ``max_ancillas=k`` lets it add up to ``k`` clean ancillas: new qubits,
+  numbered after those of the circuit, that start in :math:`|0\rangle` and
+  are returned to :math:`|0\rangle`. An ancilla freed by one operation is
+  reused by the next one.
+* ``allow_measurement=True``, together with ``max_ancillas``, lets it undo
+  some steps by measuring an ancilla instead of with more gates. The circuit
+  must have classical bits; the measurements write one extra bit after them.
+
+Today these options apply to multi-controlled X gates, where the gain is
+largest. With four controls and Clifford+T as the target:
+
+.. doctest:: python
+
+    >>> c = Circuit()
+    >>> c.push(Control(4, GateX()), 0, 1, 2, 3, 4)
+    5-qubit circuit with 1 instruction:
+    └── C₄X @ q[0:3], q[4]
+    <BLANKLINE>
+    >>> c.push(GateH(), 5)
+    6-qubit circuit with 2 instructions:
+    ├── C₄X @ q[0:3], q[4]
+    └── H @ q[5]
+    <BLANKLINE>
+
+    >>> def tcount(circuit):
+    ...     return sum(isinstance(i.operation, (GateT, GateTDG)) for i in circuit)
+
+    >>> # without help, the decomposition needs small rotations, approximated
+    >>> tcount(c.decompose(CliffordTBasis()))
+    1627
+
+    >>> # borrowing qubit 5 gives Toffolis, which are exact
+    >>> tcount(c.decompose(CliffordTBasis(borrow=True)))
+    70
+
+    >>> # two clean ancillas hold the AND of the first controls
+    >>> d = c.decompose(CliffordTBasis(max_ancillas=2))
+    >>> tcount(d)
+    23
+    >>> ancillas(d)
+    [6, 7]
+
+The decomposition marks each clean ancilla with an
+:class:`~mimiqcircuits.AncillaAlloc` where it starts being used and an
+:class:`~mimiqcircuits.AncillaFree` where it is back in :math:`|0\rangle`.
+These annotations do nothing when the circuit runs, but they tell later
+passes, and :func:`~mimiqcircuits.ancillas`, which qubits are ancillas.
+:func:`~mimiqcircuits.check_ancillas` checks that they are consistent.
+
+With ``wrap=True``, a gate that uses clean ancillas becomes a call to a
+:class:`~mimiqcircuits.GateDecl` with the ancillas as its last targets, and
+``num_ancillas`` says how many of them there are. The markers go around the
+call:
+
+.. doctest:: python
+
+    >>> w = decompose(c, CanonicalBasis(max_ancillas=2), wrap=True)
+    >>> w
+    8-qubit circuit with 6 instructions:
+    ├── AncillaAlloc @ q[6]
+    ├── AncillaAlloc @ q[7]
+    ├── mimiq_C4X() @ q[0:4,6:7]
+    ├── AncillaFree @ q[6]
+    ├── AncillaFree @ q[7]
+    └── mimiq_H() @ q[5]
+    <BLANKLINE>
+    >>> w[2].operation.num_ancillas
+    2
+
+With measurements, each AND costs 4 T gates and is undone for free:
+
+.. doctest:: python
+
+    >>> c.push(Measure(), 4, 0)
+    6-qubit, 1-bit circuit with 3 instructions:
+    ├── C₄X @ q[0:3], q[4]
+    ├── H @ q[5]
+    └── M @ q[4], c[0]
+    <BLANKLINE>
+    >>> m = c.decompose(CliffordTBasis(max_ancillas=3, allow_measurement=True))
+    >>> tcount(m)
+    12
+    >>> m.num_bits()
+    2
+
+A gate declaration cannot measure, so with ``wrap=True`` such a gate becomes a
+call to a :class:`~mimiqcircuits.BlockDecl` instead. Its bit is the extra one,
+and identical gates share the declaration:
+
+.. doctest:: python
+
+    >>> decompose(c, CliffordTBasis(max_ancillas=3, allow_measurement=True), wrap=True)
+    9-qubit, 2-bit circuit with 9 instructions:
+    ├── AncillaAlloc @ q[6]
+    ├── AncillaAlloc @ q[7]
+    ├── AncillaAlloc @ q[8]
+    ├── mimiq_C4X @ q[0], q[1], q[2], q[3], q[4], q[6], q[7], q[8], c[1]
+    ├── AncillaFree @ q[6]
+    ├── AncillaFree @ q[7]
+    ├── AncillaFree @ q[8]
+    ├── H @ q[5]
+    └── M @ q[4], c[0]
+    <BLANKLINE>
+
+Ancillas are meant for exporting circuits and counting resources. A
+simulator gains nothing from them: it applies a multi-controlled gate
+directly, and every extra qubit makes the simulation larger.
+
 Dependency graph (DAG) view
 ----------------------------------------------------
 

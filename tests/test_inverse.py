@@ -38,3 +38,16 @@ def test_inverse_matrix():
     inverse_op = mc.Inverse(op)
     expected_matrix = op.matrix().inv()
     assert inverse_op.matrix() == expected_matrix
+
+
+def test_inverse_alias_is_used_for_printing():
+    from mimiqcircuits.operations import inverse
+
+    class GateFoo(mc.GateX):
+        pass
+
+    inverse.register_inverse_alias(GateFoo, "FOOINV")
+    try:
+        assert str(mc.Inverse(GateFoo())) == "FOOINV"
+    finally:
+        del inverse._inverse_aliases_registry[(GateFoo,)]

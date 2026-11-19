@@ -49,11 +49,20 @@ reference implementation the compiled form is tested against.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Sequence
+from typing import TYPE_CHECKING, List, Sequence
 
-import mimiqcircuits as mc
+from mimiqcircuits.bitstrings import BitString
+from mimiqcircuits.classical.and_operation import And
+from mimiqcircuits.classical.not_operation import Not
+from mimiqcircuits.classical.or_operation import Or
+from mimiqcircuits.classical.setbits import SetBit0, SetBit1
+from mimiqcircuits.classical.xor_operation import Xor
+from mimiqcircuits.operations.measure import Measure
 
 from bitarray import bitarray, frozenbitarray
+
+if TYPE_CHECKING:
+    from mimiqcircuits.circuit import Circuit
 
 
 __all__ = ["CompiledProjection", "Tier"]
@@ -110,17 +119,44 @@ class CompiledProjection:
     """A projection circuit compiled for block evaluation.
 
     Build one with :meth:`from_circuit` and evaluate a whole block of
-    shots with :meth:`evaluate_batch`. An instance is reusable across
-    blocks and holds no per-shot state.
+    shots with :meth:`evaluate_batch`. An instance can be reused across
+    blocks and holds no per-shot state. It gives the same results as
+    :func:`evaluate_projection` applied to each shot.
 
-    Attributes
-    ----------
-    num_bits : int
-        Width of the classical bitstring the projection produces,
-        equal to ``projection.num_bits()``.
-    steps : list[tuple]
-        The straight-line program, before specialisation to a sample
-        width. Internal representation, subject to change.
+    Attributes:
+        num_bits (int): Width of the classical bitstring the projection
+            produces, equal to ``projection.num_bits()``.
+        steps (list[tuple]): The straight-line program, before it is
+            specialised to a sample width. Internal representation, subject
+            to change.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import CompiledProjection, extract_projection
+
+        A Bell circuit whose measurements are swapped, with the parity of
+        the two outcomes written to a third bit.
+
+        >>> c = Circuit().push(GateH(), 0).push(GateCX(), 0, 1)
+        >>> c.push(Measure(), 1, 0).push(Measure(), 0, 1).push(Xor(3), 2, 0, 1)
+        2-qubit, 3-bit circuit with 5 instructions:
+        ├── H @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── M @ q[1], c[0]
+        ├── M @ q[0], c[1]
+        └── c[2] = c[0] ^ c[1]
+        <BLANKLINE>
+
+        Split off the trailing classical part and compile it.
+
+        >>> quantum, projection = extract_projection(c)
+        >>> proj = CompiledProjection.from_circuit(projection)
+
+        Each sample has one bit per qubit; each result has one bit per
+        classical bit.
+
+        >>> proj.evaluate_batch([BitString("00"), BitString("11"), BitString("01")])
+        [bs"000", bs"110", bs"101"]
     """
 
     num_bits: int
@@ -130,26 +166,22 @@ class CompiledProjection:
     # ── construction ────────────────────────────────────────────────────────
 
     @classmethod
-    def from_circuit(cls, projection: "mc.Circuit") -> "CompiledProjection":
-        """Compile `projection` for block evaluation.
+    def from_circuit(cls, projection: "Circuit") -> "CompiledProjection":
+        """Compile ``projection`` for block evaluation.
 
-        Arguments:
-            projection (Circuit): the projection circuit returned by
-                :func:`extract_projection`, in the frame its samples
-                will arrive in. Qubit remapping must already have been
-                applied, otherwise the tier keys off the wrong frame
-                and a permuted read-out is mistaken for an identity
-                one.
+        Args:
+            projection: The projection circuit returned by
+                :func:`extract_projection`, with qubit indices in the frame
+                the samples will arrive in. Apply any qubit remapping first,
+                or a permuted read-out is mistaken for an identity one.
 
         Returns:
-            CompiledProjection: the compiled form, of width
-            ``projection.num_bits()``.
+            The compiled form, of width ``projection.num_bits()``.
 
         Raises:
-            ValueError: if `projection` holds an operation outside the
-                classical language, that is anything other than
-                ``Measure``, ``SetBit0``, ``SetBit1``, ``Not``,
-                ``And``, ``Or`` and ``Xor``.
+            ValueError: If ``projection`` holds an operation other than
+                ``Measure``, ``SetBit0``, ``SetBit1``, ``Not``, ``And``,
+                ``Or`` and ``Xor``.
         """
         steps: List[tuple] = []
         for inst in projection.instructions:
@@ -158,21 +190,20 @@ class CompiledProjection:
 
     # ── evaluation ──────────────────────────────────────────────────────────
 
-    def evaluate_batch(self, samples: Sequence["mc.BitString"]) -> List["mc.BitString"]:
-        """Evaluate the projection for every shot in `samples`.
+    def evaluate_batch(self, samples: Sequence["BitString"]) -> List["BitString"]:
+        """Evaluate the projection for every shot in ``samples``.
 
-        Arguments:
-            samples (Sequence[BitString]): one computational-basis
-                outcome per shot, all of the same width. Not quantum
-                states: each is a single shot already drawn from one.
+        When the projection copies qubit ``b`` into bit ``b`` for every bit
+        and the samples are as wide as the register, the input bitstrings
+        are returned as they are, without copying.
+
+        Args:
+            samples: One computational-basis outcome per shot, all of the
+                same width.
 
         Returns:
-            list[BitString]: one classical bitstring per shot, of
-            length :attr:`num_bits`, in the order the samples came in.
-
-        On the identity tier the input bitstrings are returned as they
-        are, without copying, so a caller that keeps using the samples
-        afterwards must copy them itself.
+            One classical bitstring per shot, of length :attr:`num_bits`,
+            in the order of ``samples``.
         """
         if not samples:
             return []
@@ -189,24 +220,28 @@ class CompiledProjection:
         chunk = max(1024, _BLOCK_BYTES // max(width, self.num_bits, 1))
         if len(samples) <= chunk:
             return self._run(plan, samples)
-        out: List["mc.BitString"] = []
+        out: List["BitString"] = []
         for start in range(0, len(samples), chunk):
             out.extend(self._run(plan, samples[start:start + chunk]))
         return out
 
-    def evaluate(self, sample: "mc.BitString") -> "mc.BitString":
+    def evaluate(self, sample: "BitString") -> "BitString":
         """Evaluate the projection for a single shot.
 
-        Provided for parity with
-        :func:`~mimiqcircuits.backends.measure_analysis.evaluate_projection`.
-        :meth:`evaluate_batch` is the fast path and the one drivers
-        should call.
+        Same result as :func:`evaluate_projection`. :meth:`evaluate_batch`
+        is faster for many shots.
+
+        Args:
+            sample: One computational-basis outcome.
+
+        Returns:
+            The classical bitstring, of length :attr:`num_bits`.
         """
         return self.evaluate_batch([sample])[0]
 
     # ── the program tier ────────────────────────────────────────────────────
 
-    def _run(self, plan: _Plan, samples) -> List["mc.BitString"]:
+    def _run(self, plan: _Plan, samples) -> List["BitString"]:
         import numpy as np
 
         nb = self.num_bits
@@ -247,19 +282,19 @@ def _emit(steps: List[tuple], inst) -> None:
     op = inst.operation
     bits = inst.bits
 
-    if isinstance(op, mc.Measure):
+    if isinstance(op, Measure):
         steps.append((_GATHER, [bits[0]], [inst.qubits[0]]))
-    elif isinstance(op, mc.SetBit0):
+    elif isinstance(op, SetBit0):
         steps.append((_CONST, [bits[0]], [0]))
-    elif isinstance(op, mc.SetBit1):
+    elif isinstance(op, SetBit1):
         steps.append((_CONST, [bits[0]], [1]))
-    elif isinstance(op, mc.Not):
+    elif isinstance(op, Not):
         steps.append((_NOT, bits[0]))
-    elif isinstance(op, mc.And):
+    elif isinstance(op, And):
         steps.append((_AND, bits[0], list(bits[1:])))
-    elif isinstance(op, mc.Or):
+    elif isinstance(op, Or):
         steps.append((_OR, bits[0], list(bits[1:])))
-    elif isinstance(op, mc.Xor):
+    elif isinstance(op, Xor):
         steps.append((_XOR, bits[0], list(bits[1:])))
     else:
         raise ValueError(
@@ -290,25 +325,21 @@ def _specialise(steps: List[tuple], num_bits: int, width: int) -> _Plan:
     """Resolve `steps` against a known sample width and pick a tier.
 
     A ``Measure`` reading past the end of the sample cannot read a
-    qubit, so it becomes a constant zero, which is what leaving the bit
-    untouched amounts to on a register that starts at zero.
+    qubit, so it is dropped and its bit keeps its value, as in
+    ``evaluate_projection``.
     """
     resolved: List[tuple] = []
     for step in steps:
         if step[0] != _GATHER:
             resolved.append(step)
             continue
-        dests, sites, dead = [], [], []
+        dests, sites = [], []
         for b, q in zip(step[1], step[2]):
             if 0 <= q < width:
                 dests.append(b)
                 sites.append(q)
-            else:
-                dead.append(b)
         if dests:
             resolved.append((_GATHER, dests, sites))
-        if dead:
-            resolved.append((_CONST, dead, [0] * len(dead)))
     resolved = _fuse(resolved)
 
     if width == num_bits and _is_identity_gather(resolved, num_bits):
@@ -357,13 +388,13 @@ def _big_endian(bits):
     return bits if bits.endian == "big" else bitarray(bits, endian="big")
 
 
-def _array_to_bitstrings(cstates, num_bits: int) -> List["mc.BitString"]:
+def _array_to_bitstrings(cstates, num_bits: int) -> List["BitString"]:
     """Turn a ``(shots, num_bits)`` array of 0/1 bytes into one
     :class:`BitString` per row."""
     import numpy as np
 
     if num_bits == 0:
-        return [mc.BitString(0) for _ in range(len(cstates))]
+        return [BitString(0) for _ in range(len(cstates))]
 
     packed = np.packbits(cstates, axis=1, bitorder="big")
     stride = packed.shape[1]
@@ -375,5 +406,5 @@ def _array_to_bitstrings(cstates, num_bits: int) -> List["mc.BitString"]:
         bits = bitarray(endian="big")
         bits.frombytes(raw[off:off + stride])
         del bits[num_bits:]
-        out.append(mc.BitString(frozenbitarray(bits)))
+        out.append(BitString(frozenbitarray(bits)))
     return out

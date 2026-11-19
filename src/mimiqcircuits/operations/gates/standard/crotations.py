@@ -20,31 +20,32 @@ from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.standard.s import GateS
 from mimiqcircuits.operations.gates.standard.rotations import GateRX, GateRY, GateRZ
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import (
+    Control,
+    canonical_control,
+    register_control_decomposition,
+)
 from mimiqcircuits.operations.gates.standard._angles import NEG_PI_2
 
 
-@mc.canonical_control(1, GateRX)
-class GateCRX(mc.Control):
+@canonical_control(1, GateRX)
+class GateCRX(Control):
     r"""Two qubit Controlled-RX gate.
 
     By convention, the first qubit is the control and the second is
-    the target
+    the target.
 
-    See Also :class:`GateRX`, :class:`GateCRY`, :class:`GateCRZ`
+    Matrix Representation:
+        .. math::
+            \operatorname{CRX}(\theta) = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & \cos\frac{\theta}{2} & -i\sin\frac{\theta}{2} \\
+                0 & 0 & -i\sin\frac{\theta}{2} & \cos\frac{\theta}{2}
+            \end{pmatrix}
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{CRX}(\theta) = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & \cos\frac{\theta}{2} & -i\sin\frac{\theta}{2} \\
-            0 & 0 & -i\sin\frac{\theta}{2} & \cos\frac{\theta}{2}
-        \end{pmatrix}
-
-    Parameters:
-        theta: The rotation angle in radians.
+    Args:
+        theta: Rotation angle in radians, numeric or symbolic.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -73,6 +74,9 @@ class GateCRX(mc.Control):
         ├── CX @ q[0], q[1]
         └── U((1/2)*theta, (-1/2)*pi, 0, 0.0) @ q[1]
         <BLANKLINE>
+
+    See Also:
+        :class:`GateRX`, :class:`GateCRY`, :class:`GateCRZ`
     """
 
     def __init__(
@@ -80,12 +84,16 @@ class GateCRX(mc.Control):
     ):
         """Initialize a CRX gate.
 
+        Called directly as ``GateCRX(theta)``. The signature also accepts
+        ``GateCRX(1, GateRX(theta))``, the form :class:`Control` uses to build
+        its canonical subclass.
+
         Args:
-            theta_or_num_controls: The rotation angle in radians when called directly,
-                or num_controls when called from Control's canonical creation.
-            num_controls_or_operation: Ignored when called directly, or the GateRX
-                operation when called from Control's canonical creation.
-            operation: Ignored (for compatibility).
+            theta_or_num_controls: Rotation angle in radians, or the number of
+                controls (always 1) in the ``Control`` form.
+            num_controls_or_operation: Unused when called directly, or the
+                ``GateRX`` whose angle is taken in the ``Control`` form.
+            operation: Unused.
         """
         # Detect if called from Control's canonical creation: Control(1, GateRX(theta))
         # In that case, theta_or_num_controls is int and num_controls_or_operation is GateRX
@@ -98,7 +106,7 @@ class GateCRX(mc.Control):
         super().__init__(1, GateRX(theta))
 
 
-@mc.register_control_decomposition(1, mc.GateRX)
+@register_control_decomposition(1, GateRX)
 def _decompose_gatecrx(gate, circ, qubits, bits, zvars):
     c, t = qubits
     theta = gate.op.theta
@@ -110,28 +118,24 @@ def _decompose_gatecrx(gate, circ, qubits, bits, zvars):
     return circ
 
 
-@mc.canonical_control(1, GateRY)
-class GateCRY(mc.Control):
+@canonical_control(1, GateRY)
+class GateCRY(Control):
     r"""Two qubit Controlled-RY gate.
 
     By convention, the first qubit is the control and the second is
-    the target
+    the target.
 
-    See Also :class:`GateRY`, :class:`GateCRX`, :class:`GateCRZ`
+    Matrix Representation:
+        .. math::
+            \operatorname{CRY}(\theta) = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & \cos\frac{\theta}{2} & -\sin\frac{\theta}{2} \\
+                0 & 0 &  \sin\frac{\theta}{2} & \cos\frac{\theta}{2}
+            \end{pmatrix}
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{CRY}(\theta) = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & \cos\frac{\theta}{2} & -\sin\frac{\theta}{2} \\
-            0 & 0 &  \sin\frac{\theta}{2} & \cos\frac{\theta}{2}
-        \end{pmatrix}
-
-
-    Parameters:
-        theta: The rotation angle in radians.
+    Args:
+        theta: Rotation angle in radians, numeric or symbolic.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -159,6 +163,9 @@ class GateCRY(mc.Control):
         ├── RY((-1/2)*theta) @ q[1]
         └── CX @ q[0], q[1]
         <BLANKLINE>
+
+    See Also:
+        :class:`GateRY`, :class:`GateCRX`, :class:`GateCRZ`
     """
 
     def __init__(
@@ -166,12 +173,16 @@ class GateCRY(mc.Control):
     ):
         """Initialize a CRY gate.
 
+        Called directly as ``GateCRY(theta)``. The signature also accepts
+        ``GateCRY(1, GateRY(theta))``, the form :class:`Control` uses to build
+        its canonical subclass.
+
         Args:
-            theta_or_num_controls: The rotation angle in radians when called directly,
-                or num_controls when called from Control's canonical creation.
-            num_controls_or_operation: Ignored when called directly, or the GateRY
-                operation when called from Control's canonical creation.
-            operation: Ignored (for compatibility).
+            theta_or_num_controls: Rotation angle in radians, or the number of
+                controls (always 1) in the ``Control`` form.
+            num_controls_or_operation: Unused when called directly, or the
+                ``GateRY`` whose angle is taken in the ``Control`` form.
+            operation: Unused.
         """
         # Detect if called from Control's canonical creation: Control(1, GateRY(theta))
         if isinstance(theta_or_num_controls, int) and isinstance(
@@ -183,7 +194,7 @@ class GateCRY(mc.Control):
         super().__init__(1, GateRY(theta))
 
 
-@mc.register_control_decomposition(1, mc.GateRY)
+@register_control_decomposition(1, GateRY)
 def _decompose_gatecry(gate, circ, qubits, bits, zvars):
     c, t = qubits
     theta = gate.op.theta
@@ -194,27 +205,24 @@ def _decompose_gatecry(gate, circ, qubits, bits, zvars):
     return circ
 
 
-@mc.canonical_control(1, GateRZ)
-class GateCRZ(mc.Control):
+@canonical_control(1, GateRZ)
+class GateCRZ(Control):
     r"""Two qubit Controlled-RZ gate.
 
     By convention, the first qubit is the control and the second is
-    the target
+    the target.
 
-    See Also :class:`GateRZ`, :class:`GateCRX`, :class:`GateCRY`
+    Matrix Representation:
+        .. math::
+            \operatorname{CRZ}(\lambda) = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & e^{-i\frac{\lambda}{2}} & 0 \\
+                0 & 0 & 0 & e^{i\frac{\lambda}{2}}
+            \end{pmatrix}
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{CRZ}(\lambda) = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & e^{-i\frac{\lambda}{2}} & 0 \\
-            0 & 0 & 0 & e^{i\frac{\lambda}{2}}
-        \end{pmatrix}
-
-    Parameters:
-        lmbda: The rotation angle in radians.
+    Args:
+        lmbda: Rotation angle :math:`\lambda` in radians, numeric or symbolic.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -242,6 +250,9 @@ class GateCRZ(mc.Control):
         ├── RZ((-1/2)*lambda) @ q[1]
         └── CX @ q[0], q[1]
         <BLANKLINE>
+
+    See Also:
+        :class:`GateRZ`, :class:`GateCRX`, :class:`GateCRY`
     """
 
     def __init__(
@@ -249,12 +260,16 @@ class GateCRZ(mc.Control):
     ):
         """Initialize a CRZ gate.
 
+        Called directly as ``GateCRZ(lmbda)``. The signature also accepts
+        ``GateCRZ(1, GateRZ(lmbda))``, the form :class:`Control` uses to build
+        its canonical subclass.
+
         Args:
-            lmbda_or_num_controls: The rotation angle in radians when called directly,
-                or num_controls when called from Control's canonical creation.
-            num_controls_or_operation: Ignored when called directly, or the GateRZ
-                operation when called from Control's canonical creation.
-            operation: Ignored (for compatibility).
+            lmbda_or_num_controls: Rotation angle in radians, or the number of
+                controls (always 1) in the ``Control`` form.
+            num_controls_or_operation: Unused when called directly, or the
+                ``GateRZ`` whose angle is taken in the ``Control`` form.
+            operation: Unused.
         """
         # Detect if called from Control's canonical creation: Control(1, GateRZ(lmbda))
         if isinstance(lmbda_or_num_controls, int) and isinstance(
@@ -266,7 +281,7 @@ class GateCRZ(mc.Control):
         super().__init__(1, GateRZ(lmbda))
 
 
-@mc.register_control_decomposition(1, mc.GateRZ)
+@register_control_decomposition(1, GateRZ)
 def _decompose_gatecrz(gate, circ, qubits, bits, zvars):
     c, t = qubits
     lmbda = gate.op.lmbda

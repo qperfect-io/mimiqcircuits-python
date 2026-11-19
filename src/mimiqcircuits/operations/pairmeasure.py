@@ -17,30 +17,40 @@
 """Pair measurement operations (ZZ, XX, YY)."""
 
 from mimiqcircuits.operations.measure import AbstractMeasurement
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+from mimiqcircuits.operations.measure import Measure
 
 
 class MeasureZZ(AbstractMeasurement):
-    r"""MeasureZZ operation.
+    r"""Measure the parity of two qubits in the Z basis.
 
-    The MeasureZZ operation measures the joint parity of two qubits in the Z-basis.
-    This is achieved by applying a controlled-X (CX) gate, measuring the target qubit,
-    and then applying another CX gate to undo the entanglement. The measurement result
-    indicates whether the qubits are in the same or different states in the Z-basis.
+    Measures the two-qubit Pauli operator :math:`Z \otimes Z` and writes 0
+    for eigenvalue +1 (the qubits agree in the Z basis) or 1 for eigenvalue
+    -1 (they differ). Only the parity is measured, so superpositions within
+    each parity sector are kept. The instruction takes two qubits and one
+    bit.
+
+    It decomposes into a CX gate, a measurement of the second qubit, and a
+    second CX gate that undoes the first.
+
+    Warning:
+        Not reversible: ``inverse``, ``power`` and ``control`` raise
+        ``TypeError``.
 
     See Also:
-        :class:`MeasureXX`: Measure the joint parity of two qubits in the X-basis.
-        :class:`MeasureYY`: Measure the joint parity of two qubits in the Y-basis.
+        :class:`MeasureXX`, :class:`MeasureYY`, :class:`MeasurePauli`
 
     Examples:
-
         >>> from mimiqcircuits import *
+        >>> # measure the ZZ parity of qubits 0 and 1 into bit 0
         >>> c = Circuit()
         >>> c.push(MeasureZZ(), 0, 1, 0)
         2-qubit, 1-bit circuit with 1 instruction:
         └── MZZ @ q[0:1], c[0]
         <BLANKLINE>
-        >>> c.decompose()
+        >>> MeasureZZ().decompose()
         2-qubit, 1-bit circuit with 3 instructions:
         ├── CX @ q[0], q[1]
         ├── M @ q[1], c[0]
@@ -74,45 +84,45 @@ class MeasureZZ(AbstractMeasurement):
     def _decompose(self, circ, qubits, bits, zvars):
         q1, q2 = qubits
         c = bits[0]
-        circ.push(mc.GateCX(), q1, q2)
-        circ.push(mc.Measure(), q2, c)
-        circ.push(mc.GateCX(), q1, q2)
+        circ.push(GateCX(), q1, q2)
+        circ.push(Measure(), q2, c)
+        circ.push(GateCX(), q1, q2)
         return circ
 
 
 class MeasureXX(AbstractMeasurement):
-    r"""MeasureXX operation.
+    r"""Measure the parity of two qubits in the X basis.
 
-    The MeasureXX operation measures the joint parity of two qubits in the X-basis,
-    that is the two-qubit Pauli operator :math:`X \otimes X`.
-    Its decomposition applies a controlled-X (CX) gate from the first qubit to the
-    second and a Hadamard (H) gate on the first qubit. Together they map
-    :math:`X \otimes X` to :math:`Z` on the first qubit, which is then measured.
-    The H and CX gates are applied again afterwards to undo the basis change, so the
-    qubits are left in the post-measurement state of the :math:`X \otimes X` measurement.
+    Measures the two-qubit Pauli operator :math:`X \otimes X` and writes 0
+    for eigenvalue +1 or 1 for eigenvalue -1. The instruction takes two
+    qubits and one bit.
 
-    A result of `0` indicates that the qubits are in the same state, while a
-    result of `1` indicates that they are in different states.
+    It decomposes into a CX gate from the first qubit to the second and a
+    Hadamard gate on the first, which together map :math:`X \otimes X` to
+    :math:`Z` on the first qubit, then a measurement of that qubit, then the
+    same two gates in reverse order. The qubits are left in the
+    post-measurement state of the :math:`X \otimes X` measurement.
 
+    Warning:
+        Not reversible: ``inverse``, ``power`` and ``control`` raise
+        ``TypeError``.
 
     See Also:
-        :class:`MeasureZZ`: Measure the joint parity of two qubits in the Z-basis.
-        :class:`MeasureYY`: Measure the joint parity of two qubits in the Y-basis.
+        :class:`MeasureZZ`, :class:`MeasureYY`, :class:`MeasurePauli`
 
     Examples:
-
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureXX(), 0, 1, 0)
         2-qubit, 1-bit circuit with 1 instruction:
         └── MXX @ q[0:1], c[0]
         <BLANKLINE>
-        >>> c.decompose()
+        >>> MeasureXX().decompose()
         2-qubit, 1-bit circuit with 5 instructions:
         ├── CX @ q[0], q[1]
-        ├── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+        ├── H @ q[0]
         ├── M @ q[0], c[0]
-        ├── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+        ├── H @ q[0]
         └── CX @ q[0], q[1]
         <BLANKLINE>
     """
@@ -143,52 +153,53 @@ class MeasureXX(AbstractMeasurement):
     def _decompose(self, circ, qubits, bits, zvars):
         q1, q2 = qubits
         c = bits[0]
-        circ.push(mc.GateCX(), q1, q2)
-        circ.push(mc.GateH(), q1)
-        circ.push(mc.Measure(), q1, c)
-        circ.push(mc.GateH(), q1)
-        circ.push(mc.GateCX(), q1, q2)
+        circ.push(GateCX(), q1, q2)
+        circ.push(GateH(), q1)
+        circ.push(Measure(), q1, c)
+        circ.push(GateH(), q1)
+        circ.push(GateCX(), q1, q2)
         return circ
 
 
 class MeasureYY(AbstractMeasurement):
-    r"""MeasureYY operation.
+    r"""Measure the parity of two qubits in the Y basis.
 
-    The MeasureYY operation measures the joint parity of two qubits in the Y-basis,
-    that is the two-qubit Pauli operator :math:`Y \otimes Y`.
-    Its decomposition applies an S gate to both qubits, a controlled-X (CX) gate from
-    the first qubit to the second and a Hadamard (H) gate on the first qubit. Together
-    they map :math:`Y \otimes Y` to :math:`Z` on the first qubit, which is then measured.
-    The H and CX gates and an S† gate on both qubits are applied afterwards to undo the
-    basis change, so the qubits are left in the post-measurement state of the
-    :math:`Y \otimes Y` measurement.
+    Measures the two-qubit Pauli operator :math:`Y \otimes Y` and writes 0
+    for eigenvalue +1 or 1 for eigenvalue -1. The instruction takes two
+    qubits and one bit.
 
-    A result of `0` indicates that the qubits are in the same state, while a
-    result of `1` indicates that they are in different states.
+    It decomposes into an S gate on both qubits, a CX gate from the first
+    qubit to the second and a Hadamard gate on the first, which together map
+    :math:`Y \otimes Y` to :math:`Z` on the first qubit, then a measurement
+    of that qubit, then the inverse gates in reverse order. The qubits are
+    left in the post-measurement state of the :math:`Y \otimes Y`
+    measurement.
+
+    Warning:
+        Not reversible: ``inverse``, ``power`` and ``control`` raise
+        ``TypeError``.
 
     See Also:
-        :class:`MeasureZZ`: Measure the joint parity of two qubits in the Z-basis.
-        :class:`MeasureXX`: Measure the joint parity of two qubits in the X-basis.
+        :class:`MeasureZZ`, :class:`MeasureXX`, :class:`MeasurePauli`
 
     Examples:
-
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureYY(), 0, 1, 0)
         2-qubit, 1-bit circuit with 1 instruction:
         └── MYY @ q[0:1], c[0]
         <BLANKLINE>
-        >>> c.decompose()
+        >>> MeasureYY().decompose()
         2-qubit, 1-bit circuit with 9 instructions:
-        ├── U(0, 0, (1/2)*pi, 0.0) @ q[0]
-        ├── U(0, 0, (1/2)*pi, 0.0) @ q[1]
+        ├── S @ q[0]
+        ├── S @ q[1]
         ├── CX @ q[0], q[1]
-        ├── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+        ├── H @ q[0]
         ├── M @ q[0], c[0]
-        ├── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+        ├── H @ q[0]
         ├── CX @ q[0], q[1]
-        ├── U(0, 0, (-1/2)*pi, 0.0) @ q[0]
-        └── U(0, 0, (-1/2)*pi, 0.0) @ q[1]
+        ├── S† @ q[0]
+        └── S† @ q[1]
         <BLANKLINE>
     """
 
@@ -218,11 +229,11 @@ class MeasureYY(AbstractMeasurement):
     def _decompose(self, circ, qubits, bits, zvars):
         q1, q2 = qubits
         c = bits[0]
-        circ.push(mc.GateS(), qubits)
-        circ.push(mc.GateCX(), q1, q2)
-        circ.push(mc.GateH(), q1)
-        circ.push(mc.Measure(), q1, c)
-        circ.push(mc.GateH(), q1)
-        circ.push(mc.GateCX(), q1, q2)
-        circ.push(mc.GateSDG(), qubits)
+        circ.push(GateS(), qubits)
+        circ.push(GateCX(), q1, q2)
+        circ.push(GateH(), q1)
+        circ.push(Measure(), q1, c)
+        circ.push(GateH(), q1)
+        circ.push(GateCX(), q1, q2)
+        circ.push(GateSDG(), qubits)
         return circ

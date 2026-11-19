@@ -17,13 +17,14 @@
 """Measurement operations."""
 
 from mimiqcircuits.operations.operation import Operation
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.hadamard import GateH, GateHYZ
 
 
 class AbstractMeasurement(Operation):
-    """Base class for measurement operations, such as ``Measure`` and ``MeasureXX``.
+    """Base class for measurement operations, such as :class:`Measure` and
+    :class:`MeasureXX`.
 
-    Readout noise rules match every subclass of it.
+    Noise model rules for readout errors apply to every subclass.
     """
 
     _name = "AbstractMeasurement"
@@ -42,28 +43,29 @@ class AbstractMeasurement(Operation):
 
 
 class Measure(AbstractMeasurement):
-    """Measure operation.
+    """Single-qubit measurement in the computational (Z) basis.
 
-    This operation performs a measurement in the computational basis (Z-basis) and stores the result in a classical register.
+    Projects the qubit onto :math:`|0⟩` or :math:`|1⟩` and writes the
+    outcome, 0 or 1, to a classical bit. The instruction takes one qubit and
+    one bit.
 
-    The measurement projects the quantum state onto either the :math:`|0⟩` or :math:`|1⟩` state, corresponding to the classical bit values of 0 and 1, respectively.
-
-    .. warning::
-        `Measure` is non-reversible.
+    Warning:
+        Measurements are not reversible: ``inverse``, ``power`` and
+        ``control`` raise ``TypeError``.
 
     Examples:
-
-        Adding Measure operation to the Circuit (The qubits (first arg) and the bits (second arg) can be: range, list, tuple, set or int)
-
         >>> from mimiqcircuits import *
-        >>> c= Circuit()
-        >>> c.push(Measure(),0,0)
+        >>> # measure qubit 0 into bit 0
+        >>> c = Circuit()
+        >>> c.push(Measure(), 0, 0)
         1-qubit, 1-bit circuit with 1 instruction:
         └── M @ q[0], c[0]
         <BLANKLINE>
 
-        >>> from mimiqcircuits import *
-        >>> c= Circuit()
+        Targets can be ranges, lists or tuples; one instruction is added per
+        qubit-bit pair:
+
+        >>> c = Circuit()
         >>> c.push(Measure(), range(0,3), range(0,3))
         3-qubit, 3-bit circuit with 3 instructions:
         ├── M @ q[0], c[0]
@@ -101,23 +103,26 @@ class Measure(AbstractMeasurement):
 
 
 class MeasureX(AbstractMeasurement):
-    r"""Single qubit measurement operation in the X-basis.
+    r"""Single-qubit measurement in the X basis.
 
-    This operation projects the quantum state onto the X-basis and stores the result of such
-    measurement in a classical register. The measurement is performed by first applying a Hadamard
-    gate to rotate the qubit's state into the computational basis, performing a standard Z-basis
-    measurement, and then applying another Hadamard gate to return the qubit to its original basis.
+    Projects the qubit onto :math:`|+⟩` or :math:`|-⟩` and writes 0 or 1 to
+    a classical bit. It decomposes into a Hadamard gate, a Z-basis
+    :class:`Measure` and a second Hadamard gate, so the qubit is left in the
+    measured X eigenstate.
 
-    .. warning::
-        `MeasureX` is non-reversible.
+    Warning:
+        Measurements are not reversible: ``inverse``, ``power`` and
+        ``control`` raise ``TypeError``.
 
     See Also:
-        :class:`Measure`, :class:`MeasureY`, :class:`MeasureZ`, :class:`Operation`, :class:`Reset`
+        :class:`Measure`, :class:`MeasureY`, :class:`MeasureZ`, :class:`Reset`
 
     Examples:
         >>> from mimiqcircuits import *
         >>> MeasureX()
         MX
+
+        >>> # measure qubit 2 into bit 1
 
         >>> c = Circuit()
         >>> c.push(MeasureX(), 2, 1)
@@ -158,25 +163,26 @@ class MeasureX(AbstractMeasurement):
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         b = bits[0]
-        circ.push(mc.GateH(), q)
+        circ.push(GateH(), q)
         circ.push(Measure(), q, b)
-        circ.push(mc.GateH(), q)
+        circ.push(GateH(), q)
         return circ
 
 
 class MeasureY(AbstractMeasurement):
-    r"""Single qubit measurement operation in the Y-basis.
+    r"""Single-qubit measurement in the Y basis.
 
-    This operation projects the quantum state onto the Y-basis and stores the result of such
-    measurement in a classical register. The measurement is performed by first applying a :math:`R_y(\pi/2)`
-    rotation gate to rotate the qubit's state into the computational basis, performing a standard Z-basis
-    measurement, and then applying another :math:`R_y(-\pi/2)` rotation to return the qubit to its original basis.
+    Projects the qubit onto :math:`|{+i}⟩` or :math:`|{-i}⟩` and writes 0 or
+    1 to a classical bit. It decomposes into a :class:`GateHYZ`, a Z-basis
+    :class:`Measure` and a second :class:`GateHYZ`, so the qubit is left in
+    the measured Y eigenstate.
 
-    .. warning::
-        `MeasureY` is non-reversible.
+    Warning:
+        Measurements are not reversible: ``inverse``, ``power`` and
+        ``control`` raise ``TypeError``.
 
     See Also:
-        :class:`Measure`, :class:`MeasureX`, :class:`MeasureZ`, :class:`Operation`, :class:`Reset`
+        :class:`Measure`, :class:`MeasureX`, :class:`MeasureZ`, :class:`Reset`
 
     Examples:
         >>> from mimiqcircuits import *
@@ -222,25 +228,23 @@ class MeasureY(AbstractMeasurement):
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         b = bits[0]
-        circ.push(mc.GateHYZ(), q)
+        circ.push(GateHYZ(), q)
         circ.push(Measure(), q, b)
-        circ.push(mc.GateHYZ(), q)
+        circ.push(GateHYZ(), q)
         return circ
 
 
 class MeasureZ(AbstractMeasurement):
-    r"""Single qubit measurement operation in the Z-basis.
+    r"""Single-qubit measurement in the Z basis, an alias of :class:`Measure`.
 
-    This class returns an instance of the :class:`Measure` operation, effectively acting as an alias for Z-basis measurement.
-
-    .. warning::
-        `MeasureZ` is non-reversible.
+    ``MeasureZ()`` returns a :class:`Measure` instance, not a ``MeasureZ``.
 
     See Also:
-        :class:`Measure`, :class:`MeasureX`, :class:`MeasureY`, :class:`Operation`, :class:`Reset`
+        :class:`Measure`, :class:`MeasureX`, :class:`MeasureY`, :class:`Reset`
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # the constructor returns a plain Measure
         >>> MeasureZ()
         M
 

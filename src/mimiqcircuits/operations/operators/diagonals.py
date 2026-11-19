@@ -15,36 +15,42 @@
 # limitations under the License.
 #
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.operator import AbstractOperator
 import symengine as se
+from numbers import Real
+from mimiqcircuits._sympycheck import _is_basic
 
 
-class DiagonalOp(mc.AbstractOperator):
+class DiagonalOp(AbstractOperator):
     r"""One-qubit diagonal operator.
 
-    The corresponding matrix is given by:
+    Matrix Representation:
+        .. math::
+            \begin{pmatrix}
+                a & 0 \\
+                0 & b
+            \end{pmatrix}
 
-    **Matrix Representation**
+    The operator does not have to be unitary. Use it in an
+    :class:`ExpectationValue` or as a Kraus operator.
 
-    .. math::
-        \begin{pmatrix}
-            a & 0 \\
-            0 & b
-        \end{pmatrix}
+    Args:
+        a: The top-left entry, a real number or a symbolic expression.
+        b: The bottom-right entry, a real number or a symbolic expression.
 
-    where `a` and `b` are complex numbers.
+    Raises:
+        ValueError: If ``a`` or ``b`` is neither a real number nor a
+            symbolic expression.
 
     See Also:
         :class:`Operator`, :class:`Projector0`, :class:`Projector1`
 
-    Parameters:
-        a (complex): The top-left entry of the diagonal matrix.
-        b (complex): The bottom-right entry of the diagonal matrix.
-
     Examples:
         >>> from mimiqcircuits import *
-        >>> op = DiagonalOp(1, 0.5)
+        >>> DiagonalOp(1, 0.5)
+        D(1, 0.5)
 
+        >>> # expectation value on qubit 1, stored in z-variable 2
         >>> c = Circuit()
         >>> c.push(ExpectationValue(DiagonalOp(1, 0.5)), 1, 2)
         2-qubit, 3-zvar circuit with 1 instruction:
@@ -58,8 +64,8 @@ class DiagonalOp(mc.AbstractOperator):
     _qregsizes = [1]
 
     def __init__(self, a, b):
-        if not isinstance(a, (float, int)) or not isinstance(b, (float, int)):
-            raise ValueError("a and b must be float or int")
+        if not all(isinstance(v, Real) or _is_basic(v) for v in (a, b)):
+            raise ValueError("a and b must be real numbers or symbolic expressions")
         self.a = a
         self.b = b
 
@@ -78,7 +84,7 @@ class DiagonalOp(mc.AbstractOperator):
         return self._parnames
 
     def opsquared(self):
-        """Return the operator with each parameter squared."""
+        r"""Return :math:`O^\dagger O`, the diagonal operator with entries :math:`|a|^2` and :math:`|b|^2`."""
         return DiagonalOp(abs(self.a) ** 2, abs(self.b) ** 2)
 
 

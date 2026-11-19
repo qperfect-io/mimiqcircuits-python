@@ -246,3 +246,12 @@ def test_extracted_projection_of_a_measured_circuit():
     circuit.push(mc.Measure(), range(4), range(4))
     _, proj = extract_projection(circuit)
     assert_matches_reference(proj, samples(4, 32), Tier.IDENTITY)
+
+
+def test_measure_outside_the_sample_keeps_the_bit():
+    proj = mc.Circuit()
+    proj.push(mc.SetBit1(), 0)
+    proj.push(mc.Measure(), 3, 0)
+    proj.push(mc.Measure(), 0, 1)
+    got = assert_matches_reference(proj, [mc.BitString("10"), mc.BitString("01")])
+    assert [b.to01() for b in got] == ["11", "10"]

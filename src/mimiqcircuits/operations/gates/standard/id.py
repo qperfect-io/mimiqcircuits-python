@@ -16,20 +16,18 @@
 #
 """Identity (ID) gate."""
 
-import mimiqcircuits as mc
-from mimiqcircuits.matrices import umatrixpi
+from mimiqcircuits.operations.gates.gate import Gate
 
 
-class GateID(mc.Gate):
+class GateID(Gate):
     r"""Single qubit Identity gate.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{ID} = \begin{pmatrix}
-            1 & 0 \\
-            0 & 1
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{ID} = \begin{pmatrix}
+                1 & 0 \\
+                0 & 1
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -67,9 +65,11 @@ class GateID(mc.Gate):
         return True
 
     def _matrix(self):
+        from mimiqcircuits.matrices import umatrixpi
         return umatrixpi(0, 0, 0)
 
     def _decompose(self, circ, qubits, bits, zvars):
+        from mimiqcircuits.operations.gates.standard.u import GateU
         q = qubits[0]
-        circ.push(mc.GateU(0, 0, 0), q)
+        circ.push(GateU(0, 0, 0), q)
         return circ

@@ -239,6 +239,7 @@ class TestDecompositionBases:
         assert basis.isterminal(Measure())
         assert basis.isterminal(Reset())
         assert basis.isterminal(Barrier(2))
+        assert basis.isterminal(mc.ReadoutErr(0.1, 0.2))
 
     @pytest.mark.parametrize(
         "op",

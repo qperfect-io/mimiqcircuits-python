@@ -124,3 +124,18 @@ def test_circuittester_is_deprecated_alias():
     with pytest.warns(DeprecationWarning, match="EquivalenceExperiment"):
         ex = CircuitTesterExperiment(c, c)
     assert isinstance(ex, EquivalenceExperiment)
+
+
+@pytest.mark.parametrize("method", ["samples", "amplitudes"])
+def test_saveproto_roundtrip(tmp_path, method):
+    c1 = Circuit().push(GateH(), 0).push(GateCX(), 0, 1)
+    c2 = Circuit().push(GateH(), 0).push(GateCX(), 1, 0)
+    ex = EquivalenceExperiment(c1, c2, method=method)
+
+    fname = tmp_path / "equivalence.pb"
+    ex.saveproto(str(fname))
+    loaded = EquivalenceExperiment.loadproto(str(fname))
+
+    assert loaded.c1 == c1
+    assert loaded.c2 == c2
+    assert loaded.method == method

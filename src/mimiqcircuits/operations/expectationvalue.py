@@ -16,57 +16,70 @@
 #
 """Expectation value operation."""
 
-from mimiqcircuits import Operation
+from mimiqcircuits.operations.operation import Operation
 from mimiqcircuits.operations.operator import AbstractOperator
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
 
 
 class ExpectationValue(Operation):
-    r"""Operation to compute and store the expectation value of an Operator in a z-register.
+    r"""Compute the expectation value of an operator and store it in a z-variable.
 
-    An expectation value for a pure state :math:`| \psi \rangle` is defined as:
-
-    **Expectation Value for Pure State**
+    For a pure state :math:`|\psi\rangle` the expectation value of an operator
+    :math:`O` is
 
     .. math::
-        \langle O \rangle = \langle \psi | O | \psi \rangle
+        \langle O \rangle = \langle \psi | O | \psi \rangle,
 
-    where :math:`O` is an operator. With respect to a density matrix :math:`\rho`, it's given by:
-
-    **Expectation Value for Density Matrix**
+    and for a density matrix :math:`\rho` it is
 
     .. math::
         \langle O \rangle = \mathrm{Tr}(\rho O).
 
-    However, when using quantum trajectories to solve noisy circuits, the expectation
-    value is computed with respect to the pure state of each trajectory.
+    When a noisy circuit is simulated with quantum trajectories, the value is
+    computed on the pure state of each trajectory.
 
-    The argument `op` can be any gate or non-unitary operator.
+    The operator can be a gate or a non-unitary operator such as
+    :class:`SigmaPlus` or :class:`Projector0`. It must act on one or two
+    qubits, except for a :class:`PauliString`, which can act on any number.
+    The instruction takes the operator's qubits followed by one z-variable.
+    The quantum state is not changed.
 
-    .. note::
-        ExpectationValue is currently restricted to one and two qubit operators.
+    Args:
+        op: The operator to measure.
+
+    Raises:
+        TypeError: If ``op`` is not an :class:`AbstractOperator`.
+        ValueError: If ``op`` acts on more than two qubits and is not a
+            :class:`PauliString`.
 
     See Also:
-        :class:`AbstractOperator`, :class:`Gate`
+        :class:`AbstractOperator`, :class:`Gate`, :class:`Amplitude`
 
     Examples:
-
-        In `push!`, the first argument corresponds to the qubit, and the second to the z-register.
-
         >>> from mimiqcircuits import *
         >>> ExpectationValue(GateX())
         ⟨X⟩
 
+        >>> # <X> on qubit 1, stored in z-variable 1
         >>> c = Circuit()
         >>> c.push(ExpectationValue(GateX()), 1, 1)
         2-qubit, 2-zvar circuit with 1 instruction:
         └── ⟨X⟩ @ q[1], z[1]
         <BLANKLINE>
 
+        >>> # non-unitary operators work too
         >>> c.push(ExpectationValue(SigmaPlus()), 1, 2)
         2-qubit, 3-zvar circuit with 2 instructions:
         ├── ⟨X⟩ @ q[1], z[1]
         └── ⟨SigmaPlus(1)⟩ @ q[1], z[2]
+        <BLANKLINE>
+
+        >>> # a Pauli string can span any number of qubits
+        >>> c.push(ExpectationValue(PauliString("XYZ")), 0, 1, 2, 3)
+        3-qubit, 4-zvar circuit with 3 instructions:
+        ├── ⟨X⟩ @ q[1], z[1]
+        ├── ⟨SigmaPlus(1)⟩ @ q[1], z[2]
+        └── ⟨XYZ⟩ @ q[0:2], z[3]
         <BLANKLINE>
     """
 
@@ -83,7 +96,7 @@ class ExpectationValue(Operation):
         if not isinstance(op, AbstractOperator):
             raise TypeError(f"cannot get Expectation Value of {op.__class__.__name__}.")
 
-        if not isinstance(op, mc.PauliString) and not (1 <= op._num_qubits <= 2):
+        if not isinstance(op, PauliString) and not (1 <= op._num_qubits <= 2):
             raise ValueError(
                 "ExpectationValue only supports 1- or 2-qubit operators unless the operator is a PauliString."
             )
@@ -96,6 +109,7 @@ class ExpectationValue(Operation):
         self._parnames = tuple(op._parnames)
 
     def opname(self):
+        """Return ``"ExpectationValue"``."""
         return self._name
 
     @property
@@ -111,9 +125,19 @@ class ExpectationValue(Operation):
         return self._zregsizes
 
     def inverse(self):
+        """Not supported.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError("Cannot inverse an ExpectationValue operation.")
 
     def power(self, _):
+        """Not supported.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError(
             "Cannot elevate an ExpectationValue operation to any power."
         )
@@ -126,20 +150,22 @@ class ExpectationValue(Operation):
         return f"⟨{self.op}⟩"
 
     def iswrapper(self):
-        # As in MimiqCircuitsBase.jl: `get_operation()` returns the observable.
+        # ``get_operation()`` returns the observable.
         return True
 
     def _decompose(self, circ, qubits, bits, zvars):
         return circ.push(self, *qubits, *bits, *zvars)
 
     def asciiwidth(self, qubits, bits=[], zvars=[]):
-        """Calculate the width for ASCII drawing."""
+        """Return the width of the operation in ASCII circuit drawings."""
         return len(self.__str__()) + 8
 
     def get_operation(self):
+        """Return the measured operator, ``op``."""
         return self.op
 
     def getparams(self):
+        """Return the parameters of the measured operator."""
         return self.op.getparams()
 
     def evaluate(self, d):

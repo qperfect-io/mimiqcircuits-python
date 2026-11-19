@@ -23,12 +23,15 @@ import numpy as np
 import symengine as se
 from mimiqcircuits._sympycheck import _is_basic, _is_sympy_matrix
 
-from mimiqcircuits import Operation
+from mimiqcircuits.operations.operation import Operation
 
 
 class UnexpectedSymbolics(ValueError):
-    """Raised when :func:`unwrappedmatrix` hits a parameter that can't be
-    evaluated to a number."""
+    """Raised when a numeric matrix is requested for an operator whose
+    parameters are still symbolic.
+
+    See :meth:`AbstractOperator.unwrappedmatrix`.
+    """
 
     def __init__(self, op):
         super().__init__(
@@ -159,16 +162,31 @@ def _canonical_instance(cls):
 
 
 class AbstractOperator(Operation):
-    r"""Supertype for all N-qubit operators.
+    r"""Base class for all N-qubit operators.
 
-    Note that objects of type `AbstractOperator` do not need to be unitary.
+    An operator is anything with a matrix representation, see
+    :meth:`matrix`. It does not need to be unitary: :class:`Gate` is the
+    unitary subclass, while operators such as :class:`SigmaMinus`,
+    :class:`Projector0` or :class:`DiagonalOp` are not unitary.
 
-    Operators can be used to define Kraus channels (noise) (see :class:`krauschannel`),
-    or to compute expectation values (see :class:`ExpectationValue`). However,
-    they will return an error if directly applied to states.
+    Non-unitary operators cannot be pushed to a circuit on their own. They
+    are used to define Kraus channels (see :class:`Kraus`) and to compute
+    expectation values (see :class:`ExpectationValue`).
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> # a non-unitary operator, used here to measure an expectation value
+        >>> op = SigmaMinus()
+        >>> op.isunitary()
+        False
+        >>> c = Circuit()
+        >>> c.push(ExpectationValue(op), 0, 0)
+        1-qubit, 1-zvar circuit with 1 instruction:
+        └── ⟨SigmaMinus(1)⟩ @ q[0], z[0]
+        <BLANKLINE>
 
     See Also:
-        :func:`matrix`, :func:`isunitary`
+        :meth:`matrix`, :meth:`isunitary`
     """
 
     _name = None
@@ -183,6 +201,7 @@ class AbstractOperator(Operation):
     _cregsizes = None
 
     def opname(self):
+        """Return the name of the operator's class, for example ``"SigmaMinus"``."""
         return self.__class__.__name__
 
     @abstractmethod
@@ -198,15 +217,14 @@ class AbstractOperator(Operation):
         pass
 
     def iswrapper(self):
-        """Check if the operator is a wrapper around another operator.
+        """Whether the operator wraps another operation.
 
-        This method should be overridden in subclasses to return `True` if the
-        operator is acting as a wrapper around another operation or object, and
-        `False` otherwise.
+        ``True`` for composite operators such as :class:`Control`,
+        :class:`Power`, :class:`Inverse` or :class:`Parallel`, ``False`` for
+        plain operators and gates.
 
         Returns:
-            bool: Always returns `False` in the base class. Subclasses should
-            override this method to provide the appropriate logic.
+            bool
         """
         return False
 
@@ -215,17 +233,22 @@ class AbstractOperator(Operation):
 
     @staticmethod
     def isunitary():
-        """Check if the object is unitary.
+        """Whether the operator is unitary.
 
-        By default, this method returns `False` unless explicitly overridden in a subclass.
+        Returns:
+            bool: ``True`` for gates, ``False`` for general operators.
         """
         return False
 
     def supports_canonical_rewrite(self):
-        """Only gate-like operators participate in canonical rewrite by default."""
-        import mimiqcircuits as mc
+        """Whether :class:`CanonicalRewrite` may decompose this operator.
 
-        return isinstance(self, mc.Gate)
+        Returns:
+            bool: ``True`` for gates, ``False`` for other operators.
+        """
+        from mimiqcircuits.operations.gates.gate import Gate
+
+        return isinstance(self, Gate)
 
     def _hascachedmatrix(self):
         """Whether this operator's matrix may be stored on its class.
@@ -273,6 +296,13 @@ class AbstractOperator(Operation):
 
         Returns:
             symengine.Matrix: The matrix representation.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> GateX().matrix()
+            [0, 1.0]
+            [1.0, 0]
+            <BLANKLINE>
         """
         if self._hascachedmatrix():
             return se.DenseMatrix(self._classmatrix())
@@ -297,13 +327,13 @@ class AbstractOperator(Operation):
         return _to_ndarray(self._matrix())
 
     def inverse(self):
-        """Raise an error, as non-unitary operators cannot be inverted.
+        """Return the inverse of the operator.
 
-        This method is not implemented for non-unitary operators and will raise
-        a `NotImplementedError` if called.
+        General operators are not unitary and have no inverse here, so this
+        always raises. Gates override it.
 
         Raises:
-            NotImplementedError: If the method is called.
+            NotImplementedError: Always.
         """
         raise NotImplementedError("Cannot invert non-unitary operator")
 
@@ -339,37 +369,41 @@ class AbstractOperator(Operation):
         return self
 
     def power(self, n):
-        """Raise an error, as powers of non-unitary operators are not supported.
+        """Return the operator raised to the power ``n``.
 
-        This method is not implemented for non-unitary operators and will raise
-        a `NotImplementedError` if called.
+        Powers of general operators are not supported, so this always
+        raises. Gates override it.
 
         Args:
-            n (int): The exponent to which the operator would be raised.
+            n: The exponent.
 
         Raises:
-            NotImplementedError: If the method is called.
+            NotImplementedError: Always.
         """
         raise NotImplementedError("Cannot take power of non-unitary operator")
 
     def unwrappedmatrix(self):
-        """Numeric matrix representation as a ``numpy.ndarray[complex128]``.
+        """Return the numeric matrix of the operator as a NumPy array.
 
-        Simulators and anything
-        else that wants raw numbers (e.g. TensorWeaver) should call this
-        instead of :meth:`matrix`. It bypasses SymEngine entirely for gates
-        that override :meth:`_matrix_numeric` — see
-        :mod:`mimiqcircuits.numerics` — and otherwise falls back to
-        building the SymEngine matrix and casting it.
+        Use this instead of :meth:`matrix` when plain numbers are needed, for
+        example to feed a simulator. Gates with a fast numeric path (see
+        :mod:`mimiqcircuits.numerics`) skip SymEngine entirely; other
+        operators build the SymEngine matrix and convert it.
 
-        Operators fully determined by their type cache the result at class
-        level as a read-only array.
+        Operators fully determined by their type return a cached, read-only
+        array. Copy it before modifying it.
+
+        Returns:
+            numpy.ndarray: The matrix, with dtype ``complex128``.
 
         Raises:
             UnexpectedSymbolics: If any parameter is still symbolic.
 
-        Returns:
-            numpy.ndarray: ``complex128`` matrix.
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> GateX().unwrappedmatrix()
+            array([[0.+0.j, 1.+0.j],
+                   [1.+0.j, 0.+0.j]])
         """
         if self._hascachedmatrix():
             cls = type(self)
@@ -389,24 +423,24 @@ class AbstractOperator(Operation):
         return self._matrix_numeric(*unwrapped)
 
     def evaluate(self, d):
-        """
-        Substitute the symbolic parameters of the operator with numerical values.
+        """Substitute values for the symbols in the operator's parameters.
 
-        This method evaluates the operator's symbolic parameters using the values
-        provided in the dictionary `d`. If the operator has no parameters, it returns
-        the same instance. Otherwise, it creates a new instance of the operator with
-        updated numerical parameters.
+        Operators without parameters return themselves. Otherwise a new
+        operator of the same type is built from the substituted parameters.
+        Symbols missing from ``d`` stay symbolic.
 
-        Parameters:
-            d (dict): A dictionary where keys are symbolic parameter names and values are values for substitution.
+        Args:
+            d (dict): Map from symbols (or their names) to values.
 
-        Example:
-            >>> from symengine import *
+        Returns:
+            AbstractOperator: The operator with the symbols substituted.
+
+        Examples:
+            >>> from symengine import symbols
             >>> from mimiqcircuits import *
             >>> theta = symbols('theta')
-            >>> op = GateRX(theta)
-            >>> evaluated_op = op.evaluate({'theta': 0.5})
-            >>> print(evaluated_op)
+            >>> # bind theta to a number
+            >>> GateRX(theta).evaluate({theta: 0.5})
             RX(0.5)
         """
         if len(self.parnames) == 0:
@@ -415,7 +449,7 @@ class AbstractOperator(Operation):
         params = self.getparams()
 
         for i in range(len(params)):
-            if isinstance(params[i], (int, float)):
+            if not hasattr(params[i], "subs"):
                 continue
 
             params[i] = params[i].subs(d)

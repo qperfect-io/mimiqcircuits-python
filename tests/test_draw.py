@@ -42,3 +42,12 @@ def test_draw_sequential(capsys):
     # every instruction gets its own column
     hcols = [line.index("┤H├") for line in lines if "┤H├" in line]
     assert len(hcols) == 3 and len(set(hcols)) == 3
+
+
+def test_ascii_canvas_defaults_to_the_terminal_width():
+    from mimiqcircuits import AsciiCanvas
+
+    canvas = AsciiCanvas()
+    assert isinstance(canvas.width, int)
+    canvas.push_line()
+    assert len(canvas.data[0]) == canvas.width

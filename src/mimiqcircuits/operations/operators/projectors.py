@@ -16,7 +16,7 @@
 #
 
 import symengine as se
-import mimiqcircuits as mc
+from mimiqcircuits.operations.operator import AbstractOperator
 
 
 def to_subscript(number):
@@ -24,27 +24,25 @@ def to_subscript(number):
     return str(number).translate(subscript_map)
 
 
-class Projector0(mc.AbstractOperator):
+class Projector0(AbstractOperator):
     r"""One-qubit operator corresponding to a projection onto :math:`|0\rangle`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \begin{pmatrix}
+                a & 0 \\
+                0 & 0
+            \end{pmatrix}
 
-    .. math::
-        \begin{pmatrix}
-            a & 0 \\
-            0 & 0
-        \end{pmatrix}
-
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-    Equivalent to :class:`DiagonalOp(a, 0)`.
-
-    The parameter `a` is optional and is set to 1 by default.
+    The factor ``a`` scales the projector, for example to add a phase. The
+    operator is not unitary: use it in an :class:`ExpectationValue` or as a
+    Kraus operator. Equivalent to ``DiagonalOp(a, 0)``.
 
     See Also:
         :class:`Projector1`, :class:`DiagonalOp`
 
-    Parameters:
-        a (complex, optional): The top-left entry of the matrix. Defaults to 1.
+    Args:
+        a (complex): The top-left entry of the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -82,30 +80,29 @@ class Projector0(mc.AbstractOperator):
         return f"P{to_subscript(0)}({self.a})"
 
     def opsquared(self):
+        r"""Return :math:`O^\dagger O`, the same projector scaled by :math:`|a|^2`."""
         return Projector0(abs(self.a) ** 2)
 
 
-class Projector1(mc.AbstractOperator):
+class Projector1(AbstractOperator):
     r"""One-qubit operator corresponding to a projection onto :math:`|1\rangle`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \begin{pmatrix}
+                0 & 0 \\
+                0 & a
+            \end{pmatrix}
 
-    .. math::
-        \begin{pmatrix}
-            0 & 0 \\
-            0 & a
-        \end{pmatrix}
-
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-    Equivalent to :class:`DiagonalOp(0, a)`.
-
-    The parameter `a` is optional and is set to 1 by default.
+    The factor ``a`` scales the projector, for example to add a phase. The
+    operator is not unitary: use it in an :class:`ExpectationValue` or as a
+    Kraus operator. Equivalent to ``DiagonalOp(0, a)``.
 
     See Also:
         :class:`Projector0`, :class:`DiagonalOp`
 
-    Parameters:
-        a (complex, optional): The bottom-right entry of the matrix. Defaults to 1.
+    Args:
+        a (complex): The bottom-right entry of the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -143,30 +140,30 @@ class Projector1(mc.AbstractOperator):
         return f"P{to_subscript(1)}({self.a})"
 
     def opsquared(self):
+        r"""Return :math:`O^\dagger O`, the same projector scaled by :math:`|a|^2`."""
         return Projector1(abs(self.a) ** 2)
 
 
-class ProjectorX0(mc.AbstractOperator):
+class ProjectorX0(AbstractOperator):
     r"""One-qubit operator corresponding to a projection onto :math:`|+\rangle`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \frac{a}{2}
+            \begin{pmatrix}
+                1 & 1 \\
+                1 & 1
+            \end{pmatrix}
 
-    .. math::
-        \frac{a}{2}
-        \begin{pmatrix}
-            1 & 1 \\
-            1 & 1
-        \end{pmatrix}
-
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-
-    The parameter `a` is optional and is set to 1 by default.
+    The factor ``a`` scales the projector, for example to add a phase. The
+    operator is not unitary: use it in an :class:`ExpectationValue` or as a
+    Kraus operator.
 
     See Also:
         :class:`ProjectorX1`
 
-    Parameters:
-        a (complex, optional): Scaling factor for the matrix. Defaults to 1.
+    Args:
+        a (complex): Scaling factor for the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -204,30 +201,30 @@ class ProjectorX0(mc.AbstractOperator):
         return f"PX{to_subscript(0)}({self.a})"
 
     def opsquared(self):
+        r"""Return :math:`O^\dagger O`, the same projector scaled by :math:`|a|^2`."""
         return ProjectorX0(abs(self.a) ** 2)
 
 
-class ProjectorX1(mc.AbstractOperator):
+class ProjectorX1(AbstractOperator):
     r"""One-qubit operator corresponding to a projection onto :math:`|-\rangle`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \frac{a}{2}
+            \begin{pmatrix}
+                1 & -1 \\
+                -1 & 1
+            \end{pmatrix}
 
-    .. math::
-        \frac{a}{2}
-        \begin{pmatrix}
-            1 & -1 \\
-            -1 & 1
-        \end{pmatrix}
-
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-
-    The parameter `a` is optional and is set to 1 by default.
+    The factor ``a`` scales the projector, for example to add a phase. The
+    operator is not unitary: use it in an :class:`ExpectationValue` or as a
+    Kraus operator.
 
     See Also:
         :class:`ProjectorX0`
 
-    Parameters:
-        a (complex, optional): Scaling factor for the matrix. Defaults to 1.
+    Args:
+        a (complex): Scaling factor for the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -266,30 +263,30 @@ class ProjectorX1(mc.AbstractOperator):
         return f"PX{to_subscript(1)}({self.a})"
 
     def opsquared(self):
+        r"""Return :math:`O^\dagger O`, the same projector scaled by :math:`|a|^2`."""
         return ProjectorX1(abs(self.a) ** 2)
 
 
-class ProjectorY0(mc.AbstractOperator):
-    r"""One-qubit operator corresponding to a projection onto :math:`|y+\rangle`.
+class ProjectorY0(AbstractOperator):
+    r"""One-qubit operator corresponding to a projection onto :math:`|{+i}\rangle`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \frac{a}{2}
+            \begin{pmatrix}
+                1 & -i \\
+                i & 1
+            \end{pmatrix}
 
-    .. math::
-        \frac{a}{2}
-        \begin{pmatrix}
-            1 & -i \\
-            i & 1
-        \end{pmatrix}
-
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-
-    The parameter `a` is optional and is set to 1 by default.
+    The factor ``a`` scales the projector, for example to add a phase. The
+    operator is not unitary: use it in an :class:`ExpectationValue` or as a
+    Kraus operator.
 
     See Also:
         :class:`ProjectorY1`
 
-    Parameters:
-        a (complex, optional): Scaling factor for the matrix. Defaults to 1.
+    Args:
+        a (complex): Scaling factor for the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -327,30 +324,30 @@ class ProjectorY0(mc.AbstractOperator):
         return f"PY{to_subscript(0)}({self.a})"
 
     def opsquared(self):
+        r"""Return :math:`O^\dagger O`, the same projector scaled by :math:`|a|^2`."""
         return ProjectorY0(abs(self.a) ** 2)
 
 
-class ProjectorY1(mc.AbstractOperator):
-    r"""One-qubit operator corresponding to a projection onto :math:`|y-\rangle`.
+class ProjectorY1(AbstractOperator):
+    r"""One-qubit operator corresponding to a projection onto :math:`|{-i}\rangle`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \frac{a}{2}
+            \begin{pmatrix}
+                1 & i \\
+                -i & 1
+            \end{pmatrix}
 
-    .. math::
-        \frac{a}{2}
-        \begin{pmatrix}
-            1 & i \\
-            -i & 1
-        \end{pmatrix}
-
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-
-    The parameter `a` is optional and is set to 1 by default.
+    The factor ``a`` scales the projector, for example to add a phase. The
+    operator is not unitary: use it in an :class:`ExpectationValue` or as a
+    Kraus operator.
 
     See Also:
         :class:`ProjectorY0`
 
-    Parameters:
-        a (complex, optional): Scaling factor for the matrix. Defaults to 1.
+    Args:
+        a (complex): Scaling factor for the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -388,31 +385,31 @@ class ProjectorY1(mc.AbstractOperator):
         return f"PY{to_subscript(1)}({self.a})"
 
     def opsquared(self):
+        r"""Return :math:`O^\dagger O`, the same projector scaled by :math:`|a|^2`."""
         return ProjectorY1(abs(self.a) ** 2)
 
 
-class Projector00(mc.AbstractOperator):
+class Projector00(AbstractOperator):
     r"""Two-qubit operator corresponding to a projection onto :math:`|00\rangle`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \begin{pmatrix}
+                a & 0 & 0 & 0\\
+                0 & 0 & 0 & 0\\
+                0 & 0 & 0 & 0\\
+                0 & 0 & 0 & 0
+            \end{pmatrix}
 
-    .. math::
-        \begin{pmatrix}
-            a & 0 & 0 & 0\\
-            0 & 0 & 0 & 0\\
-            0 & 0 & 0 & 0\\
-            0 & 0 & 0 & 0
-        \end{pmatrix}
-
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-
-    The parameter `a` is optional and is set to 1 by default.
+    The factor ``a`` scales the projector, for example to add a phase. The
+    operator is not unitary: use it in an :class:`ExpectationValue` or as a
+    Kraus operator.
 
     See Also:
         :class:`Projector01`, :class:`Projector10`, :class:`Projector11`
 
-    Parameters:
-        a (complex, optional): Scaling factor for the matrix. Defaults to 1.
+    Args:
+        a (complex): Scaling factor for the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -450,31 +447,31 @@ class Projector00(mc.AbstractOperator):
         return f"P{to_subscript(0)}{to_subscript(0)}({self.a})"
 
     def opsquared(self):
+        r"""Return :math:`O^\dagger O`, the same projector scaled by :math:`|a|^2`."""
         return Projector00(abs(self.a) ** 2)
 
 
-class Projector01(mc.AbstractOperator):
+class Projector01(AbstractOperator):
     r"""Two-qubit operator corresponding to a projection onto :math:`|01\rangle`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \begin{pmatrix}
+                0 & 0 & 0 & 0\\
+                0 & a & 0 & 0\\
+                0 & 0 & 0 & 0\\
+                0 & 0 & 0 & 0
+            \end{pmatrix}
 
-    .. math::
-        \begin{pmatrix}
-            0 & 0 & 0 & 0\\
-            0 & a & 0 & 0\\
-            0 & 0 & 0 & 0\\
-            0 & 0 & 0 & 0
-        \end{pmatrix}
-
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-
-    The parameter `a` is optional and is set to 1 by default.
+    The factor ``a`` scales the projector, for example to add a phase. The
+    operator is not unitary: use it in an :class:`ExpectationValue` or as a
+    Kraus operator.
 
     See Also:
         :class:`Projector00`, :class:`Projector10`, :class:`Projector11`
 
-    Parameters:
-        a (complex, optional): Scaling factor for the matrix. Defaults to 1.
+    Args:
+        a (complex): Scaling factor for the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -512,31 +509,31 @@ class Projector01(mc.AbstractOperator):
         return f"P{to_subscript(0)}{to_subscript(1)}({self.a})"
 
     def opsquared(self):
+        r"""Return :math:`O^\dagger O`, the same projector scaled by :math:`|a|^2`."""
         return Projector01(abs(self.a) ** 2)
 
 
-class Projector10(mc.AbstractOperator):
+class Projector10(AbstractOperator):
     r"""Two-qubit operator corresponding to a projection onto :math:`|10\rangle`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \begin{pmatrix}
+                0 & 0 & 0 & 0\\
+                0 & 0 & 0 & 0\\
+                0 & 0 & a & 0\\
+                0 & 0 & 0 & 0
+            \end{pmatrix}
 
-    .. math::
-        \begin{pmatrix}
-            0 & 0 & 0 & 0\\
-            0 & 0 & 0 & 0\\
-            0 & 0 & a & 0\\
-            0 & 0 & 0 & 0
-        \end{pmatrix}
-
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-
-    The parameter `a` is optional and is set to 1 by default.
+    The factor ``a`` scales the projector, for example to add a phase. The
+    operator is not unitary: use it in an :class:`ExpectationValue` or as a
+    Kraus operator.
 
     See Also:
         :class:`Projector00`, :class:`Projector01`, :class:`Projector11`
 
-    Parameters:
-        a (complex, optional): Scaling factor for the matrix. Defaults to 1.
+    Args:
+        a (complex): Scaling factor for the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -574,31 +571,31 @@ class Projector10(mc.AbstractOperator):
         return f"P{to_subscript(1)}{to_subscript(0)}({self.a})"
 
     def opsquared(self):
+        r"""Return :math:`O^\dagger O`, the same projector scaled by :math:`|a|^2`."""
         return Projector10(abs(self.a) ** 2)
 
 
-class Projector11(mc.AbstractOperator):
+class Projector11(AbstractOperator):
     r"""Two-qubit operator corresponding to a projection onto :math:`|11\rangle`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \begin{pmatrix}
+                0 & 0 & 0 & 0\\
+                0 & 0 & 0 & 0\\
+                0 & 0 & 0 & 0\\
+                0 & 0 & 0 & a
+            \end{pmatrix}
 
-    .. math::
-        \begin{pmatrix}
-            0 & 0 & 0 & 0\\
-            0 & 0 & 0 & 0\\
-            0 & 0 & 0 & 0\\
-            0 & 0 & 0 & a
-        \end{pmatrix}
-
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-
-    The parameter `a` is optional and is set to 1 by default.
+    The factor ``a`` scales the projector, for example to add a phase. The
+    operator is not unitary: use it in an :class:`ExpectationValue` or as a
+    Kraus operator.
 
     See Also:
         :class:`Projector00`, :class:`Projector01`, :class:`Projector10`
 
-    Parameters:
-        a (complex, optional): Scaling factor for the matrix. Defaults to 1.
+    Args:
+        a (complex): Scaling factor for the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -636,21 +633,34 @@ class Projector11(mc.AbstractOperator):
         return f"P{to_subscript(1)}{to_subscript(1)}({self.a})"
 
     def opsquared(self):
+        r"""Return :math:`O^\dagger O`, the same projector scaled by :math:`|a|^2`."""
         return Projector11(abs(self.a) ** 2)
 
 
-class ProjectorZ0(mc.AbstractOperator):
-    r"""ProjectorZ0()
-    Alias for :class:`Projector0`
+class ProjectorZ0(AbstractOperator):
+    r"""Alias of :class:`Projector0`.
+
+    ``ProjectorZ0()`` takes no arguments and returns ``Projector0()``.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> ProjectorZ0()
+        P₀(1)
     """
 
     def __new__(self):
         return Projector0()
 
 
-class ProjectorZ1(mc.AbstractOperator):
-    r"""ProjectorZ1()
-    Alias for :class:`Projector1`
+class ProjectorZ1(AbstractOperator):
+    r"""Alias of :class:`Projector1`.
+
+    ``ProjectorZ1()`` takes no arguments and returns ``Projector1()``.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> ProjectorZ1()
+        P₁(1)
     """
 
     def __new__(self):

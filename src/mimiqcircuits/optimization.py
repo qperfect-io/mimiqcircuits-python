@@ -17,7 +17,8 @@
 
 from dataclasses import dataclass, field
 from typing import Dict, Optional, List, Union
-from mimiqcircuits import Circuit, QCSResults
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.qcsresults import QCSResults
 from symengine import Symbol
 from collections import OrderedDict
 
@@ -53,47 +54,76 @@ def check_optimization_args(circuit: Circuit, initparams: Dict, zregister: int):
 
 @dataclass(repr=False)
 class OptimizationExperiment:
-    r"""
-    Represents a variational quantum optimization experiment configuration.
+    r"""A variational optimization problem: a symbolic circuit, initial
+    values for its symbols, and the optimizer settings.
 
-    An `OptimizationExperiment` defines the symbolic quantum circuit, initial parameter
-    values, classical optimization method, and metadata required to perform a variational
-    parameter optimization run.
-
-    .. math::
-        \text{Optimize } \langle Z \rangle = \langle \psi(\vec{\theta}) | H | \psi(\vec{\theta}) \rangle
-
-    where :math:`\vec{\theta}` are the symbolic parameters used in the circuit.
+    The cost of a set of values is the real part of the mean of z-register
+    ``zregister`` over the samples of the circuit evaluated with them. Push
+    the quantity to minimize into that register, for example with
+    :meth:`~mimiqcircuits.Circuit.push_expval`. Run the experiment with
+    :meth:`LocalBackend.optimize <mimiqcircuits.backends.LocalBackend.optimize>`,
+    :meth:`MimiqRemoteBackend.optimize
+    <mimiqcircuits.backends.MimiqRemoteBackend.optimize>` or
+    ``MimiqConnection.optimize``.
 
     Args:
-        circuit (Circuit): The symbolic quantum circuit used to evaluate the cost function.
-        initparams (Dict[str, float]): Dictionary of initial values for all symbolic parameters.
-        optimizer (str): Optimization method to use. Must be one of:
-            ``"BFGS"``, ``"LBFGS"``, ``"CG"``, ``"NELDERMEAD"``, ``"NEWTON"``,
-            ``"COBYLA"``, ``"CMAES"``.
-        label (str): Optional name or label for the experiment.
-        maxiters (Optional[int]): Maximum number of optimization iterations (or `None`).
-        zregister (int): Index of Z-register where cost values are accumulated.
+        circuit (Circuit): The symbolic circuit.
+        initparams (dict): Initial value of every symbol of the circuit,
+            keyed by symbol or by symbol name.
+        optimizer (str): ``"BFGS"``, ``"LBFGS"``, ``"CG"``, ``"NELDERMEAD"``,
+            ``"NEWTON"``, ``"COBYLA"`` or ``"CMAES"``. Checked when the
+            experiment runs, not here. Defaults to ``"COBYLA"``.
+        label (str): Name of the experiment. Defaults to
+            ``"optexp_python"``.
+        maxiters (int or None): Iteration limit, or ``None`` for the
+            optimizer's own.
+        zregister (int): Index of the z-register that holds the cost.
+            Defaults to 0.
 
     Raises:
-        ValueError: If the circuit is not symbolic, is empty, the method is unsupported,
-                    or if the parameter dictionary does not match circuit variables.
+        ValueError: If the circuit is empty or has no symbols,
+            ``initparams`` does not give a value for exactly the symbols of
+            the circuit, or ``zregister`` is negative.
 
-    Example:
+    Examples:
         >>> from mimiqcircuits import *
         >>> from symengine import symbols
+
+        The cost is ``⟨Z⟩`` of qubit 0 after two rotations, written to
+        z-register 0.
+
         >>> x, y = symbols("x y")
-        >>> c = Circuit().push(GateRX(x), 0).push(GateRY(y),1)
-        >>> exp = OptimizationExperiment(circuit = c, initparams = {x: 0.1, y: 2})
-        >>> exp
+        >>> c = Circuit().push(GateRX(x), 0).push(GateRY(y), 0)
+        >>> c.push(ExpectationValue(GateZ()), 0, 0)
+        1-qubit, 1-zvar circuit with 3 instructions:
+        ├── RX(x) @ q[0]
+        ├── RY(y) @ q[0]
+        └── ⟨Z⟩ @ q[0], z[0]
+        <BLANKLINE>
+
+        Every symbol needs an initial value.
+
+        >>> ex = OptimizationExperiment(c, {x: 0.1, y: 2.0}, maxiters=100)
+        >>> ex
         OptimizationExperiment:
         ├── optimizer: COBYLA
         ├── label: optexp_python
-        ├── maxiters: None
+        ├── maxiters: 100
         ├── zregister: 0
         └── initparams:
             ├── x => 0.1
-            └── y => 2
+            └── y => 2.0
+
+        Changing the initial values gives a new experiment and leaves this
+        one unchanged.
+
+        >>> ex.change_parameters({x: 0.5}).get_params()
+        {x: 0.5, y: 2.0}
+
+    See Also:
+        :meth:`LocalBackend.optimize
+        <mimiqcircuits.backends.LocalBackend.optimize>`, whose example runs
+        an experiment.
     """
 
     circuit: Circuit
@@ -109,6 +139,8 @@ class OptimizationExperiment:
         check_optimization_args(self.circuit, self.initparams, self.zregister)
 
     def is_valid(self):
+        """Return whether the experiment passes the checks of the
+        constructor."""
         try:
             check_optimization_args(self.circuit, self.initparams, self.zregister)
             return True
@@ -116,24 +148,39 @@ class OptimizationExperiment:
             return False
 
     def num_params(self):
+        """Return the number of symbols with an initial value."""
         return len(self.initparams)
 
     def num_qubits(self):
+        """Return the number of qubits of the circuit."""
         return self.circuit.num_qubits()
 
     def num_bits(self):
+        """Return the number of classical bits of the circuit."""
         return self.circuit.num_bits()
 
     def num_zvars(self):
+        """Return the number of z-variables of the circuit."""
         return self.circuit.num_zvars()
 
     def get_param(self, n):
+        """Return the initial value of ``n``, a key of ``initparams``."""
         return self.initparams[n]
 
     def get_params(self):
+        """Return the ``initparams`` dictionary itself, not a copy."""
         return self.initparams
 
     def change_parameters(self, newvals: Dict[Symbol, float]):
+        """Return a copy of the experiment with some initial values replaced.
+
+        Args:
+            newvals: New values, keyed like ``initparams``. Keys that are not
+                in ``initparams`` are ignored.
+
+        Returns:
+            A new :class:`OptimizationExperiment`; this one is unchanged.
+        """
         updated = {k: newvals.get(k, v) for k, v in self.initparams.items()}
         return OptimizationExperiment(
             circuit=self.circuit,
@@ -145,12 +192,27 @@ class OptimizationExperiment:
         )
 
     def change_list_of_parameters(self, theta: List[float]):
+        """Return a copy of the experiment with all initial values replaced.
+
+        Args:
+            theta: One value per symbol of the circuit, in the order of the
+                symbol names sorted alphabetically.
+
+        Returns:
+            A new :class:`OptimizationExperiment`.
+
+        Raises:
+            ValueError: If ``theta`` does not have one value per symbol.
+        """
         vars_ = sorted(self.circuit.listvars(), key=str)
         if len(vars_) != len(theta):
             raise ValueError(
                 f"Length of value list does not match listvars. Expected {len(vars_)}, got {len(theta)}"
             )
-        parammap = {v: theta[i] for i, v in enumerate(vars_)}
+        # Match the key type of initparams, which may be symbols or names.
+        parammap = {
+            (v if v in self.initparams else str(v)): t for v, t in zip(vars_, theta)
+        }
         return self.change_parameters(parammap)
 
     def __str__(self):
@@ -172,12 +234,19 @@ class OptimizationExperiment:
         return self.__str__()
 
     def saveproto(self, file):
+        """Save the experiment to a Protobuf file or file-like object.
+
+        Returns the number of bytes written. See
+        :func:`~mimiqcircuits.proto.protoio.saveproto`.
+        """
         from mimiqcircuits.proto.protoio import saveproto
 
         return saveproto(self, file)
 
     @staticmethod
     def loadproto(file):
+        """Load an :class:`OptimizationExperiment` saved with
+        :meth:`saveproto`."""
         from mimiqcircuits.proto.protoio import loadproto
 
         return loadproto(file, OptimizationExperiment)
@@ -185,19 +254,18 @@ class OptimizationExperiment:
 
 @dataclass(repr=False)
 class OptimizationRun:
-    r"""
-    Represents a single evaluation of the cost function during a variational optimization run.
-
-    An `OptimizationRun` stores the final cost value for a set of parameters,
-    the corresponding parameter values, and the raw execution results from the quantum circuit simulation.
+    r"""One evaluation of the cost during an optimization: the parameter
+    values, the cost they gave, and the results of the execution.
 
     Args:
-        cost (float): Final cost (objective) value for the evaluated parameters.
-        parameters (Dict[str, float]): Parameter values at this optimization step.
-        results (QCSResults): Raw execution results from the quantum simulator.
+        cost (float): The cost at these values.
+        parameters (dict): The value of each symbol, keyed like the
+            ``initparams`` of the experiment.
+        results (QCSResults): The results of the execution that gave the
+            cost.
 
-    Example:
-        >>> from mimiqcircuits import QCSResults
+    Examples:
+        >>> from mimiqcircuits import *
         >>> OptimizationRun(cost=0.153, parameters={"x": 0.2, "y": 1.5}, results=QCSResults("",""))
         OptimizationRun:
         ├── cost: 0.153
@@ -225,24 +293,34 @@ class OptimizationRun:
         return self.__str__()
 
     def get_cost(self):
+        """Return the cost."""
         return self.cost
 
     def get_params(self):
+        """Return the ``parameters`` dictionary itself, not a copy."""
         return self.parameters
 
     def get_param(self, n):
+        """Return the value of ``n``, a key of ``parameters``."""
         return self.parameters[n]
 
     def get_resultofbest(self):
+        """Return the :class:`~mimiqcircuits.QCSResults` of this run."""
         return self.results
 
     def saveproto(self, file):
+        """Save the run to a Protobuf file or file-like object.
+
+        Returns the number of bytes written. See
+        :func:`~mimiqcircuits.proto.protoio.saveproto`.
+        """
         from mimiqcircuits.proto.protoio import saveproto
 
         return saveproto(self, file)
 
     @staticmethod
     def loadproto(file):
+        """Load an :class:`OptimizationRun` saved with :meth:`saveproto`."""
         from mimiqcircuits.proto.protoio import loadproto
 
         return loadproto(file, OptimizationRun)
@@ -250,18 +328,20 @@ class OptimizationRun:
 
 @dataclass(repr=False)
 class OptimizationResults:
-    r"""
-    Container for storing the best optimization result and the full history of optimization runs.
+    r"""The result of an optimization: the lowest-cost run and, when asked
+    for, every evaluated run.
 
-    An `OptimizationResults` object tracks the full sequence of cost evaluations and
-    identifies the best-performing parameter set from the optimization process.
+    Returned by the ``optimize`` method of a backend, and by ``get_result``
+    or ``get_results`` for a job started with a connection's ``optimize``.
+    ``history`` is filled only with ``return_history=True`` (local) or
+    ``history=True`` (connection).
 
     Args:
-        best (OptimizationRun): The best optimization run found.
-        history (List[OptimizationRun]): All optimization runs evaluated during the process.
+        best (OptimizationRun): The run with the lowest cost.
+        history (list[OptimizationRun]): Every evaluated run, in order.
 
-    Example:
-        >>> from mimiqcircuits import OptimizationResults, OptimizationRun, QCSResults
+    Examples:
+        >>> from mimiqcircuits import *
         >>> run1 = OptimizationRun(cost=0.5, parameters={"x": 0.1}, results=QCSResults("", ""))
         >>> run1
         OptimizationRun:
@@ -324,24 +404,35 @@ class OptimizationResults:
         return "\n".join(lines)
 
     def get_best(self):
+        """Return the lowest-cost :class:`OptimizationRun`."""
         return self.best
 
     def get_resultofbest(self):
+        """Return the :class:`~mimiqcircuits.QCSResults` of the best run."""
         return self.best.results
 
     def get_resultsofhistory(self):
+        """Return the :class:`~mimiqcircuits.QCSResults` of every run in the
+        history, in order."""
         return [h.results for h in self.history]
 
     def __repr__(self):
         return self.__str__()
 
     def saveproto(self, file):
+        """Save the results to a Protobuf file or file-like object.
+
+        Returns the number of bytes written. See
+        :func:`~mimiqcircuits.proto.protoio.saveproto`.
+        """
         from mimiqcircuits.proto.protoio import saveproto
 
         return saveproto(self, file)
 
     @staticmethod
     def loadproto(file):
+        """Load an :class:`OptimizationResults` saved with
+        :meth:`saveproto`."""
         from mimiqcircuits.proto.protoio import loadproto
 
         return loadproto(file, OptimizationResults)

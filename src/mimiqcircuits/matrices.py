@@ -19,34 +19,43 @@ from symengine import I, cos, sin, exp, pi, Matrix
 import symengine as se
 import numpy as np
 from functools import reduce
-import mimiqcircuits as mc
+from mimiqcircuits.bitstrings import BitString
+from mimiqcircuits.operations.gates.standard.id import GateID
 
 
-# Writing ``cis(x)`` as ``exp(I*x)`` (rather than ``cos(x) + I*sin(x)``) keeps
-# the symbolic display compact — previously ``sp.simplify`` recognized the
-# trig form and collapsed it; doing it at construction time lets us keep the
-# nice output without paying for SymPy.
+# ``exp(I*x)`` rather than ``cos(x) + I*sin(x)`` keeps the symbolic display
+# compact without a SymPy simplification pass.
 def cis(x):
+    """Return :math:`e^{ix}` as a SymEngine expression."""
     return exp(I * x)
 
 
 def cispi(x):
+    r"""Return :math:`e^{i\pi x}` as a SymEngine expression."""
     return exp(I * pi * x)
 
 
 def cospi(x):
+    r"""Return :math:`\cos(\pi x)` as a SymEngine expression."""
     return cos(pi * x)
 
 
 def sinpi(x):
+    r"""Return :math:`\sin(\pi x)` as a SymEngine expression."""
     return sin(pi * x)
 
 
 def pmatrix(lmbda):
+    """Return the matrix of :class:`GateP` with angle ``lmbda``, as a SymEngine matrix."""
     return Matrix([[1, 0], [0, cis(lmbda)]])
 
 
 def umatrix(theta, phi, lmbda, gamma=0):
+    r"""Return the matrix of :class:`GateU` with the given angles, as a SymEngine matrix.
+
+    Angles are in radians. ``gamma`` is the global phase and defaults to
+    ``0``.
+    """
     # ``gamma`` defaults to the integer ``0`` (not ``0.0``): ``exp(I*0)``
     # collapses to the integer ``1`` in SymEngine, whereas ``exp(I*0.0)``
     # stays as ``1.0 + 0.0*I`` and litters the symbolic display.
@@ -61,6 +70,7 @@ def umatrix(theta, phi, lmbda, gamma=0):
 
 
 def umatrixpi(theta, phi, lmbda, gamma=0):
+    r"""Same as :func:`umatrix`, with all angles given in units of :math:`\pi`."""
     costheta2 = cospi(theta / 2)
     sintheta2 = sinpi(theta / 2)
     return Matrix(
@@ -102,8 +112,8 @@ def _index_permutation(qperm, nq):
     """
     weights = np.empty(nq, dtype=np.int64)
     for k in range(nq):
-        bs = mc.BitString.fromint(nq, 1 << k)
-        weights[k] = mc.BitString("".join(str(bs[q]) for q in qperm)).tointeger()
+        bs = BitString.fromint(nq, 1 << k)
+        weights[k] = BitString("".join(str(bs[q]) for q in qperm)).tointeger()
 
     dim = 1 << nq
     bits = (np.arange(dim, dtype=np.int64)[:, None] >> np.arange(nq)) & 1
@@ -166,6 +176,33 @@ def _reorder_numeric_se(M, fullqubits, nq, ident):
 
 
 def reorder_qubits_matrix(M, qubits, nq=None):
+    r"""Embed a matrix acting on ``qubits`` into the space of ``nq`` qubits.
+
+    The ``k``-th qubit of ``M`` is mapped to qubit ``qubits[k]``; the other
+    qubits get the identity. Qubit 0 is the most significant bit of the
+    basis index.
+
+    Args:
+        M (numpy.ndarray or symengine.Matrix): Matrix of size
+            :math:`2^k \times 2^k` with ``k = len(qubits)``.
+        qubits (list of int): Target qubits, in the order of ``M``'s qubits.
+        nq (int): Total number of qubits. Defaults to ``max(qubits) + 1``.
+
+    Returns:
+        numpy.ndarray or symengine.Matrix: The :math:`2^{nq} \times 2^{nq}`
+        matrix, of the same kind as ``M``.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.matrices import reorder_qubits_matrix
+        >>> # CX with control on qubit 1 and target on qubit 0
+        >>> reorder_qubits_matrix(GateCX().matrix(), [1, 0])
+        [1.0, 0, 0, 0]
+        [0, 0, 0, 1.0]
+        [0, 0, 1.0, 0]
+        [0, 1.0, 0, 0]
+        <BLANKLINE>
+    """
     if nq is None:
         nq = max(qubits) + 1
 
@@ -177,7 +214,7 @@ def reorder_qubits_matrix(M, qubits, nq=None):
         return _apply_local(np.eye(2**nq, dtype=M.dtype), M, list(qubits), nq)
 
     fullqubits = list(qubits) + [q for q in range(nq) if q not in qubits]
-    ident = mc.GateID().matrix()
+    ident = GateID().matrix()
 
     if _isnumeric_se(M) and not (
         len(qubits) == nq and fullqubits == sorted(fullqubits)
@@ -212,13 +249,14 @@ def reorder_qubits_matrix(M, qubits, nq=None):
 
 
 def kronecker(A, B):
-    """Kronecker product ``A ⊗ B``.
+    r"""Return the Kronecker product :math:`A \otimes B`.
 
-    Dispatches on the input types: two ``numpy.ndarray`` inputs use
-    :func:`numpy.kron` (fast path); otherwise builds a SymEngine matrix.
+    Two ``numpy.ndarray`` inputs give a NumPy array through
+    :func:`numpy.kron`; otherwise the result is a SymEngine matrix.
     """
     if isinstance(A, np.ndarray) and isinstance(B, np.ndarray):
         return np.kron(A, B)
+    A, B = (se.Matrix(M.tolist()) if isinstance(M, np.ndarray) else M for M in (A, B))
 
     rows_A, cols_A = A.nrows(), A.ncols()
     rows_B, cols_B = B.nrows(), B.ncols()
@@ -253,8 +291,14 @@ def pauli_string_matrix(s):
 
 
 def symbolic_matrix_exponential(A, theta):
-    """
-    Use SymPy to compute symbolic matrix exponential: exp(-i * θ/2 * A)
+    r"""Return :math:`e^{-i \theta A / 2}` computed symbolically with SymPy.
+
+    Args:
+        A (symengine.Matrix): The generator.
+        theta: The angle, numeric or symbolic.
+
+    Returns:
+        symengine.Matrix: The matrix exponential.
     """
     import sympy as sp
 

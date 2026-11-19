@@ -17,18 +17,29 @@
 """Controlled-Controlled-Phase (CCP) gate."""
 
 from mimiqcircuits.operations.gates.standard.phase import GateP
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import (
+    Control,
+    canonical_control,
+    register_control_decomposition,
+)
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX
+from mimiqcircuits.operations.gates.standard.cphase import GateCP
 
 
-@mc.canonical_control(2, GateP)
-class GateCCP(mc.Control):
+@canonical_control(2, GateP)
+class GateCCP(Control):
     r"""Three qubit Controlled-Controlled-Phase gate.
 
     By convention, the first two qubits are the controls and the third is the
-    target
+    target.
 
-    Arguments:
-        lmbda: Phase angle.
+    Matrix Representation:
+        .. math::
+            \operatorname{CCP}(\lambda) =
+            \operatorname{diag}(1, 1, 1, 1, 1, 1, 1, e^{i\lambda})
+
+    Args:
+        lmbda: Phase angle :math:`\lambda` in radians, numeric or symbolic.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -68,17 +79,22 @@ class GateCCP(mc.Control):
     ):
         """Initialize a CCP gate.
 
+        Called directly as ``GateCCP(lmbda)``. The signature also accepts
+        ``GateCCP(2, GateP(lmbda))`` and ``GateCCP(1, GateCP(lmbda))``, the
+        forms :class:`Control` uses to build its canonical subclass.
+
         Args:
-            lmbda_or_num_controls: Phase angle in radians when called directly,
-                or num_controls when called from Control's canonical creation.
-            num_controls_or_operation: Ignored when called directly, or the GateP
-                operation when called from Control's canonical creation.
-            operation: Ignored (for compatibility).
+            lmbda_or_num_controls: Phase angle in radians, or the number of
+                controls in the ``Control`` form.
+            num_controls_or_operation: Unused when called directly, or the
+                ``GateP`` (or ``GateCP``) whose angle is taken in the
+                ``Control`` form.
+            operation: Unused.
         """
         # Detect if called from Control's canonical creation: Control(2, GateP(lmbda)),
         # or Control(1, GateCP(lmbda)) which flattens to the same gate.
         inner = num_controls_or_operation
-        if isinstance(inner, mc.Control):
+        if isinstance(inner, Control):
             inner = inner.op
         if isinstance(lmbda_or_num_controls, int) and isinstance(inner, GateP):
             lmbda = inner.lmbda
@@ -87,13 +103,13 @@ class GateCCP(mc.Control):
         super().__init__(2, GateP(lmbda))
 
 
-@mc.register_control_decomposition(2, mc.GateP)
+@register_control_decomposition(2, GateP)
 def _decompose_gateccp(gate, circ, qubits, bits, zvars):
     c1, c2, t = qubits
     lmbda = gate.op.lmbda
-    circ.push(mc.GateCP(lmbda / 2), c2, t)
-    circ.push(mc.GateCX(), c1, c2)
-    circ.push(mc.GateCP(-lmbda / 2), c2, t)
-    circ.push(mc.GateCX(), c1, c2)
-    circ.push(mc.GateCP(lmbda / 2), c1, t)
+    circ.push(GateCP(lmbda / 2), c2, t)
+    circ.push(GateCX(), c1, c2)
+    circ.push(GateCP(-lmbda / 2), c2, t)
+    circ.push(GateCX(), c1, c2)
+    circ.push(GateCP(lmbda / 2), c1, t)
     return circ

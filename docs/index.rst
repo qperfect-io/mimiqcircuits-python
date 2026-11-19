@@ -91,6 +91,7 @@ For detailed requirements and setup, see the :doc:`Installation <manual/installa
    manual/index
    usecases/index   
    API References <apidocs/mimiqcircuits>
+   migration_v2
    GitHub <https://github.com/qperfect-io/mimiqcircuits-python>
    Julia APIs <https://mimiq.qperfect.io/docs/julia/>
    QPerfect <https://qperfect.io>

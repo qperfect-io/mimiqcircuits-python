@@ -1,7 +1,7 @@
 [project]
 name = "mimiqcircuits"
 # A release bumps this, `version` in Cargo.toml, and both lock files.
-version = "0.31.2"
+version = "0.32.0"
 description = "User API for MIMIQ by QPerfect. Build quantum circuits, schedule remote simulations, and explore simulation results."
 authors = [{ name = "Guido Masella", email = "guido.masella@qperfect.io" }]
 readme = "README.md"
@@ -10,7 +10,10 @@ dependencies = [
     "numpy (>=1.26,<3.0)",
     "mimiqlink (>=0.10,<0.11)",
     "bitarray (>=3.10,<4)",
-    "symengine (>=0.14.1,<0.15)",
+    # 0.15 is the first release that runs without the GIL on free-threaded
+    # CPython, and it needs Python 3.11; 0.14 is kept for Python 3.10 only.
+    "symengine (>=0.14.1,<0.15) ; python_version < '3.11'",
+    "symengine (>=0.15.0,<0.16) ; python_version >= '3.11'",
     "sympy (>=1.12,<2)",
     "protobuf (>=6.33,<7)",
     "scipy (>1.13,<2)",

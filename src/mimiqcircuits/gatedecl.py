@@ -15,74 +15,50 @@
 # limitations under the License.
 #
 from typing import Tuple
-import mimiqcircuits as mc
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.operations.gates.gate import Gate
+from mimiqcircuits.operations.operation import _check_num_ancillas
 from symengine import Symbol
 import symengine as se
 import numpy as np
 
 
 class GateDecl:
-    """
-    Simple declaration of gates using the @gatedecl decorator.
+    """Declaration of a named, parametric gate defined by a circuit.
+
+    A ``GateDecl`` stores a name, a tuple of symbolic arguments and a body
+    circuit of gates written with those symbols. Calling the declaration with
+    values, ``decl(v1, v2, ...)``, returns a :class:`GateCall` that can be
+    pushed to circuits like any other gate. The body is copied, so later
+    changes to the original circuit do not affect the declaration.
+
+    The :func:`gatedecl` decorator is the usual way to build one.
+
+    Args:
+        name (str): Name of the gate, used when printing calls.
+        arguments (tuple of symengine.Symbol): The symbolic parameters.
+        circuit (Circuit): The body. Its qubits ``0..n-1`` become the
+            qubits of the declared gate.
+
+    Raises:
+        TypeError: If an argument is not a ``symengine.Symbol``.
+        ValueError: If the circuit is empty or contains an operation that is
+            not a :class:`Gate`.
+
+    ``GateDecl(name, arguments, circuit, num_ancillas=0)`` declares a gate
+    whose body is ``circuit``. ``num_ancillas`` says how many of its last
+    qubits are clean ancillas: each call must find them in ``|0>``, and gets
+    them back in ``|0>``. On other inputs the call is still a unitary on all
+    its qubits, but not the gate it was built for. :func:`decompose` sets it
+    when it wraps a decomposition that uses clean ancillas.
 
     Examples:
-
-        First Way
-
-        Import necessary libaries
-
         >>> from symengine import symbols
         >>> from mimiqcircuits import *
-
         >>> x, y = symbols('x y')
-
-        Declare a gate using the @gatedecl decorator
-
-        >>> @gatedecl("ansatz")
-        ... def ansatz(x):
-        ...     c = Circuit()
-        ...     c.push(GateX(), 0)
-        ...     c.push(GateRX(x), 1)
-        ...     return c
-
-        Create calls to the gate declariation
-
-        >>> ansatz(x)
-        ansatz(x)
-
-        >>> ansatz(y)
-        ansatz(y)
-
-        Decompose
-
-        >>> ansatz(x).decompose()
-        2-qubit circuit with 2 instructions:
-        ├── X @ q[0]
-        └── RX(x) @ q[1]
-        <BLANKLINE>
-
-        >>> ansatz(2)
-        ansatz(2)
-
-        >>> ansatz(2).decompose()
-        2-qubit circuit with 2 instructions:
-        ├── X @ q[0]
-        └── RX(2) @ q[1]
-        <BLANKLINE>
-
-        Second Way
-
-        >>> from symengine import *
-        >>> from mimiqcircuits import *
-
-        Define symbols for the gate arguments
-
-        >>> x, y = symbols('x y')
-
-        From a circuit, create a GateDecl object directly
-
+        >>> # write the body with symbolic parameters
         >>> c = Circuit()
-        >>> c.push(GateXXplusYY(x,y), 0,1)
+        >>> c.push(GateXXplusYY(x, y), 0, 1)
         2-qubit circuit with 1 instruction:
         └── XXplusYY(x, y) @ q[0:1]
         <BLANKLINE>
@@ -91,36 +67,41 @@ class GateDecl:
         ├── XXplusYY(x, y) @ q[0:1]
         └── RX(x) @ q[1]
         <BLANKLINE>
-        >>> gate_decl = GateDecl("ansatz", (x,y), c)
-        >>> gate_decl
+        >>> # declare the gate from the body
+        >>> decl = GateDecl("ansatz", (x, y), c)
+        >>> decl
         gate ansatz(x, y) =
         ├── XXplusYY(x, y) @ q[0:1]
         └── RX(x) @ q[1]
         <BLANKLINE>
-        >>> GateCall(gate_decl, (2,4))
+        >>> # calling the declaration gives a gate with concrete parameters
+        >>> g = decl(2, 4)
+        >>> g
         ansatz(2, 4)
-
-        Decompose the GateCall into a quantum circuit
-
-        >>> GateCall(gate_decl, (2,4)).decompose()
+        >>> g.decompose()
         2-qubit circuit with 2 instructions:
         ├── XXplusYY(2, 4) @ q[0:1]
         └── RX(2) @ q[1]
         <BLANKLINE>
-
-        Add to Circuit
-
-        >>> g = GateCall(gate_decl, (2,4))
-        >>> c = Circuit()
-        >>> c.push(g,10,22)
+        >>> # push the call on any two qubits
+        >>> Circuit().push(g, 10, 22)
         23-qubit circuit with 1 instruction:
         └── ansatz(2, 4) @ q[10,22]
         <BLANKLINE>
+
+    See Also:
+        :func:`gatedecl`, :class:`GateCall`, :class:`BlockDecl`
     """
 
     _name = "GateDecl"
 
-    def __init__(self, name: str, arguments: Tuple[Symbol, ...], circuit: mc.Circuit):
+    def __init__(
+        self,
+        name: str,
+        arguments: Tuple[Symbol, ...],
+        circuit: Circuit,
+        num_ancillas: int = 0,
+    ):
         if not all(isinstance(arg, Symbol) for arg in arguments):
             raise TypeError("All GateDecl arguments must be symbols.")
 
@@ -129,7 +110,7 @@ class GateDecl:
 
         for inst in circuit:
             # check if the instruction operation is from the Gate operation
-            if not isinstance(inst.get_operation(), mc.Gate):
+            if not isinstance(inst.get_operation(), Gate):
                 raise ValueError("GateDecl instructions must be gates.")
             if inst.num_bits() != 0 or inst.num_zvars() != 0:
                 raise ValueError("GateDecl instructions cannot have bits or zvars.")
@@ -140,7 +121,7 @@ class GateDecl:
 
         self.name = name
         self.arguments = arguments
-        new_circuit = mc.Circuit()
+        new_circuit = Circuit()
         for inst in circuit:
             new_circuit.push(
                 inst.get_operation(),
@@ -150,10 +131,18 @@ class GateDecl:
             )
 
         self.circuit = new_circuit
+        _check_num_ancillas(num_ancillas, self.num_qubits)
+        self._num_ancillas = num_ancillas
 
     @property
     def num_qubits(self):
+        """Number of qubits of the body circuit. Read-only."""
         return self.circuit.num_qubits()
+
+    @property
+    def num_ancillas(self):
+        """Number of clean ancillas, the last targets of each call."""
+        return self._num_ancillas
 
     @num_qubits.setter
     def num_qubits(self, _):
@@ -161,6 +150,7 @@ class GateDecl:
 
     @property
     def num_bits(self):
+        """Number of classical bits of the body circuit, always 0. Read-only."""
         return self.circuit.num_bits()
 
     @num_bits.setter
@@ -169,6 +159,7 @@ class GateDecl:
 
     @property
     def num_zvars(self):
+        """Number of z-variables of the body circuit, always 0. Read-only."""
         return self.circuit.num_zvars()
 
     @num_zvars.setter
@@ -191,11 +182,46 @@ class GateDecl:
         return str(self)
 
     def __call__(self, *args):
-        return mc.GateCall(self, args)
+        return GateCall(self, args)
 
 
-class GateCall(mc.Gate):
-    """GateCall"""
+class GateCall(Gate):
+    """Application of a :class:`GateDecl` to concrete parameter values.
+
+    Usually built by calling the declaration, ``decl(*args)``. The gate acts
+    on as many qubits as the declaration's body. Its decomposition is the
+    body with the declaration's symbols replaced by ``args``. Inverse, power
+    and control wrap the call in :class:`Inverse`, :class:`Power` and
+    :class:`Control`.
+
+    Args:
+        decl (GateDecl): The declaration to call.
+        args (tuple): One value per declaration argument. Values may be
+            numbers or symbolic expressions.
+
+    Raises:
+        ValueError: If ``len(args)`` differs from the number of declaration
+            arguments.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from symengine import symbols
+        >>> x = symbols('x')
+        >>> decl = GateDecl("rot", (x,), Circuit().push(GateH(), 0).push(GateRZ(x), 0))
+        >>> g = GateCall(decl, (0.5,))
+        >>> g
+        rot(0.5)
+        >>> g.decompose()
+        1-qubit circuit with 2 instructions:
+        ├── H @ q[0]
+        └── RZ(0.5) @ q[0]
+        <BLANKLINE>
+        >>> g.inverse().decompose()
+        1-qubit circuit with 2 instructions:
+        ├── RZ(-0.5) @ q[0]
+        └── H @ q[0]
+        <BLANKLINE>
+    """
 
     _name = "GateCall"
     _num_bits = 0
@@ -212,17 +238,24 @@ class GateCall(mc.Gate):
 
     @property
     def decl(self):
+        """The :class:`GateDecl` being called."""
         return self._decl
 
     @property
+    def num_ancillas(self):
+        return self._decl.num_ancillas
+
+    @property
     def arguments(self):
+        """The values passed for the declaration arguments, as a tuple."""
         return self._args
 
     def _matrix(self):
         pass
 
     def decompose(self):
-        circ = mc.Circuit()
+        """Return the body circuit with the declaration symbols replaced by the call values."""
+        circ = Circuit()
         d = dict(zip(self._decl.arguments, self._args))
         for inst in self._decl.circuit:
             op = inst.operation.evaluate(d)
@@ -260,11 +293,28 @@ class GateCall(mc.Gate):
             display_args = "(...)"
         return f"{self._decl.name}{display_args}"
 
+    # The body only holds the declaration's arguments; the call's values are in _args.
+    def is_symbolic(self):
+        """Return ``True`` if any call value contains a free symbol."""
+        return any(isinstance(a, se.Basic) and a.free_symbols for a in self._args)
+
+    def listvars(self):
+        """Return the symbols appearing in the call values."""
+        return list(
+            {v for a in self._args if isinstance(a, se.Basic) for v in a.atoms(se.Symbol)}
+        )
+
     def evaluate(self, d):
+        """Substitute symbols in the call values and return a new ``GateCall``.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+        """
         new_args = [arg.subs(d) if hasattr(arg, "subs") else arg for arg in self._args]
         return type(self)(self._decl, tuple(new_args))
 
     def matrix(self):
+        """Return the unitary of the decomposed body as a SymEngine matrix."""
         from functools import reduce
 
         N = self._num_qubits
@@ -276,12 +326,12 @@ class GateCall(mc.Gate):
 
 
 def gatedecl(name):
-    """Decorator that turns a function returning a circuit into a ``GateDecl``.
+    """Decorator that turns a function returning a circuit into a :class:`GateDecl`.
 
     The names of the function's arguments become the symbolic parameters of
-    the declaration; the function is called once with those symbols to build
-    the body. Calling the resulting ``GateDecl`` with values gives a
-    ``GateCall``.
+    the declaration. The function is called once, with those symbols, to
+    build the body. The decorated name is bound to the ``GateDecl``, not to
+    the function; calling it with values gives a :class:`GateCall`.
 
     Args:
         name: Name of the declared gate.
@@ -290,10 +340,12 @@ def gatedecl(name):
         A decorator that returns the ``GateDecl``.
 
     Raises:
-        ValueError: If the decorated function does not return a ``Circuit``.
+        ValueError: If the decorated function does not return a
+            :class:`Circuit`.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # the argument name ``theta`` becomes the symbol of the declaration
         >>> @gatedecl("ansatz")
         ... def ansatz(theta):
         ...     return Circuit().push(GateX(), 0).push(GateRX(theta), 1)
@@ -302,8 +354,19 @@ def gatedecl(name):
         ├── X @ q[0]
         └── RX(theta) @ q[1]
         <BLANKLINE>
+        >>> # call it with a value to get a gate
         >>> ansatz(0.5)
         ansatz(0.5)
+        >>> ansatz(0.5).decompose()
+        2-qubit circuit with 2 instructions:
+        ├── X @ q[0]
+        └── RX(0.5) @ q[1]
+        <BLANKLINE>
+        >>> # the call is pushed like any gate
+        >>> Circuit().push(ansatz(0.5), 3, 4)
+        5-qubit circuit with 1 instruction:
+        └── ansatz(0.5) @ q[3:4]
+        <BLANKLINE>
     """
     def decorator(func):
         def get_arg_names(func):
@@ -316,7 +379,7 @@ def gatedecl(name):
 
         circ = func(*arguments)
 
-        if not isinstance(circ, mc.Circuit):
+        if not isinstance(circ, Circuit):
             raise ValueError("GateDecl must return a Circuit object.")
 
         return GateDecl(name, tuple(arguments), circ)

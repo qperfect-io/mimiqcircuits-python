@@ -19,7 +19,8 @@
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from symengine import Matrix
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.id import GateID
+from mimiqcircuits.operations.inverse import Inverse
 
 
 class GateDCX(mcg.Gate):
@@ -28,15 +29,14 @@ class GateDCX(mcg.Gate):
     A two qubit Clifford gate consisting of two back-to-back CNOTs with
     alternate controls.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{DCX} =\begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 0 & 1 & 0 \\
-            0 & 0 & 0 & 1 \\
-            0 & 1 & 0 & 0
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{DCX} =\begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 0 & 1 & 0 \\
+                0 & 0 & 0 & 1 \\
+                0 & 1 & 0 & 0
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -83,10 +83,12 @@ class GateDCX(mcg.Gate):
             return self
 
         if pmod == 2:
-            return mc.Inverse(self)
+            return Inverse(self)
 
         if pmod == 0:
-            return mc.GateID().parallel(2)
+            return GateID().parallel(2)
+
+        return super()._power(p)
 
     def _decompose(self, circ, qubits, bits, zvars):
         a, b = qubits

@@ -16,35 +16,47 @@
 #
 """Grover diffusion operator."""
 
-import mimiqcircuits as mc
+from mimiqcircuits.lazy import LazyArg, LazyExpr, control
+from mimiqcircuits.operations.gates.gate import Gate
+from mimiqcircuits.operations.gates.standard.pauli import GateZ
+from mimiqcircuits.operations.gates.standard.rotations import GateRY
 from symengine import pi
 
 
-class Diffusion(mc.Gate):
-    """
-    Grover's diffusion operator.
+class Diffusion(Gate):
+    r"""Grover's diffusion operator on ``num_qubits`` qubits.
+
+    Implements the unitary
+
+    .. math::
+        H^{\otimes n} \left(1 - 2 |0^n\rangle\langle 0^n|\right) H^{\otimes n}
+
+    ``Diffusion()`` with no arguments returns a lazy expression that takes
+    the number of qubits later. The gate has no matrix representation:
+    :meth:`matrix` raises ``NotImplementedError``.
 
     Args:
-        num_qubits (int): The number of qubits.
+        num_qubits (int): Number of qubits, at least 1.
 
     Raises:
-        ValueError: If the number of qubits is not an integer or less than 1.
-
-    Returns:
-        Diffusion: Grover's diffusion operator.
-
-    Attributes:
-        num_qubits (int): The number of qubits for the diffusion operator.
+        ValueError: If ``num_qubits`` is not an integer or is less than 1, or
+            more than one argument is given.
 
     Examples:
-
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(Diffusion(2), 1, 2)
         3-qubit circuit with 1 instruction:
         └── Diffusion @ q[1:2]
         <BLANKLINE>
-
+        >>> Diffusion(2).decompose()
+        2-qubit circuit with 5 instructions:
+        ├── RY((1/2)*pi) @ q[0]
+        ├── RY((1/2)*pi) @ q[1]
+        ├── CZ @ q[0], q[1]
+        ├── RY((-1/2)*pi) @ q[0]
+        └── RY((-1/2)*pi) @ q[1]
+        <BLANKLINE>
     """
 
     _name = "Diffusion"
@@ -67,7 +79,7 @@ class Diffusion(mc.Gate):
 
     def __new__(cls, *args):
         if len(args) == 0:
-            return mc.LazyExpr(Diffusion, mc.LazyArg())
+            return LazyExpr(Diffusion, LazyArg())
         elif len(args) == 1:
             return object.__new__(cls)
         else:
@@ -76,15 +88,22 @@ class Diffusion(mc.Gate):
     def __str__(self):
         return "Diffusion"
 
+    def inverse(self):
+        # the diffusion operator is Hermitian and unitary, so its own inverse
+        return self
+
     def _matrix(self):
         raise NotImplementedError(
             "Matrix representation for Diffusion operator is not implemented."
         )
 
     def _decompose(self, circ, qubits, bits, zvars):
-        circ.push(mc.GateRY(pi / 2), qubits)
-        circ.push(mc.control(self.num_qubits - 1, mc.GateZ()), *qubits)
-        circ.push(mc.GateRY(-pi / 2), qubits)
+        circ.push(GateRY(pi / 2), qubits)
+        if self.num_qubits == 1:
+            circ.push(GateZ(), *qubits)
+        else:
+            circ.push(control(self.num_qubits - 1, GateZ()), *qubits)
+        circ.push(GateRY(-pi / 2), qubits)
         return circ
 
 

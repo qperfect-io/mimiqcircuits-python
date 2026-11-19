@@ -14,9 +14,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Hamiltonian class and utilities."""
+"""Pauli Hamiltonians, their expectation values and Trotterized time evolution."""
 
-import mimiqcircuits as mc
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.complex import Add, Multiply
+from mimiqcircuits.gatedecl import GateDecl
+from mimiqcircuits.instruction import Instruction
+from mimiqcircuits.operations.expectationvalue import ExpectationValue
+from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
+from mimiqcircuits.operations.gates.generalized.rpauli import RPauli
+from mimiqcircuits.operations.gates.standard.id import GateID
+from mimiqcircuits.operations.gates.standard.interactions import (
+    GateRXX,
+    GateRYY,
+    GateRZX,
+    GateRZZ,
+)
+from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
+from mimiqcircuits.operations.gates.standard.rotations import GateRX, GateRY, GateRZ
 import symengine as se
 from mimiqcircuits.matrices import kronecker
 from typing import Union
@@ -24,33 +39,42 @@ import numpy as np
 
 
 class HamiltonianTerm:
-    r"""Single term in a quantum Hamiltonian.
+    r"""One term of a Hamiltonian: a coefficient times a Pauli string.
 
-    A `HamiltonianTerm` represents a single tensor product of Pauli operators
-    acting on a subset of qubits, scaled by a real-valued coefficient.
+    The term is
 
     .. math::
-        H_j = c_j \cdot P_j = c_j \cdot (P^{(1)} \otimes P^{(2)} \otimes \dots)
+        H_j = c_j P_j = c_j \left(P^{(1)} \otimes P^{(2)} \otimes \dots\right),
 
-    where :math:`c_j` is a real coefficient and :math:`P_j` is a Pauli string such as
-    ``X``, ``YZ``, etc.
+    where :math:`c_j` is a real coefficient and :math:`P_j` a Pauli string
+    such as ``X`` or ``YZ``, whose :math:`k`-th letter acts on the
+    :math:`k`-th qubit of ``qubits``. Terms are usually created with
+    :meth:`Hamiltonian.push`.
 
     Args:
-        coefficient (float): The scalar multiplier for this term.
-        pauli (PauliString): The Pauli operator string (e.g., `"XY"`).
-        qubits (tuple): The tuple of qubit indices this term acts on.
+        coefficient: The real coefficient :math:`c_j`. A symbolic
+            expression is accepted and can be substituted later with
+            :meth:`Hamiltonian.evaluate`.
+        pauli: The Pauli string :math:`P_j`. Its length should equal the
+            number of qubits; this is not checked.
+        qubits: The indices of the qubits the term acts on, counted
+            from 0.
 
     Raises:
-        ValueError: If any qubit index is negative.
+        ValueError: If a qubit index is negative or appears twice.
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> HamiltonianTerm(0.5, PauliString("XZ"), (0, 1))
+        >>> # 0.5 X_0 Z_1
+        >>> t = HamiltonianTerm(0.5, PauliString("XZ"), (0, 1))
+        >>> t
         0.5 * XZ @ q[0,1]
+        >>> t.get_coefficient(), t.get_operation(), t.get_qubits()
+        (0.5, XZ, (0, 1))
     """
 
     def __init__(
-        self, coefficient: Union[float, int], pauli: mc.PauliString, qubits: tuple
+        self, coefficient: Union[float, int], pauli: PauliString, qubits: tuple
     ):
         invalid_qubits = [q for q in qubits if q < 0]
         if invalid_qubits:
@@ -66,12 +90,28 @@ class HamiltonianTerm:
         self.qubits = qubits
 
     def get_operation(self):
+        """Return the Pauli string of the term.
+
+        Returns:
+            PauliString: The Pauli string :math:`P_j`.
+        """
         return self.pauli
 
     def get_coefficient(self):
+        """Return the coefficient of the term.
+
+        Returns:
+            The coefficient :math:`c_j`, a number or a symbolic expression.
+        """
         return self.coefficient
 
     def get_qubits(self):
+        """Return the qubits the term acts on.
+
+        Returns:
+            tuple: The qubit indices, in the order of the letters of the
+            Pauli string.
+        """
         return self.qubits
 
     def __repr__(self):
@@ -83,21 +123,25 @@ class HamiltonianTerm:
 
 
 class Hamiltonian:
-    r"""A quantum Hamiltonian composed of multiple Pauli terms.
+    r"""A Hamiltonian written as a sum of Pauli strings.
 
-    This class models a Hamiltonian of the form:
+    The Hamiltonian is
 
     .. math::
-        H = \sum_j c_j \cdot P_j
+        H = \sum_j c_j P_j,
 
-    where each term is a `HamiltonianTerm` consisting of a coefficient and a Pauli string.
+    where each term :math:`c_j P_j` is a :class:`HamiltonianTerm`. Add terms
+    with :meth:`push` or :meth:`add_terms`. Iteration, indexing and ``len``
+    act on the list of terms. Use it with :func:`push_expval` to measure its expectation value, and with
+    :func:`push_lietrotter`, :func:`push_suzukitrotter` or
+    :func:`push_yoshidatrotter` to simulate the time evolution
+    :math:`e^{-iHt}`. These are available as methods of
+    :class:`~mimiqcircuits.Circuit`.
 
-    Methods:
-        - `push(...)`: Add a term by specifying its components.
-        - `add_terms(...)`: Add a `HamiltonianTerm` object.
-        - `num_qubits()`: Total number of qubits this Hamiltonian acts on.
-        - `saveproto(...)`: Save to protobuf format.
-        - `loadproto(...)`: Load from protobuf.
+    Args:
+        terms (iterable, optional): The :class:`HamiltonianTerm` objects to
+            start with.
+            Defaults to no terms.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -121,17 +165,66 @@ class Hamiltonian:
         self.terms = list(terms)
 
     def add_terms(self, term: HamiltonianTerm):
+        """Append a term to the Hamiltonian.
+
+        Despite its name, it takes a single term.
+
+        Args:
+            term: The term to append.
+
+        Returns:
+            Hamiltonian: This Hamiltonian, modified in place.
+        """
         self.terms.append(term)
         return self
 
-    def push(self, coefficient: float, pauli: mc.PauliString, *qubits: int):
+    def push(self, coefficient: float, pauli: PauliString, *qubits: int):
+        """Append the term ``coefficient * pauli`` acting on ``qubits``.
+
+        Args:
+            coefficient: The coefficient of the term, a real number or a
+                symbolic expression.
+            pauli: The Pauli string, one letter per qubit.
+            *qubits: The qubit indices, counted from 0.
+
+        Returns:
+            Hamiltonian: This Hamiltonian, modified in place.
+
+        Raises:
+            ValueError: If a qubit index is negative or appears twice.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> h = Hamiltonian()
+            >>> # -J Z_0 Z_1 with J = 1, then a field on qubit 1
+            >>> h.push(-1.0, PauliString("ZZ"), 0, 1)
+            2-qubit Hamiltonian with 1 terms:
+            └── -1.0 * ZZ @ q[0,1]
+            >>> h.push(0.5, PauliString("X"), 1)
+            2-qubit Hamiltonian with 2 terms:
+            ├── -1.0 * ZZ @ q[0,1]
+            └── 0.5 * X @ q[1]
+        """
         self.terms.append(HamiltonianTerm(coefficient, pauli, qubits))
         return self
 
     def num_terms(self):
+        """Return the number of terms, the same as ``len(h)``.
+
+        Returns:
+            int: The number of terms.
+        """
         return len(self.terms)
 
     def num_qubits(self):
+        """Return the number of qubits the Hamiltonian acts on.
+
+        This is one more than the largest qubit index of any term, so it
+        counts unused qubits below that index.
+
+        Returns:
+            int: The number of qubits, ``0`` for an empty Hamiltonian.
+        """
         n = -1
         for term in self.terms:
             if not term.qubits:
@@ -163,12 +256,50 @@ class Hamiltonian:
         return self.__repr__()
 
     def saveproto(self, file):
+        """Save the Hamiltonian to a file in protobuf format.
+
+        Args:
+            file: A path, or a binary file object with a ``write`` method.
+
+        Returns:
+            int: The number of bytes written.
+
+        Raises:
+            ValueError: If writing to a path fails.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> import io
+            >>> h = Hamiltonian()
+            >>> h.push(0.5, PauliString("ZZ"), 0, 1)
+            2-qubit Hamiltonian with 1 terms:
+            └── 0.5 * ZZ @ q[0,1]
+            >>> # write to an in-memory file, then read it back
+            >>> buf = io.BytesIO()
+            >>> _ = h.saveproto(buf)
+            >>> _ = buf.seek(0)
+            >>> Hamiltonian.loadproto(buf)
+            2-qubit Hamiltonian with 1 terms:
+            └── 0.5 * ZZ @ q[0,1]
+        """
         from mimiqcircuits.proto.protoio import saveproto
 
         return saveproto(self, file)
 
     @staticmethod
     def loadproto(file):
+        """Load a Hamiltonian from a file in protobuf format.
+
+        Args:
+            file: A path, or a binary file object with a ``read`` method,
+                holding a Hamiltonian written by :meth:`saveproto`.
+
+        Returns:
+            Hamiltonian: The loaded Hamiltonian.
+
+        Raises:
+            ValueError: If the file cannot be read or parsed.
+        """
         from mimiqcircuits.proto.protoio import loadproto
 
         return loadproto(file, Hamiltonian)
@@ -176,18 +307,38 @@ class Hamiltonian:
     @staticmethod
     def _pauli_matrix(p: str):
         if p == "I":
-            return mc.GateID().matrix()
+            return GateID().matrix()
         elif p == "X":
-            return mc.GateX().matrix()
+            return GateX().matrix()
         elif p == "Y":
-            return mc.GateY().matrix()
+            return GateY().matrix()
         elif p == "Z":
-            return mc.GateZ().matrix()
+            return GateZ().matrix()
         else:
             raise ValueError(f"Invalid Pauli character: {p}")
 
     def matrix(self):
-        """Return the symbolic matrix representation of the Hamiltonian using symengine."""
+        """Return the matrix of the Hamiltonian.
+
+        The matrix is :math:`2^n \\times 2^n` for :meth:`num_qubits` qubits
+        :math:`n`, with qubit 0 as the leftmost factor of the Kronecker
+        product, that is the most significant bit of the row index.
+
+        Returns:
+            symengine.DenseMatrix: The matrix, symbolic if any coefficient
+            is.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> h = Hamiltonian()
+            >>> h.push(1.0, PauliString("Z"), 0)
+            1-qubit Hamiltonian with 1 terms:
+            └── 1.0 * Z @ q[0]
+            >>> h.matrix()
+            [1.0, 0]
+            [0, -1.0]
+            <BLANKLINE>
+        """
 
         nq = self.num_qubits()
         dim = 2**nq
@@ -228,14 +379,30 @@ class Hamiltonian:
         return H
 
     def evaluate(self, d: dict):
-        """
-        Evaluate the symbolic coefficients of each term using the substitution dictionary `d`.
+        """Substitute values into the symbolic coefficients.
 
-        Parameters:
-            d (dict): Dictionary mapping symbols (e.g., {'theta': 0.5}) to values.
+        Coefficients that are plain numbers are kept as they are. The
+        Hamiltonian itself is not modified.
+
+        Args:
+            d: A dictionary from symbols, or their names, to values.
 
         Returns:
-            Hamiltonian: A new Hamiltonian with evaluated (numerical or partially symbolic) coefficients.
+            Hamiltonian: A new Hamiltonian with the substituted
+            coefficients, numeric or still partly symbolic.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> from symengine import Symbol
+            >>> J = Symbol("J")
+            >>> h = Hamiltonian()
+            >>> h.push(J, PauliString("ZZ"), 0, 1)
+            2-qubit Hamiltonian with 1 terms:
+            └── J * ZZ @ q[0,1]
+            >>> # set the coupling J to 0.25
+            >>> h.evaluate({J: 0.25})
+            2-qubit Hamiltonian with 1 terms:
+            └── 0.25 * ZZ @ q[0,1]
         """
         evaluated_terms = []
         for term in self.terms:
@@ -251,25 +418,33 @@ class Hamiltonian:
 
 
 def push_expval(self, hamiltonian: Hamiltonian, *qubits: int, firstzvar=None):
-    r"""Push an expectation value estimation circuit for a given Hamiltonian.
+    r"""Append the computation of the expectation value of a Hamiltonian.
 
-    This operation measures the expectation value of a Hamiltonian and stores
-    the result in a Z-register, combining individual Pauli term evaluations.
-
-    For each term :math:`c_j P_j`, the circuit performs:
+    Called as a method, ``circuit.push_expval(hamiltonian, *qubits)``. For
+    each term :math:`c_j P_j` it appends an :class:`ExpectationValue` of
+    :math:`P_j` into z-variable ``firstzvar + j`` and scales it by
+    :math:`c_j` with :class:`Multiply`, then sums them all with
+    :class:`Add`, so that z-variable ``firstzvar`` ends up holding
 
     .. math::
-        \langle \psi | c_j P_j | \psi \rangle
+        \langle \psi | H | \psi \rangle = \sum_j c_j \langle \psi | P_j | \psi \rangle.
 
-    and sums the contributions in a new z-register.
+    The other z-variables keep the value of each scaled term. The state is
+    not changed.
 
     Args:
-        hamiltonian (Hamiltonian): The Hamiltonian to evaluate.
-        qubits (int): The qubit mapping to use.
-        firstzvar (int, optional): Index of the first Z-register to use.
+        hamiltonian: The Hamiltonian to evaluate.
+        *qubits (int): The circuit qubits that the Hamiltonian qubits
+            ``0, 1, ...`` map to. There must be exactly
+            ``hamiltonian.num_qubits()`` of them.
+        firstzvar (int, optional): First z-variable to use. Defaults to the
+            first unused one, ``circuit.num_zvars()``.
 
     Returns:
-        Circuit: The modified circuit.
+        Circuit: The circuit, modified in place.
+
+    Raises:
+        ValueError: If the number of qubits does not match the Hamiltonian.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -278,6 +453,7 @@ def push_expval(self, hamiltonian: Hamiltonian, *qubits: int, firstzvar=None):
         >>> h.push(1.0, PauliString("ZZ"), 0, 1)
         2-qubit Hamiltonian with 1 terms:
         └── 1.0 * ZZ @ q[0,1]
+        >>> # Hamiltonian qubits 0 and 1 are circuit qubits 1 and 2
         >>> c.push_expval(h, 1, 2)
         3-qubit, 1-zvar circuit with 3 instructions:
         ├── ⟨ZZ⟩ @ q[1:2], z[0]
@@ -287,8 +463,6 @@ def push_expval(self, hamiltonian: Hamiltonian, *qubits: int, firstzvar=None):
 
     See Also:
         :class:`ExpectationValue`, :class:`Multiply`, :class:`Add`
-
-
     """
     if len(qubits) != hamiltonian.num_qubits():
         raise ValueError("Number of qubits does not match Hamiltonian.")
@@ -299,19 +473,19 @@ def push_expval(self, hamiltonian: Hamiltonian, *qubits: int, firstzvar=None):
     zvar = firstzvar
     for term in hamiltonian:
         self.push(
-            mc.ExpectationValue(term.get_operation()),
+            ExpectationValue(term.get_operation()),
             *[qubits[i] for i in term.get_qubits()],
             zvar,
         )
-        # In-place scale: z[zvar] = coeff * z[zvar]. Aliasing the destination
-        # as the only input recovers the previous `*=` semantics.
-        self.push(mc.Multiply(2, c=term.get_coefficient()), zvar, zvar)
+        # In-place scale: z[zvar] = coeff * z[zvar], with the destination
+        # also as the only input.
+        self.push(Multiply(2, c=term.get_coefficient()), zvar, zvar)
         zvar += 1
 
     # In-place sum: z[firstzvar] = z[firstzvar] + z[firstzvar+1] + ... +
-    # z[zvar-1]. Aliasing the destination as the first input keeps the
-    # destination's existing value in the sum (recovering the old `+=`).
-    self.push(mc.Add(zvar - firstzvar + 1), firstzvar, *range(firstzvar, zvar))
+    # z[zvar-1]. The destination is also the first input, so its own value
+    # stays in the sum.
+    self.push(Add(zvar - firstzvar + 1), firstzvar, *range(firstzvar, zvar))
     return self
 
 
@@ -323,50 +497,59 @@ def _pauliexp(term: HamiltonianTerm, t, qubits: tuple):
     param = term.get_coefficient() * t
 
     if s == "X":
-        return mc.Instruction(mc.GateRX(param), qubits)
+        return Instruction(GateRX(param), qubits)
     elif s == "Y":
-        return mc.Instruction(mc.GateRY(param), qubits)
+        return Instruction(GateRY(param), qubits)
     elif s == "Z":
-        return mc.Instruction(mc.GateRZ(param), qubits)
+        return Instruction(GateRZ(param), qubits)
     elif s == "XX":
-        return mc.Instruction(mc.GateRXX(param), qubits)
+        return Instruction(GateRXX(param), qubits)
     elif s == "YY":
-        return mc.Instruction(mc.GateRYY(param), qubits)
+        return Instruction(GateRYY(param), qubits)
     elif s == "ZZ":
-        return mc.Instruction(mc.GateRZZ(param), qubits)
+        return Instruction(GateRZZ(param), qubits)
     elif s == "ZX":
-        return mc.Instruction(mc.GateRZX(param), qubits)
+        return Instruction(GateRZX(param), qubits)
     elif s == "XZ":
-        return mc.Instruction(mc.GateRZX(param), (qubits[::-1]))
+        return Instruction(GateRZX(param), (qubits[::-1]))
 
     else:
-        return mc.Instruction(mc.RPauli(p, param), qubits)
+        return Instruction(RPauli(p, param), qubits)
 
 
 def push_lietrotter(self, h: Hamiltonian, qubits: tuple, t: float, steps: int):
-    r"""
-    Apply a Lie-Trotter expansion of the Hamiltonian ``h`` to the circuit ``self``
-    for the qubits ``qubits`` over total time ``t`` with ``steps`` steps.
+    r"""Append the first-order (Lie-Trotter) time evolution under a Hamiltonian.
 
-    The Lie-Trotter expansion is a first-order approximation of the time evolution
-    operator for a Hamiltonian composed of non-commuting terms. It decomposes the
-    exponential of a sum of operators into a product of exponentials:
+    Called as a method, ``circuit.push_lietrotter(h, qubits, t, steps)``. It
+    approximates :math:`e^{-iHt}`, for :math:`H = \sum_{j=1}^m c_j P_j`, by
 
     .. math::
 
-        e^{-i H t} \approx \left[ \prod_{j=1}^m e^{-i c_j P_j \Delta t} \right]^n
+        e^{-i H t} \approx \left[ \prod_{j=1}^m e^{-i c_j P_j \Delta t} \right]^n,
 
-    where:
-        - :math:`H = \sum_{j=1}^m c_j P_j` is the Hamiltonian
-        - :math:`P_j` are Pauli strings
-        - :math:`\Delta t = t / n` is the time step size
-        - :math:`n` is the number of steps
+    with :math:`n` = ``steps`` and :math:`\Delta t = t / n`. The error per
+    step is of order :math:`\Delta t^2` and vanishes when the terms commute.
 
-    This method is particularly useful for simulating quantum systems and time-evolving
-    quantum states in quantum algorithms such as VQE or QAOA.
+    One step is declared once as a gate named ``trotter`` with parameter
+    :math:`\Delta t`, holding one Pauli rotation per term (``GateRX``,
+    ``GateRZZ``, ``RPauli``, ...). The circuit gets ``steps`` calls to it.
+
+    Args:
+        h: The Hamiltonian.
+        qubits: The circuit qubits that the Hamiltonian qubits ``0, 1, ...``
+            map to. There must be exactly ``h.num_qubits()`` of them.
+        t: The total evolution time.
+        steps: The number of Trotter steps :math:`n`.
+
+    Returns:
+        Circuit: The circuit, modified in place.
+
+    Raises:
+        ValueError: If the number of qubits does not match the Hamiltonian.
 
     See Also:
-        :func:`push_suzukitrotter`, :class:`GateDecl`
+        :func:`push_suzukitrotter`, :func:`push_yoshidatrotter`,
+        :class:`GateDecl`
 
     Examples:
         >>> from mimiqcircuits import *
@@ -375,6 +558,7 @@ def push_lietrotter(self, h: Hamiltonian, qubits: tuple, t: float, steps: int):
         >>> h.push(1.0, PauliString("ZZ"), 0, 1)
         2-qubit Hamiltonian with 1 terms:
         └── 1.0 * ZZ @ q[0,1]
+        >>> # evolve for t = 1 in 3 steps of 1/3
         >>> c.push_lietrotter(h, (0, 1), t=1.0, steps=3)
         2-qubit circuit with 3 instructions:
         ├── trotter(0.3333333333333333) @ q[0:1]
@@ -388,12 +572,12 @@ def push_lietrotter(self, h: Hamiltonian, qubits: tuple, t: float, steps: int):
     tstep = t / steps
     Δt = se.Symbol("Δt")
 
-    ch = mc.Circuit()
+    ch = Circuit()
 
     for term in h:
         ch.push(_pauliexp(term, 2 * Δt, term.get_qubits()))
 
-    decl = mc.GateDecl("trotter", (Δt,), ch)
+    decl = GateDecl("trotter", (Δt,), ch)
 
     for _ in range(steps):
         self.push(decl(tstep), *qubits)
@@ -408,19 +592,14 @@ def push_suzukitrotter(
     # and [https://arxiv.org/abs/2211.02691]
     # and [https://arxiv.org/pdf/math-ph/0506007]
 
-    r"""
-    Apply Suzuki-Trotter expansion of the Hamiltonian ``h`` to the circuit ``self``
-    for the qubits ``qubits`` over time ``t`` with ``steps`` steps.
+    r"""Append the time evolution under a Hamiltonian with a Suzuki-Trotter formula.
 
-    The Suzuki-Trotter expansion approximates the time evolution operator of a
-    quantum Hamiltonian using a sequence of exponentiated subterms. This is
-    particularly useful for simulating quantum systems where the Hamiltonian is
-    composed of non-commuting parts.
+    Called as a method, ``circuit.push_suzukitrotter(h, qubits, t, steps,
+    order)``. It approximates :math:`e^{-iHt}` with the Suzuki product
+    formula of the given even ``order``, whose error per step is of order
+    :math:`\Delta t^{\text{order}+1}`.
 
-    The expansion performed is a ``2k``-th order expansion according to the Suzuki
-    construction.
-
-    The second-order expansion is given by:
+    The second-order formula is
 
     .. math::
 
@@ -442,7 +621,8 @@ def push_suzukitrotter(
 
         \Delta t = \frac{t}{n}
 
-    Higher-order expansions follow the Suzuki recursion relation:
+    and each higher order is built from the one below by the Suzuki
+    recursion
 
     .. math::
 
@@ -455,10 +635,36 @@ def push_suzukitrotter(
 
     .. math::
 
-        p_k = \left(4 - 4^{1/(2k - 1)}\right)^{-1}
+        p_k = \left(4 - 4^{1/(2k - 1)}\right)^{-1}.
+
+    Each order is declared once as a gate named ``suzukitrotter_<order>``,
+    the higher ones calling the lower ones five times. The circuit gets
+    ``steps`` calls to the gate of the requested order.
+
+    Args:
+        h: The Hamiltonian.
+        qubits: The circuit qubits that the Hamiltonian qubits ``0, 1, ...``
+            map to. There must be exactly ``h.num_qubits()`` of them.
+        t: The total evolution time.
+        steps: The number of Trotter steps :math:`n`.
+        order: The order of the formula, an even integer of at least 2
+            (default ``2``).
+
+    Returns:
+        Circuit: The circuit, modified in place.
+
+    Raises:
+        ValueError: If the number of qubits does not match the Hamiltonian,
+            or ``order`` is not an even integer of at least 2.
 
     See Also:
-        :func:`push_lietrotter`, :class:`GateDecl`
+        :func:`push_lietrotter`, :func:`push_yoshidatrotter`,
+        :class:`GateDecl`
+
+    References:
+        - M. Suzuki, "General theory of fractal path integrals with
+          applications to many-body theories and statistical physics",
+          J. Math. Phys. 32, 400 (1991).
 
     Examples:
         >>> from mimiqcircuits import *
@@ -488,25 +694,25 @@ def push_suzukitrotter(
     λ = se.Symbol("λ")
 
     # Build base expansion S2(λ)
-    ch = mc.Circuit()
+    ch = Circuit()
     for term in h:
         ch.push(_pauliexp(term, λ, term.get_qubits()))
     for term in reversed(h.terms):
         ch.push(_pauliexp(term, λ, term.get_qubits()))
 
-    decls = [mc.GateDecl(f"suzukitrotter_2", (λ,), ch)]
+    decls = [GateDecl(f"suzukitrotter_2", (λ,), ch)]
 
     for k in range(2, order // 2 + 1):
         pk = 1 / (4 - 4 ** (1 / (2 * k - 1)))
-        ck = mc.Circuit()
+        ck = Circuit()
 
-        ck.push(decls[-1](pk * λ), *qubits)
-        ck.push(decls[-1](pk * λ), *qubits)
-        ck.push(decls[-1]((1 - 4 * pk) * λ), *qubits)
-        ck.push(decls[-1](pk * λ), *qubits)
-        ck.push(decls[-1](pk * λ), *qubits)
+        ck.push(decls[-1](pk * λ), *range(len(qubits)))
+        ck.push(decls[-1](pk * λ), *range(len(qubits)))
+        ck.push(decls[-1]((1 - 4 * pk) * λ), *range(len(qubits)))
+        ck.push(decls[-1](pk * λ), *range(len(qubits)))
+        ck.push(decls[-1](pk * λ), *range(len(qubits)))
 
-        decls.append(mc.GateDecl(f"suzukitrotter_{2 * k}", (λ,), ck))
+        decls.append(GateDecl(f"suzukitrotter_{2 * k}", (λ,), ck))
 
     for _ in range(steps):
         self.push(decls[-1](tstep), *qubits)
@@ -520,17 +726,15 @@ def push_yoshidatrotter(
     # see e.g. [https://doi.org/10.1016/0375-9601(90)90092-3] for Yoshida's composition method
     # see e.g. [https://aiichironakano.github.io/phys516/Yoshida-symplectic-PLA00.pdf]
 
-    r"""
-    Apply Yoshida-Trotter expansion of the Hamiltonian ``h`` to the circuit ``self``
-    for the qubits ``qubits`` over time ``t`` with ``steps`` steps.
+    r"""Append the time evolution under a Hamiltonian with a Yoshida product formula.
 
-    The Yoshida-Trotter expansion approximates the time evolution operator of a
-    quantum Hamiltonian using a symmetric composition of second-order Trotter
-    formulas. This technique improves accuracy by canceling higher-order error terms
-    in the Baker–Campbell–Hausdorff expansion.
+    Called as a method, ``circuit.push_yoshidatrotter(h, qubits, t, steps,
+    order)``. It approximates :math:`e^{-iHt}` by composing second-order
+    Trotter formulas symmetrically, which cancels the error terms up to the
+    given even ``order``. Each order makes three calls to the order below,
+    against five for :func:`push_suzukitrotter`.
 
-    The Yoshida expansion performed is a ``2k``-th order expansion using the symmetric
-    structure:
+    The order :math:`2(k+1)` formula is built from the order :math:`2k` one as
 
     .. math::
 
@@ -555,22 +759,32 @@ def push_yoshidatrotter(
         \prod_{j=1}^{m} e^{-i \Delta t H_j / 2}
         \prod_{j=m}^{1} e^{-i \Delta t H_j / 2}
 
-    This method is particularly useful for simulating quantum systems where the
-    Hamiltonian is composed of non-commuting parts, and is a computationally efficient
-    alternative to full recursive Suzuki methods.
-
-    See Also:
-        :func:`push_suzukitrotter`, :class:`GateDecl`
+    Each order is declared once as a gate named ``yoshida_<order>``. The
+    circuit gets ``steps`` calls to the gate of the requested order.
 
     Args:
-        h (Hamiltonian): The Hamiltonian object.
-        qubits (tuple): Tuple of qubit indices.
-        t (float): Total simulation time.
-        steps (int): Number of Trotter steps to apply.
-        order (int): Desired even expansion order (must be ≥ 2 and even).
+        h: The Hamiltonian.
+        qubits: The circuit qubits that the Hamiltonian qubits ``0, 1, ...``
+            map to. There must be exactly ``h.num_qubits()`` of them.
+        t: The total evolution time.
+        steps: The number of Trotter steps :math:`n`.
+        order: The order of the formula, an even integer of at least 2
+            (default ``4``).
 
     Returns:
-        Circuit: The modified circuit.
+        Circuit: The circuit, modified in place.
+
+    Raises:
+        ValueError: If the number of qubits does not match the Hamiltonian,
+            or ``order`` is not an even integer of at least 2.
+
+    See Also:
+        :func:`push_suzukitrotter`, :func:`push_lietrotter`,
+        :class:`GateDecl`
+
+    References:
+        - H. Yoshida, "Construction of higher order symplectic integrators",
+          Phys. Lett. A 150, 262 (1990).
 
     Examples:
         >>> from mimiqcircuits import *
@@ -597,24 +811,24 @@ def push_yoshidatrotter(
         raise ValueError("Yoshida order must be an even integer ≥ 2.")
 
     λ = se.Symbol("λ")
-    base = mc.Circuit()
+    base = Circuit()
     for term in h:
         base.push(_pauliexp(term, λ, term.get_qubits()))
     for term in reversed(h.terms):
         base.push(_pauliexp(term, λ, term.get_qubits()))
 
-    decls = [mc.GateDecl(f"yoshida_2", (λ,), base)]
+    decls = [GateDecl(f"yoshida_2", (λ,), base)]
 
     for k in range(2, order // 2 + 1):
         alpha = 1 / (2 - 2 ** (1 / (2 * k - 1)))
         beta = -(2 ** (1 / (2 * k - 1))) / (2 - 2 ** (1 / (2 * k - 1)))
 
-        ck = mc.Circuit()
-        ck.push(decls[-1](alpha * λ), *qubits)
-        ck.push(decls[-1](beta * λ), *qubits)
-        ck.push(decls[-1](alpha * λ), *qubits)
+        ck = Circuit()
+        ck.push(decls[-1](alpha * λ), *range(len(qubits)))
+        ck.push(decls[-1](beta * λ), *range(len(qubits)))
+        ck.push(decls[-1](alpha * λ), *range(len(qubits)))
 
-        decls.append(mc.GateDecl(f"yoshida_{2 * k}", (λ,), ck))
+        decls.append(GateDecl(f"yoshida_{2 * k}", (λ,), ck))
 
     tstep = t / steps
     for _ in range(steps):
@@ -624,10 +838,10 @@ def push_yoshidatrotter(
 
 
 # Auto-register on Circuit
-mc.Circuit.push_suzukitrotter = push_suzukitrotter
-mc.Circuit.push_lietrotter = push_lietrotter
-mc.Circuit.push_expval = push_expval
-mc.Circuit.push_yoshidatrotter = push_yoshidatrotter
+Circuit.push_suzukitrotter = push_suzukitrotter
+Circuit.push_lietrotter = push_lietrotter
+Circuit.push_expval = push_expval
+Circuit.push_yoshidatrotter = push_yoshidatrotter
 
 
 __all__ = [

@@ -20,3 +20,20 @@ API Reference
    mimiqcircuits.lazy
    mimiqcircuits.visualization
    mimiqcircuits.backends
+   mimiqcircuits.bitstrings
+   mimiqcircuits.GateDecl
+   mimiqcircuits.GateCall
+   mimiqcircuits.gatedecl
+   mimiqcircuits.BlockDecl
+   mimiqcircuits.BlockCall
+   mimiqcircuits.blockdecl
+   mimiqcircuits.sweep
+   mimiqcircuits.equivalence
+   mimiqcircuits.optimization
+   mimiqcircuits.dag
+   mimiqcircuits.simplify
+   mimiqcircuits.fusion
+   mimiqcircuits.addnoise
+   mimiqcircuits.complex
+   mimiqcircuits.paulibased
+   mimiqcircuits.qasm

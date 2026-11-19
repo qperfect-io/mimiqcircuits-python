@@ -15,16 +15,49 @@
 #
 """Noise model definitions and application.
 
-This module implements rule-based noise injection for ``mimiqcircuits`` circuits.
-Rules are evaluated by priority (lower value means higher priority), and the first
-matching rule is applied to each instruction.
+A :class:`NoiseModel` is a list of noise rules. :func:`apply_noise_model`
+goes through a circuit and, for each instruction, applies the first rule that
+matches it. Rules are tried by priority (lower value first).
+
+Examples:
+    >>> from mimiqcircuits import *
+    >>> # depolarizing noise after every CX, readout error after every measurement
+    >>> model = NoiseModel()
+    >>> _ = model.add_operation_noise(GateCX(), Depolarizing2(0.01))
+    >>> _ = model.add_readout_noise(ReadoutErr(0.01, 0.02))
+    >>> c = Circuit()
+    >>> _ = c.push(GateCX(), 0, 1)
+    >>> _ = c.push(Measure(), 1, 0)
+    >>> apply_noise_model(c, model)
+    2-qubit, 1-bit circuit with 4 instructions:
+    ├── CX @ q[0], q[1]
+    ├── Depolarizing(0.01) @ q[0:1]
+    ├── M @ q[1], c[0]
+    └── RErr(0.01, 0.02) @ c[0]
+    <BLANKLINE>
 """
 
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable, Iterable, List, Sequence, Set, Union
 
-import mimiqcircuits as mc
+from mimiqcircuits.blockdecl import BlockCall
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.gatedecl import GateCall
+from mimiqcircuits.instruction import Instruction
+from mimiqcircuits.operations.block import Block
+from mimiqcircuits.operations.gates.delay import Delay
+from mimiqcircuits.operations.gates.gate import Gate
+from mimiqcircuits.operations.ifstatement import IfStatement
+from mimiqcircuits.operations.krauschannel import krauschannel
+from mimiqcircuits.operations.magic import PrepareStateT
+from mimiqcircuits.operations.measure import AbstractMeasurement
+from mimiqcircuits.operations.operation import Operation
+from mimiqcircuits.operations.parallel import Parallel
+from mimiqcircuits.operations.readouterr import ReadoutErr
+from mimiqcircuits.operations.repeat import Repeat
+from mimiqcircuits.operations.reset import Reset, ResetX, ResetY, ResetZ
+from mimiqcircuits.operations.whilestatement import WhileStatement
 from mimiqcircuits.circuitrules import AbstractCircuitRule
 from mimiqcircuits.symbolics import (
     _extract_variables,
@@ -57,37 +90,37 @@ def _bind_before_method(instance, before_value: bool):
     )
 
 
-def _is_reset(operation: mc.Operation) -> bool:
+def _is_reset(operation: Operation) -> bool:
     return isinstance(
-        operation, (mc.Reset, mc.ResetX, mc.ResetY, mc.ResetZ, mc.PrepareStateT)
+        operation, (Reset, ResetX, ResetY, ResetZ, PrepareStateT)
     )
 
 
-def _supports_symbolic_operation_pattern(operation: mc.Operation) -> bool:
-    return isinstance(operation, (mc.Gate, mc.AbstractMeasurement)) or _is_reset(
+def _supports_symbolic_operation_pattern(operation: Operation) -> bool:
+    return isinstance(operation, (Gate, AbstractMeasurement)) or _is_reset(
         operation
     )
 
 
-def _is_symbolic_operation_pattern(operation: mc.Operation) -> bool:
+def _is_symbolic_operation_pattern(operation: Operation) -> bool:
     return _supports_symbolic_operation_pattern(operation) and operation.is_symbolic()
 
 
-def _validate_rule_operation_target(operation: mc.Operation):
+def _validate_rule_operation_target(operation: Operation):
     if not isinstance(
         operation,
         (
-            mc.Gate,
-            mc.AbstractMeasurement,
-            mc.Block,
-            mc.Repeat,
-            mc.IfStatement,
-            mc.WhileStatement,
-            mc.Reset,
-            mc.ResetX,
-            mc.ResetY,
-            mc.ResetZ,
-            mc.PrepareStateT,
+            Gate,
+            AbstractMeasurement,
+            Block,
+            Repeat,
+            IfStatement,
+            WhileStatement,
+            Reset,
+            ResetX,
+            ResetY,
+            ResetZ,
+            PrepareStateT,
         ),
     ):
         raise ValueError(
@@ -97,9 +130,9 @@ def _validate_rule_operation_target(operation: mc.Operation):
 
 
 def _resolve_noise_for_operation_match(
-    op_pattern: mc.Operation,
-    op_instance: mc.Operation,
-    noise_pattern: Union[mc.krauschannel, mc.Gate],
+    op_pattern: Operation,
+    op_instance: Operation,
+    noise_pattern: Union[krauschannel, Gate],
 ):
     """Build noise op from a matched operation instance."""
     # Non-symbolic patterns (including wrappers) are static.
@@ -114,7 +147,12 @@ def _resolve_noise_for_operation_match(
 
 
 class AbstractNoiseRule(AbstractCircuitRule):
-    """Abstract base class for all noise rules."""
+    """Base class for the rules of a :class:`NoiseModel`.
+
+    A rule says which instructions it matches (``matches``), what to emit for
+    a match (``apply_rule``), where to put it (``before``, ``replaces``) and
+    how early it is tried (``priority``, lower first).
+    """
 
 
 @dataclass(frozen=True)
@@ -127,23 +165,24 @@ class GlobalReadoutNoise(AbstractNoiseRule):
     Args:
         noise: The ``ReadoutErr`` to apply.
 
-    Example:
-        >>> import mimiqcircuits as mc
-        >>> mc.GlobalReadoutNoise(mc.ReadoutErr(0.01, 0.02))
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> # every measurement gets a 1% / 2% readout error
+        >>> GlobalReadoutNoise(ReadoutErr(0.01, 0.02))
         GlobalReadoutNoise(noise=RErr(0.01,0.02))
     """
-    noise: mc.ReadoutErr
+    noise: ReadoutErr
 
     def priority(self):
         return PRIORITY_GLOBAL_READOUT
 
-    def matches(self, inst: mc.Instruction):
-        return isinstance(inst.get_operation(), mc.AbstractMeasurement)
+    def matches(self, inst: Instruction):
+        return isinstance(inst.get_operation(), AbstractMeasurement)
 
-    def apply_rule(self, inst: mc.Instruction):
+    def apply_rule(self, inst: Instruction):
         if not self.matches(inst):
             return None
-        return mc.Instruction(self.noise, tuple(), tuple(inst.get_bits()), tuple())
+        return Instruction(self.noise, tuple(), tuple(inst.get_bits()), tuple())
 
 
 @dataclass(frozen=True)
@@ -151,7 +190,7 @@ class ExactQubitReadoutNoise(AbstractNoiseRule):
     """Add a readout error after measurements on exactly the given qubits.
 
     A measurement matches only when its qubits are ``qubits``, in the same
-    order.
+    order. The readout error acts on the bits the measurement writes to.
 
     Args:
         qubits: Qubits the measurement must act on, in order.
@@ -160,13 +199,14 @@ class ExactQubitReadoutNoise(AbstractNoiseRule):
     Raises:
         ValueError: If ``qubits`` is empty or has repetitions.
 
-    Example:
-        >>> import mimiqcircuits as mc
-        >>> mc.ExactQubitReadoutNoise([0, 1], mc.ReadoutErr(0.01, 0.02))
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> # only a measurement of exactly (q0, q1), in this order, matches
+        >>> ExactQubitReadoutNoise([0, 1], ReadoutErr(0.01, 0.02))
         ExactQubitReadoutNoise(qubits=(0, 1), noise=RErr(0.01,0.02))
     """
     qubits: Sequence[int]
-    noise: mc.ReadoutErr
+    noise: ReadoutErr
 
     def __post_init__(self):
         qs = list(self.qubits)
@@ -179,20 +219,22 @@ class ExactQubitReadoutNoise(AbstractNoiseRule):
     def priority(self):
         return PRIORITY_EXACT_READOUT
 
-    def matches(self, inst: mc.Instruction):
-        return isinstance(inst.get_operation(), mc.AbstractMeasurement) and tuple(
+    def matches(self, inst: Instruction):
+        return isinstance(inst.get_operation(), AbstractMeasurement) and tuple(
             inst.get_qubits()
         ) == self.qubits
 
-    def apply_rule(self, inst: mc.Instruction):
+    def apply_rule(self, inst: Instruction):
         if not self.matches(inst):
             return None
-        return mc.Instruction(self.noise, tuple(), tuple(inst.get_bits()), tuple())
+        return Instruction(self.noise, tuple(), tuple(inst.get_bits()), tuple())
 
 
 @dataclass(frozen=True)
 class SetQubitReadoutNoise(AbstractNoiseRule):
     """Add a readout error after measurements whose qubits are all in a set.
+
+    The readout error acts on the bits the measurement writes to.
 
     Args:
         qubits: Qubits where the readout error applies.
@@ -201,13 +243,14 @@ class SetQubitReadoutNoise(AbstractNoiseRule):
     Raises:
         ValueError: If ``qubits`` is empty or has repetitions.
 
-    Example:
-        >>> import mimiqcircuits as mc
-        >>> mc.SetQubitReadoutNoise([0, 2, 4], mc.ReadoutErr(0.01, 0.02))
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> # measurements of qubits 0, 2 or 4 get the readout error
+        >>> SetQubitReadoutNoise([0, 2, 4], ReadoutErr(0.01, 0.02))
         SetQubitReadoutNoise(qubits=[0, 2, 4], noise=RErr(0.01,0.02))
     """
     qubits: Iterable[int]
-    noise: mc.ReadoutErr
+    noise: ReadoutErr
     _qubit_set: frozenset = field(init=False, repr=False)
 
     def __post_init__(self):
@@ -221,15 +264,15 @@ class SetQubitReadoutNoise(AbstractNoiseRule):
     def priority(self):
         return PRIORITY_SET_READOUT
 
-    def matches(self, inst: mc.Instruction):
-        return isinstance(inst.get_operation(), mc.AbstractMeasurement) and all(
+    def matches(self, inst: Instruction):
+        return isinstance(inst.get_operation(), AbstractMeasurement) and all(
             q in self._qubit_set for q in inst.get_qubits()
         )
 
-    def apply_rule(self, inst: mc.Instruction):
+    def apply_rule(self, inst: Instruction):
         if not self.matches(inst):
             return None
-        return mc.Instruction(self.noise, tuple(), tuple(inst.get_bits()), tuple())
+        return Instruction(self.noise, tuple(), tuple(inst.get_bits()), tuple())
 
 
 @dataclass(frozen=True)
@@ -256,20 +299,21 @@ class OperationInstanceNoise(AbstractNoiseRule):
             acts on a different number of qubits, or if both ``before`` and
             ``replace`` are set.
 
-    Example:
-        >>> import mimiqcircuits as mc
+    Examples:
+        >>> from mimiqcircuits import *
         >>> from symengine import symbols, pi
+        >>> # the noise strength grows with the rotation angle
         >>> a = symbols("a")
-        >>> rule = mc.OperationInstanceNoise(mc.GateRX(a), mc.Depolarizing1(a / pi))
-        >>> c = mc.Circuit().push(mc.GateRX(pi / 2), 0)
-        >>> mc.NoiseModel([rule]).apply_noise_model(c)
+        >>> rule = OperationInstanceNoise(GateRX(a), Depolarizing1(a / pi))
+        >>> c = Circuit().push(GateRX(pi / 2), 0)
+        >>> NoiseModel([rule]).apply_noise_model(c)
         1-qubit circuit with 2 instructions:
         ├── RX((1/2)*pi) @ q[0]
         └── Depolarizing(0.5) @ q[0]
         <BLANKLINE>
     """
-    operation: mc.Operation
-    noise: Union[mc.krauschannel, mc.Gate]
+    operation: Operation
+    noise: Union[krauschannel, Gate]
     before: bool = False
     replace: bool = False
 
@@ -296,7 +340,7 @@ class OperationInstanceNoise(AbstractNoiseRule):
     def replaces(self):
         return self.replace
 
-    def matches(self, inst: mc.Instruction):
+    def matches(self, inst: Instruction):
         op_inst = inst.get_operation()
         op_rule = self.operation
 
@@ -308,13 +352,13 @@ class OperationInstanceNoise(AbstractNoiseRule):
 
         return True
 
-    def apply_rule(self, inst: mc.Instruction):
+    def apply_rule(self, inst: Instruction):
         if not self.matches(inst):
             return None
 
         op_inst = inst.get_operation()
         noise_op = _resolve_noise_for_operation_match(self.operation, op_inst, self.noise)
-        return mc.Instruction(noise_op, tuple(inst.get_qubits()))
+        return Instruction(noise_op, tuple(inst.get_qubits()))
 
 
 @dataclass(frozen=True)
@@ -338,20 +382,21 @@ class ExactOperationInstanceQubitNoise(AbstractNoiseRule):
             ``operation``, if ``noise`` acts on a different number of qubits,
             or if both ``before`` and ``replace`` are set.
 
-    Example:
-        >>> import mimiqcircuits as mc
-        >>> rule = mc.ExactOperationInstanceQubitNoise(mc.GateCX(), [0, 1], mc.Depolarizing2(0.01))
-        >>> c = mc.Circuit().push(mc.GateCX(), 0, 1).push(mc.GateCX(), 1, 0)
-        >>> mc.NoiseModel([rule]).apply_noise_model(c)
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> # only the CX with control 0 and target 1 gets noise
+        >>> rule = ExactOperationInstanceQubitNoise(GateCX(), [0, 1], Depolarizing2(0.01))
+        >>> c = Circuit().push(GateCX(), 0, 1).push(GateCX(), 1, 0)
+        >>> NoiseModel([rule]).apply_noise_model(c)
         2-qubit circuit with 3 instructions:
         ├── CX @ q[0], q[1]
         ├── Depolarizing(0.01) @ q[0:1]
         └── CX @ q[1], q[0]
         <BLANKLINE>
     """
-    operation: mc.Operation
+    operation: Operation
     qubits: Sequence[int]
-    noise: Union[mc.krauschannel, mc.Gate]
+    noise: Union[krauschannel, Gate]
     before: bool = False
     replace: bool = False
 
@@ -385,7 +430,7 @@ class ExactOperationInstanceQubitNoise(AbstractNoiseRule):
     def replaces(self):
         return self.replace
 
-    def matches(self, inst: mc.Instruction):
+    def matches(self, inst: Instruction):
         op_inst = inst.get_operation()
         op_rule = self.operation
 
@@ -400,13 +445,13 @@ class ExactOperationInstanceQubitNoise(AbstractNoiseRule):
 
         return True
 
-    def apply_rule(self, inst: mc.Instruction):
+    def apply_rule(self, inst: Instruction):
         if not self.matches(inst):
             return None
 
         op_inst = inst.get_operation()
         noise_op = _resolve_noise_for_operation_match(self.operation, op_inst, self.noise)
-        return mc.Instruction(noise_op, tuple(inst.get_qubits()))
+        return Instruction(noise_op, tuple(inst.get_qubits()))
 
 
 @dataclass(frozen=True)
@@ -430,20 +475,21 @@ class SetOperationInstanceQubitNoise(AbstractNoiseRule):
             acts on a different number of qubits, or if both ``before`` and
             ``replace`` are set.
 
-    Example:
-        >>> import mimiqcircuits as mc
-        >>> rule = mc.SetOperationInstanceQubitNoise(mc.GateH(), [0, 1], mc.AmplitudeDamping(0.001))
-        >>> c = mc.Circuit().push(mc.GateH(), 0).push(mc.GateH(), 2)
-        >>> mc.NoiseModel([rule]).apply_noise_model(c)
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> # H on qubit 0 or 1 gets noise, H on qubit 2 does not
+        >>> rule = SetOperationInstanceQubitNoise(GateH(), [0, 1], AmplitudeDamping(0.001))
+        >>> c = Circuit().push(GateH(), 0).push(GateH(), 2)
+        >>> NoiseModel([rule]).apply_noise_model(c)
         3-qubit circuit with 3 instructions:
         ├── H @ q[0]
         ├── AmplitudeDamping(0.001) @ q[0]
         └── H @ q[2]
         <BLANKLINE>
     """
-    operation: mc.Operation
+    operation: Operation
     qubits: Iterable[int]
-    noise: Union[mc.krauschannel, mc.Gate]
+    noise: Union[krauschannel, Gate]
     before: bool = False
     replace: bool = False
     _qubit_set: frozenset = field(init=False, repr=False)
@@ -478,7 +524,7 @@ class SetOperationInstanceQubitNoise(AbstractNoiseRule):
     def replaces(self):
         return self.replace
 
-    def matches(self, inst: mc.Instruction):
+    def matches(self, inst: Instruction):
         op_inst = inst.get_operation()
         op_rule = self.operation
 
@@ -493,13 +539,13 @@ class SetOperationInstanceQubitNoise(AbstractNoiseRule):
 
         return True
 
-    def apply_rule(self, inst: mc.Instruction):
+    def apply_rule(self, inst: Instruction):
         if not self.matches(inst):
             return None
 
         op_inst = inst.get_operation()
         noise_op = _resolve_noise_for_operation_match(self.operation, op_inst, self.noise)
-        return mc.Instruction(noise_op, tuple(inst.get_qubits()))
+        return Instruction(noise_op, tuple(inst.get_qubits()))
 
 
 @dataclass(frozen=True)
@@ -519,22 +565,23 @@ class IdleNoise(AbstractNoiseRule):
         ValueError: If ``relation`` is neither an operation nor a
             ``(symbol, operation)`` tuple.
 
-    Example:
-        >>> import mimiqcircuits as mc
+    Examples:
+        >>> from mimiqcircuits import *
         >>> from symengine import symbols
+        >>> # a Delay(t) becomes amplitude damping with gamma = t / 1000
         >>> t = symbols("t")
-        >>> rule = mc.IdleNoise((t, mc.AmplitudeDamping(t / 1000)))
-        >>> c = mc.Circuit().push(mc.GateH(), 0).push(mc.Delay(10), 1)
-        >>> mc.NoiseModel([rule]).apply_noise_model(c)
+        >>> rule = IdleNoise((t, AmplitudeDamping(t / 1000)))
+        >>> c = Circuit().push(GateH(), 0).push(Delay(10), 1)
+        >>> NoiseModel([rule]).apply_noise_model(c)
         2-qubit circuit with 2 instructions:
         ├── H @ q[0]
         └── AmplitudeDamping(0.01) @ q[1]
         <BLANKLINE>
     """
-    relation: Union[tuple, mc.Operation]
+    relation: Union[tuple, Operation]
 
     def __post_init__(self):
-        if isinstance(self.relation, mc.Operation):
+        if isinstance(self.relation, Operation):
             return
 
         if not isinstance(self.relation, tuple) or len(self.relation) != 2:
@@ -546,7 +593,7 @@ class IdleNoise(AbstractNoiseRule):
             raise ValueError(
                 f"Left side must be a simple symbolic variable, got: {var}"
             )
-        if not isinstance(target, mc.Operation):
+        if not isinstance(target, Operation):
             raise ValueError("Right side of idle relation must be an Operation")
 
     def priority(self):
@@ -555,22 +602,22 @@ class IdleNoise(AbstractNoiseRule):
     def replaces(self):
         return True
 
-    def matches(self, inst: mc.Instruction):
-        return isinstance(inst.get_operation(), mc.Delay)
+    def matches(self, inst: Instruction):
+        return isinstance(inst.get_operation(), Delay)
 
-    def apply_rule(self, inst: mc.Instruction):
+    def apply_rule(self, inst: Instruction):
         if not self.matches(inst):
             return None
 
         op_inst = inst.get_operation()
 
-        if isinstance(self.relation, mc.Operation):
+        if isinstance(self.relation, Operation):
             noise_op = self.relation
         else:
             var, target = self.relation
             noise_op = applyparams(op_inst, ((var,), target))
 
-        return mc.Instruction(noise_op, tuple(inst.get_qubits()))
+        return Instruction(noise_op, tuple(inst.get_qubits()))
 
 
 @dataclass(frozen=True)
@@ -589,17 +636,18 @@ class SetIdleQubitNoise(AbstractNoiseRule):
         ValueError: If ``qubits`` is empty, or ``relation`` is neither an
             operation nor a ``(symbol, operation)`` tuple.
 
-    Example:
-        >>> import mimiqcircuits as mc
-        >>> rule = mc.SetIdleQubitNoise(mc.AmplitudeDamping(1e-4), [0])
-        >>> c = mc.Circuit().push(mc.Delay(10), 0).push(mc.Delay(10), 1)
-        >>> mc.NoiseModel([rule]).apply_noise_model(c)
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> # only delays on qubit 0 become noise
+        >>> rule = SetIdleQubitNoise(AmplitudeDamping(1e-4), [0])
+        >>> c = Circuit().push(Delay(10), 0).push(Delay(10), 1)
+        >>> NoiseModel([rule]).apply_noise_model(c)
         2-qubit circuit with 2 instructions:
         ├── AmplitudeDamping(0.0001) @ q[0]
         └── Delay(10) @ q[1]
         <BLANKLINE>
     """
-    relation: Union[tuple, mc.Operation]
+    relation: Union[tuple, Operation]
     qubits: Iterable[int]
 
     def __post_init__(self):
@@ -609,7 +657,7 @@ class SetIdleQubitNoise(AbstractNoiseRule):
 
         object.__setattr__(self, "qubits", frozenset(qs))
 
-        if isinstance(self.relation, mc.Operation):
+        if isinstance(self.relation, Operation):
             return
 
         if not isinstance(self.relation, tuple) or len(self.relation) != 2:
@@ -618,7 +666,7 @@ class SetIdleQubitNoise(AbstractNoiseRule):
         var, target = self.relation
         if not (hasattr(var, "is_symbol") and var.is_symbol):
             raise ValueError("Left side must be symbolic variable")
-        if not isinstance(target, mc.Operation):
+        if not isinstance(target, Operation):
             raise ValueError("Right side must be Operation")
 
     def priority(self):
@@ -627,23 +675,23 @@ class SetIdleQubitNoise(AbstractNoiseRule):
     def replaces(self):
         return True
 
-    def matches(self, inst: mc.Instruction):
+    def matches(self, inst: Instruction):
         op = inst.get_operation()
-        return isinstance(op, mc.Delay) and all(q in self.qubits for q in inst.get_qubits())
+        return isinstance(op, Delay) and all(q in self.qubits for q in inst.get_qubits())
 
-    def apply_rule(self, inst: mc.Instruction):
+    def apply_rule(self, inst: Instruction):
         if not self.matches(inst):
             return None
 
         op_inst = inst.get_operation()
 
-        if isinstance(self.relation, mc.Operation):
+        if isinstance(self.relation, Operation):
             noise_op = self.relation
         else:
             var, target = self.relation
             noise_op = applyparams(op_inst, ((var,), target))
 
-        return mc.Instruction(noise_op, tuple(inst.get_qubits()))
+        return Instruction(noise_op, tuple(inst.get_qubits()))
 
 
 @dataclass(frozen=True)
@@ -653,7 +701,8 @@ class CustomNoiseRule(AbstractNoiseRule):
     Args:
         matcher: Function ``inst -> bool`` that selects the instructions.
         generator: Function ``inst -> Instruction`` that builds the noise
-            instruction for a matched instruction.
+            instruction for a matched instruction, with the circuit's qubit
+            and bit indices.
         priority_val: Priority of the rule; lower runs first. Defaults to
             ``PRIORITY_USER_OVERRIDE``, ahead of every built-in rule.
         before: Add the noise before the instruction instead of after it.
@@ -663,22 +712,23 @@ class CustomNoiseRule(AbstractNoiseRule):
     ``saveproto``: the matcher and generator are Python callables with no
     serialized form.
 
-    Example:
-        >>> import mimiqcircuits as mc
-        >>> rule = mc.CustomNoiseRule(
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> # two-qubit depolarizing noise after every two-qubit operation
+        >>> rule = CustomNoiseRule(
         ...     lambda inst: inst.get_operation().num_qubits == 2,
-        ...     lambda inst: mc.Instruction(mc.Depolarizing2(0.01), inst.get_qubits()),
+        ...     lambda inst: Instruction(Depolarizing2(0.01), inst.get_qubits()),
         ... )
-        >>> c = mc.Circuit().push(mc.GateCX(), 0, 1)
-        >>> mc.NoiseModel([rule]).apply_noise_model(c)
+        >>> c = Circuit().push(GateCX(), 0, 1)
+        >>> NoiseModel([rule]).apply_noise_model(c)
         2-qubit circuit with 2 instructions:
         ├── CX @ q[0], q[1]
         └── Depolarizing(0.01) @ q[0:1]
         <BLANKLINE>
     """
 
-    matcher: Callable[[mc.Instruction], bool]
-    generator: Callable[[mc.Instruction], mc.Instruction]
+    matcher: Callable[[Instruction], bool]
+    generator: Callable[[Instruction], Instruction]
     priority_val: int = PRIORITY_USER_OVERRIDE
     before: bool = False
     replace: bool = False
@@ -689,10 +739,10 @@ class CustomNoiseRule(AbstractNoiseRule):
     def priority(self):
         return self.priority_val
 
-    def matches(self, inst: mc.Instruction):
+    def matches(self, inst: Instruction):
         return self.matcher(inst)
 
-    def apply_rule(self, inst: mc.Instruction):
+    def apply_rule(self, inst: Instruction):
         return self.generator(inst) if self.matcher(inst) else None
 
     def replaces(self):
@@ -701,38 +751,74 @@ class CustomNoiseRule(AbstractNoiseRule):
 
 @dataclass
 class NoiseModel:
-    """Collection of prioritized noise rules.
+    """Collection of noise rules applied to circuits.
 
-    Rules are always kept sorted by ``priority()`` so more specific rules win over
-    generic fallbacks.
+    :func:`apply_noise_model` goes through a circuit and gives each
+    instruction to the rules in order; the first rule that matches adds its
+    noise (after the instruction, before it, or in its place) and the others
+    are skipped. Instructions that no rule matches are kept as they are.
 
-    Priority order (lower number = higher priority):
-    - ``CustomNoiseRule`` (default ``PRIORITY_USER_OVERRIDE``)
-    - ``ExactOperationInstanceQubitNoise`` (``PRIORITY_EXACT_OPERATION``)
-    - ``ExactQubitReadoutNoise`` (``PRIORITY_EXACT_READOUT``)
-    - ``SetOperationInstanceQubitNoise`` (``PRIORITY_SET_OPERATION``)
-    - ``SetQubitReadoutNoise`` (``PRIORITY_SET_READOUT``)
-    - ``OperationInstanceNoise`` (``PRIORITY_GLOBAL_OPERATION``)
-    - ``GlobalReadoutNoise`` (``PRIORITY_GLOBAL_READOUT``)
-    - ``SetIdleQubitNoise`` (``PRIORITY_SET_IDLE``)
-    - ``IdleNoise`` (``PRIORITY_IDLE``)
+    Rules are kept sorted by ``priority()``, lower first, and rules of equal
+    priority keep the order they were added in. The built-in rules make
+    specific rules win over general ones:
+
+    =========================================  ========
+    Rule                                       Priority
+    =========================================  ========
+    :class:`CustomNoiseRule` (default)         0
+    :class:`ExactOperationInstanceQubitNoise`  40
+    :class:`ExactQubitReadoutNoise`            50
+    :class:`SetOperationInstanceQubitNoise`    60
+    :class:`SetQubitReadoutNoise`              70
+    :class:`OperationInstanceNoise`            80
+    :class:`GlobalReadoutNoise`                90
+    :class:`SetIdleQubitNoise`                 190
+    :class:`IdleNoise`                         200
+    =========================================  ========
+
+    The ``add_*`` methods build these rules for you and return the model, so
+    calls can be chained.
 
     Args:
-        rules: Initial list of rules.
-        name: Optional model name.
+        rules: Initial rules. The list is sorted in place.
+        name: Name shown by :meth:`describe`.
 
-    Example:
-        >>> import mimiqcircuits as mc
+    Examples:
+        >>> from mimiqcircuits import *
         >>> from symengine import symbols, pi
         >>> theta = symbols("theta")
-        >>> model = mc.NoiseModel(
+        >>> model = NoiseModel(name="demo")
+        >>> # RX(theta) is followed by depolarizing noise of strength theta/pi
+        >>> _ = model.add_operation_noise(GateRX(theta), Depolarizing1(theta / pi))
+        >>> # every CX is followed by two-qubit depolarizing noise
+        >>> _ = model.add_operation_noise(GateCX(), Depolarizing2(0.01))
+        >>> # every measured bit gets a readout error
+        >>> _ = model.add_readout_noise(ReadoutErr(0.01, 0.02))
+        >>> # every Delay becomes amplitude damping
+        >>> _ = model.add_idle_noise(AmplitudeDamping(0.001))
+        >>> c = Circuit()
+        >>> _ = c.push(GateRX(0.4), 0)
+        >>> _ = c.push(GateCX(), 0, 1)
+        >>> _ = c.push(Delay(5), 1)
+        >>> _ = c.push(Measure(), 0, 0)
+        >>> model.apply_noise_model(c)
+        2-qubit, 1-bit circuit with 7 instructions:
+        ├── RX(0.4) @ q[0]
+        ├── Depolarizing(0.4/pi) @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── Depolarizing(0.01) @ q[0:1]
+        ├── AmplitudeDamping(0.001) @ q[1]
+        ├── M @ q[0], c[0]
+        └── RErr(0.01, 0.02) @ c[0]
+        <BLANKLINE>
+
+        >>> # rules can also be given directly
+        >>> model = NoiseModel(
         ...     [
-        ...         mc.OperationInstanceNoise(mc.GateRX(theta), mc.Depolarizing(1, theta / pi)),
-        ...         mc.ExactOperationInstanceQubitNoise(mc.GateCX(), [0, 1], mc.Depolarizing(2, 0.01)),
-        ...         mc.GlobalReadoutNoise(mc.ReadoutErr(0.01, 0.02)),
-        ...         mc.IdleNoise(mc.AmplitudeDamping(1e-4)),
+        ...         ExactOperationInstanceQubitNoise(GateCX(), [0, 1], Depolarizing(2, 0.01)),
+        ...         GlobalReadoutNoise(ReadoutErr(0.01, 0.02)),
         ...     ],
-        ...     name="angle-dependent",
+        ...     name="explicit",
         ... )
     """
 
@@ -743,35 +829,51 @@ class NoiseModel:
         self.rules.sort(key=lambda r: r.priority())
 
     def add_rule(self, rule: AbstractNoiseRule):
-        """Add a rule and keep model rules sorted by priority."""
+        """Add a rule and return the model.
+
+        The rule is placed after the existing rules of the same priority.
+
+        Args:
+            rule: Any :class:`AbstractNoiseRule`.
+
+        Returns:
+            NoiseModel: This model, changed in place.
+        """
         self.rules.append(rule)
         self.rules.sort(key=lambda r: r.priority())
         return self
 
-    def add_readout_noise(self, noise: mc.ReadoutErr, *, qubits=None, exact=False):
-        """Add a readout-noise rule.
+    def add_readout_noise(self, noise: ReadoutErr, *, qubits=None, exact=False):
+        """Add a rule that puts a readout error after measurements.
 
-        Behavior:
-        - ``qubits is None``: add ``GlobalReadoutNoise``.
-        - ``qubits`` with ``exact=False``: add ``SetQubitReadoutNoise``.
-        - ``qubits`` with ``exact=True``: add ``ExactQubitReadoutNoise``.
+        Without ``qubits`` the rule is a :class:`GlobalReadoutNoise`. With
+        ``qubits`` it is a :class:`SetQubitReadoutNoise`, or an
+        :class:`ExactQubitReadoutNoise` when ``exact`` is ``True``.
 
         Args:
-            noise: Readout error channel.
-            qubits: Optional qubit targets.
-            exact: When ``True``, qubit order must match exactly.
+            noise: Readout error to add.
+            qubits: Keyword-only. Restrict the rule to measurements on these
+                qubits.
+            exact: Keyword-only. Require the measured qubits to equal
+                ``qubits``, in order, instead of being a subset of them.
 
         Returns:
-            ``self`` (for chaining).
+            NoiseModel: This model, changed in place.
 
-        Example:
-            >>> import mimiqcircuits as mc
-            >>> model = mc.NoiseModel()
-            >>> model.add_readout_noise(mc.ReadoutErr(0.01, 0.02))
+        Raises:
+            ValueError: If ``qubits`` is empty or has repetitions.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> model = NoiseModel()
+            >>> # all measurements
+            >>> model.add_readout_noise(ReadoutErr(0.01, 0.02))
             NoiseModel(rules=[GlobalReadoutNoise(noise=RErr(0.01,0.02))], name='')
-            >>> model.add_readout_noise(mc.ReadoutErr(0.03, 0.04), qubits=[0, 2])
+            >>> # measurements on qubits 0 and 2 only; tried before the global rule
+            >>> model.add_readout_noise(ReadoutErr(0.03, 0.04), qubits=[0, 2])
             NoiseModel(rules=[SetQubitReadoutNoise(qubits=(0, 2), noise=RErr(0.03,0.04)), GlobalReadoutNoise(noise=RErr(0.01,0.02))], name='')
-            >>> model.add_readout_noise(mc.ReadoutErr(0.05, 0.06), qubits=[2, 0], exact=True)
+            >>> # a measurement of exactly (q2, q0); tried first
+            >>> model.add_readout_noise(ReadoutErr(0.05, 0.06), qubits=[2, 0], exact=True)
             NoiseModel(rules=[ExactQubitReadoutNoise(qubits=(2, 0), noise=RErr(0.05,0.06)), SetQubitReadoutNoise(qubits=(0, 2), noise=RErr(0.03,0.04)), GlobalReadoutNoise(noise=RErr(0.01,0.02))], name='')
         """
         if qubits is None:
@@ -785,50 +887,70 @@ class NoiseModel:
     def add_operation_noise(
         self, operation, noise, *, qubits=None, exact=False, before=False, replace=False
     ):
-        """Add operation-instance noise.
+        """Add a rule that puts noise next to an operation.
 
-        ``operation`` can be concrete (exact parameter match) or symbolic (match by
-        operation type and substitute parameters into ``noise``).
+        Without ``qubits`` the rule is an :class:`OperationInstanceNoise`.
+        With ``qubits`` it is a :class:`SetOperationInstanceQubitNoise`, or an
+        :class:`ExactOperationInstanceQubitNoise` when ``exact`` is ``True``.
+
+        A concrete ``operation`` matches only equal operations. One with
+        symbolic parameters matches any operation of the same type, and its
+        symbols are replaced in ``noise`` by the values of the matched
+        operation.
 
         Args:
-            operation: Operation pattern to match.
-            noise: Noise operation/channel to inject.
-            qubits: Optional qubit restriction.
-            exact: If ``True``, qubits must match the exact ordered tuple.
-            before: If ``True``, insert noise before the matched instruction.
-            replace: If ``True``, replace the matched instruction with noise.
+            operation: Operation pattern: a gate, measurement, reset,
+                :class:`Block`, :class:`Repeat`, :class:`IfStatement` or
+                :class:`WhileStatement`.
+            noise: Kraus channel or gate to add, on as many qubits as
+                ``operation``.
+            qubits: Keyword-only. Restrict the rule to instructions on these
+                qubits.
+            exact: Keyword-only. Require the instruction's qubits to equal
+                ``qubits``, in order, instead of being a subset of them.
+            before: Keyword-only. Add the noise before the operation.
+            replace: Keyword-only. Replace the operation with the noise.
 
         Returns:
-            ``self`` (for chaining).
+            NoiseModel: This model, changed in place.
 
         Raises:
-            ValueError: If operation target is unsupported or arguments are invalid.
+            ValueError: If ``operation`` is not a supported kind, ``noise``
+                acts on a different number of qubits, ``qubits`` is invalid,
+                or both ``before`` and ``replace`` are set.
 
         Examples:
-            >>> import mimiqcircuits as mc
+            >>> from mimiqcircuits import *
             >>> from symengine import symbols, pi
             >>> theta, alpha, beta = symbols("theta alpha beta")
-            >>> model = mc.NoiseModel()
-            >>> _ = model.add_operation_noise(mc.GateRX(pi / 2), mc.AmplitudeDamping(0.001))
-            >>> _ = model.add_operation_noise(mc.GateRX(theta), mc.Depolarizing(1, theta / pi))
+            >>> model = NoiseModel()
+            >>> # only RX(pi/2) matches
+            >>> _ = model.add_operation_noise(GateRX(pi / 2), AmplitudeDamping(0.001))
+            >>> # any RX matches; theta in the noise takes the gate's angle
+            >>> _ = model.add_operation_noise(GateRX(theta), Depolarizing(1, theta / pi))
+            >>> # several parameters at once
             >>> _ = model.add_operation_noise(
-            ...     mc.GateU(alpha, beta, 0),
-            ...     mc.Depolarizing(1, (alpha**2 + beta**2) / (2 * pi**2)),
+            ...     GateU(alpha, beta, 0),
+            ...     Depolarizing(1, (alpha**2 + beta**2) / (2 * pi**2)),
             ... )
+            >>> # restricted to RX on qubits 0, 1 or 2
             >>> _ = model.add_operation_noise(
-            ...     mc.GateRX(theta),
-            ...     mc.Depolarizing(1, theta / pi),
+            ...     GateRX(theta),
+            ...     Depolarizing(1, theta / pi),
             ...     qubits=[0, 1, 2],
             ... )
+            >>> # restricted to RX on exactly qubit 0
             >>> _ = model.add_operation_noise(
-            ...     mc.GateRX(theta),
-            ...     mc.Depolarizing(1, theta / pi),
+            ...     GateRX(theta),
+            ...     Depolarizing(1, theta / pi),
             ...     qubits=[0],
             ...     exact=True,
             ... )
-            >>> _ = model.add_operation_noise(mc.Measure(), mc.PauliX(0.02), before=True)
-            >>> _ = model.add_operation_noise(mc.Reset(), mc.Depolarizing(1, 0.01))
-            >>> _ = model.add_operation_noise(mc.GateH(), mc.AmplitudeDamping(0.001), replace=True)
+            >>> # a bit flip just before every measurement
+            >>> _ = model.add_operation_noise(Measure(), PauliX(0.02), before=True)
+            >>> _ = model.add_operation_noise(Reset(), Depolarizing(1, 0.01))
+            >>> # H is removed and only the noise is left
+            >>> _ = model.add_operation_noise(GateH(), AmplitudeDamping(0.001), replace=True)
         """
         _validate_rule_operation_target(operation)
         if qubits is None:
@@ -846,26 +968,34 @@ class NoiseModel:
         return self.add_rule(rule)
 
     def add_idle_noise(self, noise, qubits=None):
-        """Add idle-noise rule(s) for ``Delay`` instructions.
+        """Add a rule that replaces ``Delay`` instructions with noise.
 
-        ``noise`` can be a constant operation or a relation tuple
-        ``(time_symbol, target_operation_expr)``.
+        Without ``qubits`` the rule is an :class:`IdleNoise`, otherwise a
+        :class:`SetIdleQubitNoise`. Only explicit :class:`Delay` instructions
+        are affected; qubits that are simply not acted upon get no noise.
 
         Args:
-            noise: Idle noise operation or symbolic relation.
-            qubits: Optional qubit subset where idle noise is allowed.
+            noise: A noise operation, or a tuple ``(t, noise(t))`` where ``t``
+                is a symbol replaced by the duration of each ``Delay``.
+            qubits: Restrict the rule to delays on these qubits.
 
         Returns:
-            ``self`` (for chaining).
+            NoiseModel: This model, changed in place.
 
-        Example:
-            >>> import mimiqcircuits as mc
+        Raises:
+            ValueError: If ``noise`` is neither an operation nor a
+                ``(symbol, operation)`` tuple, or ``qubits`` is empty.
+
+        Examples:
+            >>> from mimiqcircuits import *
             >>> from symengine import symbols
             >>> t = symbols("t")
-            >>> model = mc.NoiseModel()
-            >>> model.add_idle_noise(mc.AmplitudeDamping(1e-4))
+            >>> model = NoiseModel()
+            >>> # the same noise for every delay
+            >>> model.add_idle_noise(AmplitudeDamping(1e-4))
             NoiseModel(rules=[IdleNoise(relation=AmplitudeDamping(0.0001))], name='')
-            >>> model.add_idle_noise((t, mc.AmplitudeDamping(t / 1000)), qubits=[0, 1, 2])
+            >>> # noise depending on the delay duration, on qubits 0 to 2
+            >>> model.add_idle_noise((t, AmplitudeDamping(t / 1000)), qubits=[0, 1, 2])
             NoiseModel(rules=[SetIdleQubitNoise(relation=(t, AmplitudeDamping((1/1000)*t)), qubits=frozenset({0, 1, 2})), IdleNoise(relation=AmplitudeDamping(0.0001))], name='')
         """
         if qubits is None:
@@ -874,14 +1004,23 @@ class NoiseModel:
             rule = SetIdleQubitNoise(noise, qubits)
         return self.add_rule(rule)
 
-    def apply_noise_model(self, circuit: mc.Circuit):
-        """Apply this noise model and return a new noisy circuit.
-
-        This is a convenience wrapper around module-level ``apply_noise_model``.
-        """
+    def apply_noise_model(self, circuit: Circuit):
+        """Return a noisy copy of ``circuit``; see :func:`apply_noise_model`."""
         return apply_noise_model(circuit, self)
 
     def describe(self):
+        """Print a readable summary of the rules, in the order they are tried.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> NoiseModel(name="demo").add_idle_noise(AmplitudeDamping(0.001)).describe()
+            NoiseModel: demo
+            ================================================================================
+            Rule 1 (priority 200): IdleNoise
+              -> Applies AmplitudeDamping(0.001) to all idle qubits
+                (REPLACES the matched operation)
+            --------------------------------------------------------------------------------
+        """
         title = f"NoiseModel: {self.name}" if self.name else "NoiseModel"
         print(title)
         print("=" * 80)
@@ -917,7 +1056,7 @@ class NoiseModel:
                     f"{sorted(rule._qubit_set)}"
                 )
             elif isinstance(rule, IdleNoise):
-                if isinstance(rule.relation, mc.Operation):
+                if isinstance(rule.relation, Operation):
                     print(f"  -> Applies {rule.relation} to all idle qubits")
                 else:
                     var, target = rule.relation
@@ -926,7 +1065,7 @@ class NoiseModel:
                         f"variable {var} to all idle qubits"
                     )
             elif isinstance(rule, SetIdleQubitNoise):
-                if isinstance(rule.relation, mc.Operation):
+                if isinstance(rule.relation, Operation):
                     print(f"  -> Applies {rule.relation} to idle qubits {sorted(rule.qubits)}")
                 else:
                     var, target = rule.relation
@@ -945,18 +1084,35 @@ class NoiseModel:
             print("-" * 80)
 
     def saveproto(self, file):
+        """Save the model to a protobuf file.
+
+        Args:
+            file: Path or writable binary file object.
+
+        Raises:
+            ValueError: If the model contains a :class:`CustomNoiseRule`,
+                which cannot be serialized.
+        """
         from mimiqcircuits.proto.protoio import saveproto
 
         return saveproto(self, file)
 
     @staticmethod
     def loadproto(file):
+        """Load a model saved with :meth:`saveproto`.
+
+        Args:
+            file: Path or readable binary file object.
+
+        Returns:
+            NoiseModel: The loaded model.
+        """
         from mimiqcircuits.proto.protoio import loadproto
 
         return loadproto(file, NoiseModel)
 
 
-def _canonical_targets(op: mc.Operation):
+def _canonical_targets(op: Operation):
     return (
         tuple(range(op.num_qubits)),
         tuple(range(op.num_bits)),
@@ -965,7 +1121,7 @@ def _canonical_targets(op: mc.Operation):
 
 
 def _collapse_local_instructions_to_operation(
-    instructions: List[mc.Instruction], op: mc.Operation
+    instructions: List[Instruction], op: Operation
 ):
     qcanon, bcanon, zcanon = _canonical_targets(op)
 
@@ -977,10 +1133,10 @@ def _collapse_local_instructions_to_operation(
     ):
         return instructions[0].get_operation()
 
-    return mc.Block(op.num_qubits, op.num_bits, op.num_zvars, instructions)
+    return Block(op.num_qubits, op.num_bits, op.num_zvars, instructions)
 
 
-def _apply_rules_to_instruction(inst: mc.Instruction, model: NoiseModel):
+def _apply_rules_to_instruction(inst: Instruction, model: NoiseModel):
     for rule in model.rules:
         noise_inst = rule.apply_rule(inst)
         if noise_inst is None:
@@ -996,20 +1152,20 @@ def _apply_rules_to_instruction(inst: mc.Instruction, model: NoiseModel):
 
 
 def _rewrite_nested_operation(
-    op: mc.Operation, model: NoiseModel, active_decls: Set[object]
+    op: Operation, model: NoiseModel, active_decls: Set[object]
 ):
-    if isinstance(op, mc.Block):
+    if isinstance(op, Block):
         noisy_instructions = _apply_noise_to_instructions(
             op.instructions, model, active_decls
         )
         if noisy_instructions == op.instructions:
             return op
-        return mc.Block(op.num_qubits, op.num_bits, op.num_zvars, noisy_instructions)
+        return Block(op.num_qubits, op.num_bits, op.num_zvars, noisy_instructions)
 
-    if isinstance(op, mc.IfStatement):
+    if isinstance(op, IfStatement):
         inner = op.get_operation()
         qcanon, bcanon, zcanon = _canonical_targets(inner)
-        inner_inst = mc.Instruction(inner, qcanon, bcanon, zcanon)
+        inner_inst = Instruction(inner, qcanon, bcanon, zcanon)
 
         noisy_inner = _apply_noise_to_instruction(inner_inst, model, active_decls)
         rewritten_inner = _collapse_local_instructions_to_operation(noisy_inner, inner)
@@ -1017,12 +1173,12 @@ def _rewrite_nested_operation(
         if rewritten_inner == inner:
             return op
 
-        return mc.IfStatement(rewritten_inner, op.get_bitstring())
+        return IfStatement(rewritten_inner, op.get_bitstring())
 
-    if isinstance(op, mc.WhileStatement):
+    if isinstance(op, WhileStatement):
         inner = op.get_operation()
         qcanon, bcanon, zcanon = _canonical_targets(inner)
-        inner_inst = mc.Instruction(inner, qcanon, bcanon, zcanon)
+        inner_inst = Instruction(inner, qcanon, bcanon, zcanon)
 
         noisy_inner = _apply_noise_to_instruction(inner_inst, model, active_decls)
         rewritten_inner = _collapse_local_instructions_to_operation(noisy_inner, inner)
@@ -1030,9 +1186,9 @@ def _rewrite_nested_operation(
         if rewritten_inner == inner:
             return op
 
-        return mc.WhileStatement(rewritten_inner, op.get_bitstring())
+        return WhileStatement(rewritten_inner, op.get_bitstring())
 
-    if isinstance(op, mc.Parallel):
+    if isinstance(op, Parallel):
         inner = op.get_operation()
         nq = inner.num_qubits
         nb = inner.num_bits
@@ -1044,7 +1200,7 @@ def _rewrite_nested_operation(
             btargets = tuple(nb * rep + i for i in range(nb))
             ztargets = tuple(nz * rep + i for i in range(nz))
             repeated_instructions.append(
-                mc.Instruction(inner, qtargets, btargets, ztargets)
+                Instruction(inner, qtargets, btargets, ztargets)
             )
 
         noisy_instructions = _apply_noise_to_instructions(
@@ -1054,13 +1210,13 @@ def _rewrite_nested_operation(
         if noisy_instructions == repeated_instructions:
             return op
 
-        return mc.Block(op.num_qubits, op.num_bits, op.num_zvars, noisy_instructions)
+        return Block(op.num_qubits, op.num_bits, op.num_zvars, noisy_instructions)
 
-    if isinstance(op, mc.Repeat):
+    if isinstance(op, Repeat):
         inner = op.get_operation()
         qcanon, bcanon, zcanon = _canonical_targets(inner)
         repeated_instructions = [
-            mc.Instruction(inner, qcanon, bcanon, zcanon) for _ in range(op.repeats)
+            Instruction(inner, qcanon, bcanon, zcanon) for _ in range(op.repeats)
         ]
 
         noisy_instructions = _apply_noise_to_instructions(
@@ -1069,9 +1225,9 @@ def _rewrite_nested_operation(
         if noisy_instructions == repeated_instructions:
             return op
 
-        return mc.Block(op.num_qubits, op.num_bits, op.num_zvars, noisy_instructions)
+        return Block(op.num_qubits, op.num_bits, op.num_zvars, noisy_instructions)
 
-    if isinstance(op, mc.GateCall):
+    if isinstance(op, (GateCall, BlockCall)):
         decl = op.decl
 
         # Prevent infinite recursion for self-referential declarations.
@@ -1082,10 +1238,10 @@ def _rewrite_nested_operation(
         try:
             substitutions = dict(zip(decl.arguments, op.arguments))
             expanded_instructions = []
-            for inst in decl.circuit:
+            for inst in (decl.circuit if isinstance(op, GateCall) else decl):
                 expanded_op = inst.get_operation().evaluate(substitutions)
                 expanded_instructions.append(
-                    mc.Instruction(
+                    Instruction(
                         expanded_op, inst.get_qubits(), inst.get_bits(), inst.get_zvars()
                     )
                 )
@@ -1097,7 +1253,7 @@ def _rewrite_nested_operation(
             if noisy_instructions == expanded_instructions:
                 return op
 
-            return mc.Block(op.num_qubits, op.num_bits, op.num_zvars, noisy_instructions)
+            return Block(op.num_qubits, op.num_bits, op.num_zvars, noisy_instructions)
         finally:
             active_decls.remove(decl)
 
@@ -1105,7 +1261,7 @@ def _rewrite_nested_operation(
 
 
 def _apply_noise_to_instruction(
-    inst: mc.Instruction, model: NoiseModel, active_decls: Set[object]
+    inst: Instruction, model: NoiseModel, active_decls: Set[object]
 ):
     rewritten_instructions, matched = _apply_rules_to_instruction(inst, model)
     if matched:
@@ -1118,14 +1274,14 @@ def _apply_noise_to_instruction(
         return rewritten_instructions
 
     return [
-        mc.Instruction(
+        Instruction(
             rewritten_op, inst.get_qubits(), inst.get_bits(), inst.get_zvars()
         )
     ]
 
 
 def _apply_noise_to_instructions(
-    instructions: List[mc.Instruction], model: NoiseModel, active_decls: Set[object]
+    instructions: List[Instruction], model: NoiseModel, active_decls: Set[object]
 ):
     noisy_instructions = []
     for inst in instructions:
@@ -1133,130 +1289,117 @@ def _apply_noise_to_instructions(
     return noisy_instructions
 
 
-def apply_noise_model(circuit: mc.Circuit, model: NoiseModel):
-    """Apply a noise model to a circuit and return a new circuit.
+def apply_noise_model(circuit: Circuit, model: NoiseModel):
+    """Return a copy of ``circuit`` with the noise of ``model`` added.
 
-    Rules are evaluated in priority order. For each instruction, only the first
-    matching rule is applied.
+    Each instruction is given to the rules of ``model`` in priority order, and
+    only the first rule that matches is applied: its noise goes after the
+    instruction, before it, or in its place. ``circuit`` is not changed.
 
-    Wrapper operations are traversed recursively:
-    ``Block``, ``IfStatement``, ``Parallel``, ``Repeat``, and ``GateCall``.
+    When no rule matches a wrapper operation, the rules are applied to the
+    operations inside it: :class:`Block`, :class:`IfStatement`,
+    :class:`WhileStatement`, :class:`Parallel`, :class:`Repeat`,
+    :class:`GateCall` and :class:`BlockCall`. A wrapper whose content gets
+    noise is turned into a :class:`Block` (or keeps its condition, for
+    ``IfStatement`` and ``WhileStatement``); one whose content gets none is
+    kept as it is.
 
     Args:
-        circuit: Input circuit.
+        circuit: Circuit to make noisy.
         model: Noise model to apply.
 
     Returns:
-        A new circuit with injected noise.
+        Circuit: A new circuit with the noise added.
 
     Examples:
-        >>> import mimiqcircuits as mc
+        >>> from mimiqcircuits import *
         >>> from symengine import symbols, pi
         >>> theta = symbols("theta")
-        >>> c = mc.Circuit()
-        >>> c.push(mc.GateRX(0.4), 0)
-        1-qubit circuit with 1 instruction:
-        └── RX(0.4) @ q[0]
-        <BLANKLINE>
-        >>> c.push(mc.GateRX(0.8), 1)
-        2-qubit circuit with 2 instructions:
+        >>> c = Circuit()
+        >>> _ = c.push(GateRX(0.4), 0)
+        >>> _ = c.push(GateRX(0.8), 1)
+        >>> _ = c.push(Measure(), 0, 0)
+        >>> _ = c.push(Measure(), 1, 1)
+        >>> # noise after each RX that depends on its angle, and readout errors
+        >>> model = NoiseModel([
+        ...     OperationInstanceNoise(GateRX(theta), Depolarizing(1, theta / pi)),
+        ...     GlobalReadoutNoise(ReadoutErr(0.01, 0.02)),
+        ... ])
+        >>> apply_noise_model(c, model)
+        2-qubit, 2-bit circuit with 8 instructions:
         ├── RX(0.4) @ q[0]
-        └── RX(0.8) @ q[1]
-        <BLANKLINE>
-        >>> c.push(mc.Measure(), 0, 0)
-        2-qubit, 1-bit circuit with 3 instructions:
-        ├── RX(0.4) @ q[0]
+        ├── Depolarizing(0.4/pi) @ q[0]
         ├── RX(0.8) @ q[1]
-        └── M @ q[0], c[0]
-        <BLANKLINE>
-        >>> c.push(mc.Measure(), 1, 1)
-        2-qubit, 2-bit circuit with 4 instructions:
-        ├── RX(0.4) @ q[0]
-        ├── RX(0.8) @ q[1]
+        ├── Depolarizing(0.8/pi) @ q[1]
         ├── M @ q[0], c[0]
-        └── M @ q[1], c[1]
+        ├── RErr(0.01, 0.02) @ c[0]
+        ├── M @ q[1], c[1]
+        └── RErr(0.01, 0.02) @ c[1]
         <BLANKLINE>
-        >>> model = mc.NoiseModel([mc.OperationInstanceNoise(mc.GateRX(theta), mc.Depolarizing(1, theta / pi)),
-        ...         mc.GlobalReadoutNoise(mc.ReadoutErr(0.01, 0.02)),])
-        >>> noisy = mc.apply_noise_model(c, model)
 
-    Recursive wrapper examples:
-        >>> model = mc.NoiseModel([mc.OperationInstanceNoise(mc.GateH(), mc.AmplitudeDamping(0.01))])
-        >>> inner = mc.Circuit().push(mc.GateH(), 0)
-        >>> c_block = mc.Circuit().push(mc.Block(inner), 0)
-        >>> noisy_block= mc.apply_noise_model(c_block, model)
-        >>> noisy_block.decompose_step()
+        Noise also reaches operations inside wrappers. Here every ``H`` gets
+        amplitude damping; ``decompose_step`` opens the wrapper to show it.
+
+        >>> model = NoiseModel([OperationInstanceNoise(GateH(), AmplitudeDamping(0.01))])
+        >>> inner = Circuit().push(GateH(), 0)
+        >>> # inside a Block
+        >>> c_block = Circuit().push(Block(inner), 0)
+        >>> apply_noise_model(c_block, model).decompose_step()
         1-qubit circuit with 2 instructions:
         ├── H @ q[0]
         └── AmplitudeDamping(0.01) @ q[0]
         <BLANKLINE>
-        >>> decl = mc.GateDecl("local_h", (), inner)
-        >>> c_call = mc.Circuit().push(mc.GateCall(decl, ()), 0)
-        >>> noisy_call = mc.apply_noise_model(c_call, model)
-        >>> noisy_call.decompose_step()
+        >>> # inside a gate declaration call
+        >>> decl = GateDecl("local_h", (), inner)
+        >>> c_call = Circuit().push(GateCall(decl, ()), 0)
+        >>> apply_noise_model(c_call, model).decompose_step()
         1-qubit circuit with 2 instructions:
         ├── H @ q[0]
         └── AmplitudeDamping(0.01) @ q[0]
         <BLANKLINE>
-        >>> c_parallel = mc.Circuit().push(mc.Parallel(2, mc.GateH()), 0, 1)
-        >>> noisy_parallel = mc.apply_noise_model(c_parallel, model)
-        >>> noisy_parallel.decompose_step()
+        >>> # each copy of a Parallel gets its own noise
+        >>> c_parallel = Circuit().push(Parallel(2, GateH()), 0, 1)
+        >>> apply_noise_model(c_parallel, model).decompose_step()
         2-qubit circuit with 4 instructions:
         ├── H @ q[0]
         ├── AmplitudeDamping(0.01) @ q[0]
         ├── H @ q[1]
         └── AmplitudeDamping(0.01) @ q[1]
         <BLANKLINE>
-        >>> c_repeat = mc.Circuit().push(mc.Repeat(2, mc.GateH()), 0)
-        >>> noisy_repeat = mc.apply_noise_model(c_repeat, model)
-        >>> noisy_repeat.decompose_step()
+        >>> # so does each repetition of a Repeat
+        >>> c_repeat = Circuit().push(Repeat(2, GateH()), 0)
+        >>> apply_noise_model(c_repeat, model).decompose_step()
         1-qubit circuit with 4 instructions:
         ├── H @ q[0]
         ├── AmplitudeDamping(0.01) @ q[0]
         ├── H @ q[0]
         └── AmplitudeDamping(0.01) @ q[0]
         <BLANKLINE>
-        >>> c_if = mc.Circuit().push(mc.IfStatement(mc.GateH(), mc.BitString("1")), 0, 0)
-        >>> noisy_if = mc.apply_noise_model(c_if, model)
-        >>> noisy_if.decompose_step()
+        >>> # a conditional gate keeps its condition, and so does its noise
+        >>> c_if = Circuit().push(IfStatement(GateH(), BitString("1")), 0, 0)
+        >>> apply_noise_model(c_if, model).decompose_step()
         1-qubit, 1-bit circuit with 2 instructions:
         ├── IF(c==1) H @ q[0], condition[0]
         └── IF(c==1) AmplitudeDamping(0.01) @ q[0], condition[0]
         <BLANKLINE>
-        
-        >>> decl_inner = mc.GateDecl("inner_h", (), inner)
-        >>> middle = mc.Circuit().push(mc.GateCall(decl_inner, ()), 0)
-        >>> decl_outer = mc.GateDecl("outer_call", (), middle)
-        >>> c_nested = mc.Circuit().push(mc.GateCall(decl_outer, ()), 0)
-        >>> noisy_nested = mc.apply_noise_model(c_nested, model)
-        >>> noisy_nested.decompose_step().decompose_step()
-        1-qubit circuit with 2 instructions:
-        ├── H @ q[0]
-        └── AmplitudeDamping(0.01) @ q[0]
-        <BLANKLINE>
-        
-    Recursive wrapper examples deeply nested:
-        >>> c_nested2 = mc.Circuit().push(mc.GateCall(decl_outer, ()), 0).push(mc.GateCall(decl_outer, ()), 1)
-        >>> c_nested2.decompose_step()
-        2-qubit circuit with 2 instructions:
-        ├── inner_h() @ q[0]
-        └── inner_h() @ q[1]
-        <BLANKLINE>
-        >>> noisy_nested2 = mc.apply_noise_model(c_nested2, model)
-        >>> noisy_nested2.decompose_step().decompose_step()
+        >>> # nested gate calls are opened at every level
+        >>> decl_inner = GateDecl("inner_h", (), inner)
+        >>> middle = Circuit().push(GateCall(decl_inner, ()), 0)
+        >>> decl_outer = GateDecl("outer_call", (), middle)
+        >>> c_nested = Circuit().push(GateCall(decl_outer, ()), 0).push(GateCall(decl_outer, ()), 1)
+        >>> apply_noise_model(c_nested, model).decompose_step().decompose_step()
         2-qubit circuit with 4 instructions:
         ├── H @ q[0]
         ├── AmplitudeDamping(0.01) @ q[0]
         ├── H @ q[1]
         └── AmplitudeDamping(0.01) @ q[1]
         <BLANKLINE>
-                  
     """
     active_decls: Set[object] = set()
     noisy_instructions = _apply_noise_to_instructions(
         circuit.instructions, model, active_decls
     )
-    return mc.Circuit(noisy_instructions)
+    return Circuit(noisy_instructions)
 
 
 __all__ = [

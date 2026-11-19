@@ -24,49 +24,62 @@ from typing import TYPE_CHECKING, Sequence
 from mimiqcircuits.decomposition.abstract import DecompositionBasis, RewriteRule
 
 if TYPE_CHECKING:
-    from mimiqcircuits import Circuit, Operation
+    from mimiqcircuits.circuit import Circuit
+    from mimiqcircuits.operations.operation import Operation
 
 
 @dataclass(frozen=True, slots=True)
 class RuleBasis(DecompositionBasis):
-    """A decomposition basis that recursively applies a single rewrite rule.
+    """Decomposition basis that applies one rewrite rule until it no longer matches.
 
-    This allows any :class:`RewriteRule` to be used directly as a decomposition
-    basis. The rule is applied recursively until no more operations match.
-
-    An operation is terminal if the rule does not match it.
+    An operation is terminal when the rule does not match it. When the rule
+    does not match an ``IfStatement``, it is applied to the body, which stays
+    conditional. :func:`decompose` and :func:`eachdecomposed` wrap a rule
+    passed in place of a basis in a ``RuleBasis``.
 
     Args:
         rule: The rewrite rule to apply.
 
-    Example:
-        >>> from mimiqcircuits import Circuit, GateH
-        >>> from mimiqcircuits.decomposition import decompose, RuleBasis, ZYZRewrite
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from symengine import pi
         >>> c = Circuit()
         >>> c.push(GateH(), 0)
         1-qubit circuit with 1 instruction:
         └── H @ q[0]
         <BLANKLINE>
-        >>> # Decompose using ZYZ rewrite rule
-        >>> decomposed = decompose(c, RuleBasis(ZYZRewrite()))
+        >>> c.push(GateRX(pi/2), 0)
+        1-qubit circuit with 2 instructions:
+        ├── H @ q[0]
+        └── RX((1/2)*pi) @ q[0]
+        <BLANKLINE>
+        >>> # rewrite every X and Y rotation into Z rotations; H is kept
+        >>> decompose(c, RuleBasis(ToZRotationRewrite()))
+        1-qubit circuit with 4 instructions:
+        ├── H @ q[0]
+        ├── H @ q[0]
+        ├── RZ((1/2)*pi) @ q[0]
+        └── H @ q[0]
+        <BLANKLINE>
     """
 
     rule: RewriteRule
 
     def isterminal(self, op: Operation) -> bool:
-        """Check if the operation is terminal (rule does not match).
+        """Check whether the rule leaves an operation alone.
 
         Args:
             op: The operation to check.
 
         Returns:
-            True if the rule does not match this operation.
+            ``True`` if the rule does not match ``op``. For an
+            ``IfStatement`` the rule does not match, the answer for its body.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.operations.ifstatement import IfStatement
 
         # A rule that does not handle conditionals itself is applied to their
         # body.
-        if isinstance(op, mc.IfStatement) and not self.rule.matches(op):
+        if isinstance(op, IfStatement) and not self.rule.matches(op):
             return self.isterminal(op.get_operation())
         return not self.rule.matches(op)
 
@@ -77,23 +90,41 @@ class RuleBasis(DecompositionBasis):
         bits: Sequence[int],
         zvars: Sequence[int],
     ) -> Circuit:
-        """Apply the rewrite rule to decompose the operation.
+        """Apply the rule once to an operation.
 
         Args:
-            op: The operation to decompose.
-            qubits: Qubit indices for the operation.
-            bits: Classical bit indices for the operation.
-            zvars: Z-variable indices for the operation.
+            op: The operation to rewrite.
+            qubits: Qubit indices the operation acts on.
+            bits: Classical bit indices the operation acts on.
+            zvars: Z-variable indices the operation acts on.
 
         Returns:
-            A Circuit containing the decomposed instructions.
+            A new :class:`~mimiqcircuits.Circuit` with the rewrite. For an
+            ``IfStatement`` the rule does not match, the rewrite of its body,
+            with each instruction made conditional.
+
+        Raises:
+            DecompositionError: If the rule cannot rewrite ``op``.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.decomposition.abstract import _NO_CONTEXT
+
+        return self.decompose_ctx(op, qubits, bits, zvars, _NO_CONTEXT)
+
+    def decompose_ctx(
+        self,
+        op: Operation,
+        qubits: Sequence[int],
+        bits: Sequence[int],
+        zvars: Sequence[int],
+        ctx,
+    ) -> Circuit:
+        """Apply the rule once, with a context, as :meth:`decompose` does."""
+        from mimiqcircuits.operations.ifstatement import IfStatement
         from mimiqcircuits.operations.ifstatement import _decompose_ifstatement
 
-        if isinstance(op, mc.IfStatement) and not self.rule.matches(op):
-            return _decompose_ifstatement(self, op, qubits, bits, zvars)
-        return self.rule.decompose_step(op, qubits, bits, zvars)
+        if isinstance(op, IfStatement) and not self.rule.matches(op):
+            return _decompose_ifstatement(self, op, qubits, bits, zvars, ctx)
+        return self.rule.decompose_step_ctx(op, qubits, bits, zvars, ctx)
 
     def __repr__(self) -> str:
         return f"RuleBasis({self.rule!r})"

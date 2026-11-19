@@ -37,30 +37,39 @@ def _validate_probability(p):
 
 
 class Loss(Operation):
-    """Loss operation.
+    """One-qubit loss event: the qubit is lost with probability ``p``.
 
-    A qubit-loss event: the qubit is lost with probability ``p``. ``Loss()`` is
-    ``Loss(1.0)``, a certain loss.
+    ``Loss()`` is ``Loss(1.0)``, a certain loss. A lost qubit leaves the
+    computation: gates on it are dropped, a measurement of it reads 0, and
+    :class:`Check` reports it as missing, until a :class:`Reload` brings it
+    back.
 
-    The probability is resolved by :meth:`mimiqcircuits.Circuit.sample_losses`,
-    which turns each ``Loss(p)`` into ``Loss(1.0)`` or removes it, and a circuit
-    is turned into a runnable, loss-free form by
-    :meth:`mimiqcircuits.Circuit.resolve_losses`.
+    The probability is resolved by :meth:`Circuit.sample_losses`, which turns
+    each ``Loss(p)`` into ``Loss(1.0)`` or removes it.
+    :meth:`Circuit.resolve_losses` then gives a runnable, loss-free circuit;
+    a :class:`LossModel` decides what happens to gates acting on both lost and
+    present qubits.
 
-    .. warning::
-        This operation is non-reversible.
+    Loss cannot be inverted, raised to a power or controlled: :meth:`inverse`,
+    :meth:`power` and :meth:`control` raise :class:`TypeError`.
 
     Args:
-        p: The loss probability, real and between 0 and 1. Defaults to 1.0.
+        p: Loss probability, real and in :math:`[0, 1]` (default ``1.0``).
+            May be symbolic; it must be numeric before sampling.
+
+    Raises:
+        ValueError: If a numeric ``p`` is not real or is outside
+            :math:`[0, 1]`.
 
     Examples:
-
         >>> from mimiqcircuits import *
+        >>> # qubit 0 is lost with probability 0.1
         >>> c = Circuit()
         >>> c.push(Loss(0.1), 0)
         1-qubit circuit with 1 instruction:
         └── Loss(0.1) @ q[0]
         <BLANKLINE>
+        >>> # qubit 1 is lost for sure
         >>> c.push(Loss(), 1)
         2-qubit circuit with 2 instructions:
         ├── Loss(0.1) @ q[0]
@@ -68,7 +77,8 @@ class Loss(Operation):
         <BLANKLINE>
 
     See Also:
-        :class:`Reload`, :class:`Check`, :class:`MeasureCheck`
+        :class:`Reload`, :class:`Check`, :class:`MeasureCheck`,
+        :func:`sample_losses`, :func:`resolve_losses`
     """
 
     _name = "Loss"
@@ -85,6 +95,19 @@ class Loss(Operation):
         super().__init__()
 
     def evaluate(self, d={}):
+        """Return a copy with symbols in ``p`` substituted by values.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            Loss: A new operation; ``p`` becomes a number when it is fully
+            numeric.
+
+        Raises:
+            ValueError: If the substituted ``p`` is not real or is outside
+                :math:`[0, 1]`.
+        """
         evaluated_p = self.p.subs(d) if hasattr(self.p, "subs") else self.p
 
         try:
@@ -116,17 +139,18 @@ class Loss(Operation):
 
 
 class Reload(Operation):
-    """Reload operation.
+    """Reload a qubit: reset it to :math:`|0\\rangle` and mark it present.
 
-    Re-initialise a qubit to :math:`|0\\rangle` and mark it present. By default
-    a reload always resets, regardless of whether the qubit was lost.
+    A reload always resets the qubit, whether or not it was lost. After
+    :func:`lower_losses` it becomes a :class:`Reset` followed by a
+    :class:`Reloaded` marker.
 
-    .. warning::
-        This operation is non-reversible.
+    Reload is not reversible: :meth:`inverse`, :meth:`power` and
+    :meth:`control` raise :class:`TypeError`.
 
     Examples:
-
         >>> from mimiqcircuits import *
+        >>> # bring qubit 0 back in |0>, lost or not
         >>> c = Circuit()
         >>> c.push(Reload(), 0)
         1-qubit circuit with 1 instruction:
@@ -161,18 +185,18 @@ class Reload(Operation):
 
 
 class Check(Operation):
-    """Check operation.
+    """Record whether a qubit is present into a classical bit.
 
-    Record whether a qubit is present into a classical bit (1 present, 0 lost).
-    Like :class:`Measure` records a qubit's value, ``Check`` records its
-    presence; it does not touch the quantum state.
+    The bit is set to 1 if the qubit is present and to 0 if it is lost. Like
+    :class:`Measure` records a qubit's value, ``Check`` records its presence;
+    it does not touch the quantum state. It targets one qubit and one bit.
 
-    .. warning::
-        This operation is non-reversible.
+    Check cannot be inverted, raised to a power or controlled: those methods
+    raise :class:`TypeError`.
 
     Examples:
-
         >>> from mimiqcircuits import *
+        >>> # write the presence of qubit 0 into bit 0
         >>> c = Circuit()
         >>> c.push(Check(), 0, 0)
         1-qubit, 1-bit circuit with 1 instruction:
@@ -209,18 +233,18 @@ class Check(Operation):
 
 
 class MeasureCheck(Operation):
-    """MeasureCheck operation.
+    """Measure a qubit if it is present, and record its presence.
 
-    Measure a qubit if it is present, and record its presence. The first bit is
-    the measurement result (0 if lost), the second is the presence (1 present,
-    0 lost). The state is collapsed only when the qubit is present.
+    It targets one qubit and two bits. The first bit gets the Z-basis
+    measurement result (0 if the qubit is lost), the second the presence (1
+    present, 0 lost). The state collapses only when the qubit is present.
 
-    .. warning::
-        This operation is non-reversible.
+    MeasureCheck cannot be inverted, raised to a power or controlled: those
+    methods raise :class:`TypeError`.
 
     Examples:
-
         >>> from mimiqcircuits import *
+        >>> # outcome of qubit 0 into bit 0, its presence into bit 1
         >>> c = Circuit()
         >>> c.push(MeasureCheck(), 0, 0, 1)
         1-qubit, 2-bit circuit with 1 instruction:

@@ -18,7 +18,18 @@
 Protobuf I/O utilities for saving and loading MimiqCircuits objects.
 """
 
-import mimiqcircuits as mc
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.equivalence import EquivalenceExperiment
+from mimiqcircuits.hamiltonian import Hamiltonian
+from mimiqcircuits.lossmodel import LossModel
+from mimiqcircuits.noisemodel import NoiseModel
+from mimiqcircuits.optimization import (
+    OptimizationExperiment,
+    OptimizationResults,
+    OptimizationRun,
+)
+from mimiqcircuits.qcsresults import QCSResults
+from mimiqcircuits.sweep import SweepExperiment
 from mimiqcircuits.proto.circuitproto import toproto_circuit, fromproto_circuit
 from mimiqcircuits.proto.hamiltonianproto import (
     toproto_hamiltonian,
@@ -44,65 +55,97 @@ from mimiqcircuits.proto.circuitrulesproto import (
     fromproto_lossmodel,
 )
 from mimiqcircuits.proto import noisemodel_pb2, circuitrules_pb2
+from mimiqcircuits.proto.experimentproto import (
+    toproto_sweep,
+    fromproto_sweep,
+    toproto_equivalence,
+    fromproto_equivalence,
+)
+from mimiqcircuits.proto import experiment_pb2
 
 
 # Mapping for serialization
 SAVEPROTO_MAP = {
-    mc.Circuit: lambda obj: toproto_circuit(obj).SerializeToString(),
-    mc.Hamiltonian: lambda obj: toproto_hamiltonian(obj).SerializeToString(),
-    mc.OptimizationExperiment: lambda obj: toproto_OptimizationExperiment(
+    Circuit: lambda obj: toproto_circuit(obj).SerializeToString(),
+    Hamiltonian: lambda obj: toproto_hamiltonian(obj).SerializeToString(),
+    OptimizationExperiment: lambda obj: toproto_OptimizationExperiment(
         obj
     ).SerializeToString(),
-    mc.OptimizationRun: lambda obj: toproto_OptimizationRun(obj).SerializeToString(),
-    mc.OptimizationResults: lambda obj: toproto_OptimizationResults(
+    OptimizationRun: lambda obj: toproto_OptimizationRun(obj).SerializeToString(),
+    OptimizationResults: lambda obj: toproto_OptimizationResults(
         obj
     ).SerializeToString(),
-    mc.QCSResults: lambda obj: toproto_qcsr(obj).SerializeToString(),
-    mc.NoiseModel: lambda obj: toproto_noisemodel(obj).SerializeToString(),
-    mc.LossModel: lambda obj: toproto_lossmodel(obj).SerializeToString(),
+    QCSResults: lambda obj: toproto_qcsr(obj).SerializeToString(),
+    NoiseModel: lambda obj: toproto_noisemodel(obj).SerializeToString(),
+    LossModel: lambda obj: toproto_lossmodel(obj).SerializeToString(),
+    SweepExperiment: lambda obj: toproto_sweep(obj).SerializeToString(),
+    EquivalenceExperiment: lambda obj: toproto_equivalence(obj).SerializeToString(),
 }
 
 # Mapping for deserialization
 LOADPROTO_MAP = {
-    mc.Circuit: (circuit_pb2.Circuit, fromproto_circuit),
-    mc.Hamiltonian: (hamiltonian_pb2.Hamiltonian, fromproto_hamiltonian),
-    mc.OptimizationExperiment: (
+    Circuit: (circuit_pb2.Circuit, fromproto_circuit),
+    Hamiltonian: (hamiltonian_pb2.Hamiltonian, fromproto_hamiltonian),
+    OptimizationExperiment: (
         optim_pb2.OptimizationExperiment,
         fromproto_OptimizationExperiment,
     ),
-    mc.OptimizationRun: (optim_pb2.OptimizationRun, fromproto_OptimizationRun),
-    mc.OptimizationResults: (
+    OptimizationRun: (optim_pb2.OptimizationRun, fromproto_OptimizationRun),
+    OptimizationResults: (
         optim_pb2.OptimizationResults,
         fromproto_OptimizationResults,
     ),
-    mc.QCSResults: (qcsresults_pb2.QCSResults, fromproto_qcsr),
-    mc.NoiseModel: (noisemodel_pb2.NoiseModel, fromproto_noisemodel),
-    mc.LossModel: (circuitrules_pb2.LossModel, fromproto_lossmodel),
+    QCSResults: (qcsresults_pb2.QCSResults, fromproto_qcsr),
+    NoiseModel: (noisemodel_pb2.NoiseModel, fromproto_noisemodel),
+    LossModel: (circuitrules_pb2.LossModel, fromproto_lossmodel),
+    SweepExperiment: (experiment_pb2.SweepExperiment, fromproto_sweep),
+    EquivalenceExperiment: (
+        experiment_pb2.EquivalenceExperiment,
+        fromproto_equivalence,
+    ),
 }
 
 
 def saveproto(obj, file):
-    """
-    Serialize a MimiqCircuits object and save it to a Protobuf (.pb) file.
+    """Serialize an object to protobuf and write it to a file.
 
-    Parameters
-    ----------
-    obj : Union[Circuit, Hamiltonian, OptimizationExperiment, OptimizationRun, OptimizationResults, QCSResults]
-        The object to serialize.
-    file : Union[str, file-like]
-        The output file path or a file-like object with a write() method.
+    The classes that support protobuf expose this as a ``saveproto`` method,
+    for example ``circuit.saveproto("circuit.pb")``.
 
-    Returns
-    -------
-    int
-        Number of bytes written.
+    Args:
+        obj: The object to save: a ``Circuit``, ``Hamiltonian``,
+            ``OptimizationExperiment``, ``OptimizationRun``,
+            ``OptimizationResults``, ``QCSResults``, ``NoiseModel``,
+            ``LossModel``, ``SweepExperiment`` or ``EquivalenceExperiment``.
+            Subclasses are not accepted.
+        file (str or file-like): A path, or a binary file object with a
+            ``write`` method.
 
-    Raises
-    ------
-    TypeError
-        If the object type is unsupported.
-    ValueError
-        If the file is invalid or writing fails.
+    Returns:
+        int: The number of bytes written.
+
+    Raises:
+        TypeError: If the type of ``obj`` is not supported.
+        ValueError: If writing to a path fails.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.proto.protoio import saveproto, loadproto
+        >>> import os, tempfile
+        >>> c = Circuit()
+        >>> c.push(GateH(), 0)
+        1-qubit circuit with 1 instruction:
+        └── H @ q[0]
+        <BLANKLINE>
+
+        Save the circuit, then load it back by naming the class to read.
+
+        >>> path = os.path.join(tempfile.mkdtemp(), "circuit.pb")
+        >>> nbytes = saveproto(c, path)
+        >>> loadproto(path, Circuit)
+        1-qubit circuit with 1 instruction:
+        └── H @ q[0]
+        <BLANKLINE>
     """
     serializer = SAVEPROTO_MAP.get(type(obj))
     if serializer is None:
@@ -120,27 +163,27 @@ def saveproto(obj, file):
 
 
 def loadproto(file, cls):
-    """
-    Load a MimiqCircuits object from a Protobuf (.pb) file.
+    """Read an object of class ``cls`` from a protobuf file.
 
-    Parameters
-    ----------
-    file : Union[str, file-like]
-        File path or open file-like object to read binary data from.
-    cls : Type
-        The target class to deserialize into: Circuit, Hamiltonian, OptimizationExperiment, etc.
+    The classes that support protobuf expose this as a static ``loadproto``
+    method, for example ``Circuit.loadproto("circuit.pb")``. The file must
+    hold an object of class ``cls``: the protobuf format does not record it.
 
-    Returns
-    -------
-    object
-        The deserialized object of the given class.
+    Args:
+        file (str or file-like): A path, or a binary file object with a
+            ``read`` method.
+        cls (type): The class to read, one of the classes :func:`saveproto`
+            accepts.
 
-    Raises
-    ------
-    TypeError
-        If the class is unsupported.
-    ValueError
-        If the file is invalid or parsing fails.
+    Returns:
+        object: The loaded object, an instance of ``cls``.
+
+    Raises:
+        TypeError: If ``cls`` is not supported.
+        ValueError: If the file cannot be read or parsed.
+
+    See Also:
+        :func:`saveproto`, which has an example.
     """
     entry = LOADPROTO_MAP.get(cls)
     if entry is None:

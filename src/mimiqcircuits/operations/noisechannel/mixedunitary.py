@@ -18,7 +18,6 @@
 import numpy as np
 import symengine as se
 from mimiqcircuits._sympycheck import _is_basic, _is_sympy_matrix
-import mimiqcircuits as mc
 from mimiqcircuits.operations.krauschannel import krauschannel
 from mimiqcircuits.operations.rescaledgates import RescaledGate
 from mimiqcircuits.operations.gates.custom import GateCustom
@@ -41,78 +40,84 @@ def _convert_to_symengine(matrix):
 
 
 class MixedUnitary(krauschannel):
-    r"""MixedUnitary(p,umatrices).
+    r"""Custom N-qubit mixed unitary channel.
 
-    Custom N-qubit mixed unitary channel specified by a list of :math:`2^N \times 2^N`
-    unitary matrices and a list of probabilities that add up to 1.
-
-    A mixed unitary noise channel is defined by:
+    The channel applies the unitary :math:`U_k` with probability :math:`p_k`:
 
     .. math::
         \mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger,
 
-    where :math:`0 \leq p_k \leq 1` and :math:`U_k` are unitary matrices.
-    The probabilities must fulfill :math:`\sum_k p_k = 1`.
+    with :math:`0 \leq p_k \leq 1` and :math:`\sum_k p_k = 1`. If some Kraus
+    operators are not proportional to a unitary, use :class:`Kraus` instead.
 
-    If your Kraus matrices are not all proportional to unitaries, use :func:`KrausChannel` instead.
+    There are two ways to build it:
 
-    The unitary matrices are defined in the computational basis in the usual textbook order
-    (the first qubit corresponds to the left-most qubit).
-    For 1 qubit, we have :math:`|0\rangle`, :math:`|1\rangle`.
-    For 2 qubits, we have :math:`|00\rangle`, :math:`|01\rangle`, :math:`|10\rangle`, :math:`|11\rangle`.
+    - ``MixedUnitary(p, U)`` with a list of probabilities ``p`` and a list
+      ``U`` of the same length of gates or :math:`2^N \times 2^N` matrices
+      (symengine, sympy or numpy). Matrices are wrapped in :class:`GateCustom`.
+    - ``MixedUnitary(gates)`` with a list of :class:`RescaledGate`, where the
+      gate ``RescaledGate(U_k, s_k)`` stands for :math:`U_k` applied with
+      probability :math:`p_k = s_k^2`.
 
-    **Note:** Currently, only 1 and 2-qubit custom MixedUnitary channels are supported.
+    Matrices are written in the computational basis in the usual textbook order,
+    with the first qubit as the left-most one: :math:`|0\rangle, |1\rangle` for
+    one qubit, :math:`|00\rangle, |01\rangle, |10\rangle, |11\rangle` for two.
+
+    Args:
+        *args: Either ``(p, U)`` or ``(gates,)`` as described above.
+        lossy (list, optional): One entry per branch listing the qubits that are
+            lost when that branch is drawn, as 1-based positions within the
+            channel's targets (``1`` is the first target, up to :math:`N`).
+            For example ``[[], [1]]`` makes the second branch lose the first
+            target qubit. Branches are lossless by default.
+            :meth:`Circuit.sample_mixedunitaries` emits a certain :class:`Loss`
+            on these qubits when it draws a lossy branch.
+
+    Raises:
+        ValueError: If the arguments do not match one of the two forms, the
+            lists have different lengths, a numeric probability is outside
+            :math:`[0, 1]`, numeric probabilities do not add up to 1, a matrix size is not a power of 2, :math:`N` is not 1 or 2,
+            or a ``lossy`` entry is out of range.
+
+    Note:
+        Only 1- and 2-qubit custom mixed unitary channels are supported.
 
     See Also:
-        :class:`Kraus`
-        :func:`ismixedunitary`
-        :class:`krauschannel`
-
-    Parameters:
-        p (list): List of probabilities, must be positive real numbers and add up to 1.
-        umatrices (list): List of complex-valued :math:`2^N \times 2^N` matrices. The number of qubits is equal to :math:`N`.
-        lossy (list, optional): Per-branch list marking which qubits in ``1:N`` leak when
-            that branch is drawn (e.g. ``[[], [1]]`` makes the second branch lose qubit 1).
-            Branches default to lossless. A lossy branch is resolved by
-            :meth:`Circuit.sample_mixedunitaries`, which emits a :class:`Loss` on the marked
-            qubits when the branch is sampled.
-
-    The length of the lists `p` and `umatrices` must be equal.
+        :class:`Kraus`, :meth:`ismixedunitary`, :class:`RescaledGate`
 
     Examples:
         >>> from mimiqcircuits import *
         >>> from symengine import *
+        >>> # identity with probability 0.9, X with probability 0.1
         >>> c = Circuit()
         >>> c.push(MixedUnitary([0.9, 0.1], [Matrix([[1, 0], [0, 1]]), Matrix([[0, 1], [1, 0]])]), 0)
         1-qubit circuit with 1 instruction:
         └── MixedUnitary((0.9, "Custom([1 0; 0 1])"),(0.1, "Custom([0 1; 1 0])")) @ q[0]
         <BLANKLINE>
 
+        >>> # matrices can come from existing gates
         >>> c.push(MixedUnitary([0.8, 0.2], [Matrix(GateID().matrix()), Matrix(GateRX(0.2).matrix())]), 1)
         2-qubit circuit with 2 instructions:
         ├── MixedUnitary((0.9, "Custom([1 0; 0 1])"),(0.1, "Custom([0 1; 1 0])")) @ q[0]
         └── MixedUnitary((0.8, "Custom([1.0 0; 0 1.0])"),(0.2, "Custom([0.995004165278026 0.0 - 0.0998334166468282*I; 0.0 - 0.0998334166468282*I 0.995004165278026])")) @ q[1]
         <BLANKLINE>
 
-        RescaleGate
-
-        >>> p1= 0.2
-        >>> p2 = 0.8
-        >>> U1 = Matrix([[1, 0], [0, 1]])  # Identity matrix
-        >>> U2 = Matrix([[0, 1], [1, 0]])  # Pauli-X matrix
-        >>> gate1 = GateCustom(U1)
-        >>> gate2 = GateCustom(U2)
-        >>> rescaled_gate1 = RescaledGate(gate1, sqrt(p1))
-        >>> rescaled_gate2 = RescaledGate(gate2, sqrt(p2))
+        >>> # the same kind of channel from rescaled gates: the scale is sqrt(p)
+        >>> rescaled_gate1 = RescaledGate(GateCustom(Matrix([[1, 0], [0, 1]])), sqrt(0.2))
+        >>> rescaled_gate2 = RescaledGate(GateCustom(Matrix([[0, 1], [1, 0]])), sqrt(0.8))
         >>> op = MixedUnitary([rescaled_gate1, rescaled_gate2])
         >>> op
         MixedUnitary((0.2, "Custom([1 0; 0 1])"), (0.8, "Custom([0 1; 1 0])"))
-        >>> c.push(op,1)
+        >>> c.push(op, 1)
         2-qubit circuit with 3 instructions:
         ├── MixedUnitary((0.9, "Custom([1 0; 0 1])"),(0.1, "Custom([0 1; 1 0])")) @ q[0]
         ├── MixedUnitary((0.8, "Custom([1.0 0; 0 1.0])"),(0.2, "Custom([0.995004165278026 0.0 - 0.0998334166468282*I; 0.0 - 0.0998334166468282*I 0.995004165278026])")) @ q[1]
         └── MixedUnitary((0.2, "Custom([1 0; 0 1])"),(0.8, "Custom([0 1; 1 0])")) @ q[1]
         <BLANKLINE>
+
+        >>> # gates work too; here the X branch also loses the qubit
+        >>> MixedUnitary([0.5, 0.5], [GateID(), GateX()], lossy=[[], [1]])
+        MixedUnitary((0.5, "ID"), (0.5, "X"); lossy=((), (1,)))
     """
 
     _name = "MixedUnitary"
@@ -135,15 +140,6 @@ class MixedUnitary(krauschannel):
                 raise ValueError(
                     "Lists of probabilities and gates/matrices must have the same length."
                 )
-            # Check if there are any symbolic probabilities
-            contains_symbolic_probabilities = any(
-                _is_basic(p) for p in probabilities
-            )
-
-            if not contains_symbolic_probabilities:
-                if not np.allclose(np.sum(probabilities), 1, rtol=1e-13):
-                    raise ValueError("Probabilities must sum to 1.")
-
             self.p = probabilities
             self.gates = []
             self.U = []
@@ -168,6 +164,14 @@ class MixedUnitary(krauschannel):
 
         else:
             raise ValueError("Invalid number of arguments. Expected 1 or 2.")
+
+        numeric = [
+            float(p) for p in self.p if not (_is_basic(p) and p.free_symbols)
+        ]
+        if any(p < 0 or p > 1 for p in numeric):
+            raise ValueError("Probabilities must be between 0 and 1.")
+        if len(numeric) == len(self.p) and not np.isclose(sum(numeric), 1, rtol=1e-13):
+            raise ValueError("Probabilities must sum to 1.")
 
         # Use num_qubits() from the Gate class, or calculate from matrix dimensions
         if isinstance(self.gates[0].get_operation(), Gate):
@@ -203,17 +207,24 @@ class MixedUnitary(krauschannel):
         self._num_qubits = self.N
 
     def haslossybranch(self):
-        """Whether any branch loses qubits when drawn."""
+        """Whether any branch loses qubits when drawn, as set by ``lossy``."""
         return any(self.lossy)
 
     def evaluate(self, values: dict):
-        """Evaluates symbolic parameters in the MixedUnitary using a dictionary of values.
+        """Return a copy with symbols substituted by values.
+
+        Substitutes into the probabilities and into the gates. The ``lossy``
+        masks are kept.
 
         Args:
-            values (dict): A dictionary where keys are symbolic variables and values are the corresponding numerical values.
+            values: Map from symbols to the values to substitute.
 
         Returns:
-            MixedUnitary: A new MixedUnitary instance with evaluated parameters.
+            MixedUnitary: A new channel with substituted parameters.
+
+        Raises:
+            ValueError: If the substituted probabilities are all numeric and do
+                not add up to 1.
         """
         evaluated_p = [p.subs(values) if hasattr(p, "subs") else p for p in self.p]
 
@@ -253,9 +264,6 @@ class MixedUnitary(krauschannel):
     def probabilities(self):
         return self.p
 
-    def unitarymatrices(self):
-        return self.U
-
     def unitarygates(self):
         return [g.get_operation() for g in self.gates]
 
@@ -294,7 +302,7 @@ class MixedUnitary(krauschannel):
                 prob = round(prob, 10)
             # Otherwise, keep the symbolic representation as is
 
-            if isinstance(gate, mc.GateCustom):
+            if isinstance(gate, GateCustom):
                 matrix_str = f"Custom([{'; '.join([' '.join(map(str, row)) for row in gate._matrix().tolist()])}])"
                 repr_string += f'({prob}, "{matrix_str}")'
             else:

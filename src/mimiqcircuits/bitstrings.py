@@ -38,14 +38,24 @@ def bitvec_to_int(arr):
 
 
 class BitString:
-    """BitString for the quantum states.
+    """A sequence of bits, one per qubit or classical bit.
 
-    Representation of the quantum state of a quantum register with definite
-    values for each qubit.
+    A :class:`BitString` represents a computational basis state of a register,
+    such as a measurement outcome. Sampled results in
+    :class:`~mimiqcircuits.QCSResults` are stored as :class:`BitString`
+    objects, and the ``bitstrings`` argument of ``submit`` takes them to
+    request amplitudes. Bit ``i`` of the string is qubit (or classical bit)
+    ``i``, and the printed form ``bs"..."`` lists bit 0 first.
+
+    A :class:`BitString` is hashable, so it can be a dictionary key. Indexing
+    returns a bit; slicing returns a new :class:`BitString`. Assigning a bit
+    with ``bs[i] = 1`` changes the string, and with it its hash, so do not
+    assign bits of a string that is used as a dictionary key.
 
     Examples:
 
-        Initialization:
+        Create one from a number of bits (all zero), a string, a sequence of
+        0 and 1, or a ``bitarray``:
 
         >>> from mimiqcircuits import *
         >>> from bitarray import bitarray
@@ -61,7 +71,7 @@ class BitString:
         >>> BitString(bitarray('101010')) # bitarray
         bs"101010"
 
-        Other initializations:
+        Other constructors:
 
         >>> BitString.fromnonzeros(16, [1, 3, 5, 7, 9, 11, 13, 15])
         bs"0101010101010101"
@@ -76,11 +86,15 @@ class BitString:
 
         Accessing the bits:
 
-        >>> bs = BitString(16)
-        >>> bs[0] # get the 0th bit
-        0
-        >>> bs[0:4] # get the first 4 bits
-        bs"0000"
+        >>> bs = BitString('0110')
+        >>> bs[1] # get bit 1
+        1
+        >>> bs[0:2] # get the first 2 bits
+        bs"01"
+        >>> bs.nonzeros() # indices of the bits set to 1
+        [1, 2]
+        >>> BitString('1100').tointeger() # bit 0 is the least significant
+        3
 
         Bitwise operations:
 
@@ -110,16 +124,27 @@ class BitString:
     _bits = bitarray(0)
 
     def __init__(self, arg, indices=None):
-        """Initialize the BitString.
+        """Create a BitString.
 
-        If the number of qubits is given, then the BitString is initialized to
-        the all-zero state.
-        If a binary string or a bitarray is given, then the BitString is the
-        corresponding state.
+        Args:
+            arg (int, str, list, tuple, bitarray or frozenbitarray): Either the
+                number of bits, which gives the all-zero string (or the string
+                with ones at ``indices``), or the bits themselves as a string
+                of ``"0"`` and ``"1"``, a sequence of 0 and 1, or a
+                ``bitarray``.
+            indices (list of int, optional): With an integer ``arg``, the
+                indices of the bits set to 1. Ignored otherwise.
+
+        Raises:
+            ValueError: If an index in ``indices`` is outside
+                ``range(arg)``, or the bits contain values other than 0 and 1.
+            TypeError: If ``arg`` has another type.
 
         Examples:
             >>> BitString(16) # number of qubits
             bs"0000000000000000"
+            >>> BitString(4, [0, 2]) # number of qubits and the bits set to 1
+            bs"1010"
             >>> BitString('10101') # binary string
             bs"10101"
             >>> BitString(bitarray('101010')) # bitarray
@@ -158,6 +183,7 @@ class BitString:
 
     @property
     def bits(self):
+        """The bits as a read-only ``frozenbitarray``."""
         return self._bits
 
     @bits.setter
@@ -166,14 +192,21 @@ class BitString:
 
     @staticmethod
     def fromnonzeros(num_qubits: int, nonzeros: list):
-        """Initialize a BitString with specific non-zero qubits.
+        """Create a BitString with the given bits set to 1.
 
-        Arguments:
-            num_qubits (int): The number of qubits in the BitString.
-            nonzeros (list): A list of non-zero qubit indices to set in the BitString.
+        Args:
+            num_qubits: The number of bits.
+            nonzeros: The indices of the bits set to 1.
 
         Returns:
-            A BitString with the specified non-zero qubits.
+            BitString: The new string.
+
+        Raises:
+            ValueError: If an index is outside ``range(num_qubits)``.
+
+        Examples:
+            >>> BitString.fromnonzeros(4, [1, 3])
+            bs"0101"
         """
         bitstring = ""
 
@@ -187,14 +220,19 @@ class BitString:
 
     @staticmethod
     def fromfunction(num_qubits: int, f: type[lambda: None]):
-        """Initialize a BitString from a function.
+        """Create a BitString by evaluating a function on each index.
 
-        Arguments:
-            num_qubits (int): The number of qubits in the BitString.
-            f (function): A function that takes an integer and returns a boolean.
+        Args:
+            num_qubits: The number of bits.
+            f: A function called with each index ``i``; bit ``i`` is 1 when
+                the result is true.
 
         Returns:
-            A BitString.
+            BitString: The new string.
+
+        Examples:
+            >>> BitString.fromfunction(6, lambda i: i % 3 == 0)
+            bs"100100"
         """
         bitstring = ""
         for i in range(num_qubits):
@@ -203,27 +241,44 @@ class BitString:
 
     @staticmethod
     def fromstring(bitstring: str):
-        """Initialize a BitString from a string.
+        """Create a BitString from a string of ``"0"`` and ``"1"``.
 
-        Arguments:
-            bitstring (str): The string representation of the BitString.
+        Same as ``BitString(bitstring)``.
+
+        Args:
+            bitstring: The bits, bit 0 first.
 
         Returns:
-            A BitString.
+            BitString: The new string.
         """
         return BitString(bitstring)
 
     @staticmethod
     def fromint(num_qubits: int, integer: int, endianess: str = "big"):
-        """Initialize a BitString from an integer.
+        """Create a BitString from the binary digits of an integer.
 
-        Arguments:
-            num_qubits (int): The number of qubits in the BitString.
-            integer (int): The integer value of the BitString.
-            endianess (str): The endianess of the integer. Default is 'big'.
+        Args:
+            num_qubits: The number of bits.
+            integer: A non-negative integer that fits in ``num_qubits`` bits.
+            endianess: ``"big"`` puts the least significant binary digit in
+                bit 0; ``"little"`` puts the most significant digit in bit 0.
+                Defaults to ``"big"``. This is the inverse of
+                :meth:`tointeger` with the same ``endianess``.
 
         Returns:
-            A BitString.
+            BitString: The new string.
+
+        Raises:
+            ValueError: If ``integer`` needs more than ``num_qubits`` bits, or
+                ``endianess`` is neither ``"big"`` nor ``"little"``.
+
+        Examples:
+            >>> BitString.fromint(4, 1)
+            bs"1000"
+            >>> BitString.fromint(4, 1, "little")
+            bs"0001"
+            >>> BitString.fromint(4, 6).tointeger()
+            6
         """
         if len(bin(integer)[2:]) > num_qubits:
             raise ValueError("Integer is too large for the given number of qubits.")
@@ -238,25 +293,37 @@ class BitString:
         return BitString(bitstring[::-1])
 
     def num_qubits(self):
-        """Return the number of qubits in the BitString."""
+        """Return the number of bits, the same as ``len(bs)``."""
         return len(self.bits)
 
     def nonzeros(self):
-        """Return the indices of the non-zero qubits."""
+        """Return the indices of the bits set to 1, as a list of ``int``."""
         return [i for i, bit in enumerate(self.bits) if bit]
 
     def zeros(self):
-        """Return the indices of the zero qubits."""
+        """Return the indices of the bits set to 0, as a list of ``int``."""
         return [i for i, bit in enumerate(self.bits) if not bit]
 
     def tointeger(self, endianess: str = "big"):
-        """Return the integer value of the BitString.
+        """Return the integer whose binary digits are the bits.
 
-        Arguments:
-            endianess (str): The endianess of the integer. Default is 'big'.
+        Args:
+            endianess: ``"big"`` reads bit 0 as the least significant binary
+                digit; ``"little"`` reads it as the most significant.
+                Defaults to ``"big"``.
 
         Returns:
-            The integer value of the BitString.
+            int: The integer value.
+
+        Raises:
+            ValueError: If the string is empty, or ``endianess`` is neither
+                ``"big"`` nor ``"little"``.
+
+        Examples:
+            >>> BitString("1000").tointeger()
+            1
+            >>> BitString("1000").tointeger("little")
+            8
         """
         if endianess == "big":
             return bitvec_to_int(self.bits[::-1])
@@ -266,13 +333,24 @@ class BitString:
             raise ValueError("Invalid endianess. Must be 'big' or 'little'.")
 
     def to01(self, endianess="big"):
-        """Return the binary string representation of the BitString.
+        """Return the bits as a string of ``"0"`` and ``"1"``.
 
-        Arguments:
-            endianess (str): The endianess of the integer. Default is 'big'
+        Args:
+            endianess (str): ``"big"`` lists bit 0 first, as the printed form
+                does; ``"little"`` lists it last. Defaults to ``"big"``.
 
-        Retruns:
-            The binary string representation of the BitString.
+        Returns:
+            str: The bits as text.
+
+        Raises:
+            ValueError: If ``endianess`` is neither ``"big"`` nor
+                ``"little"``.
+
+        Examples:
+            >>> BitString("110").to01()
+            '110'
+            >>> BitString("110").to01("little")
+            '011'
         """
         if endianess == "big":
             return "".join(map(str, self.bits))
@@ -282,13 +360,19 @@ class BitString:
             raise ValueError("Invalid endianess. Must be 'big' or 'little'.")
 
     def toindex(self, endianess: str = "big"):
-        """Return the integer index of the BitString.
+        """Return the index of the basis state, as in a state vector.
 
-        Arguments:
-            endianess (str): The endianess of the integer. Default is 'big'.
+        Indices start at 0, so this is the same value as :meth:`tointeger`.
+
+        Args:
+            endianess: See :meth:`tointeger`. Defaults to ``"big"``.
 
         Returns:
-            The integer index of the BitString.
+            int: The index.
+
+        Raises:
+            ValueError: If the string is empty, or ``endianess`` is neither
+                ``"big"`` nor ``"little"``.
         """
         if endianess == "big":
             return bitvec_to_int(self.bits[::-1])

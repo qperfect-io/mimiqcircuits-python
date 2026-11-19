@@ -141,18 +141,24 @@ def _circuit_has_runtime_loss(circuit) -> bool:
     except ImportError:  # pragma: no cover - defensive
         return False
 
-    def _op_has_lossy(op) -> bool:
+    def _op_has_runtime_loss(op) -> bool:
         if isinstance(op, krauschannel):
+            # A mixed-unitary channel never has a `LossyOperator`: its lossy
+            # branches fire with fixed probabilities, independent of the state,
+            # and are resolved before simulation. Checked first because building
+            # the operators of, say, `Depolarizing` costs Kronecker products.
+            if op.ismixedunitary():
+                return False
             try:
                 return any(isinstance(k, LossyOperator) for k in op.krausoperators())
             except Exception:  # pragma: no cover - defensive
                 return False
         if isinstance(op, (IfStatement, WhileStatement)):
-            return _op_has_lossy(op.get_operation())
+            return _op_has_runtime_loss(op.get_operation())
         return False
 
     for inst in instructions:
-        if _op_has_lossy(getattr(inst, "operation", None)):
+        if _op_has_runtime_loss(getattr(inst, "operation", None)):
             return True
     return False
 
@@ -176,25 +182,40 @@ def _circuit_is_symbolic(circuit) -> bool:
 
 @dataclass
 class RNGs:
-    """Four independent RNG streams, one per simulation stage.
+    """Four independent random streams, one per simulation stage.
 
-    Keeping the streams separate means seeding one stage (for example
-    sampling) does not affect the determinism of another (for example
-    noise selection), even when the same execution touches both.
+    Keeping the streams separate means that the draws of one stage (for
+    example sampling) do not shift the draws of another (for example noise
+    selection), even when the same execution uses both.
+    :meth:`LocalBackend.execute` builds one bundle per call from ``seed`` or
+    ``rng`` and hands each stream to the stage it belongs to. Build one with
+    :meth:`from_seed` or :meth:`from_generator`.
 
-    Attributes
-    ----------
-    shot : random.Random
-        Sampling shots from the final state.
-    noise : random.Random
-        Kraus and mixed-unitary noise sampling.
-    trajectory : random.Random
-        Monte Carlo trajectory selection.
-    pass_ : random.Random
-        Randomised compilation passes (e.g. simulated-annealing
-        reorderers).
+    Attributes:
+        shot (random.Random): Sampling shots from the final state.
+        noise (random.Random): Kraus and mixed-unitary noise sampling
+            during :meth:`LocalBackend.evolve`.
+        trajectory (random.Random): Per-trajectory work, such as
+            :meth:`LocalBackend.prepare_trajectory` and loss sampling.
+        pass_ (random.Random): Randomised compilation passes, read through
+            :attr:`PassContext.rng`.
 
-    Construct from a single int seed via :py:meth:`from_seed`.
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import RNGs
+
+        The same master seed always gives the same four streams.
+
+        >>> a = RNGs.from_seed(42)
+        >>> b = RNGs.from_seed(42)
+        >>> a.shot.random() == b.shot.random()
+        True
+
+        Each stream is seeded differently, so they do not repeat each other.
+
+        >>> c = RNGs.from_seed(42)
+        >>> c.shot.random() == c.noise.random()
+        False
     """
 
     shot: random.Random
@@ -204,24 +225,41 @@ class RNGs:
 
     @staticmethod
     def from_seed(master: int) -> "RNGs":
-        """Derive four streams from a single ``master`` seed.
+        """Derive the four streams from one integer seed.
 
-        XOR-tags the seed bits per stream — cheap, deterministic, and
-        stable across Python versions, which matters because the
-        downstream backends must reproduce results bit-for-bit from
-        the same input.
+        The same seed always gives the same streams. The stream seeds are
+        scrambled from ``master``, so two different master seeds, however
+        close, have no stream in common.
+
+        Args:
+            master: The master seed.
+
+        Returns:
+            A new :class:`RNGs` bundle.
         """
+        from mimiqcircuits.backends._rng_utils import _stream_seeds
+
+        shot, noise, trajectory, pass_ = _stream_seeds(master)
         return RNGs(
-            shot=random.Random(master ^ 0x1),
-            noise=random.Random(master ^ 0x2),
-            trajectory=random.Random(master ^ 0x4),
-            pass_=random.Random(master ^ 0x8),
+            shot=random.Random(shot),
+            noise=random.Random(noise),
+            trajectory=random.Random(trajectory),
+            pass_=random.Random(pass_),
         )
 
     @staticmethod
     def from_generator(gen: random.Random) -> "RNGs":
-        """Draw a master seed from ``gen`` and forward to
-        :py:meth:`from_seed`."""
+        """Draw a master seed from ``gen`` and pass it to :meth:`from_seed`.
+
+        This advances ``gen``, so two calls with the same generator give two
+        different bundles.
+
+        Args:
+            gen: The generator to draw a 63-bit master seed from.
+
+        Returns:
+            A new :class:`RNGs` bundle.
+        """
         master = gen.getrandbits(63)
         return RNGs.from_seed(master)
 
@@ -232,33 +270,22 @@ class RNGs:
 
 
 class State(abc.ABC):
-    """Composite simulation state held by a backend.
+    """Simulation state that a :class:`LocalBackend` builds and evolves.
 
-    A state bundles three registers:
+    A state bundles three registers: the quantum register, in whatever
+    representation the backend uses (state vector, MPS, tensor network, …);
+    the classical-bit register, written by measurements and classical
+    operations; and the z-register of complex values, written by
+    ``Amplitude``, ``ExpectationValue`` and similar operations.
 
-    - the quantum register (whatever representation the backend uses;
-      state vector, MPS, tensor network, …);
-    - the classical-bit register written by measurements and
-      ``IfStatement`` outcomes;
-    - the complex-valued register written by non-destructive
-      observations (``Amplitude``, ``ExpectationValue``, ``BondDim``,
-      …).
+    Subclasses implement :attr:`num_qubits`, :attr:`num_bits`,
+    :attr:`num_zvars`, :meth:`amplitude`, :meth:`sample`,
+    :attr:`classical_bits` and :attr:`complex_values`; they may override
+    :meth:`expectation`, :meth:`reset` and :meth:`get_loss_state`, whose
+    defaults raise :class:`NotImplementedError`.
 
-    Required surface for every subclass:
-
-    - :attr:`num_qubits`, :attr:`num_bits`, :attr:`num_zvars` —
-      register sizes.
-    - :meth:`amplitude`, :meth:`sample` — observation primitives.
-    - :attr:`classical_bits`, :attr:`complex_values` — register
-      accessors.
-
-    Optional surface:
-
-    - :meth:`expectation` — backend overrides when it can compute
-      ``⟨ψ|O|ψ⟩`` non-destructively (gated by the
-      ``"expectation_state"`` capability).
-    - :meth:`reset` — backend overrides when it can rebuild itself
-      in place to the zero state.
+    See Also:
+        :class:`LocalBackend`, whose example defines a complete state.
     """
 
     @property
@@ -274,44 +301,61 @@ class State(abc.ABC):
     @property
     @abc.abstractmethod
     def num_zvars(self) -> int:
-        """Number of complex slots in the z-register."""
+        """Number of complex values in the z-register."""
 
     @abc.abstractmethod
-    def amplitude(self, bs) -> complex: ...
+    def amplitude(self, bs) -> complex:
+        """Return the amplitude ``⟨bs|ψ⟩`` of a computational basis state.
+
+        Args:
+            bs: The basis state, as a :class:`~mimiqcircuits.BitString` with
+                one bit per qubit.
+
+        Returns:
+            The complex amplitude.
+        """
 
     @abc.abstractmethod
     def sample(
         self,
         nsamples: int,
         rng: Optional[random.Random] = None,
-        *,
-        seed: Optional[int] = None,
     ) -> list:
-        """Sample ``nsamples`` measurement outcomes from the state.
+        """Draw ``nsamples`` measurement outcomes of all qubits from the state.
 
-        Exactly one source of randomness is consumed:
+        The state is not changed. ``rng`` is a generator whose draws seed
+        the simulator's own generator, which advances it: sampling twice
+        with the same generator gives two independent sets of outcomes.
+        Without ``rng`` the simulator draws fresh entropy.
 
-        - ``rng`` (positional or keyword): a :class:`random.Random`
-          whose ``getrandbits(63)`` produces the seed forwarded to
-          the simulator's PRNG.
-        - ``seed`` (keyword): an int that seeds the simulator's
-          default PRNG directly.
-        - neither: the simulator draws fresh cryptographic entropy.
+        Args:
+            nsamples: Number of outcomes to draw.
+            rng: The generator to draw from. :meth:`LocalBackend.execute`
+                passes :attr:`RNGs.shot` here.
 
-        Passing both ``rng`` and ``seed`` must raise
-        :class:`TypeError`. The two arguments are mutually
-        exclusive.
+        Returns:
+            A list of ``nsamples`` :class:`~mimiqcircuits.BitString`, one bit
+            per qubit.
         """
         ...
 
     def expectation(self, op, *qubits: int) -> complex:
-        """Compute ``⟨ψ|op|ψ⟩`` on this state.
+        """Return ``⟨ψ|op|ψ⟩`` on this state, without changing it.
 
-        Most backends implement expectation on the Backend rather
-        than the State (so they can route through the simulator's
-        compile / evolve machinery). State-level expectation is
-        provided as a convenience hook for backends whose quantum
-        register supports it directly.
+        Most backends compute expectation values on the backend instead, with
+        :meth:`Backend.expectation`. States whose quantum register can do it
+        directly override this; the default raises
+        :class:`NotImplementedError`.
+
+        Args:
+            op: The operator to measure.
+            *qubits: The qubits ``op`` acts on, 0-based.
+
+        Returns:
+            The complex expectation value.
+
+        Raises:
+            NotImplementedError: If the state does not support it.
         """
         raise NotImplementedError(
             "expectation(op, *qubits) not implemented for this state "
@@ -320,21 +364,40 @@ class State(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def classical_bits(self): ...
+    def classical_bits(self):
+        """The classical register, as a :class:`~mimiqcircuits.BitString`.
+
+        The execute driver stores it as one entry of
+        :attr:`QCSResults.cstates <mimiqcircuits.QCSResults.cstates>` per
+        trajectory.
+        """
 
     @property
     @abc.abstractmethod
-    def complex_values(self): ...
+    def complex_values(self):
+        """The z-register, as a list of complex numbers.
+
+        The execute driver stores it as one entry of
+        :attr:`QCSResults.zstates <mimiqcircuits.QCSResults.zstates>` per
+        evolution.
+        """
 
     def reset(self) -> None:
+        """Return the state to all qubits in ``|0⟩``, with all registers
+        cleared, in place.
+
+        States that can do this override it; the default raises
+        :class:`NotImplementedError`.
+        """
         raise NotImplementedError
 
     def get_loss_state(self) -> "LossState":
         """Return the per-qubit loss register (see :class:`LossState`).
 
-        Backends that opt into the shared runtime-loss driver
-        (:meth:`LocalBackend.uses_loss_driver`) embed one and clear it in
-        :meth:`reset`.
+        States of backends that use the runtime-loss driver
+        (:meth:`LocalBackend.uses_loss_driver`) hold one, clear it in
+        :meth:`reset`, and override this to return it. The default raises
+        :class:`NotImplementedError`.
         """
         raise NotImplementedError(
             "get_loss_state() not implemented for this state type"
@@ -342,12 +405,35 @@ class State(abc.ABC):
 
 
 class LossState:
-    """Per-qubit present/lost register, a peer to the quantum, classical and
-    complex registers of a :class:`State`. Entry ``q`` is ``True`` when qubit
-    ``q`` has leaked out of the system.
+    """Per-qubit register that records which qubits are lost.
 
-    The register holds no loss *policy*: only the shared runtime-loss driver
-    (:meth:`LocalBackend.evolve_with_loss`) mutates it.
+    It sits next to the quantum, classical and complex registers of a
+    :class:`State`. Entry ``q`` is ``True`` when qubit ``q`` has left the
+    system. The register holds no loss policy: the runtime-loss driver
+    (:meth:`LocalBackend.evolve_with_loss`) is the only code that marks
+    qubits; a state that holds one only creates it, clears it in
+    :meth:`State.reset`, and returns it from :meth:`State.get_loss_state`.
+
+    Args:
+        n_or_flags: The number of qubits, all present, or an iterable of
+            booleans giving the initial flag of each qubit.
+
+    Attributes:
+        lost (list[bool]): The flag of each qubit.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import LossState
+
+        Start with three qubits, all present, then lose qubit 1.
+
+        >>> ls = LossState(3)
+        >>> ls.mark_lost(1)
+        >>> ls.is_lost(1), ls.any_lost([0, 1]), ls.all_lost([0, 1])
+        (True, True, False)
+        >>> ls.reset()
+        >>> ls.lost
+        [False, False, False]
     """
 
     def __init__(self, n_or_flags):
@@ -357,29 +443,39 @@ class LossState:
             self.lost = list(n_or_flags)
 
     def is_lost(self, q) -> bool:
+        """Return whether qubit ``q`` is lost."""
         return self.lost[q]
 
     def mark_lost(self, q) -> None:
+        """Mark qubit ``q`` as lost."""
         self.lost[q] = True
 
     def mark_present(self, q) -> None:
+        """Mark qubit ``q`` as present."""
         self.lost[q] = False
 
     def any_lost(self, qubits) -> bool:
+        """Return whether at least one of ``qubits`` is lost."""
         return any(self.lost[q] for q in qubits)
 
     def all_lost(self, qubits) -> bool:
+        """Return whether every one of ``qubits`` is lost (``True`` when
+        ``qubits`` is empty)."""
         return all(self.lost[q] for q in qubits)
 
     def reset(self) -> None:
+        """Mark every qubit as present."""
         self.lost = [False] * len(self.lost)
 
     def __len__(self) -> int:
         return len(self.lost)
 
     def as_map(self) -> dict:
-        """Lost-qubit map consumed by :func:`lossmodel_rewrite`; only lost
-        qubits get an entry since the rewrite reads it via ``get(.., False)``."""
+        """Return the lost qubits as a ``{qubit: True}`` dictionary.
+
+        Present qubits get no entry. This is the form the loss-model rewrite
+        reads.
+        """
         return {q: True for q, v in enumerate(self.lost) if v}
 
 
@@ -389,64 +485,97 @@ class LossState:
 
 
 class Backend(abc.ABC):
-    """Abstract base class for any simulator backend.
+    """Abstract base class for every simulator backend.
 
-    A concrete backend must:
+    Subclasses implement :attr:`name`, :attr:`version`, :meth:`capabilities`
+    and :meth:`execute`; they may override :meth:`limits`, :meth:`topology`,
+    :meth:`can_handle`, :meth:`stochastic_kind`, :meth:`default_passes`, the
+    pass hooks (:meth:`fuse_pass`, :meth:`reorder_pass`,
+    :meth:`canonical_decompose_pass`, :meth:`remove_swaps_pass`,
+    :meth:`simplify_pass`), :meth:`accepts_pass`, :meth:`delegates_pass` and
+    :meth:`expectation`.
 
-    - identify itself via :attr:`name` and :attr:`version`;
-    - advertise its feature set via :meth:`capabilities`,
-      :meth:`limits`, :meth:`topology`;
-    - implement :meth:`execute` (or subclass :class:`LocalBackend`
-      / :class:`RemoteBackend` and inherit a sensible default).
+    Most backends subclass one of the two bases below, which implement
+    :meth:`execute`:
 
-    Pick the right base for your simulator:
+    - :class:`LocalBackend`, when the simulator runs in this process and
+      evolves a :class:`State`;
+    - :class:`RemoteBackend`, when the simulator runs elsewhere (a cloud
+      service, a job queue) and the backend submits jobs and waits for the
+      results.
 
-    - :class:`LocalBackend` — the simulator runs in-process and you
-      can hand it a :class:`State` it mutates with each instruction.
-    - :class:`RemoteBackend` — the simulator runs elsewhere (cloud
-      service, queued executor) and your wrapper submits jobs and
-      polls for results.
-
-    See :doc:`/manual/implementing_backends`.
+    See :doc:`/manual/implementing_backends` for a step-by-step guide.
     """
 
     # ── identity ───────────────────────────────────────────────────────────
     @property
     @abc.abstractmethod
-    def name(self) -> str: ...
+    def name(self) -> str:
+        """Name of the simulator, such as ``"Mimiq"``.
+
+        It is stored in :attr:`QCSResults.simulator
+        <mimiqcircuits.QCSResults.simulator>` and used in error messages.
+        """
 
     @property
     @abc.abstractmethod
-    def version(self) -> str: ...
+    def version(self) -> str:
+        """Version string of the simulator, stored in
+        :attr:`QCSResults.version <mimiqcircuits.QCSResults.version>`."""
 
     # ── advertisement ──────────────────────────────────────────────────────
     @abc.abstractmethod
-    def capabilities(self) -> set[Capability]: ...
+    def capabilities(self) -> set[Capability]:
+        """Return the set of features this backend can run.
+
+        Each entry is a capability token, normally one of
+        :data:`CAPABILITY_VOCABULARY`. Declare only what the backend really
+        delivers: :meth:`can_handle` and the conformance tests rely on it.
+
+        Returns:
+            A set of capability strings.
+        """
 
     def limits(self) -> Limits:
+        """Return the numeric limits of this backend.
+
+        The default returns ``Limits()``, with every limit unbounded.
+        """
         return Limits()
 
     def topology(self) -> Topology:
+        """Return the qubit connectivity of this backend.
+
+        The default returns :class:`AllToAll`.
+        """
         return AllToAll()
 
     def can_handle(self, circuit) -> AdmissionResult:
-        """Default admission check against :meth:`limits` and the
-        backend's advertised :meth:`capabilities`.
+        """Check whether this backend can run ``circuit``.
 
-        Backends with richer admission criteria (bond-dimension
-        estimates, hardware connectivity, gate-set whitelists) should
-        override.
+        The default compares ``circuit`` with :meth:`limits` and
+        :meth:`capabilities`. It returns :class:`Inadmissible` when the
+        circuit:
 
-        Rejects (returns :class:`Inadmissible`) when:
+        - has more qubits, classical bits or z-variables than ``max_qubits``,
+          ``max_classical_bits`` or ``max_zvars`` allow;
+        - contains a Kraus channel with a ``LossyOperator`` (loss decided at
+          run time) and the backend does not declare ``"loss"``;
+        - contains any Kraus channel, also inside an ``IfStatement`` or
+          ``WhileStatement``, and the backend does not declare ``"noise"``;
+        - has free symbolic parameters and the backend does not declare
+          ``"parametric"``.
 
-        - the circuit exceeds one of ``max_qubits`` /
-          ``max_classical_bits`` / ``max_zvars`` declared by
-          :meth:`limits`;
-        - the circuit contains a loss-bearing operation
-          (``Loss``) but the backend does not
-          advertise the ``"loss"`` capability.
+        Otherwise it returns :class:`Admissible`. It never returns
+        :class:`Marginal`. Backends with other criteria (bond-dimension
+        estimates, connectivity, gate sets) override it.
 
-        Returns :class:`Admissible` otherwise.
+        Args:
+            circuit: The circuit to check.
+
+        Returns:
+            An :class:`AdmissionResult`. Use :func:`is_admissible` to turn
+            it into a bool.
         """
         lim = self.limits()
         caps = self.capabilities()
@@ -512,36 +641,40 @@ class Backend(abc.ABC):
 
     # ── resolution-time taxonomy ───────────────────────────────────────────
     def stochastic_kind(self, op_or_instruction) -> "StochasticKind":
-        """Classify how this backend resolves ``op_or_instruction`` —
-        :class:`StochasticKind.Deterministic`,
-        :class:`StochasticKind.TrajectorySampleable`, or
-        :class:`StochasticKind.RuntimeOnly`.
+        """Classify when this backend resolves the randomness of an operation.
 
-        The default delegates to
-        :func:`default_stochastic_kind` (mix-unitary Kraus is TS;
-        non-mix-unitary Kraus, mid-circuit ``Measure``, and ``Loss``
-        are RT; everything else Deterministic). Backends that handle a
-        specific op type differently override this method.
+        The answer depends on the backend as well as on the operation: a
+        mixed-unitary channel is ``TrajectorySampleable`` for a backend that
+        draws its branch before evolving, but ``RuntimeOnly`` for one that
+        draws it from the live state. The default returns
+        :func:`default_stochastic_kind`; backends that handle an operation
+        differently override this.
 
-        Backend-dependent: a ``MixedUnitary`` is ``TrajectorySampleable``
-        for an MPS-style sampler but could be ``RuntimeOnly`` for a
-        backend that resolves it state-dependently. The classification
-        lives on the backend, not on the op.
+        Args:
+            op_or_instruction: An operation, or an instruction whose operation
+                is classified.
+
+        Returns:
+            A :class:`StochasticKind`.
         """
         from mimiqcircuits.backends.stochastic_kind import default_stochastic_kind
         return default_stochastic_kind(op_or_instruction)
 
     # ── pass plumbing ──────────────────────────────────────────────────────
     def default_passes(self) -> PassPipeline:
-        """The pipeline this backend wants applied to a circuit before
-        evolution. Empty by default — backends override.
+        """Return the pipeline this backend wants applied before evolution.
 
-        This is the whole of a backend's involvement in circuit preparation:
-        it declares the passes it expects, and :meth:`execute` adjusts that
-        declaration to match what the caller asked for. A backend never sees
-        the flags; when one asks for a pass, the backend builds it through
+        This is the backend's whole part in circuit preparation: it declares
+        the passes it expects, and :meth:`execute` adjusts that declaration to
+        match the flags the caller set. The backend never sees the flags;
+        when a flag asks for a pass, the backend builds it through
         :meth:`fuse_pass`, :meth:`reorder_pass`,
-        :meth:`canonical_decompose_pass` or :meth:`remove_swaps_pass`.
+        :meth:`canonical_decompose_pass`, :meth:`remove_swaps_pass` or
+        :meth:`simplify_pass`. A flag finds the pass it acts on by its
+        ``spec().name``, so a pass that no flag names is never removed by one.
+
+        Returns:
+            A :class:`PassPipeline`. The default is empty.
         """
         return PassPipeline()
 
@@ -550,10 +683,18 @@ class Backend(abc.ABC):
     # retunes that pass instead of swapping in the generic one.
 
     def fuse_pass(self, *, threshold: Optional[int] = None) -> AbstractPass:
-        """The pass ``execute(fuse=True)`` or ``fuse_threshold=n`` installs.
+        """Return the pass that ``execute(fuse=True)`` or ``fuse_threshold=n``
+        installs.
 
-        Defaults to :class:`~mimiqcircuits.fusion.FusePass` gated on
-        ``threshold`` qubits (``None`` means 0).
+        Backends with their own fusion pass override this, so the flag retunes
+        that pass instead of replacing it.
+
+        Args:
+            threshold: The ``fuse_threshold`` the caller gave, or ``None``.
+
+        Returns:
+            The default is :class:`~mimiqcircuits.fusion.FusePass` with
+            ``qubit_threshold=threshold`` (``0`` for ``None``).
         """
         from mimiqcircuits.fusion import FusePass
 
@@ -562,12 +703,22 @@ class Backend(abc.ABC):
     def reorder_pass(
         self, method: Optional[str] = None, *, seed: Optional[int] = None
     ) -> AbstractPass:
-        """The pass ``execute(reorderqubits=...)`` installs.
+        """Return the pass that ``execute(reorderqubits=...)`` installs.
 
-        ``method`` names the requested search, or is ``None`` for
-        ``reorderqubits=True``, which leaves the choice to the backend. There
-        is no generic local reorder pass, so the default raises
-        ``NotImplementedError``.
+        Backends that can reorder qubits override this; there is no generic
+        local reorder pass, so the default raises :class:`NotImplementedError`.
+
+        Args:
+            method: The method name given as ``reorderqubits``, or ``None``
+                for ``reorderqubits=True``, which leaves the choice to the
+                backend.
+            seed: The ``reorderqubits_seed`` the caller gave, or ``None``.
+
+        Returns:
+            The reorder pass.
+
+        Raises:
+            NotImplementedError: In the default implementation.
         """
         raise NotImplementedError(
             "reorderqubits not available for local execution on "
@@ -577,18 +728,20 @@ class Backend(abc.ABC):
         )
 
     def canonical_decompose_pass(self) -> AbstractPass:
-        """The pass ``execute(canonicaldecompose=True)`` installs. Defaults
-        to :class:`~mimiqcircuits.backends.concrete_passes.CanonicalDecomposePass`.
+        """Return the pass that ``execute(canonicaldecompose=True)`` installs.
+
+        The default is :class:`CanonicalDecomposePass`.
         """
         from mimiqcircuits.backends.concrete_passes import CanonicalDecomposePass
 
         return CanonicalDecomposePass()
 
     def remove_swaps_pass(self) -> AbstractPass:
-        """The pass ``execute(remove_swaps=True)`` installs.
+        """Return the pass that ``execute(remove_swaps=True)`` installs.
 
-        There is no generic local remove-swaps pass, so the default raises
-        ``NotImplementedError``.
+        Backends that can remove SWAP gates override this; there is no
+        generic local remove-swaps pass, so the default raises
+        :class:`NotImplementedError`.
         """
         raise NotImplementedError(
             "remove_swaps not available for local execution on "
@@ -598,8 +751,9 @@ class Backend(abc.ABC):
         )
 
     def simplify_pass(self) -> AbstractPass:
-        """The pass ``execute(simplify=True)`` installs. Defaults to
-        :class:`~mimiqcircuits.SimplifyPass` with
+        """Return the pass that ``execute(simplify=True)`` installs.
+
+        The default is :class:`~mimiqcircuits.SimplifyPass` with
         :data:`~mimiqcircuits.DEFAULT_SIMPLIFY_PASSES`.
         """
         from mimiqcircuits.simplify import SimplifyPass
@@ -607,9 +761,23 @@ class Backend(abc.ABC):
         return SimplifyPass()
 
     def accepts_pass(self, p: AbstractPass) -> bool:
+        """Return whether this backend can run pass ``p``.
+
+        :func:`apply_passes` raises :class:`UnacceptedPassError` for a pass
+        the backend refuses, instead of skipping it. The default accepts
+        every pass.
+        """
         return True
 
     def delegates_pass(self, p: AbstractPass) -> bool:
+        """Return whether this backend runs pass ``p`` itself.
+
+        For a delegated pass, :func:`apply_passes` does not call
+        :meth:`AbstractPass.apply`; it records a :class:`PassResult` with
+        ``metadata={"delegated": True}`` and leaves the work to the backend's
+        :meth:`LocalBackend.compile` or :meth:`LocalBackend.evolve`. The
+        default delegates nothing.
+        """
         return False
 
     # ── execution ──────────────────────────────────────────────────────────
@@ -632,74 +800,102 @@ class Backend(abc.ABC):
         param_grid: Optional[list[dict]] = None,
         strict_pass_order: bool = True,
     ):
-        """Run ``circuit`` on this backend and return
-        :class:`~mimiqcircuits.QCSResults`.
+        """Run ``circuit`` on this backend and return its results.
 
-        Pass ``circuit`` as a single :class:`Circuit` or a list of
-        circuits — a list returns a list of results in the same shape.
-        On a local backend ``circuit`` can also be a
-        :class:`~mimiqcircuits.SweepExperiment`, which runs the circuit once
-        per point of its table and returns one result per point.
+        To request specific amplitudes or expectation values, push
+        ``Amplitude`` or ``ExpectationValue`` instructions into ``circuit``
+        and read them from ``results.zstates``.
 
-        ``seed`` and ``rng`` are mutually exclusive sources of
-        randomness; pass at most one. With neither, the backend draws
-        fresh entropy. To request specific amplitudes, push
-        :class:`Amplitude` instructions into ``circuit`` and read the
-        resulting ``results.zstates``.
+        The preparation flags (``fuse``, ``canonicaldecompose``,
+        ``reorderqubits``, ``remove_swaps``, ``simplify``) adjust the
+        backend's :meth:`default_passes` instead of replacing them. Each
+        speaks about one kind of pass: ``None`` leaves that pass as the
+        backend declared it, ``False`` drops it, and any other value replaces
+        it with the pass the backend builds for that flag, or adds that pass
+        when the backend declared none of that kind. So ``fuse=False`` means
+        "the backend's pipeline, without fusion". A pass that no flag names
+        stays even when every flag is ``False``.
 
-        The flags — ``fuse``, ``canonicaldecompose``, ``reorderqubits``,
-        ``remove_swaps``, ``simplify`` — adjust the backend's
-        :meth:`default_passes` rather than replacing them. Each speaks about
-        one kind of pass: ``None`` leaves that pass as the backend declared it,
-        ``False`` drops it, and any other value replaces it with the one the
-        flag describes — or adds that one, in the position it belongs, when the
-        backend declared none of that kind. Everything the flags say nothing
-        about stands.
+        The flags have a fixed order among themselves: remove swaps,
+        simplify, canonical decompose, fuse, reorder. A pass added by a flag
+        goes just before the first declared pass of a kind that runs later,
+        or at the end if there is none. ``passes`` are appended after all of
+        that, as given; nothing is deduplicated.
 
-        So ``fuse=False`` is "your pipeline, without the fusion". Local
-        backends also take ``fuse_threshold``: ``fuse_threshold=18`` is "your
-        pipeline, fusing from 18 qubits up". To prepare a circuit with nothing
-        at all, set every flag to ``False`` — a pass no flag names (container
-        flattening, say) survives even that. A flag of the wrong type, such as
-        ``fuse=0``, raises :class:`TypeError`.
+        ``simplify=True`` rewrites the circuit with :meth:`simplify_pass`
+        while keeping its unitary exactly: inverse pairs cancel, rotations
+        merge, and one- and two-qubit blocks are resynthesised with fewer
+        gates.
 
-        ``simplify=True`` simplifies the circuit before evolution with the
-        backend's :meth:`simplify_pass`, keeping its unitary exactly: inverse
-        pairs cancel, rotations merge, and one- and two-qubit blocks are
-        rewritten with fewer gates. It is off unless asked for.
+        Args:
+            circuit: A :class:`~mimiqcircuits.Circuit` or a list of circuits.
+                Local backends also take a
+                :class:`~mimiqcircuits.SweepExperiment`, which runs the
+                circuit once per point of its table.
+            nsamples: Number of shots.
+            seed: Integer seed for all randomness of the run. Mutually
+                exclusive with ``rng``; with neither, the backend draws fresh
+                entropy.
+            rng: A :class:`random.Random` to draw the seed from. It is
+                advanced, so two runs with the same generator differ.
+            passes: Extra passes to run after the backend's adjusted
+                pipeline.
+            fuse: Install (``True``) or drop (``False``) gate fusion.
+            canonicaldecompose: Install or drop the decomposition into the
+                canonical gate set.
+            reorderqubits: Install or drop qubit reordering; a string names
+                the reordering method.
+            remove_swaps: Install or drop SWAP removal.
+            simplify: Install or drop circuit simplification. Off unless set.
+            reorderqubits_seed: Seed for the reordering pass. It configures
+                reordering; it does not request it.
+            callback: Called by the backend during evolution, once per step.
+            param_grid: A list of dictionaries, each mapping the circuit's
+                symbols (or their names) to values, such as
+                ``[{theta: 0.1}, {theta: 0.2}]``. Each dictionary is
+                substituted into ``circuit`` with
+                :meth:`~mimiqcircuits.Circuit.evaluate` and runs as its own
+                execution, with a seed derived from ``seed`` or ``rng``, so
+                points are independent and a repeated sweep with the same
+                ``seed`` gives the same results. Every dictionary must bind
+                all free symbols. An empty list runs ``circuit`` once.
+            strict_pass_order: On a remote backend that does not declare
+                ``"pass_order_honored"``, refuse a non-empty ``passes``
+                instead of submitting it as an unordered set.
 
-        The flags have a fixed order among themselves — remove swaps, simplify,
-        canonical decompose, fuse, reorder — which is where a flag puts its
-        pass when the backend declared none of that kind: before the first pass
-        that runs later than it does, and after any pass no flag names.
+        Returns:
+            A :class:`~mimiqcircuits.QCSResults`. A list of circuits gives a
+            list of results in the same order; ``param_grid`` or a
+            :class:`~mimiqcircuits.SweepExperiment` gives one result per
+            point (a list of such lists for a list of circuits).
 
-        ``passes`` are appended after that, as given; nothing is deduplicated,
-        so an entry of the same kind as a pass already there simply runs too.
-        ``reorderqubits_seed`` configures reordering rather than requesting it.
-
-        ``param_grid`` runs a parameter sweep on a local backend: a list of
-        dicts, each mapping the circuit's symbols (or their names) to values,
-        such as ``[{theta: 0.1}, {theta: 0.2}]``. Every dict is substituted
-        into ``circuit`` with :meth:`~mimiqcircuits.Circuit.evaluate` and the
-        result runs as its own execution, with the other arguments unchanged.
-        The call then returns a list of results, one per dict and in the same
-        order (with a list of circuits, one such list per circuit). Each point
-        gets its own seed, derived from ``seed`` or ``rng``, so the points are
-        statistically independent and a sweep repeated with the same ``seed``
-        gives the same results. Every dict must bind all the free symbols of
-        the circuit, or that point raises an error. An empty list runs the circuit once, as if it was not
-        given. Remote backends raise :class:`NotImplementedError`.
+        Raises:
+            TypeError: If both ``seed`` and ``rng`` are given, or a flag has
+                the wrong type (for example ``fuse=0``).
+            NotImplementedError: If ``param_grid`` is given to a remote
+                backend that does not support it (such as
+                :class:`MimiqRemoteBackend`), or a flag asks for a pass the
+                backend cannot build.
+            RemotePassOrderError: See ``strict_pass_order``.
         """
         ...
 
     def expectation(self, state, op, *qubits: int) -> complex:
-        """Compute ``⟨ψ|op|ψ⟩`` on ``state`` non-destructively.
+        """Return ``⟨ψ|op|ψ⟩`` on ``state``, without changing it.
 
-        ``qubits`` is the list of qubit indices ``op`` acts on
-        (0-based). Backends override when they advertise the
-        ``"expectation_state"`` capability; the default raises
-        :class:`NotImplementedError` so undeclared backends fail
-        loudly rather than silently degrading.
+        Backends that declare the ``"expectation_state"`` capability override
+        this; the default raises :class:`NotImplementedError`.
+
+        Args:
+            state: A :class:`State` built by this backend.
+            op: The operator to measure.
+            *qubits: The qubits ``op`` acts on, 0-based.
+
+        Returns:
+            The complex expectation value.
+
+        Raises:
+            NotImplementedError: In the default implementation.
         """
         raise NotImplementedError(
             "expectation(state, op, *qubits) not declared by this "
@@ -734,13 +930,14 @@ def _loss_segment_role(op, qs, ls):
     all-present run, ``"drop"`` is an all-lost op skipped without breaking the
     run.
     """
-    import mimiqcircuits as mc
+    from mimiqcircuits.operations.losschannel import Check, Loss, MeasureCheck, Reload
+    from mimiqcircuits.operations.measure import Measure
     from mimiqcircuits.operations.krauschannel import krauschannel
 
-    if isinstance(op, (mc.Loss, mc.Reload, mc.Check, mc.MeasureCheck)) or \
+    if isinstance(op, (Loss, Reload, Check, MeasureCheck)) or \
             isinstance(op, krauschannel):
         return "event"
-    if isinstance(op, mc.Measure) and ls.is_lost(qs[0]):
+    if isinstance(op, Measure) and ls.is_lost(qs[0]):
         return "event"
     if not ls.any_lost(qs):
         return "buffer"
@@ -770,82 +967,246 @@ def _next_loss_segment(insts, start, ls):
 
 
 class LocalBackend(Backend):
-    """Base class for simulators that run in the local process.
+    """Base class for simulators that run in this process.
 
-    Subclasses implement a handful of primitives and inherit a full
-    :meth:`execute` driver. Once the hooks are wired up,
-    routing (sampling-vs-trajectory), the final-block projection
-    circuit, loss-sampling pre-pass, and amplitude lookups all work
-    without any per-backend duplication.
+    Subclasses implement :meth:`build_state`, :meth:`compile` and
+    :meth:`evolve`, plus the :class:`Backend` identity members; they may
+    override :meth:`prepare_trajectory`, :meth:`recompile_per_trajectory`,
+    :meth:`bind` and :meth:`compile_progress`, and opt into the runtime-loss
+    driver with :meth:`uses_loss_driver`, :meth:`apply_instruction`,
+    :meth:`sample_kraus` and :meth:`apply_segment`.
 
-    Required hooks:
+    In return they inherit :meth:`execute`, which runs the pass pipeline,
+    splits the trailing measurements off into a classical projection,
+    and then either evolves the circuit once and samples the final state, or
+    evolves one fresh state per shot when the circuit has mid-circuit
+    measurements, noise, or loss.
 
-    - :meth:`build_state` — allocate a fresh zero state.
-    - :meth:`compile` — turn a :class:`Circuit` into a
-      :class:`CompiledCircuit` (a backend-specific lowered form).
-    - :meth:`evolve` — apply the compiled circuit to a state and
-      return the mutated state plus a typed :class:`Fidelity`.
+    Examples:
+        A backend for circuits of ``X`` and ``CX`` gates only. Its state is a
+        single computational basis state, so it is exact and fully
+        deterministic.
 
-    Optional hooks (sensible defaults provided):
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import (
+        ...     DefaultCompiledCircuit, ExactFidelity, LocalBackend, State)
 
-    - :meth:`prepare_trajectory` — refresh the compiled artifact
-      once per Monte Carlo trajectory (default: identity).
-    - :meth:`recompile_per_trajectory` — predicate; default returns
-      ``True`` iff the circuit contains a mixed-unitary Kraus
-      channel.
-    - :meth:`bind` — substitute parameters into a parametric
-      compile artifact (default: re-compile after substitution).
+        The state holds the three registers, and samples by returning its
+        basis state ``nsamples`` times.
+
+        >>> class BasisState(State):
+        ...     def __init__(self, nq, nb, nz):
+        ...         self.qubits = [0] * nq
+        ...         self.bits = [0] * nb
+        ...         self.zvars = [0j] * nz
+        ...     @property
+        ...     def num_qubits(self):
+        ...         return len(self.qubits)
+        ...     @property
+        ...     def num_bits(self):
+        ...         return len(self.bits)
+        ...     @property
+        ...     def num_zvars(self):
+        ...         return len(self.zvars)
+        ...     @property
+        ...     def classical_bits(self):
+        ...         return BitString(self.bits)
+        ...     @property
+        ...     def complex_values(self):
+        ...         return list(self.zvars)
+        ...     def amplitude(self, bs):
+        ...         return 1.0 + 0j if list(bs) == self.qubits else 0j
+        ...     def sample(self, nsamples, rng=None):
+        ...         return [BitString(self.qubits) for _ in range(nsamples)]
+
+        The backend declares what it supports, builds states, and evolves
+        them. ``compile`` has nothing to lower here, so it wraps the circuit
+        as it is.
+
+        >>> class BasisBackend(LocalBackend):
+        ...     @property
+        ...     def name(self):
+        ...         return "Basis"
+        ...     @property
+        ...     def version(self):
+        ...         return "0.1"
+        ...     def capabilities(self):
+        ...         return {"sampling", "classical_bits", "midcircuit_measure"}
+        ...     def build_state(self, nq, nb=0, nz=0, **kwargs):
+        ...         return BasisState(nq, nb, nz)
+        ...     def compile(self, circuit):
+        ...         return DefaultCompiledCircuit(circuit)
+        ...     def evolve(self, state, compiled, *, rng=None, callback=None,
+        ...                stopped=None):
+        ...         for inst in compiled.source:
+        ...             op, qs = inst.operation, inst.qubits
+        ...             if isinstance(op, GateX):
+        ...                 state.qubits[qs[0]] ^= 1
+        ...             elif isinstance(op, GateCX):
+        ...                 state.qubits[qs[1]] ^= state.qubits[qs[0]]
+        ...             elif isinstance(op, Measure):
+        ...                 state.bits[inst.bits[0]] = state.qubits[qs[0]]
+        ...             else:
+        ...                 raise ValueError(f"unsupported operation {op}")
+        ...         return state, ExactFidelity()
+
+        ``execute`` does the rest. The final measurements never reach
+        ``evolve``: the driver samples the state and maps the samples to
+        the classical register itself.
+
+        >>> backend = BasisBackend()
+        >>> c = Circuit()
+        >>> c.push(GateX(), 0)
+        1-qubit circuit with 1 instruction:
+        └── X @ q[0]
+        <BLANKLINE>
+        >>> c.push(GateCX(), 0, 1)
+        2-qubit circuit with 2 instructions:
+        ├── X @ q[0]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
+        >>> c.push(Measure(), range(2), range(2))
+        2-qubit, 2-bit circuit with 4 instructions:
+        ├── X @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── M @ q[0], c[0]
+        └── M @ q[1], c[1]
+        <BLANKLINE>
+        >>> res = backend.execute(c, nsamples=3, seed=1)
+        >>> res.cstates
+        [bs"11", bs"11", bs"11"]
+        >>> res.fidelities
+        [1.0]
+
+        The default :meth:`~Backend.can_handle` rejects what the backend does
+        not declare, such as noise.
+
+        >>> noisy = Circuit().push(Depolarizing(1, 0.1), 0)
+        >>> backend.can_handle(noisy)
+        Inadmissible(reason="circuit contains a noise channel but backend Basis does not declare the 'noise' capability")
     """
 
     @abc.abstractmethod
-    def build_state(self, nq: int, nb: int = 0, nz: int = 0, **kwargs) -> State: ...
+    def build_state(self, nq: int, nb: int = 0, nz: int = 0, **kwargs) -> State:
+        """Return a new state with every qubit in ``|0⟩`` and every register
+        cleared.
+
+        Args:
+            nq: Number of qubits.
+            nb: Number of classical bits.
+            nz: Number of z-variables.
+            **kwargs: Backend-specific options. The execute driver passes
+                none.
+
+        Returns:
+            A :class:`State` of this backend.
+        """
 
     @abc.abstractmethod
-    def compile(self, circuit) -> CompiledCircuit: ...
+    def compile(self, circuit) -> CompiledCircuit:
+        """Lower a circuit into the form :meth:`evolve` runs.
+
+        Compilation should be pure: it gets no random generator, and a result
+        that samples nothing can be reused across trajectories and parameter
+        points. Per-trajectory randomness belongs in
+        :meth:`prepare_trajectory`. A backend that does draw random choices
+        while compiling relies on :meth:`recompile_per_trajectory` to be
+        compiled again for every trajectory.
+
+        Args:
+            circuit: The prepared :class:`~mimiqcircuits.Circuit`.
+
+        Returns:
+            A :class:`CompiledCircuit`. A backend that runs circuits as they
+            are returns ``DefaultCompiledCircuit(circuit)``.
+        """
 
     def prepare_trajectory(self, compiled: CompiledCircuit, rng) -> CompiledCircuit:
         """Refresh ``compiled`` for one Monte Carlo trajectory.
 
-        Override when the compiled artifact contains stochastic
-        elements (sampled mixed-unitary channels, sampled Kraus
-        branches, …) that must be redrawn per trajectory. The
-        default leaves ``compiled`` unchanged, which is correct for
-        fully deterministic compilation.
+        Backends whose compiled form holds random choices (sampled
+        mixed-unitary branches, …) override this to redraw them. The default
+        returns ``compiled`` unchanged.
+
+        Args:
+            compiled: The result of :meth:`compile`.
+            rng: The trajectory generator, :attr:`RNGs.trajectory`.
+
+        Returns:
+            The compiled circuit for this trajectory.
         """
         return compiled
 
     @abc.abstractmethod
     def evolve(self, state: State, compiled: CompiledCircuit, *,
                rng=None, callback=None, stopped=None
-               ) -> tuple[State, Fidelity]: ...
+               ) -> tuple[State, Fidelity]:
+        """Apply a compiled circuit to ``state``.
+
+        The state can be changed in place and returned. Measurements and
+        classical operations write the classical register, and
+        ``Amplitude``, ``ExpectationValue`` and similar operations write the
+        z-register.
+
+        Args:
+            state: A state from :meth:`build_state`.
+            compiled: The compiled circuit, after :meth:`prepare_trajectory`.
+            rng: The generator that randomness resolved during evolution
+                (measurements, resets, noise) is drawn from;
+                :meth:`execute` passes :attr:`RNGs.noise`. It is advanced,
+                so successive calls sharing one generator draw independent
+                numbers. Without it the backend draws fresh entropy.
+            callback: ``None``, or a callable to report progress. When
+                progress reporting is on, the driver passes a callable that
+                expects ``callback(i, total)`` once per step, with ``i`` the
+                1-based step and ``total`` the number of steps or ``None``.
+            stopped: The ``stopped`` argument of :meth:`execute`, passed
+                through unchanged.
+
+        Returns:
+            A tuple ``(state, fidelity)``: the evolved state and a
+            :class:`Fidelity`. A plain float is also accepted: ``1.0`` is
+            read as :class:`ExactFidelity`, any other value as
+            :class:`TruncationLowerBound`, and ``None`` as
+            :class:`UnknownFidelity`.
+        """
 
     def recompile_per_trajectory(self, circuit) -> bool:
-        """Return ``True`` iff :meth:`compile` should be re-run for
-        every trajectory. The default fires on any mixed-unitary
-        :class:`krauschannel`: those backends sample a branch at
-        compile time, so the compiled artifact has to be regenerated
-        per trajectory to expose a fresh sample. Backends that own
-        their per-trajectory sampling internally (inside
-        :meth:`prepare_trajectory` or :meth:`evolve`) should
-        override to return ``False``.
+        """Return whether :meth:`compile` runs again for every trajectory.
+
+        The default returns ``True`` when ``circuit`` has a mixed-unitary
+        Kraus channel, for backends that draw its branch while compiling.
+        Backends that draw it in :meth:`prepare_trajectory` or
+        :meth:`evolve` override this to return ``False`` and compile once.
+
+        Args:
+            circuit: The prepared circuit.
+
+        Returns:
+            Whether to recompile per trajectory.
         """
         from mimiqcircuits.backends.measure_analysis import any_mixed_unitary
         return any_mixed_unitary(circuit)
 
     def bind(self, compiled: CompiledParametricCircuit, params: dict
              ) -> CompiledCircuit:
-        """Substitute ``params`` into a parametric compiled circuit.
+        """Substitute ``params`` into a compiled parametric circuit.
 
-        The default implementation substitutes the symbols in the
-        source circuit and re-runs :meth:`compile`. This is correct
-        but pays the full compile cost at every parameter point.
-        Override when your backend can re-bind a pre-compiled
-        artifact in-place (slot maps, pre-baked gate templates, …).
+        The default evaluates the source circuit with ``params`` and calls
+        :meth:`compile` again, which pays the full compile cost at every
+        point. Backends that can rebind a compiled form in place override
+        this.
+
+        Args:
+            compiled: A :class:`CompiledParametricCircuit` whose ``source`` is
+                the symbolic circuit.
+            params: Values for the free symbols, as for
+                :meth:`~mimiqcircuits.Circuit.evaluate`.
+
+        Returns:
+            A fully bound :class:`CompiledCircuit`.
         """
-        # Avoid a circular import at module load time.
-        from mimiqcircuits import substitute
-        bound = substitute(compiled.source, params)
-        return self.compile(bound)
+        return self.compile(compiled.source.evaluate(params))
 
     def optimize(self, experiment, initparams=None, *, return_history=False, **kwargs):
         """Minimize a cost read from a parametric circuit by running it on
@@ -853,14 +1214,14 @@ class LocalBackend(Backend):
 
         At every step the optimizer proposes values for the circuit's
         symbols, the circuit is evaluated with them and run with
-        :meth:`execute`, and the cost is the real part of the mean of the
+        :meth:`execute`, and the cost is the real part of the mean of
         z-register ``zregister`` over the samples. Push the quantity to
         minimize into that register, for example with
         :meth:`~mimiqcircuits.Circuit.push_expval`.
 
         Call it with an :class:`~mimiqcircuits.OptimizationExperiment`, a
-        list of them, or a circuit and a dict of initial values for all its
-        symbols plus the experiment's fields as keywords:
+        list of them, or a circuit and a dictionary of initial values for
+        all its symbols plus the experiment's fields as keywords:
 
         - ``optimizer``: ``"BFGS"``, ``"LBFGS"``, ``"CG"``, ``"NELDERMEAD"``,
           ``"NEWTON"``, ``"COBYLA"`` (default) or ``"CMAES"``. All but
@@ -870,35 +1231,93 @@ class LocalBackend(Backend):
         - ``zregister``: index of the z-register holding the cost (default 0).
         - ``label``: a name for the experiment.
 
-        With an experiment these come from it, and passing them again is an
-        error. ``return_history=True`` also keeps every evaluated point.
-        Every other keyword goes to :meth:`execute` on each evaluation:
-        ``nsamples``, ``seed``, ``fuse``, ``passes`` and so on. With a fixed
-        ``seed`` every evaluation draws the same random numbers, so a noisy
-        cost does not jump between otherwise equal points.
+        With an experiment these fields come from it, and passing them again
+        is an error. Every other keyword goes to :meth:`execute` on each
+        evaluation: ``nsamples``, ``seed``, ``fuse``, ``passes`` and so on.
+        With a fixed ``seed`` every evaluation draws the same random numbers,
+        so a noisy cost does not jump between otherwise equal points.
 
-        Returns an :class:`~mimiqcircuits.OptimizationResults` with the
-        lowest-cost :class:`~mimiqcircuits.OptimizationRun` and, with
-        ``return_history=True``, every evaluated run in order. A list of
-        experiments returns a list of results in the same order.
+        Args:
+            experiment: An :class:`~mimiqcircuits.OptimizationExperiment`, a
+                list of them, or a symbolic circuit.
+            initparams: Initial values when ``experiment`` is a circuit;
+                must be ``None`` otherwise.
+            return_history: Also keep every evaluated run.
+            **kwargs: Experiment fields (with a circuit only) and
+                :meth:`execute` options.
 
-        Raises :class:`ValueError` for an unknown optimizer or a
-        ``zregister`` the circuit does not have.
+        Returns:
+            An :class:`~mimiqcircuits.OptimizationResults` with the
+            lowest-cost :class:`~mimiqcircuits.OptimizationRun` and, with
+            ``return_history=True``, every evaluated run in order. A list of
+            experiments gives a list of results in the same order.
 
-        Example:
-            .. code-block:: python
+        Raises:
+            ValueError: For an unknown optimizer, a ``zregister`` the circuit
+                does not have, or a circuit and initial values that do not
+                form a valid experiment.
+            TypeError: If ``initparams`` or an experiment field is given
+                together with an experiment.
 
-                from symengine import symbols
-                import mimiqcircuits as mc
+        Examples:
+            A one-qubit backend for circuits of ``RY`` gates followed by
+            ``⟨Z⟩`` measurements. It tracks the rotation angle and writes
+            ``cos(theta)`` to the z-register.
 
-                theta = symbols("theta")
-                c = mc.Circuit().push(mc.GateRY(theta), 0)
-                # The cost is <Z> on qubit 0, written to z-register 0.
-                c.push(mc.ExpectationValue(mc.GateZ()), 0, 0)
+            >>> from mimiqcircuits import *
+            >>> from mimiqcircuits.backends import (
+            ...     DefaultCompiledCircuit, LocalBackend, State)
+            >>> import math
+            >>> from symengine import symbols
+            >>> class RYState(State):
+            ...     num_qubits = property(lambda self: 1)
+            ...     num_bits = property(lambda self: 0)
+            ...     num_zvars = property(lambda self: len(self.z))
+            ...     classical_bits = property(lambda self: BitString(0))
+            ...     complex_values = property(lambda self: list(self.z))
+            ...     def __init__(self, nz):
+            ...         self.theta, self.z = 0.0, [0j] * nz
+            ...     def amplitude(self, bs):
+            ...         raise NotImplementedError
+            ...     def sample(self, nsamples, rng=None):
+            ...         return [BitString(1)] * nsamples
+            >>> class RYBackend(LocalBackend):
+            ...     name = "RY"
+            ...     version = "0.1"
+            ...     def capabilities(self):
+            ...         return {"zvars", "expectation_1q"}
+            ...     def build_state(self, nq, nb=0, nz=0, **kwargs):
+            ...         return RYState(nz)
+            ...     def compile(self, circuit):
+            ...         return DefaultCompiledCircuit(circuit)
+            ...     def evolve(self, state, compiled, *, rng=None,
+            ...                callback=None, stopped=None):
+            ...         for inst in compiled.source:
+            ...             if isinstance(inst.operation, GateRY):
+            ...                 state.theta += float(inst.operation.theta)
+            ...             else:
+            ...                 state.z[inst.zvars[0]] = math.cos(state.theta)
+            ...         return state, 1.0
 
-                res = backend.optimize(c, {theta: 0.1}, optimizer="NELDERMEAD",
-                                       nsamples=1, seed=1)
-                res.get_best().cost  # close to -1, reached at theta = pi
+            The cost is ``⟨Z⟩`` on qubit 0, written to z-register 0. It is
+            lowest, ``-1``, at ``theta = pi``.
+
+            >>> theta = symbols("theta")
+            >>> c = Circuit().push(GateRY(theta), 0)
+            >>> c.push(ExpectationValue(GateZ()), 0, 0)
+            1-qubit, 1-zvar circuit with 2 instructions:
+            ├── RY(theta) @ q[0]
+            └── ⟨Z⟩ @ q[0], z[0]
+            <BLANKLINE>
+
+            Start from ``theta = 0.1``. ``nsamples=1`` is enough because the
+            cost is exact.
+
+            >>> res = RYBackend().optimize(c, {theta: 0.1},
+            ...                            optimizer="NELDERMEAD", nsamples=1)
+            >>> best = res.get_best()
+            >>> round(best.cost, 4), round(best.parameters[theta], 2)
+            (-1.0, 3.14)
         """
         from mimiqcircuits.backends.optimize import optimize
 
@@ -906,55 +1325,101 @@ class LocalBackend(Backend):
                         return_history=return_history, **kwargs)
 
     def compile_progress(self, circuit, progress):
-        """Compile ``circuit`` while optionally emitting a compression
-        stage. The default ignores ``progress`` and defers to
-        :meth:`compile`; MPS-class backends whose compilation fuses
-        gates into tensors override this to open a "compression" stage
-        and step it per fused gate. Keeping the hook separate from
-        :meth:`compile` leaves the required signature untouched."""
+        """Compile ``circuit``, optionally reporting progress.
+
+        The default ignores ``progress`` and calls :meth:`compile`. Backends
+        whose compilation has countable steps (such as fusing gates into
+        tensors) override this to open a stage on ``progress`` and step it.
+
+        Args:
+            circuit: The prepared circuit.
+            progress: A :class:`Progress` sink.
+
+        Returns:
+            The result of :meth:`compile`.
+        """
         return self.compile(circuit)
 
     # ── runtime-loss driver ───────────────────────────────────────────────
     #
-    # Mirrors `AbstractQCSs.evolve_with_loss!`. Runtime `LossyOperator` loss
-    # cannot be resolved before the backend runs (which qubit leaks depends on
-    # which Kraus branch fires), so it is resolved live. A backend opts in by
-    # returning `True` from `uses_loss_driver` and implementing the two
-    # loss-agnostic primitives below; all loss bookkeeping lives in the driver.
+    # Runtime `LossyOperator` loss cannot be resolved before the backend runs
+    # (which qubit leaks depends on which Kraus branch fires), so it is
+    # resolved live. A backend opts in by returning `True` from
+    # `uses_loss_driver` and implementing the two loss-agnostic primitives
+    # below; all loss bookkeeping lives in the driver.
 
     def uses_loss_driver(self) -> bool:
-        """Whether :meth:`execute` resolves runtime ``LossyOperator`` loss
-        through :meth:`evolve_with_loss`. Opt in by returning ``True`` and
-        implementing :meth:`apply_instruction` and :meth:`sample_kraus`."""
+        """Return whether :meth:`execute` resolves runtime loss through
+        :meth:`evolve_with_loss`.
+
+        Runtime loss comes from Kraus channels with a ``LossyOperator``
+        branch: which qubit is lost depends on the branch that fires. A
+        backend opts in by returning ``True``, implementing
+        :meth:`apply_instruction` and :meth:`sample_kraus`, and giving its
+        state a :class:`LossState` (see :meth:`State.get_loss_state`). The
+        default returns ``False``.
+        """
         return False
 
     def apply_instruction(self, state, inst, *, rng=None):
-        """Apply a single (loss-free) instruction to ``state`` and return the
-        fidelity factor it contributes (``1.0`` for an exact application). The
-        per-step primitive the runtime-loss driver calls; no loss logic."""
+        """Apply one instruction to ``state`` for the runtime-loss driver.
+
+        Backends that use the runtime-loss driver override this; the default
+        raises :class:`NotImplementedError`. The instruction never involves
+        a lost qubit, so the method needs no loss logic.
+
+        Args:
+            state: The state to change in place.
+            inst: The instruction to apply.
+            rng: The noise generator.
+
+        Returns:
+            The fidelity factor of this step, ``1.0`` when it is exact.
+        """
         raise NotImplementedError(
             "apply_instruction(state, inst) not implemented for this backend"
         )
 
     def sample_kraus(self, state, channel, targets, *, rng=None):
-        """Sample one branch of a Kraus ``channel`` against ``state``, apply it,
-        and return ``(fidelity, fired_operator)`` where ``fired_operator`` is the
-        original branch (tag preserving, so a ``LossyOperator`` arrives intact).
-        The driver maps the fired operator back to the qubits that leaked."""
+        """Draw and apply one branch of a Kraus channel, for the runtime-loss
+        driver.
+
+        Backends that use the runtime-loss driver override this; the default
+        raises :class:`NotImplementedError`.
+
+        Args:
+            state: The state to change in place.
+            channel: The Kraus channel.
+            targets: The qubits it acts on.
+            rng: The noise generator.
+
+        Returns:
+            A tuple ``(fidelity, fired)``: the fidelity factor and the Kraus
+            operator that fired, as the channel holds it, so that a
+            ``LossyOperator`` keeps its type and the driver can mark its
+            qubits as lost.
+        """
         raise NotImplementedError(
             "sample_kraus(state, channel, targets) not implemented for this backend"
         )
 
     def apply_segment(self, state, insts, *, rng=None):
-        """Apply a contiguous run of loss-free instructions and return the
-        product of their fidelity factors.
+        """Apply a run of instructions on present qubits, for the runtime-loss
+        driver.
 
-        The runtime-loss driver hands this the maximal run of instructions
-        between two loss events; every instruction acts only on present qubits,
-        so a compressing or fusing backend (MPS/MPO) may override this to
-        compress the whole run at once — that all-present guarantee is the
-        contract it relies on. The default applies one instruction at a time via
-        :meth:`apply_instruction`, which suits a non-compressing backend.
+        The driver passes the longest run between two loss events, and
+        every instruction in it acts only on present qubits, so a backend
+        that compresses or fuses gates (MPS, MPO) can override this to
+        process the whole run at once. The default calls
+        :meth:`apply_instruction` on each instruction in turn.
+
+        Args:
+            state: The state to change in place.
+            insts: The instructions to apply.
+            rng: The noise generator.
+
+        Returns:
+            The product of the fidelity factors.
         """
         fid = 1.0
         for inst in insts:
@@ -963,15 +1428,35 @@ class LocalBackend(Backend):
 
     def evolve_with_loss(self, state, circuit, lossmodel, *,
                          rng=None, callback=None, stopped=None):
-        """Evolve ``circuit`` while resolving qubit loss at runtime.
+        """Evolve ``circuit`` on ``state`` while resolving qubit loss as it
+        happens.
 
-        Loss rides in the state's :class:`LossState` register and is interpreted
-        exactly as the offline :func:`lower_losses` does, so the two agree shot
-        for shot. The circuit is walked as alternating [all-present run, loss
-        event]: each run is handed to :meth:`apply_segment` (which a compressing
-        backend fuses) before the event after it is resolved, so a lost-qubit op
-        can never enter a fused run. Returns ``(state, fidelity)`` where
-        ``fidelity`` is the product of the per-step fidelity factors.
+        The lost qubits are tracked in the state's :class:`LossState` and
+        interpreted as :func:`~mimiqcircuits.lossmodel.lower_losses` does.
+        The circuit is walked as alternating runs and loss events: each run of
+        instructions on present qubits goes to :meth:`apply_segment`, then the
+        loss event after it (``Loss``, ``Reload``, ``Check``,
+        ``MeasureCheck``, a Kraus channel, or an operation on a lost qubit)
+        is resolved against the live state. :meth:`execute` calls this once
+        per shot when :meth:`uses_loss_driver` returns ``True`` and the
+        circuit has a loss that can only be resolved while it runs.
+
+        Args:
+            state: A state from :meth:`build_state` whose
+                :meth:`~State.get_loss_state` works.
+            circuit: The prepared circuit.
+            lossmodel: The :class:`~mimiqcircuits.LossModel` that decides how
+                an operation on partly lost qubits is rewritten.
+            rng: The noise generator.
+            callback: Called as ``callback(i, total)`` once per instruction
+                of ``circuit``, with ``i`` from 1 to ``total``, its length.
+                An instruction dropped because its qubits are lost still
+                counts, so the total doesn't depend on which qubits are lost.
+            stopped: Accepted for symmetry with :meth:`evolve`; not used.
+
+        Returns:
+            A tuple ``(state, fidelity)``, where ``fidelity`` is the product
+            of the per-step fidelity factors.
         """
         ls = state.get_loss_state()
         fid = 1.0
@@ -987,20 +1472,29 @@ class LocalBackend(Backend):
                 # One tick per source instruction in the run (buffered or
                 # dropped), keeping the per-instruction callback contract.
                 for k in range(start, n if evidx is None else evidx):
-                    callback(state, insts[k])
+                    callback(k + 1, n)
             if evidx is None:
                 break
             ev = insts[evidx]
             fid *= self._resolve_loss_event(state, ev, ls, lossmodel, rng=rng)
             if callback is not None:
-                callback(state, ev)
+                callback(evidx + 1, n)
         return state, fid
 
     def _resolve_loss_event(self, state, inst, ls, lossmodel, *, rng=None):
         """Resolve a single loss event against the live state and register,
         returning its fidelity factor. The only place loss marks are written.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.classical.setbits import SetBit0, SetBit1
+        from mimiqcircuits.instruction import Instruction
+        from mimiqcircuits.operations.losschannel import (
+            Check,
+            Loss,
+            MeasureCheck,
+            Reload,
+        )
+        from mimiqcircuits.operations.measure import Measure
+        from mimiqcircuits.operations.reset import Reset
         from mimiqcircuits.lossmodel import lossmodel_rewrite, _loss_fires
         from mimiqcircuits.operations.krauschannel import krauschannel
         from mimiqcircuits.operations.operators.lossyoperator import LossyOperator
@@ -1010,35 +1504,35 @@ class LocalBackend(Backend):
 
         def _apply(o, qubits=(), bits=()):
             return self.apply_instruction(
-                state, mc.Instruction(o, tuple(qubits), tuple(bits), ()), rng=rng
+                state, Instruction(o, tuple(qubits), tuple(bits), ()), rng=rng
             )
 
-        if isinstance(op, mc.Loss):
+        if isinstance(op, Loss):
             q = qs[0]
             if not ls.is_lost(q) and _loss_fires(op, rng):
                 ls.mark_lost(q)
             return 1.0
 
-        if isinstance(op, mc.Reload):
+        if isinstance(op, Reload):
             # Mark present before resetting: a backend may guard `Reset` against
             # lost qubits, and a reload must always reset.
             q = qs[0]
             ls.mark_present(q)
-            return _apply(mc.Reset(), (q,))
+            return _apply(Reset(), (q,))
 
-        if isinstance(op, mc.Check):
+        if isinstance(op, Check):
             b = inst.get_bits()[0]
-            _apply(mc.SetBit0() if ls.is_lost(qs[0]) else mc.SetBit1(), (), (b,))
+            _apply(SetBit0() if ls.is_lost(qs[0]) else SetBit1(), (), (b,))
             return 1.0
 
-        if isinstance(op, mc.MeasureCheck):
+        if isinstance(op, MeasureCheck):
             bits = tuple(inst.get_bits())
             if ls.is_lost(qs[0]):
-                _apply(mc.SetBit0(), (), (bits[0],))
-                _apply(mc.SetBit0(), (), (bits[1],))
+                _apply(SetBit0(), (), (bits[0],))
+                _apply(SetBit0(), (), (bits[1],))
                 return 1.0
-            f = _apply(mc.Measure(), (qs[0],), (bits[0],))
-            _apply(mc.SetBit1(), (), (bits[1],))
+            f = _apply(Measure(), (qs[0],), (bits[0],))
+            _apply(SetBit1(), (), (bits[1],))
             return f
 
         if isinstance(op, krauschannel):
@@ -1048,9 +1542,9 @@ class LocalBackend(Backend):
                     ls.mark_lost(t)
             return f
 
-        if isinstance(op, mc.Measure):
+        if isinstance(op, Measure):
             # a measurement on a lost qubit reads 0
-            _apply(mc.SetBit0(), (), (inst.get_bits()[0],))
+            _apply(SetBit0(), (), (inst.get_bits()[0],))
             return 1.0
 
         # partially lost -> defer to the shared LossModel decision core
@@ -1100,6 +1594,33 @@ class LocalBackend(Backend):
         num_qubits: Optional[int] = None,
         progress=False,
     ):
+        """Run ``circuit`` on this backend and return its results.
+
+        Takes every argument of :meth:`Backend.execute`, plus the ones
+        below. ``circuit`` may also be a
+        :class:`~mimiqcircuits.SweepExperiment`; passing one together with
+        ``param_grid`` raises :class:`TypeError`, and one with an empty table
+        returns ``[]``.
+
+        Args:
+            fuse_threshold: Fuse gates only from this many qubits up. On its
+                own it also requests fusion; with ``fuse=False`` it raises
+                :class:`ValueError`.
+            stopped: Passed through unchanged to :meth:`evolve` and
+                :meth:`evolve_with_loss`.
+            num_qubits: Simulate at least this many qubits. When the circuit
+                has no classical bits and runs as a single evolution, the
+                samples cover the extra qubits too.
+            progress: ``True`` to show progress bars with
+                :class:`TqdmProgress`, ``False`` for none, or a
+                :class:`Progress` sink.
+
+        Returns:
+            See :meth:`Backend.execute`.
+
+        See Also:
+            :meth:`Backend.execute` for the shared arguments.
+        """
         # A sweep runs through the `param_grid` loop, so it gets the same
         # per-point seeds as the equivalent `param_grid`.
         if isinstance(circuit, SweepExperiment):
@@ -1239,9 +1760,9 @@ class LocalBackend(Backend):
         # output cstate covers the wider register.
         if (num_qubits is not None and processed_circuit.num_bits() == 0
                 and projection.num_qubits() < num_qubits):
-            import mimiqcircuits as mc
+            from mimiqcircuits.operations.measure import Measure
             for user_q in range(projection.num_qubits(), num_qubits):
-                projection.push(mc.Measure(), user_q, user_q)
+                projection.push(Measure(), user_q, user_q)
 
         if needs_trajectories(quantum_circuit):
             self._execute_trajectories(
@@ -1264,11 +1785,11 @@ class LocalBackend(Backend):
         """Number of ≥2-qubit gates in ``circuit`` — used to derive
         the per-trajectory average gate error from the circuit
         fidelity."""
-        import mimiqcircuits as mc
+        from mimiqcircuits.operations.gates.gate import Gate
         n = 0
         for inst in circuit.instructions:
             op = inst.operation
-            if isinstance(op, mc.Gate) and op.num_qubits >= 2:
+            if isinstance(op, Gate) and op.num_qubits >= 2:
                 n += 1
         return n
 
@@ -1410,7 +1931,7 @@ class LocalBackend(Backend):
         """Method-1 loss resolution: a fresh loss pattern per shot, resolved
         into a primitive (loss-free) circuit variant, then evolved.
         """
-        from mimiqcircuits import resolve_losses
+        from mimiqcircuits.lossmodel import resolve_losses
 
         progress = progress if progress is not None else NoProgress()
         nq = max(processed_circuit.num_qubits(), num_qubits or 0)
@@ -1448,7 +1969,7 @@ class LocalBackend(Backend):
     ):
         """Per-shot evolution through the shared runtime-loss driver: a fresh
         state and loss register per trajectory, loss resolved live."""
-        from mimiqcircuits import LossModel
+        from mimiqcircuits.lossmodel import LossModel
 
         progress = progress if progress is not None else NoProgress()
         nq = max(processed_circuit.num_qubits(), num_qubits or 0)
@@ -1482,19 +2003,33 @@ class LocalBackend(Backend):
 class RemoteBackend(Backend):
     """Base class for simulators that run on a remote service.
 
-    Subclasses implement :meth:`submit`, which dispatches the request
-    and returns a job handle. The inherited :meth:`execute` calls
-    :meth:`submit`, then blocks on the returned ``job.wait()``.
+    Subclasses implement :meth:`submit`, plus the :class:`Backend` identity
+    members; they may override :meth:`execute`. The inherited
+    :meth:`execute` checks the pass order, calls :meth:`submit`, and blocks
+    on the returned job's ``wait()``.
+
+    See Also:
+        :class:`MimiqRemoteBackend`, the backend for the MIMIQ cloud service.
     """
 
     @abc.abstractmethod
     def submit(self, circuits, nsamples: int, **kwargs):
-        """Send the request and return a job handle.
+        """Send ``circuits`` to the service and return a job handle.
 
-        The job handle must expose a ``wait()`` method that blocks
-        until results are available and returns
-        :class:`mimiqcircuits.QCSResults` (or a list when
-        ``circuits`` was a list).
+        :meth:`execute` calls it with the keywords ``rngs`` (an
+        :class:`RNGs` bundle), ``passes``, ``callback``, ``param_grid`` and
+        ``strict_pass_order``.
+
+        Args:
+            circuits: A circuit or a list of circuits.
+            nsamples: Number of shots.
+            **kwargs: The keywords above, and any backend-specific options.
+
+        Returns:
+            A job handle with a ``wait()`` method that blocks until the
+            results are available and returns them: a
+            :class:`~mimiqcircuits.QCSResults`, or a list for a list of
+            circuits.
         """
 
     def execute(
@@ -1509,6 +2044,21 @@ class RemoteBackend(Backend):
         param_grid: Optional[list[dict]] = None,
         strict_pass_order: bool = True,
     ):
+        """Submit ``circuit`` with :meth:`submit` and wait for the results.
+
+        Takes the arguments of :meth:`Backend.execute` except the
+        preparation flags, which a remote backend may accept in its own
+        override.
+
+        Returns:
+            Whatever the job's ``wait()`` returns.
+
+        Raises:
+            RemotePassOrderError: If ``passes`` is non-empty,
+                ``strict_pass_order`` is ``True`` and the backend does not
+                declare ``"pass_order_honored"``.
+            TypeError: If both ``seed`` and ``rng`` are given.
+        """
         if (
             passes is not None
             and len(passes) > 0

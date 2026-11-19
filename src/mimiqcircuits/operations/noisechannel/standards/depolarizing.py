@@ -15,7 +15,8 @@
 #
 
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
+from mimiqcircuits.operations.operators.custom import Operator
 import numpy as np
 from itertools import product
 import symengine as se
@@ -45,21 +46,24 @@ class Depolarizing(krauschannel):
       I\otimes Z, X\otimes I, Y\otimes I, Z\otimes I, X\otimes X, X\otimes Y, X\otimes Z,
       Y\otimes X, Y\otimes Y, Y\otimes Z, Z\otimes X, Z\otimes Y, Z\otimes Z \}`.
 
-    This channel is a mixed unitary channel (see :func:`ismixedunitary`),
+    This channel is a mixed unitary channel (see :meth:`ismixedunitary`),
     and is a special case of :class:`PauliNoise`.
 
-    See Also:
-        :class:`PauliString`
-        :class:`PauliNoise`
+    Args:
+        N (int): Number of qubits, at least 1.
+        p (float): Probability of error, i.e. the probability of not applying
+            the identity. Must be in :math:`[0, 1]`; may be symbolic.
 
-    Parameters:
-        N (int): Number of qubits.
-        p (float): Probability of error, i.e., the probability of not applying the identity.
+    Raises:
+        ValueError: If ``N < 1`` or a numeric ``p`` is outside :math:`[0, 1]`.
+
+    See Also:
+        :class:`Depolarizing1`, :class:`Depolarizing2`, :class:`PauliNoise`,
+        :class:`PauliString`
 
     Examples:
-        Depolarizing channels can be defined for any number of qubits:
-
         >>> from mimiqcircuits import *
+        >>> # a depolarizing channel can act on any number of qubits
         >>> c = Circuit()
         >>> c.push(Depolarizing(1, 0.1), 1)
         2-qubit circuit with 1 instruction:
@@ -72,16 +76,15 @@ class Depolarizing(krauschannel):
         └── Depolarizing(0.1) @ q[1:5]
         <BLANKLINE>
 
-        For one and two qubits, you can use the shorthand notation:
-
-        >>> c.push(Depolarizing(1, 0.1), 1)
+        >>> # for one and two qubits there are shorthands
+        >>> c.push(Depolarizing1(0.1), 1)
         6-qubit circuit with 3 instructions:
         ├── Depolarizing(0.1) @ q[1]
         ├── Depolarizing(0.1) @ q[1:5]
         └── Depolarizing(0.1) @ q[1]
         <BLANKLINE>
 
-        >>> c.push(Depolarizing(2, 0.1), 1, 2)
+        >>> c.push(Depolarizing2(0.1), 1, 2)
         6-qubit circuit with 4 instructions:
         ├── Depolarizing(0.1) @ q[1]
         ├── Depolarizing(0.1) @ q[1:5]
@@ -112,6 +115,18 @@ class Depolarizing(krauschannel):
         return self._num_qubits
 
     def evaluate(self, d={}):
+        """Return a copy with symbols in ``p`` substituted by values.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            Depolarizing: A new channel; ``p`` becomes a float when it is
+            fully numeric.
+
+        Raises:
+            ValueError: If the substituted ``p`` is outside :math:`[0, 1]`.
+        """
         if hasattr(self.p, "subs"):
             substituted_p = self.p.subs(d)
             evaluated_p = (
@@ -135,7 +150,7 @@ class Depolarizing(krauschannel):
         N = self.N
         paulis = ["I", "X", "Y", "Z"]
         combinations = ["".join(p) for p in product(paulis, repeat=N)]
-        return [mc.PauliString(comb) for comb in combinations]
+        return [PauliString(comb) for comb in combinations]
 
     def unitarymatrices(self):
         return [gate.matrix() for gate in self.unitarygates()]
@@ -149,7 +164,7 @@ class Depolarizing(krauschannel):
         ]
 
     def krausoperators(self):
-        return [mc.Operator(Ek) for Ek in self.krausmatrices()]
+        return [Operator(Ek) for Ek in self.krausmatrices()]
 
     def iswrapper(self):
         pass
@@ -163,12 +178,17 @@ class Depolarizing(krauschannel):
 
 
 class Depolarizing1(krauschannel):
-    """Single-qubit depolarizing channel, ``Depolarizing(1, p)``.
+    """Single-qubit depolarizing channel, shorthand for ``Depolarizing(1, p)``.
 
-    Calling ``Depolarizing1(p)`` returns a ``Depolarizing`` instance.
+    Calling ``Depolarizing1(p)`` returns a :class:`Depolarizing` instance, not
+    a ``Depolarizing1`` one.
+
+    Args:
+        p (float): Probability of error, in :math:`[0, 1]`.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # 10% chance of applying X, Y or Z, each with probability 0.1/3
         >>> Depolarizing1(0.1) == Depolarizing(1, 0.1)
         True
     """
@@ -178,12 +198,17 @@ class Depolarizing1(krauschannel):
 
 
 class Depolarizing2(krauschannel):
-    """Two-qubit depolarizing channel, ``Depolarizing(2, p)``.
+    """Two-qubit depolarizing channel, shorthand for ``Depolarizing(2, p)``.
 
-    Calling ``Depolarizing2(p)`` returns a ``Depolarizing`` instance.
+    Calling ``Depolarizing2(p)`` returns a :class:`Depolarizing` instance, not
+    a ``Depolarizing2`` one.
+
+    Args:
+        p (float): Probability of error, in :math:`[0, 1]`.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # 10% chance of one of the 15 non-identity two-qubit Pauli strings
         >>> Depolarizing2(0.1) == Depolarizing(2, 0.1)
         True
     """

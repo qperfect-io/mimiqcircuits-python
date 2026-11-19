@@ -20,7 +20,8 @@ import numpy as np
 from functools import reduce
 from mimiqcircuits.operations.gates.gate import Gate
 import mimiqcircuits.lazy as lz
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.power import Power
 
 
 def to_superscript(number):
@@ -29,16 +30,36 @@ def to_superscript(number):
 
 
 class Parallel(Gate):
-    """Parallel operation
+    """Copies of a gate applied in parallel on separate qubits.
 
-    This is a composite operation that applies multiple gates in parallel to the circuit at once.
+    ``Parallel(n, gate)`` applies ``gate`` ``n`` times, each copy on its own
+    group of qubits: the first ``gate.num_qubits`` targets go to the first
+    copy, the next ones to the second, and so on. Its matrix is the tensor
+    product of ``n`` copies of the gate's matrix.
+
+    The ``parallel`` method of a gate is the usual way to build one.
+
+    Args:
+        num_repeats: Number of copies, at least 2.
+        op: The gate to repeat.
+
+    Raises:
+        TypeError: If ``op`` is not a gate.
+        ValueError: If ``num_repeats`` is less than 2.
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> c= Circuit()
-        >>> c.push(Parallel(3,GateX()),1,2,3)
+        >>> # three X gates on qubits 1, 2 and 3 as a single instruction
+        >>> c = Circuit()
+        >>> c.push(Parallel(3, GateX()), 1, 2, 3)
         4-qubit circuit with 1 instruction:
         └── ⨷ ³ X @ q[1], q[2], q[3]
+        <BLANKLINE>
+        >>> # a two-qubit gate in parallel: CX on (0, 1) and on (2, 3)
+        >>> Parallel(2, GateCX()).decompose()
+        4-qubit circuit with 2 instructions:
+        ├── CX @ q[0], q[1]
+        └── CX @ q[2], q[3]
         <BLANKLINE>
     """
 
@@ -51,9 +72,6 @@ class Parallel(Gate):
     def __init__(self, num_repeats, op: Gate):
         if not isinstance(op, (Gate)):
             raise TypeError(f"{op.__class__.__name__} cannot be Paralleled.")
-
-        if self.num_bits != 0:
-            raise ValueError("Parallel operations cannot act on classical bits.")
 
         if num_repeats < 2:
             raise ValueError(
@@ -77,6 +95,7 @@ class Parallel(Gate):
 
     @property
     def num_repeats(self):
+        """Number of parallel copies. Read-only."""
         return self._num_repeats
 
     @num_repeats.setter
@@ -85,6 +104,7 @@ class Parallel(Gate):
 
     @property
     def op(self):
+        """The repeated gate. Read-only."""
         return self._op
 
     @op.setter
@@ -95,14 +115,28 @@ class Parallel(Gate):
         return True
 
     def inverse(self):
+        """Return the parallel copies of the inverse gate."""
         return Parallel(self.num_repeats, self.op.inverse())
 
     def power(self, *args):
+        """Raise each parallel copy to a power.
+
+        Args:
+            *args: The exponent. When omitted, a lazy expression is returned
+                that takes the exponent later.
+
+        Returns:
+            Parallel: ``Parallel(num_repeats, Power(op, p))``, or a lazy
+            expression when called without arguments.
+
+        Raises:
+            ValueError: If more than one argument is given.
+        """
         if len(args) == 0:
             return lz.power(self)
         elif len(args) == 1:
             pwr = args[0]
-            return mc.Power(self.op, pwr).parallel(self.num_repeats)
+            return Power(self.op, pwr).parallel(self.num_repeats)
         else:
             raise ValueError("Invalid number of arguments.")
 
@@ -111,11 +145,29 @@ class Parallel(Gate):
             return lz.control(self)
         elif len(args) == 1:
             num_controls = args[0]
-            return mc.Control(num_controls, self)
+            return Control(num_controls, self)
         else:
             raise ValueError("Invalid number of arguments.")
 
     def parallel(self, *args):
+        """Repeat in parallel again, multiplying the number of copies.
+
+        Args:
+            *args: The extra repetition factor ``n``. When omitted, a lazy
+                expression is returned that takes it later.
+
+        Returns:
+            Parallel: ``Parallel(num_repeats * n, op)``, or a lazy
+            expression when called without arguments.
+
+        Raises:
+            ValueError: If more than one argument is given.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> Parallel(2, GateH()).parallel(3)
+            ⨷ ⁶ H
+        """
         if len(args) == 0:
             return lz.parallel(self)
         elif len(args) == 1:

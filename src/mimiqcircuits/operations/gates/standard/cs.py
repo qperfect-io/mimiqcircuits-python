@@ -19,27 +19,24 @@
 from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import Control, canonical_control
 
 
-@mc.canonical_control(1, GateS)
-class GateCS(mc.Control):
+@canonical_control(1, GateS)
+class GateCS(Control):
     r"""Two qubit Controlled-S gate.
 
     By convention, the first qubit is the control and the second is
-    the target
+    the target.
 
-    See Also :class:`GateS`
-
-    **Matrix representation:**:
-
-    .. math::
-        \operatorname{CS} =\begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & 1 & 0 \\
-            0 & 0 & 0 & i
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{CS} = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & 1 & 0 \\
+                0 & 0 & 0 & i
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -66,10 +63,13 @@ class GateCS(mc.Control):
         ├── CX @ q[0], q[1]
         └── T @ q[1]
         <BLANKLINE>
+
+    See Also:
+        :class:`GateS`, :class:`GateCSDG`
     """
 
     def __init__(self, num_controls=1, operation=None):
-        """Initialize a CS gate."""
+        """Initialize a CS gate. The arguments are unused."""
         super().__init__(1, GateS())
 
     def _decompose(self, circ, qubits, bits, zvars):
@@ -82,23 +82,20 @@ class GateCS(mc.Control):
         return circ
 
 
-
-
-@mc.canonical_control(1, GateSDG)
-class GateCSDG(mc.Control):
-    r"""Adjoint of two qubit Controlled-S gate.
+@canonical_control(1, GateSDG)
+class GateCSDG(Control):
+    r"""Two qubit Controlled-:class:`GateSDG` gate, the adjoint of :class:`GateCS`.
 
     By convention, the first qubit is the control and the second is
-    the target
+    the target.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{CS}^{\dagger} = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & 1 & 0 \\
-            0 & 0 & 0 & -i
+    Matrix Representation:
+        .. math::
+            \operatorname{CS}^{\dagger} = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & 1 & 0 \\
+                0 & 0 & 0 & -i
             \end{pmatrix}
 
     Examples:

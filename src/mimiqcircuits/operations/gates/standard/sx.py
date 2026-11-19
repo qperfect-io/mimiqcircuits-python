@@ -18,7 +18,21 @@
 
 from fractions import Fraction
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.gates.standard.pauli import GateX
+from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+from mimiqcircuits.operations.gates.standard.u import GateU
+from mimiqcircuits.operations.inverse import (
+    Inverse,
+    canonical_inverse,
+    register_inverse_decomposition,
+)
+from mimiqcircuits.operations.power import (
+    Power,
+    canonical_power,
+    register_power_alias,
+    register_power_decomposition,
+)
 from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 
 
@@ -27,17 +41,18 @@ from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 _EXPONENT = Fraction(1, 2)
 
 
-@mc.canonical_power(mc.GateX, _EXPONENT)
-class GateSX(mc.Power):
+@canonical_power(GateX, _EXPONENT)
+class GateSX(Power):
     r"""Single qubit :math:`\sqrt{X}` gate.
 
-    **Matrix representation:**
+    Equal to ``GateX().power(1/2)``.
 
-    .. math::
-        \sqrt{\operatorname{X}} = \frac{1}{2} \begin{pmatrix}
-            1+i & 1-i \\
-            1-i & 1+i\\
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \sqrt{\operatorname{X}} = \frac{1}{2} \begin{pmatrix}
+                1+i & 1-i \\
+                1-i & 1+i\\
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -64,34 +79,33 @@ class GateSX(mc.Power):
     """
 
     def __init__(self, operation=None, exponent=None):
-        """Initialize an SX gate."""
-        super().__init__(mc.GateX(), _EXPONENT)
+        """Initialize an SX gate. The arguments are unused."""
+        super().__init__(GateX(), _EXPONENT)
 
 
-mc.register_power_alias(mc.GateX, 1 / 2, "SX")
+register_power_alias(GateX, 1 / 2, "SX")
 
 
-@mc.register_power_decomposition(mc.GateX, 1 / 2)
+@register_power_decomposition(GateX, 1 / 2)
 def _decompose_gatesx(self, circ, qubits, bits, zvars):
     q = qubits[0]
-    circ.push(mc.GateSDG(), q)
-    circ.push(mc.GateH(), q)
-    circ.push(mc.GateSDG(), q)
-    circ.push(mc.GateU(0, 0, 0, PI_4), q)
+    circ.push(GateSDG(), q)
+    circ.push(GateH(), q)
+    circ.push(GateSDG(), q)
+    circ.push(GateU(0, 0, 0, PI_4), q)
     return circ
 
 
-@mc.canonical_inverse(GateSX)
-class GateSXDG(mc.Inverse):
-    r"""Single qubit :math:`\sqrt{X}^\dagger` gate (conjugate transpose of the :math:`\sqrt{X}` gate).
+@canonical_inverse(GateSX)
+class GateSXDG(Inverse):
+    r"""Single qubit :math:`\sqrt{X}^\dagger` gate, the inverse of :class:`GateSX`.
 
-    **Matrix representation:**
-
-    .. math::
-        \sqrt{\operatorname{X}}^\dagger = \frac{1}{2} \begin{pmatrix}
-            1-i & 1+i \\
-            1+i & 1-i\\
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \sqrt{\operatorname{X}}^\dagger = \frac{1}{2} \begin{pmatrix}
+                1-i & 1+i \\
+                1+i & 1-i\\
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -118,15 +132,15 @@ class GateSXDG(mc.Inverse):
     """
 
     def __init__(self, operation=None):
-        """Initialize an SXDG gate."""
+        """Initialize an SXDG gate. The argument is unused."""
         super().__init__(GateSX())
 
 
-@mc.register_inverse_decomposition((mc.Power, mc.GateX, 1 / 2))
+@register_inverse_decomposition((Power, GateX, 1 / 2))
 def _decompose_gatesxdg(self, circ, qubits, bits, zvars):
     q = qubits[0]
-    circ.push(mc.GateS(), q)
-    circ.push(mc.GateH(), q)
-    circ.push(mc.GateS(), q)
-    circ.push(mc.GateU(0, 0, 0, NEG_PI_4), q)
+    circ.push(GateS(), q)
+    circ.push(GateH(), q)
+    circ.push(GateS(), q)
+    circ.push(GateU(0, 0, 0, NEG_PI_4), q)
     return circ

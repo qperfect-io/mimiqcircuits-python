@@ -21,15 +21,27 @@ from mimiqcircuits.classical.abstract_classical import (
 
 
 class Xor(AbstractClassical):
-    """
-    Computes the bitwise XOR of N-1 classical bits and stores the result in the first given bit.
+    """Bitwise XOR of classical bits, written to a classical bit.
+
+    ``Xor(N)`` acts on ``N`` bits: the first is the destination and the
+    other ``N - 1`` are the inputs. The destination is set to the parity of the inputs: 1 if an odd number of them is 1. The
+    destination may also be one of the inputs, which updates it in place.
+
+    Args:
+        N (int): Total number of bits, destination included. At least 3;
+            defaults to 3.
+
+    Raises:
+        ValueError: If ``N`` is less than 3.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # placeholders show the destination ?0 and the inputs
         >>> Xor()
         c[?0] = c[?1] ^ c[?2]
         >>> Xor(8)
         c[?0] = ^ @ c[?1:?7]
+        >>> # c[0] = c[2] ^ c[3]
         >>> c = Circuit()
         >>> c.push(Xor(), 0, 2, 3)
         4-bit circuit with 1 instruction:
@@ -61,12 +73,10 @@ class Xor(AbstractClassical):
     _allow_bit_aliasing = True
 
     def __init__(self, N=3):
-        """
-        Initializes an Xor operation.
+        """Create an Xor on ``N`` bits: one destination and ``N - 1`` inputs.
 
-        Args:
-            N: The total number of classical bits (1 destination + N-1 inputs).
-               Must be 3 or greater. Defaults to 3.
+        Raises:
+            ValueError: If ``N`` is less than 3.
         """
         if N < 3:
             raise ValueError("Xor operation requires at least 3 classical bits.")
@@ -79,9 +89,7 @@ class Xor(AbstractClassical):
         return False
 
     def __repr__(self):
-        """
-        Returns the string representation of the operation with placeholders.
-        """
+        """Return the operation written with placeholder bits, such as ``c[?0]``."""
         N = self._num_bits
         if N > 6:
             # Compact view for many bits
@@ -92,15 +100,11 @@ class Xor(AbstractClassical):
             return f"c[?0] = {' ^ '.join(parts)}"
 
     def __str__(self):
-        """
-        Returns the simple string name of the operation.
-        """
+        """Return the operator symbol, ``"^"``."""
         return self._name
 
     def format_with_targets(self, qubits, bits, zvars):
-        """
-        Formats the operation with its specific target bits.
-        """
+        """Return the operation written with the given target bits."""
         return _format_logical("^", bits)
 
 

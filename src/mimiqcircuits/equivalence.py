@@ -19,30 +19,63 @@ Experiment to check equivalence between two circuits.
 
 import warnings
 
-from mimiqcircuits import Circuit, GateH, GateCX, Measure, inverse
-from mimiqcircuits import BitString
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.lazy import inverse
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.measure import Measure
+from mimiqcircuits.bitstrings import BitString
 
 
 class EquivalenceExperiment:
-    r"""
-    Represents a circuit equivalence checking experiment.
+    r"""An experiment that checks whether two unitary circuits are equivalent.
 
-    Constructs a circuit to check equivalence between `c1` and `c2`.
-    We implement the Choi-Jamiolkowski isomorphism to compare the channels.
-    If the channels are equivalent, the final state must be |0...0>.
+    The test uses the Choi-Jamiolkowski isomorphism. Each of the :math:`n`
+    input qubits is entangled with an ancilla in a Bell pair, then ``c1``
+    and the inverse of ``c2`` are applied to the input qubits, and the Bell
+    pairs are undone. The :math:`2n` qubits end in the all-zero state with
+    probability
+
+    .. math::
+
+        P = \left| \frac{\operatorname{Tr}(U_2^\dagger U_1)}{2^n} \right|^2,
+
+    which is 1 exactly when the two circuits implement the same unitary up
+    to a global phase. :meth:`build_circuit` returns this test circuit and
+    :meth:`interpret_results` reads :math:`P` from its results.
+
+    Both circuits must be invertible, so they cannot contain measurements,
+    resets or noise.
 
     Args:
-        c1 (Circuit): First circuit.
-        c2 (Circuit): Second circuit.
-        method (str, optional): Verification method. Can be "samples" (default) or "amplitudes".
-                                "samples" measures the final state. "amplitudes" computes the amplitude of the all-zero state.
+        c1 (Circuit): The first circuit.
+        c2 (Circuit): The second circuit.
+        method (str): How :math:`P` is read. ``"samples"`` (the default)
+            measures all qubits and counts the all-zero outcomes;
+            ``"amplitudes"`` computes the amplitude of the all-zero state
+            exactly.
 
-    Example:
+    Raises:
+        ValueError: If ``method`` is not ``"samples"`` or ``"amplitudes"``.
+
+    Examples:
         >>> from mimiqcircuits import *
-        >>> c1 = Circuit().push(GateX(), 0)
+        >>> # HZH and X are the same gate
+        >>> c1 = Circuit().push(GateH(), 0).push(GateZ(), 0).push(GateH(), 0)
         >>> c2 = Circuit().push(GateX(), 0)
-        >>> exp = EquivalenceExperiment(c1, c2, method="samples")
-        >>> # To execute: conn.execute(exp)
+        >>> exp = EquivalenceExperiment(c1, c2, method="amplitudes")
+        >>> exp
+        Choi-isomorphism circuit equivalence test:
+        ├── a == b
+        │   ├── a: 1-qubit circuit with 3 instructions
+        │   └── b: 1-qubit circuit with 1 instruction
+        └── compare amplitudes
+        >>> # run the test circuit remotely and read the probability
+        >>> conn = MimiqConnection()  # doctest: +SKIP
+        >>> conn.connect()  # doctest: +SKIP
+        >>> job = conn.submit(exp)  # doctest: +SKIP
+        >>> exp.interpret_results(conn.get_result(job))  # doctest: +SKIP
+        1.0
     """
 
     def __init__(self, c1: Circuit, c2: Circuit, method="samples"):
@@ -57,8 +90,35 @@ class EquivalenceExperiment:
         self.method = method
 
     def build_circuit(self):
-        """
-        Builds the circuit to test equivalence between `c1` and `c2`.
+        """Return the test circuit of the experiment.
+
+        It uses twice as many qubits as the larger of the two circuits: the
+        input qubits come first, the ancillas after them. With
+        ``method="samples"`` it ends by measuring every qubit into the bit of
+        the same index; with ``method="amplitudes"`` it ends with an
+        :class:`Amplitude` of the all-zero state stored in z-variable 0. When
+        both circuits are empty the test circuit is empty too.
+
+        Returns:
+            Circuit: The test circuit.
+
+        Raises:
+            TypeError: If an operation of ``c2`` cannot be inverted.
+            NotImplementedError: If an operation of ``c2`` is a Kraus channel.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> c = Circuit().push(GateX(), 0)
+            >>> EquivalenceExperiment(c, c, method="amplitudes").build_circuit()
+            2-qubit, 1-zvar circuit with 7 instructions:
+            ├── H @ q[0]
+            ├── CX @ q[0], q[1]
+            ├── X @ q[0]
+            ├── X @ q[0]
+            ├── CX @ q[0], q[1]
+            ├── H @ q[0]
+            └── Amplitude(bs"00") @ z[0]
+            <BLANKLINE>
         """
         c1 = self.c1
         c2 = self.c2
@@ -98,11 +158,20 @@ class EquivalenceExperiment:
         return c
 
     def interpret_results(self, results):
-        """
-        Verifies the results of the equivalence experiment. Returns the probability of the all-zero state.
+        """Return the probability of the all-zero state from the results of the test circuit.
+
+        With ``method="samples"`` this is the fraction of samples that
+        measured all zeros. With ``method="amplitudes"`` it is the squared
+        modulus of the computed amplitude, averaged over the results that
+        have one. A value of 1 means the circuits are equivalent up to a
+        global phase. When both circuits are empty the result is 1.0; when
+        the results hold no samples or amplitudes it is 0.0.
 
         Args:
-            results (QCSResults): Results from the execution.
+            results (QCSResults): The results of running :meth:`build_circuit`.
+
+        Returns:
+            float: The probability, between 0 and 1.
         """
         if self.nqinput == 0:
             return 1.0
@@ -153,9 +222,39 @@ class EquivalenceExperiment:
         s += f"└── compare {self.method}"
         return s
 
+    def saveproto(self, file):
+        """Save the experiment to a protobuf (binary) file.
+
+        Args:
+            file: A file path or a binary file-like object to write to.
+
+        Returns:
+            int: The number of bytes written.
+        """
+        from mimiqcircuits.proto.protoio import saveproto
+
+        return saveproto(self, file)
+
+    @staticmethod
+    def loadproto(file):
+        """Load an experiment saved with :meth:`saveproto`.
+
+        Args:
+            file: A file path or a binary file-like object to read from.
+
+        Returns:
+            EquivalenceExperiment: The loaded experiment.
+        """
+        from mimiqcircuits.proto.protoio import loadproto
+
+        return loadproto(file, EquivalenceExperiment)
+
 
 class CircuitTesterExperiment(EquivalenceExperiment):
-    """Deprecated alias of :class:`EquivalenceExperiment`."""
+    """Deprecated alias of :class:`EquivalenceExperiment`.
+
+    Creating one emits a ``DeprecationWarning``.
+    """
 
     def __init__(self, *args, **kwargs):
         warnings.warn(

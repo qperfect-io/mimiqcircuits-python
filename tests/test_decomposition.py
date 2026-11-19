@@ -123,10 +123,127 @@ def kronecker_product(A, B):
     return C
 
 
-def test_polynomialoracle_is_not_decomposable():
-    from mimiqcircuits.decomposition import decompose, DecompositionError
+def _unitary(circ, n):
+    import numpy as np
 
-    # An oracle for simulators, without a gate decomposition.
-    c = Circuit().push(PolynomialOracle(2, 2, 1, 2, 3, 4), 0, 1, 2, 3)
+    u = np.eye(2**n, dtype=complex)
+    for inst in circ:
+        u = np.array(inst.matrix(n).tolist(), dtype=complex) @ u
+    return u
+
+
+def _oracle_diagonal(nx, a, b, c, d, qubits):
+    # In `matrix` qubit q holds bit n-1-q of the basis index; each register is little-endian.
+    n = len(qubits)
+
+    def reg(k, qs):
+        return sum(((k >> (n - 1 - q)) & 1) << i for i, q in enumerate(qs))
+
+    diag = []
+    for k in range(2**n):
+        x, y = reg(k, qubits[:nx]), reg(k, qubits[nx:])
+        diag.append(-1 if a * x * y + b * x + c * y + d == 0 else 1)
+    return diag
+
+
+@pytest.mark.parametrize("nx, ny", [(0, 2), (2, 0), (1, 2), (2, 1), (2, 2), (3, 2)])
+@pytest.mark.parametrize(
+    "coefs",
+    [(1, 0, 0, -2), (0, 1, -1, 0), (1, -1, -1, 1), (0, 0, 1, -1), (0, 1, 0, 0), (0, 0, 0, 0), (1, 2, 3, 4)],
+)
+def test_polynomialoracle_decomposition(nx, ny, coefs):
+    import numpy as np
+    from mimiqcircuits.decomposition import CanonicalRewrite
+
+    n = nx + ny
+    circ = CanonicalRewrite().decompose_step(PolynomialOracle(nx, ny, *coefs), range(n), [], [])
+    assert circ.num_qubits() == n
+    want = np.diag(_oracle_diagonal(nx, *coefs, list(range(n))))
+    assert np.allclose(_unitary(circ, n), want)
+
+
+def test_polynomialoracle_full_decomposition_keeps_width():
+    import numpy as np
+    from mimiqcircuits.decomposition import decompose
+
+    circ = decompose(Circuit().push(PolynomialOracle(1, 2, 0, 1, 0, 0), 0, 1, 2))
+    assert circ.num_qubits() == 3
+    want = np.diag(_oracle_diagonal(1, 0, 1, 0, 0, [0, 1, 2]))
+    assert np.allclose(_unitary(circ, circ.num_qubits()), want)
+
+
+def test_polynomialoracle_without_solutions_keeps_width():
+    from mimiqcircuits.decomposition import CanonicalRewrite
+
+    # f = xy + 2x + 3y + 4 >= 4: no solutions, so a single GateID on the last qubit
+    circ = CanonicalRewrite().decompose_step(PolynomialOracle(5, 5, 1, 2, 3, 4), range(10), [], [])
+    assert len(circ) == 1
+    assert isinstance(circ[0].get_operation(), GateID)
+    assert circ.num_qubits() == 10
+
+
+def test_polynomialoracle_full_decomposition_on_scattered_qubits():
+    import numpy as np
+    from mimiqcircuits.decomposition import decompose
+
+    qubits = [2, 3, 0, 1]
+    c = decompose(Circuit().push(PolynomialOracle(2, 2, 1, 0, 0, -2), *qubits))
+    u = _unitary(c, 4)
+    want = np.diag(_oracle_diagonal(2, 1, 0, 0, -2, qubits))
+    assert np.allclose(u / u[0, 0], want)  # equal up to a global phase
+
+
+def test_stim_basis_decomposes_ecr_into_cliffords():
+    import numpy as np
+    import mimiqcircuits as mc
+
+    c = mc.decompose(mc.Circuit().push(mc.GateECR(), 0, 1), mc.StimBasis())
+    assert all(not isinstance(i.operation, mc.GateECR) for i in c)
+
+    m = lambda g: np.array(g.matrix().tolist(), dtype=complex)
+    u = np.eye(4, dtype=complex)
+    for inst in c:
+        g = m(inst.operation)
+        if inst.operation.num_qubits == 1:
+            g = np.kron(g, np.eye(2)) if inst.qubits == (0,) else np.kron(np.eye(2), g)
+        u = g @ u
+    ecr = m(mc.GateECR())
+    # Equal up to a global phase.
+    k = np.argmax(abs(u))
+    phase = ecr.flat[k] / u.flat[k]
+    assert np.allclose(ecr, phase * u)
+
+
+def test_symbolic_rotations_raise_decomposition_error():
+    import symengine as se
+    import mimiqcircuits as mc
+    from mimiqcircuits.decomposition import DecompositionError
+
+    x = se.Symbol("x")
     with pytest.raises(DecompositionError):
-        decompose(c)
+        mc.decompose(mc.GateRZ(x), mc.CliffordTBasis())
+    with pytest.raises(DecompositionError):
+        mc.decompose(mc.GateU(x, 0.1, 0.2), mc.StimBasis())
+
+
+def test_special_angle_step_honours_only_cliffords():
+    import numpy as np
+    import mimiqcircuits as mc
+    from mimiqcircuits.decomposition import DecompositionError
+    from mimiqcircuits.decomposition.rules import SpecialAngleRewrite
+
+    with pytest.raises(DecompositionError):
+        SpecialAngleRewrite(only_cliffords=True).decompose_step(mc.GateRZ(np.pi / 4), [0], [], [])
+
+
+def test_clifford_t_basis_decomposes_ecr_without_t_gates():
+    import mimiqcircuits as mc
+
+    c = mc.decompose(mc.Circuit().push(mc.GateECR(), 0, 1), mc.CliffordTBasis())
+    assert len(c) == 4
+    assert not any(isinstance(i.operation, (mc.GateT, mc.GateTDG)) for i in c)
+
+
+def test_diffusion_is_its_own_inverse():
+    d = Diffusion(3)
+    assert d.inverse() is d

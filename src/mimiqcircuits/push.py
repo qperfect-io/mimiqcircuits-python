@@ -18,7 +18,8 @@
 
 from mimiqcircuits.instruction import Instruction, _OPERATION_TYPES
 from mimiqcircuits.operations.operation import Operation
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.gate import Gate
+from mimiqcircuits.operations.operator import AbstractOperator
 from collections.abc import Iterable
 from itertools import repeat
 import numpy as np
@@ -34,7 +35,7 @@ def _check_pushable(operation):
     # `RescaledGate`, ...) is not a physical operation, so it cannot be an
     # instruction on its own. It belongs inside `ExpectationValue`, a Kraus
     # channel, and similar.
-    if isinstance(operation, mc.AbstractOperator) and not isinstance(operation, mc.Gate):
+    if isinstance(operation, AbstractOperator) and not isinstance(operation, Gate):
         raise ValueError(
             f"Cannot add an operator {type(operation).__name__} that is not a gate to the circuit."
         )

@@ -56,7 +56,7 @@ Terms of Service
 ~~~~~~~~~~~~~~~~~
 .. _terms-of-service:
 
-When an Organization Manager first connects to the server they need to accept the `Terms of Service` in order to activate the cloud subscription. The organization users will then be able to send jobs. The Terms of Service is also available for the users to read it.
+When an Organization Manager first connects to the server they need to accept the *Terms of Service* in order to activate the cloud subscription. The organization users will then be able to send jobs. The Terms of Service is also available for the users to read it.
 
 User Management
 ~~~~~~~~~~~~~~~

@@ -18,25 +18,29 @@
 
 from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import (
+    Control,
+    canonical_control,
+    register_control_decomposition,
+)
+from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 
 
-@mc.canonical_control(1, GateX)
-class GateCX(mc.Control):
+@canonical_control(1, GateX)
+class GateCX(Control):
     r"""Two qubit Controlled-X gate (or CNOT).
 
     By convention, the first qubit is the control and the second is
-    the target
+    the target.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{CX} = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & 0 & 1 \\
-            0 & 0 & 1 & 0
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{CX} = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & 0 & 1 \\
+                0 & 0 & 1 & 0
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -71,33 +75,32 @@ class GateCX(mc.Control):
         super().__init__(1, GateX())
 
     def supports_canonical_rewrite(self):
-        # A primitive of the canonical gate set.
+        """Return ``False``: CX is a primitive of the canonical gate set."""
         return False
 
 
-@mc.register_control_decomposition(1, mc.GateX)
+@register_control_decomposition(1, GateX)
 def _decompose_gatecx(gate, circ, qubits, bits, zvars):
     c, t = qubits
     circ.push(gate, c, t)
     return circ
 
 
-@mc.canonical_control(1, GateY)
-class GateCY(mc.Control):
+@canonical_control(1, GateY)
+class GateCY(Control):
     r"""Two qubit Controlled-Y gate.
 
     By convention, the first qubit is the control and the second is
-    the target
+    the target.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{CY} = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & 0 & -i \\
-            0 & 0 & i & 0
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{CY} = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & 0 & -i \\
+                0 & 0 & i & 0
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -125,35 +128,34 @@ class GateCY(mc.Control):
     """
 
     def __init__(self, num_controls=1, operation=None):
-        """Initialize a CY gate."""
+        """Initialize a CY gate. The arguments are unused."""
         super().__init__(1, GateY())
 
 
-@mc.register_control_decomposition(1, mc.GateY)
+@register_control_decomposition(1, GateY)
 def _decompose_gatecy(gate, circ, qubits, bits, zvars):
     c, t = qubits
-    circ.push(mc.GateSDG(), t)
+    circ.push(GateSDG(), t)
     circ.push(GateCX(), c, t)
-    circ.push(mc.GateS(), t)
+    circ.push(GateS(), t)
     return circ
 
 
-@mc.canonical_control(1, GateZ)
-class GateCZ(mc.Control):
+@canonical_control(1, GateZ)
+class GateCZ(Control):
     r"""Two qubit Controlled-Z gate.
 
     By convention, the first qubit is the control and the second is
-    the target
+    the target.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{CZ} = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & 1 & 0 \\
-            0 & 0 & 0 & -1
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{CZ} = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & 1 & 0 \\
+                0 & 0 & 0 & -1
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -181,11 +183,11 @@ class GateCZ(mc.Control):
     """
 
     def __init__(self, num_controls=1, operation=None):
-        """Initialize a CZ gate."""
+        """Initialize a CZ gate. The arguments are unused."""
         super().__init__(1, GateZ())
 
 
-@mc.register_control_decomposition(1, mc.GateZ)
+@register_control_decomposition(1, GateZ)
 def _decompose_gatecz(gate, circ, qubits, bits, zvars):
     c, t = qubits
     circ.push(GateH(), t)

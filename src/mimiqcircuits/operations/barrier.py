@@ -21,26 +21,34 @@ import mimiqcircuits.lazy as lz
 
 
 class Barrier(Operation):
-    """Barrier operation.
+    """No-op that stops circuit optimizations from moving gates across it.
 
-    A barrier is a special operation that does not affect the quantum state or
-    the execution of a circuit, but it prevents compression or optimization
-    operation from being applied across it.
+    A barrier does not change the quantum state. Compression and
+    optimization passes do not merge, cancel or reorder operations across
+    it.
+
+    ``Barrier(n)`` covers ``n`` qubits. ``Barrier()`` without arguments
+    returns a lazy expression that takes the number of qubits later.
+
+    Args:
+        num_qubits: Number of qubits the barrier covers, at least 1.
+
+    Raises:
+        ValueError: If ``num_qubits`` is less than 1, or if more than one
+            argument is given.
 
     Examples:
-
-        Adding Barrier operation to the Circuit (The args can be: range, list,
-        tuple, set or int)
-
         >>> from mimiqcircuits import *
-        >>> c= Circuit()
+        >>> c = Circuit()
+        >>> # a single-qubit barrier on qubit 1
         >>> c.push(Barrier(1), 1)
         2-qubit circuit with 1 instruction:
         └── Barrier @ q[1]
         <BLANKLINE>
 
-        >>> from mimiqcircuits import *
-        >>> c= Circuit()
+        Pushing a single-qubit barrier to a range adds one barrier per qubit:
+
+        >>> c = Circuit()
         >>> c.push(Barrier(1), range(0,4))
         4-qubit circuit with 4 instructions:
         ├── Barrier @ q[0]
@@ -49,10 +57,9 @@ class Barrier(Operation):
         └── Barrier @ q[3]
         <BLANKLINE>
 
-        Adding Barrier to the circuit as a multi-qubits gate
+        A multi-qubit barrier is a single instruction across all its qubits:
 
-        >>> from mimiqcircuits import *
-        >>> c= Circuit()
+        >>> c = Circuit()
         >>> c.push(Barrier(5),1,2,3,4,5)
         6-qubit circuit with 1 instruction:
         └── Barrier @ q[1:5]
@@ -65,14 +72,13 @@ class Barrier(Operation):
     _num_zvars = 0
 
     def __init__(self, num_qubits):
-        """
-        Initialize a barrier operation
+        """Create a barrier on ``num_qubits`` qubits.
 
         Args:
-            num_qubits: number of qubits the barrier will cover
+            num_qubits: Number of qubits the barrier covers.
 
         Raises:
-            ValueError: if num_qubits is less than 1
+            ValueError: If ``num_qubits`` is less than 1.
         """
         super().__init__()
 
@@ -96,12 +102,23 @@ class Barrier(Operation):
         return (self._num_qubits,)
 
     def inverse(self):
+        """Return the barrier itself; it is its own inverse."""
         return self
 
     def power(self, p):
+        """Not supported for barriers.
+
+        Raises:
+            TypeError: Always.
+        """
         raise TypeError("Barrier^p is not defined.")
 
     def control(self, num_qubits):
+        """Not supported for barriers.
+
+        Raises:
+            TypeError: Always.
+        """
         raise TypeError("Controlled Barrier is not defined.")
 
     def iswrapper(self):

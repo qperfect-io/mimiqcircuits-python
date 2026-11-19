@@ -31,9 +31,17 @@ The same method allows you to save your simulation results in a Protobuf file.
     # save the results
     results.saveproto("my_results.pb")
 
+Experiments, models and other objects have the same ``saveproto`` method and
+``loadproto`` static method: :class:`~mimiqcircuits.Hamiltonian`,
+:class:`~mimiqcircuits.NoiseModel`, :class:`~mimiqcircuits.OptimizationExperiment`,
+:class:`~mimiqcircuits.SweepExperiment` and
+:class:`~mimiqcircuits.EquivalenceExperiment`. A sweep keeps its symbolic
+circuit and its whole table of values, and an equivalence experiment keeps both
+circuits and its method.
+
 .. note::
 
-    Protobuf is a serialized file format developed by google. It is very lightweight and efficient to parse. Check the  `Protobuf repository <https://github.com/protocolbuffers/protobuf>`_` for more information.
+    Protobuf is a serialized file format developed by google. It is very lightweight and efficient to parse. Check the  `Protobuf repository <https://github.com/protocolbuffers/protobuf>`_ for more information.
 
 .. note::
 

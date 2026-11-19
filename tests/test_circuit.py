@@ -530,3 +530,36 @@ def test_control(test_input, expected):
 )
 def test_combination(test_input, expected):
     assert test_input.is_symbolic() == expected
+
+
+def test_copy_has_its_own_instruction_list():
+    c = Circuit().push(GateH(), 0)
+    assert c.num_qubits() == 1  # fill the resource cache
+
+    d = c.copy()
+    d.push(GateX(), 3)
+
+    assert len(c) == 1
+    assert c.num_qubits() == 1
+    assert d.num_qubits() == 4
+    assert d[0] is c[0]
+
+
+def test_get_on_qubits_ignores_classical_bits():
+    c = Circuit().push(Measure(), 0, 1).push(GateX(), 1)
+
+    selected = c.get_on_qubits(1)
+
+    assert len(selected) == 1
+    assert isinstance(selected[0].operation, GateX)
+
+
+def test_emplace_lazy_takes_sizes_from_the_first_registers():
+    # control(GateX()) has one placeholder, filled by the first register's size;
+    # the second register is the target, checked against the built gate
+    c = Circuit().emplace(control(GateX()), [0, 1], [2])
+    op = c[0].get_operation()
+    assert isinstance(op, Control) and op.num_controls == 2
+    assert c[0].get_qubits() == (0, 1, 2)
+    with pytest.raises(ValueError):
+        Circuit().emplace(control(GateX()), [0, 1])

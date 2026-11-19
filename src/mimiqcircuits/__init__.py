@@ -15,6 +15,37 @@
 # limitations under the License.
 #
 
+"""Build, analyze and run quantum circuits with MIMIQ.
+
+The package provides :class:`Circuit` and the operations that go in it
+(gates, measurements, resets, noise channels, classical operations and
+annotations), noise and loss models, decompositions, optimization and sweep
+experiments, OpenQASM 2.0 import and export (:mod:`mimiqcircuits.qasm`),
+protobuf serialization, and remote execution on the MIMIQ cloud through
+:class:`MimiqConnection`, whose results come back as :class:`QCSResults`.
+Qubits, bits and ``z`` variables are indexed from 0.
+
+Examples:
+    >>> from mimiqcircuits import *
+    >>> c = Circuit()
+    >>> c.push(GateH(), 0)
+    1-qubit circuit with 1 instruction:
+    └── H @ q[0]
+    <BLANKLINE>
+    >>> c.push(GateCX(), 0, 1)
+    2-qubit circuit with 2 instructions:
+    ├── H @ q[0]
+    └── CX @ q[0], q[1]
+    <BLANKLINE>
+    >>> c.push(Measure(), range(2), range(2))
+    2-qubit, 2-bit circuit with 4 instructions:
+    ├── H @ q[0]
+    ├── CX @ q[0], q[1]
+    ├── M @ q[0], c[0]
+    └── M @ q[1], c[1]
+    <BLANKLINE>
+"""
+
 from mimiqcircuits.__version__ import __version__  # noqa: F401
 from mimiqcircuits.proto import WIRE_FORMAT_VERSION  # noqa: F401
 
@@ -129,6 +160,7 @@ from mimiqcircuits.instruction import Instruction
 from mimiqcircuits.remote import MimiqConnection
 
 from mimiqcircuits.gatedecl import GateCall, GateDecl, gatedecl
+from mimiqcircuits.blockdecl import BlockCall, BlockDecl, blockdecl
 
 from mimiqcircuits.lazy import control, parallel, inverse, power, LazyArg, LazyExpr
 
@@ -216,6 +248,8 @@ from mimiqcircuits.operations.annotations import (
     Tick,
     Lost,
     Reloaded,
+    AncillaAlloc,
+    AncillaFree,
 )
 from mimiqcircuits.classical.abstract_classical import AbstractClassical
 from mimiqcircuits.classical.not_operation import Not
@@ -294,6 +328,7 @@ from mimiqcircuits.symbolics import unwrapvalue, listsymbols, UndefinedValue
 from mimiqcircuits.decomposition import (
     RewriteRule,
     DecompositionBasis,
+    DecompositionContext,
     DecompositionError,
     CanonicalBasis,
     CliffordTBasis,
@@ -316,6 +351,7 @@ from mimiqcircuits.decomposition import (
 )
 
 from mimiqcircuits.paulibased import pauli_based_computation
+from mimiqcircuits.ancillas import ancillas, check_ancillas, merge_ancilla_windows
 from mimiqcircuits.fusion import FusePass, fuse_circuit
 from mimiqcircuits.simplify import (
     DEFAULT_SIMPLIFY_PASSES,
@@ -499,6 +535,9 @@ __all__ = [
     "GateCall",
     "GateDecl",
     "gatedecl",
+    "BlockCall",
+    "BlockDecl",
+    "blockdecl",
     "control",
     "parallel",
     "inverse",
@@ -570,6 +609,8 @@ __all__ = [
     "Tick",
     "Lost",
     "Reloaded",
+    "AncillaAlloc",
+    "AncillaFree",
     "Not",
     "Pow",
     "Add",
@@ -637,6 +678,9 @@ __all__ = [
     "CLASSICALOPERATIONS",
     "remove_unused",
     "remove_swaps",
+    "ancillas",
+    "check_ancillas",
+    "merge_ancilla_windows",
     "pauli_based_computation",
     "unwrapvalue",
     "listsymbols",
@@ -644,6 +688,7 @@ __all__ = [
     # Decomposition framework
     "RewriteRule",
     "DecompositionBasis",
+    "DecompositionContext",
     "DecompositionError",
     "CanonicalBasis",
     "CliffordTBasis",

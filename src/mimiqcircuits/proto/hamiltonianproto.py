@@ -16,7 +16,7 @@
 #
 
 from mimiqcircuits.proto import hamiltonian_pb2
-from mimiqcircuits import *
+from mimiqcircuits.hamiltonian import Hamiltonian, HamiltonianTerm
 from mimiqcircuits.proto.circuitproto import toproto_paulistring, fromproto_paulistring
 
 

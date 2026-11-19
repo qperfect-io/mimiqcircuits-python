@@ -23,7 +23,8 @@ from typing import TYPE_CHECKING, Sequence
 from mimiqcircuits.decomposition.abstract import DecompositionBasis, DecompositionError
 
 if TYPE_CHECKING:
-    from mimiqcircuits import Circuit, Operation
+    from mimiqcircuits.circuit import Circuit
+    from mimiqcircuits.operations.operation import Operation
 
 
 # Terminality per operation type, for the types where the type alone decides
@@ -32,25 +33,67 @@ _TERMINAL_BY_TYPE: dict[type, bool] = {}
 
 
 class FlattenedBasis(DecompositionBasis):
-    """Flatten container operations while leaving all other operations untouched."""
+    """Decomposition basis that expands containers and keeps every other operation.
+
+    ``GateCall``, ``Block`` and ``BlockCall``, and the ``Inverse`` of a
+    ``GateCall``, are expanded with :class:`FlattenContainers`
+    until none is left, at any depth. An ``IfStatement`` whose body is a
+    container becomes one conditional instruction per instruction of the
+    body. Gates are not decomposed, and that includes a ``GateCall`` wrapped
+    in ``Control``, ``Power``, ``Parallel`` or ``Repeat``, which is kept.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> # a declared gate that holds a Bell-pair preparation
+        >>> bell = GateDecl("bell", (), Circuit().push(GateH(), 0).push(GateCX(), 0, 1))
+        >>> c = Circuit()
+        >>> c.push(bell(), 0, 1)
+        2-qubit circuit with 1 instruction:
+        └── bell() @ q[0:1]
+        <BLANKLINE>
+        >>> c.push(GateSWAP(), 0, 1)
+        2-qubit circuit with 2 instructions:
+        ├── bell() @ q[0:1]
+        └── SWAP @ q[0:1]
+        <BLANKLINE>
+        >>> # the call is expanded; SWAP is a gate and is kept
+        >>> decompose(c, FlattenedBasis())
+        2-qubit circuit with 3 instructions:
+        ├── H @ q[0]
+        ├── CX @ q[0], q[1]
+        └── SWAP @ q[0:1]
+        <BLANKLINE>
+    """
 
     def isterminal(self, op: Operation) -> bool:
-        """Containers are non-terminal; all other operations are terminal."""
+        """Check whether an operation is kept, that is not a container.
+
+        Args:
+            op: The operation to check.
+
+        Returns:
+            ``False`` for the containers listed in the class description and
+            for an ``IfStatement`` whose body is one, ``True`` otherwise.
+        """
         t = type(op)
         known = _TERMINAL_BY_TYPE.get(t)
         if known is not None:
             return known
 
-        import mimiqcircuits as mc
+        from mimiqcircuits.blockdecl import BlockCall
+        from mimiqcircuits.gatedecl import GateCall
+        from mimiqcircuits.operations.block import Block
+        from mimiqcircuits.operations.ifstatement import IfStatement
+        from mimiqcircuits.operations.inverse import Inverse
 
         # An inverse is decided by what it wraps, so it is never cached.
-        if isinstance(op, mc.Inverse):
-            return not isinstance(op.op, (mc.GateCall, mc.Block))
+        if isinstance(op, Inverse):
+            return not isinstance(op.op, (GateCall, Block, BlockCall))
         # A conditional container is flattened into conditional instructions;
         # it is decided by its body, so it is never cached either.
-        if isinstance(op, mc.IfStatement):
+        if isinstance(op, IfStatement):
             return self.isterminal(op.get_operation())
-        known = not isinstance(op, (mc.GateCall, mc.Block))
+        known = not isinstance(op, (GateCall, Block, BlockCall))
         _TERMINAL_BY_TYPE[t] = known
         return known
 
@@ -61,12 +104,26 @@ class FlattenedBasis(DecompositionBasis):
         bits: Sequence[int],
         zvars: Sequence[int],
     ) -> Circuit:
-        """Decompose one container expansion step using FlattenContainers."""
-        import mimiqcircuits as mc
+        """Expand one level of a container.
+
+        Args:
+            op: The container, or the ``IfStatement`` of one, to expand.
+            qubits: Qubit indices the operation acts on.
+            bits: Classical bit indices the operation acts on.
+            zvars: Z-variable indices the operation acts on.
+
+        Returns:
+            A new :class:`~mimiqcircuits.Circuit` with the contents of
+            ``op``, each made conditional if ``op`` is an ``IfStatement``.
+
+        Raises:
+            DecompositionError: If ``op`` is not a container.
+        """
+        from mimiqcircuits.operations.ifstatement import IfStatement
         from mimiqcircuits.decomposition.rules import FlattenContainers
         from mimiqcircuits.operations.ifstatement import _decompose_ifstatement
 
-        if isinstance(op, mc.IfStatement):
+        if isinstance(op, IfStatement):
             return _decompose_ifstatement(self, op, qubits, bits, zvars)
 
         rule = FlattenContainers()

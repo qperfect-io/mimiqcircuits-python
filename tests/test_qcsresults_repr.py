@@ -29,9 +29,10 @@ def _results():
 def test_repr_html_renders():
     html = _results()._repr_html_()
     assert html.startswith("<table>") and html.endswith("</table>")
-    # Samples and amplitudes both index a BitString the same way, over
-    # `bits` as written: "01" -> 0x1, "11" -> 0x3.
-    assert ">0x1</td>" in html and ">0x3</td>" in html
+    # Samples and amplitudes are labelled with BitString.tointeger, like
+    # plothistogram, so bit 0 is the least significant: "01" -> 0x2, "11" -> 0x3.
+    assert ">0x2</td>" in html and ">0x3</td>" in html
+    assert ">0x1</td>" not in html
     assert ">01</td>" in html
 
 

@@ -24,7 +24,9 @@ from mimiqcircuits._sympycheck import _is_basic
 import symengine as se
 from mimiqcircuits.printutils import print_wrapped_parens
 import numpy as np
-import mimiqcircuits as mc
+from mimiqcircuits.lazy import control, parallel, power
+from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.inverse import Inverse
 from mimiqcircuits.operations.gates.gate import Gate
 from typing import Type, Dict, Tuple, Any, Union
 
@@ -36,13 +38,43 @@ _power_canonical_types: Dict[Tuple[Type, Any], Type] = {}
 
 
 def register_power_alias(exponent, gate_type, name):
-    """Register an alias for a power gate definition"""
+    """Register a display name for a gate raised to a given exponent.
+
+    A :class:`Power` whose wrapped gate and exponent match the registered
+    pair prints as ``name`` and reports ``isopalias() == True``.
+
+    The first two arguments form the lookup key ``(gate type key,
+    exponent)``: despite the parameter names, pass the gate type first and
+    the exponent second, as in ``register_power_alias(GateZ, 1/4, "T")``.
+
+    Args:
+        exponent: The gate type key (see above).
+        gate_type: The exponent (see above).
+        name: The name to print.
+    """
     key = (exponent, gate_type)
     _power_aliases_registry[key] = name
 
 
 def register_power_decomposition(exponent, gate_type):
-    """Decorator to register a decomposition function for a gate type"""
+    """Decorator that registers a custom decomposition for a gate power.
+
+    The decorated function is used to decompose every :class:`Power` whose
+    wrapped gate and exponent match the key. It is called as
+    ``func(op, circ, qubits, bits, zvars)``, must push the decomposition of
+    ``op`` on ``qubits`` to ``circ``, and must return ``circ``.
+
+    The two arguments form the lookup key ``(gate type key, exponent)``:
+    despite the parameter names, pass the gate type first and the exponent
+    second, as in ``@register_power_decomposition(GateZ, 1/4)``.
+
+    Args:
+        exponent: The gate type key (see above).
+        gate_type: The exponent (see above).
+
+    Returns:
+        The decorator. It registers the function and returns it unchanged.
+    """
 
     def decorator(decomp_func):
         key = (exponent, gate_type)
@@ -53,23 +85,28 @@ def register_power_decomposition(exponent, gate_type):
 
 
 def canonical_power(inner_gate_type: Type, exponent: Any):
-    """Decorator to register a canonical Power subclass.
+    """Decorator that registers a named subclass of :class:`Power`.
 
-    When Power(inner_gate_type(), exponent) is called, it will
-    return an instance of the decorated subclass instead.
+    After registration, ``Power(g, exponent)`` with ``g`` an instance of
+    ``inner_gate_type`` builds an instance of the decorated class instead of
+    a plain ``Power``. This is how named gates such as :class:`GateS`
+    (``Power(GateZ(), 1/2)``) are defined. The exponent is compared after
+    normalization, so ``0.5`` and ``Fraction(1, 2)`` match the same entry.
+
+    Registering a class for a pair that already has one replaces it for the
+    rest of the session.
 
     Args:
-        inner_gate_type: Type of the inner gate
-        exponent: The exponent value
+        inner_gate_type: Class of the wrapped gate.
+        exponent: The exponent, in normalized form (an ``int`` or a
+            ``Fraction`` when the value is a simple fraction).
 
     Returns:
-        Decorator that registers the class
+        The decorator. It registers the class and returns it unchanged.
 
-    Example:
+    Examples:
         >>> from mimiqcircuits import *
-        >>> @canonical_power(GateZ, Fraction(1, 2))
-        ... class GateS(Power):
-        ...     pass
+        >>> # GateS is registered for GateZ to the power 1/2
         >>> isinstance(Power(GateZ(), 0.5), GateS)
         True
     """
@@ -127,40 +164,62 @@ def _scale_by_exponent(value, exponent):
 
 
 class Power(Gate):
-    """Power operation.
+    """Gate raised to a real power.
 
-    Represents a Power operation raised to a specified exponent.
+    ``Power(gate, p)`` is the unitary :math:`U^p`, where :math:`U` is the
+    matrix of ``gate``. For non-integer ``p`` the principal matrix power is
+    used.
 
-    When a canonical subclass is registered (e.g., GateS for Power(GateZ(), 1/2)),
-    constructing Power with matching arguments will return an instance of that
-    subclass. This enables isinstance() checks to work correctly:
+    The constructor takes the gate (or a gate class followed by its
+    constructor arguments) and the exponent. The exponent must be a real
+    number: a float that is a simple fraction (denominator up to 1000) is
+    stored as a ``Fraction`` or ``int``, so ``Power(g, 0.5)`` and
+    ``Power(g, Fraction(1, 2))`` are the same operation. A power of a
+    ``Power`` is folded into one: ``Power(Power(g, a), b)`` is
+    ``Power(g, a * b)``.
 
+    When a named subclass is registered for the combination (see
+    :func:`canonical_power`), the constructor returns an instance of that
+    subclass: ``Power(GateZ(), 0.5)`` is a :class:`GateS`. A folded power
+    stays a plain ``Power``, even when a subclass is registered for the
+    folded exponent.
+
+    The ``power`` method of a gate, or the ``**`` operator, is the usual way
+    to build one; it may simplify the result further.
+
+    Args:
+        operation: The gate to raise, or a gate class.
+        exponent: The exponent, a real number.
+        *args: Constructor arguments when ``operation`` is a class.
+        **kwargs: Constructor keyword arguments when ``operation`` is a class.
+
+    Raises:
+        ValueError: If ``operation`` is not a gate or gate class.
+        TypeError: If ``exponent`` is not a real number, for example a
+            symbol or a complex number.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # the generic form returns the named gate when one exists
         >>> isinstance(Power(GateZ(), 0.5), GateS)
         True
-        >>> c= Circuit()
-        >>> c.push(Power(GateX(),1/2),1)
+        >>> c = Circuit()
+        >>> # the square root of X prints with its own name, SX
+        >>> c.push(Power(GateX(), 1/2), 1)
         2-qubit circuit with 1 instruction:
         └── SX @ q[1]
         <BLANKLINE>
-        >>> c.push(Power(GateX(),5),1)
+        >>> c.push(Power(GateX(), 5), 1)
         2-qubit circuit with 2 instructions:
         ├── SX @ q[1]
         └── X**5 @ q[1]
         <BLANKLINE>
-        >>> c.decompose()
-        2-qubit circuit with 9 instructions:
-        ├── U(0, 0, (-1/2)*pi, 0.0) @ q[1]
-        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
-        ├── U(0, 0, (-1/2)*pi, 0.0) @ q[1]
-        ├── U(0, 0, 0, (1/4)*pi) @ q[1]
-        ├── U(pi, 0, pi, 0.0) @ q[1]
-        ├── U(pi, 0, pi, 0.0) @ q[1]
-        ├── U(pi, 0, pi, 0.0) @ q[1]
-        ├── U(pi, 0, pi, 0.0) @ q[1]
-        └── U(pi, 0, pi, 0.0) @ q[1]
+        >>> # an integer power decomposes into repeated applications
+        >>> Power(GateX(), 3).decompose()
+        1-qubit circuit with 3 instructions:
+        ├── X @ q[0]
+        ├── X @ q[0]
+        └── X @ q[0]
         <BLANKLINE>
     """
 
@@ -196,13 +255,21 @@ class Power(Gate):
                 return object.__new__(cls)
 
             # Resolve the operation to get its type
-            if isinstance(operation, type) and issubclass(operation, mc.Gate):
+            if isinstance(operation, type) and issubclass(operation, Gate):
                 inner_type = operation
-            elif isinstance(operation, mc.Gate):
+            elif isinstance(operation, Gate):
                 inner_type = type(operation)
             else:
                 # Let __init__ handle the error
                 return object.__new__(cls)
+
+            # __init__ folds Power(Power(g, a), b) into Power(g, a * b), so
+            # look the canonical class up with the folded pair.
+            if isinstance(operation, type) and issubclass(operation, Power):
+                operation = operation(*args, **kwargs)
+            if isinstance(operation, Power):
+                inner_type = type(operation.op)
+                exponent = _normalize_exponent(exponent) * operation.exponent
 
             # Normalize exponent for comparison
             norm_exp = _normalize_exponent(exponent)
@@ -216,15 +283,12 @@ class Power(Gate):
         return object.__new__(cls)
 
     def __init__(self, operation, exponent, *args, **kwargs):
-        if isinstance(operation, type) and issubclass(operation, mc.Gate):
+        if isinstance(operation, type) and issubclass(operation, Gate):
             op = operation(*args, **kwargs)
-        elif isinstance(operation, mc.Gate):
+        elif isinstance(operation, Gate):
             op = operation
         else:
             raise ValueError("Operation must be an Gate object or type.")
-
-        if self.num_bits != 0:
-            raise ValueError("Power operation cannot act on classical bits.")
 
         super().__init__()
 
@@ -234,12 +298,13 @@ class Power(Gate):
         self._num_qregs = op.num_qregs
         self._qregsizes = op.qregsizes
         self._parnames = op.parnames
-        if isinstance(op, mc.Power):
+        if isinstance(op, Power):
             self._op = op.op
             self._exponent = _normalize_exponent(exponent * op.exponent)
 
     @property
     def op(self):
+        """The gate being raised to a power. Read-only."""
         return self._op
 
     @op.setter
@@ -248,6 +313,7 @@ class Power(Gate):
 
     @property
     def exponent(self):
+        """The exponent, normalized to an ``int`` or ``Fraction`` when possible. Read-only."""
         return self._exponent
 
     @exponent.setter
@@ -264,8 +330,27 @@ class Power(Gate):
         return self.op.power(pwr * self._exponent)
 
     def power(self, *args):
+        """Raise to a further power, multiplying the exponents.
+
+        Args:
+            *args: The exponent. When omitted, a lazy expression is returned
+                that takes the exponent later.
+
+        Returns:
+            Gate: ``op.power(exponent * p)``, or a lazy expression when
+            called without arguments.
+
+        Raises:
+            ValueError: If more than one argument is given.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> # (X^(1/2))^2 is X
+            >>> Power(GateX(), 0.5).power(2)
+            X
+        """
         if len(args) == 0:
-            return mc.power(self)
+            return power(self)
         elif len(args) == 1:
             return self._power(_normalize_exponent(args[0]))
         else:
@@ -275,23 +360,25 @@ class Power(Gate):
         return self.power(exponent)
 
     def inverse(self):
-        return mc.Inverse(self)
+        """Return the inverse, ``Inverse(self)``."""
+        return Inverse(self)
 
     def control(self, *args):
         if len(args) == 0:
-            return mc.control(self)
+            return control(self)
         elif len(args) == 1:
             num_controls = args[0]
-            return mc.Control(num_controls, self)
+            return Control(num_controls, self)
         else:
             raise ValueError("Invalid number of arguments.")
 
     def parallel(self, *args):
+        from mimiqcircuits.operations.parallel import Parallel
         if len(args) == 0:
-            return mc.parallel(self)
+            return parallel(self)
         elif len(args) == 1:
             num_repeats = args[0]
-            return mc.Parallel(num_repeats, self)
+            return Parallel(num_repeats, self)
         else:
             raise ValueError("Invalid number of arguments.")
 
@@ -366,6 +453,11 @@ class Power(Gate):
         return (Power, self.op.gettypekey(), self.exponent)
 
     def _decompose(self, circ, qubits, bits, zvars):
+        from mimiqcircuits.circuit import Circuit
+        from mimiqcircuits.operations.parallel import Parallel
+        from mimiqcircuits.operations.gates.generalized.phasegradient import (
+            PhaseGradient,
+        )
         key = self.gettypekey()[1:]
         if key in _power_decomposition_registry:
             return _power_decomposition_registry[key](self, circ, qubits, bits, zvars)
@@ -375,14 +467,14 @@ class Power(Gate):
                 circ.push(self.op, *qubits)
             return circ
 
-        if isinstance(self.op, mc.Parallel):
+        if isinstance(self.op, Parallel):
             nq = self.op.op.num_qubits
             for i in range(self.op.num_repeats):
                 q = [qubits[j] for j in range(i * nq, (i + 1) * nq)]
                 circ.push(self.op.op.power(self.exponent), *q)
             return circ
 
-        if isinstance(self.op, mc.Inverse) and isinstance(self.op.op, mc.Parallel):
+        if isinstance(self.op, Inverse) and isinstance(self.op.op, Parallel):
             base = self.op.op.op.inverse()
             nq = base.num_qubits
             for i in range(self.op.op.num_repeats):
@@ -392,20 +484,20 @@ class Power(Gate):
 
         # PhaseGradient is a product of commuting phase gates, so its power
         # scales every phase.
-        if isinstance(self.op, mc.PhaseGradient):
+        if isinstance(self.op, PhaseGradient):
             return self.op._decompose_power(circ, qubits, self.exponent)
 
         # (C-U)^p = C-(U^p): the controls pass through the power.
-        if isinstance(self.op, mc.Control):
+        if isinstance(self.op, Control):
             circ.push(
-                mc.Control(self.op.num_controls, self.op.op.power(self.exponent)),
+                Control(self.op.num_controls, self.op.op.power(self.exponent)),
                 *qubits,
             )
             return circ
 
         # A single-gate decomposition can be raised to the power directly.
         # Anything longer would need the matrix power of the whole circuit.
-        cop = self.op._decompose(mc.Circuit(), qubits, bits, zvars)
+        cop = self.op._decompose(Circuit(), qubits, bits, zvars)
 
         if len(cop) == 1:
             inst = cop.instructions[0]
@@ -419,8 +511,9 @@ class Power(Gate):
         )
 
     def decompose(self):
+        from mimiqcircuits.circuit import Circuit
         return self._decompose(
-            mc.Circuit(),
+            Circuit(),
             range(self.num_qubits),
             range(self.num_bits),
             range(self.num_zvars),

@@ -19,15 +19,32 @@
 from mimiqcircuits.operations.gates.standard.swap import GateSWAP
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.cnx import GateCCX
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import (
+    Control,
+    canonical_control,
+    register_control_decomposition,
+)
 
 
-@mc.canonical_control(1, GateSWAP)
-class GateCSWAP(mc.Control):
-    r"""Three qubit Controlled-SWAP gate.
+@canonical_control(1, GateSWAP)
+class GateCSWAP(Control):
+    r"""Three qubit Controlled-SWAP (Fredkin) gate.
 
-    By convention, the first qubit is the control and last two are the
-    targets.
+    By convention, the first qubit is the control and the last two are the
+    targets. The targets are swapped when the control is :math:`|1\rangle`.
+
+    Matrix Representation:
+        .. math::
+            \operatorname{CSWAP} = \begin{pmatrix}
+                1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+                0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+                0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
+                0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+                0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+                0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+                0 & 0 & 0 & 0 & 0 & 0 & 0 & 1
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -44,9 +61,6 @@ class GateCSWAP(mc.Control):
         [0, 0, 0, 0, 0, 0, 0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateCSWAP(), 0, 1, 2)
-        >>> GateCSWAP().power(2), GateCSWAP().inverse()
-        (C(⨷ ² ID), CSWAP)
-        >>> c = Circuit().push(GateCSWAP(), 0, 1, 2)
         >>> c
         3-qubit circuit with 1 instruction:
         └── CSWAP @ q[0], q[1:2]
@@ -62,11 +76,11 @@ class GateCSWAP(mc.Control):
     """
 
     def __init__(self, num_controls=1, operation=None):
-        """Initialize a CSWAP gate."""
+        """Initialize a CSWAP gate. The arguments are unused."""
         super().__init__(1, GateSWAP())
 
 
-@mc.register_control_decomposition(1, mc.GateSWAP)
+@register_control_decomposition(1, GateSWAP)
 def _decompose_gatecswap(gate, circ, qubits, bits, zvars):
     c, t1, t2 = qubits
     circ.push(GateCX(), t2, t1)

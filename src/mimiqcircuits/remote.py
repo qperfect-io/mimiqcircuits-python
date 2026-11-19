@@ -181,17 +181,72 @@ def _file_may_be_stim(filepath: str) -> bool:
     return False
 
 
-class RemoteConnection:
-    """Base class for connections to the Mimiq Server.
+MPS_METHODS = ("vmpoa", "vmpob", "dmpo")
+MPO_TRAVERSALS = ("sequential", "bfs", "frontierpack")
 
-    This class provides common functionality for both MimiqConnection and PlanqkConnection.
+
+def _set_exec_opts(
+    pars,
+    mpsmethod=None,
+    mpotraversal=None,
+    streaming=None,
+    remove_swaps=None,
+    canonicaldecompose=None,
+    fuse=None,
+    reorderqubits=None,
+    reorderqubits_seed=None,
+):
+    """Write the optional execution options shared by ``submit`` and ``optimize``.
+
+    ``None`` leaves the choice to the remote service.
+    """
+    if mpsmethod is not None:
+        if mpsmethod not in MPS_METHODS:
+            raise ValueError(f"mpsmethod must be one of {MPS_METHODS}.")
+        pars["mpsMethod"] = mpsmethod
+
+    if mpotraversal is not None:
+        if mpotraversal not in MPO_TRAVERSALS:
+            raise ValueError(f"mpotraversal must be one of {MPO_TRAVERSALS}.")
+        pars["mpoTraversal"] = mpotraversal
+
+    for key, val in (
+        ("streaming", streaming),
+        ("removeSwaps", remove_swaps),
+        ("canonicalDecompose", canonicaldecompose),
+        ("fuse", fuse),
+        ("reorderQubits", reorderqubits),
+        ("reorderQubitsSeed", reorderqubits_seed),
+    ):
+        if val is not None:
+            pars[key] = val
+
+    return pars
+
+
+class RemoteConnection:
+    """Base class for connections to the MIMIQ remote services.
+
+    It wraps a ``mimiqlink`` connection and adds the circuit execution API:
+    :meth:`submit`, :meth:`optimize`, :meth:`check_equivalence`, and the
+    ``get_result``/``get_results``/``get_input``/``get_inputs`` retrieval
+    methods. Any other attribute or method (``connect``, ``close``,
+    ``loadtoken``, ``savetoken``, ``requests``, ``stopExecution``, ...) is
+    forwarded to the wrapped connection. Forwarded methods that return the
+    wrapped connection return this object instead, so calls such as
+    ``conn.connect()`` can be chained.
+
+    Use :class:`MimiqConnection` or :class:`PlanqkConnection` rather than this
+    class directly.
     """
 
     def __init__(self, connection: "mimiqlink.AbstractConnection"):
-        """Initialize a remote connection using a specific connection type.
+        """Wrap an existing ``mimiqlink`` connection.
 
         Args:
-            connection: A mimiqlink connection object (MimiqConnection or PlanqkConnection)
+            connection: A ``mimiqlink`` connection object, such as
+                ``mimiqlink.MimiqConnection``, ``mimiqlink.QhiveConnection``
+                or ``mimiqlink.PlanqkConnection``.
         """
         self.connection = connection
 
@@ -213,7 +268,7 @@ class RemoteConnection:
     def __getattr__(self, name):
         original = getattr(self.connection, name)
 
-        # It it is not callable, jsut return it
+        # If it is not callable, just return it
         if not callable(original):
             return original
 
@@ -250,42 +305,133 @@ class RemoteConnection:
         noisemodel=None,
         streaming=None,
     ):
-        """
-        Submit a circuit or a list of quantum circuits to the Mimiq server.
-        Returns a Job object (non-blocking).
+        """Submit one or more circuits for execution on the remote service.
+
+        The call uploads the circuits and returns at once, without waiting for
+        the execution to finish. Pass the returned identifier to
+        ``get_result`` or ``get_results`` to wait for and download the
+        results.
+
+        Circuits are sent in protobuf format. File paths are uploaded as they
+        are and must point to an OpenQASM 2.0 file (its first non-comment line
+        is ``OPENQASM 2.0;``) or a STIM file. An
+        :class:`~mimiqcircuits.EquivalenceExperiment` is turned into its test
+        circuit with ``build_circuit()`` and submitted.
 
         Args:
-            circuits (Circuit or list of Circuits or str): A single Circuit object, a list of Circuit objects,
-                                                           or QASM file paths representing the circuits to be executed.
-            label (str): A label for the execution. Defaults to "pyapi_v" + __version__.
-            algorithm (str): The algorithm to use. Defaults to "auto".
-            nsamples (int): The number of samples to collect. Defaults to DEFAULT_SAMPLES.
-            seed (int, optional): A seed for random number generation. Defaults to None.
-            bitstrings (list of str, optional): Specific bitstrings to measure. Defaults to None.
-            timelimit (int, optional): The maximum execution time in minutes. Defaults to None.
-            bonddim (int, optional): The bond dimension to use. Defaults to None.
-            entdim (int, optional): The entanglement dimension to use. Defaults to None.
-            mpscutoff (float, optional): Singular value truncation cutoff for MPS simulation. Smaller values give higher accuracy at increased cost. Defaults to None (let the remote service decide).
-            remove_swaps (bool, optional): Whether to remove SWAP gates. Defaults to None (let the remote service decide).
-            canonicaldecompose (bool, optional): Whether to decompose the circuit into GateU and GateCX. Defaults to None (let the remote service decide).
-            fuse (bool, optional): Whether to fuse gates. Defaults to None (let the remote service decide).
-            reorderqubits (bool or str, optional): Whether to reorder qubits. Can be a boolean or a string specifying the method (e.g., 'greedy', 'spectral', 'rcm', 'sa_warm_start', 'sa_only', 'memetic', 'multilevel', 'grasp', 'hybrid'). Defaults to None (let the remote service decide).
-            reorderqubits_seed (int, optional): Independent seed for the qubit reordering RNG, allowing reproducible reordering independently of the simulation seed. Defaults to None (uses main seed).
-            mpsmethod (str, optional): whether to use variational ("vmpoa", "vmpob") or direct ("dmpo") methods for MPO application in MPS simulations. Defaults to None (let the remote service decide).
-            mpotraversal (str, optional): method to traverse the circuit while compressing it into MPOs. Can be "sequential" (default) or "bfs" (Breadth-First Search). Defaults to None.
-            noisemodel (NoiseModel, optional): A NoiseModel object to be applied to the circuit(s) before execution. Defaults to None.
-            streaming (bool, optional): whether or not to use the streaming simulator. Defaults to None (let the remote service decide).
-            qasmincludes (list of str, optional): Additional QASM includes. Defaults to None.
+            circuits (Circuit | str | EquivalenceExperiment | list): A circuit,
+                a path to an OpenQASM 2.0 or STIM file, an equivalence
+                experiment, or a list of circuits and file paths.
+            label (str): A label to identify the execution. Defaults to
+                ``"pyapi_v"`` followed by the package version.
+            algorithm (str): The simulator to use: ``"auto"``, ``"mps"`` or
+                ``"statevector"``. ``"auto"`` lets the service choose and
+                accepts a single circuit only. Defaults to ``"auto"``.
+            nsamples (int): The number of measurement samples to collect. At
+                most ``MAX_SAMPLES`` (65536). Defaults to 1000.
+            bitstrings (list of BitString, optional): Bitstrings whose
+                amplitudes are computed. When ``circuits`` is a single
+                :class:`~mimiqcircuits.Circuit`, each must have one bit per
+                qubit. Defaults to None (no amplitudes).
+            timelimit (int, optional): The maximum execution time in minutes.
+                Defaults to None, which uses the largest time limit allowed for
+                the account (30 minutes if the service sets none).
+            bonddim (int, optional): The MPS bond dimension, between 1 and
+                4096. Defaults to None, which means 256 for the ``"auto"`` and
+                ``"mps"`` algorithms.
+            entdim (int, optional): The MPS entanglement dimension, at least
+                4. Defaults to None, which means 16 for the ``"auto"`` and
+                ``"mps"`` algorithms.
+            mpscutoff (float, optional): Singular value truncation cutoff for
+                MPS simulation. Smaller values give higher accuracy at higher
+                cost. Must be non-negative. Defaults to None (the service
+                decides).
+            remove_swaps (bool, optional): Whether to remove SWAP gates by
+                relabeling qubits. Defaults to None (the service decides).
+            canonicaldecompose (bool, optional): Whether to decompose the
+                circuit into ``GateU`` and ``GateCX``. Defaults to None (the
+                service decides).
+            fuse (bool, optional): Whether to fuse gates. Defaults to None (the
+                service decides).
+            reorderqubits (bool or str, optional): Whether to reorder qubits,
+                or the name of the reordering method (for example
+                ``"greedy"``, ``"spectral"``, ``"rcm"``, ``"sa_warm_start"``,
+                ``"sa_only"``, ``"memetic"``, ``"multilevel"``, ``"grasp"``,
+                ``"hybrid"``). Defaults to None (the service decides).
+            reorderqubits_seed (int, optional): Seed for the qubit reordering,
+                independent of ``seed``. Defaults to None (derived from
+                ``seed``).
+            seed (int, optional): Seed for the simulation's random number
+                generator. Defaults to None (a random seed).
+            qasmincludes (list of str, optional): Accepted for compatibility
+                and not used.
+            force (bool): If True, allow ``entdim`` below 4 and print a
+                warning instead of raising. Defaults to False.
+            mpsmethod (str, optional): How MPOs are applied in MPS simulation:
+                ``"vmpoa"`` or ``"vmpob"`` (variational) or ``"dmpo"``
+                (direct). Defaults to None (the service decides).
+            mpotraversal (str, optional): How the circuit is traversed when
+                compressing it into MPOs: ``"sequential"``, ``"bfs"``
+                (breadth-first search) or ``"frontierpack"`` (packs
+                independent ready gates into the open MPO, good for brickwork
+                circuits). Defaults to None (the service decides).
+            noisemodel (NoiseModel, optional): A noise model applied to every
+                :class:`~mimiqcircuits.Circuit` before upload. It cannot be
+                applied to file paths. Defaults to None.
+            streaming (bool, optional): Whether to use the streaming
+                simulator. Defaults to None (the service decides).
 
         Returns:
-            object: A handle to the execution, typically used to retrieve results.
+            str: The identifier of the execution on the remote service.
 
         Raises:
-            ValueError: If nsamples exceeds MAX_SAMPLES, bond/entanglement dimensions are out of bounds,
-                        or if a circuit contains unevaluated symbolic parameters.
-            FileNotFoundError: If a QASM file is not found.
-            TypeError: If the circuits argument is not a Circuit object or a valid file path,
-                       or a preparation flag has the wrong type.
+            ValueError: If ``nsamples``, ``timelimit``, ``bonddim``, ``entdim``,
+                ``mpscutoff``, ``mpsmethod`` or ``mpotraversal`` is out of
+                range; if a bitstring has the wrong length; if the list of
+                circuits is empty, contains an empty circuit, a circuit with
+                unevaluated symbolic parameters, or a path that does not exist
+                or is neither OpenQASM 2.0 nor STIM; if ``algorithm`` is
+                ``"auto"`` with more than one circuit; or if ``noisemodel`` is
+                given with a file path.
+            TypeError: If an item of ``circuits`` is not a circuit or a path,
+                if ``noisemodel`` is not a :class:`~mimiqcircuits.NoiseModel`,
+                or if a preparation flag has the wrong type.
+            mimiqlink.MimiqConnectionError: If the connection is not
+                authenticated or the upload fails.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> conn = MimiqConnection()
+            >>> conn.connect()  # doctest: +SKIP
+
+            Build a Bell-state circuit and measure both qubits.
+
+            >>> c = Circuit()
+            >>> c.push(GateH(), 0)
+            1-qubit circuit with 1 instruction:
+            └── H @ q[0]
+            <BLANKLINE>
+            >>> c.push(GateCX(), 0, 1)
+            2-qubit circuit with 2 instructions:
+            ├── H @ q[0]
+            └── CX @ q[0], q[1]
+            <BLANKLINE>
+            >>> c.push(Measure(), range(2), range(2))
+            2-qubit, 2-bit circuit with 4 instructions:
+            ├── H @ q[0]
+            ├── CX @ q[0], q[1]
+            ├── M @ q[0], c[0]
+            └── M @ q[1], c[1]
+            <BLANKLINE>
+
+            Submit it: the call returns an identifier straight away.
+
+            >>> job = conn.submit(c, nsamples=1000, algorithm="statevector")  # doctest: +SKIP
+
+            Wait for the execution to finish and download its results.
+
+            >>> res = conn.get_result(job)  # doctest: +SKIP
+            >>> res.histogram()  # doctest: +SKIP
         """
         from mimiqcircuits.equivalence import EquivalenceExperiment
 
@@ -332,7 +478,7 @@ class RemoteConnection:
 
         if nsamples > MAX_SAMPLES:
 
-            raise ValueError(f"nsamples must be less than {MAX_SAMPLES}")
+            raise ValueError(f"nsamples must be at most {MAX_SAMPLES}")
 
         if timelimit is None:
             timelimit = self.__get_timelimit()
@@ -369,7 +515,7 @@ class RemoteConnection:
         # Check for entdim constraint in specific algorithms
         if algorithm in ["mps", "auto"]:
             actual_entdim = DEFAULT_ENTDIM if entdim is None else entdim
-            if actual_entdim < MIN_ENTDIM and not force:
+            if actual_entdim > MAX_ENTDIM or (actual_entdim < MIN_ENTDIM and not force):
                 raise ValueError(
                     f"entdim must be between {MIN_ENTDIM} and {MAX_ENTDIM}"
                 )
@@ -516,35 +662,17 @@ class RemoteConnection:
                     raise ValueError("mpscutoff must be non-negative")
                 pars["mpsCutoff"] = mpscutoff
 
-            if remove_swaps is not None:
-                pars["removeSwaps"] = remove_swaps
-
-            if canonicaldecompose is not None:
-                pars["canonicalDecompose"] = canonicaldecompose
-
-            if fuse is not None:
-                pars["fuse"] = fuse
-
-            if reorderqubits is not None:
-                pars["reorderQubits"] = reorderqubits
-
-            if reorderqubits_seed is not None:
-                pars["reorderQubitsSeed"] = reorderqubits_seed
-
-            if mpotraversal is not None:
-                if mpotraversal not in ["sequential", "bfs"]:
-                    raise ValueError("mpotraversal must be one of 'sequential' or 'bfs'.")
-                pars["mpoTraversal"] = mpotraversal
-
-            if mpsmethod is not None:
-                if mpsmethod not in ["vmpoa", "vmpob", "dmpo"]:
-                    raise ValueError(
-                        "mpsmethod must be one of 'vmpoa', 'vmpob', or 'dmpo'."
-                    )
-                pars["mpsMethod"] = mpsmethod
-
-            if streaming is not None:
-                pars["streaming"] = streaming
+            _set_exec_opts(
+                pars,
+                mpsmethod=mpsmethod,
+                mpotraversal=mpotraversal,
+                streaming=streaming,
+                remove_swaps=remove_swaps,
+                canonicaldecompose=canonicaldecompose,
+                fuse=fuse,
+                reorderqubits=reorderqubits,
+                reorderqubits_seed=reorderqubits_seed,
+            )
 
             # Save the parameters to a JSON file
             pars_filename = os.path.join(tmpdir, "circuits.json")
@@ -578,6 +706,12 @@ class RemoteConnection:
             )
 
     def execute(self, *args, **kwargs):
+        """Submit circuits for execution. Deprecated: use :meth:`submit`.
+
+        Takes the same arguments as :meth:`submit`, emits a
+        :class:`DeprecationWarning`, and returns the execution identifier
+        without waiting for the execution to finish.
+        """
         import warnings
 
         warnings.warn(
@@ -593,28 +727,23 @@ class RemoteConnection:
         experiment,
         **kwargs,
     ):
-        """
-        Executes an EquivalenceExperiment and verifies the results.
-        Blocks until execution is complete.
+        """Run an equivalence experiment remotely and return its score.
+
+        Submits ``experiment`` with :meth:`submit`, waits for the results and
+        passes the first one to ``experiment.interpret_results``.
 
         Args:
             experiment (EquivalenceExperiment): The experiment to run.
-            **kwargs: Arguments passed to execute.
+            **kwargs: Keyword arguments passed to :meth:`submit`.
 
         Returns:
-            float: The verification score (probability of all-zero state).
+            float: The verification score (probability of the all-zero state).
+
+        Raises:
+            RuntimeError: If the remote job fails or is canceled.
         """
         job = self.submit(experiment, **kwargs)
-        # Assuming job has get_results()
-        if hasattr(job, "get_results"):
-            results = job.get_results()
-            return experiment.interpret_results(results[0])
-        else:
-
-            # Fallback or error if job type is unexpected
-            raise RuntimeError(
-                "Job object returned by submit does not support get_results()."
-            )
+        return experiment.interpret_results(self.get_result(job))
 
     def optimize(
         self,
@@ -635,7 +764,99 @@ class RemoteConnection:
         history=False,
         force=False,
         debug=False,
+        mpsmethod=None,
+        mpotraversal=None,
+        streaming=None,
     ):
+        """Submit one or more optimization experiments to the remote service.
+
+        The call uploads the experiments and returns at once. Pass the
+        returned identifier to ``get_result`` or ``get_results`` to wait for
+        the execution and obtain :class:`~mimiqcircuits.OptimizationResults`.
+
+        Args:
+            experiments (OptimizationExperiment or list): An experiment or a
+                list of experiments.
+            label (str): A label to identify the execution. Defaults to
+                ``"pyapi_v"`` followed by the package version.
+            algorithm (str): The simulator to use: ``"auto"``, ``"mps"`` or
+                ``"statevector"``. ``"auto"`` accepts a single experiment only.
+                Defaults to ``"auto"``.
+            nsamples (int): The number of samples used to estimate expectation
+                values. At most 65536. Defaults to 1000.
+            timelimit (int, optional): The maximum execution time in minutes.
+                Defaults to None (the largest limit allowed for the account).
+            bonddim (int, optional): The MPS bond dimension. Defaults to None
+                (256 for ``"auto"`` and ``"mps"``).
+            entdim (int, optional): The MPS entanglement dimension. Defaults to
+                None (16 for ``"auto"`` and ``"mps"``).
+            mpscutoff (float, optional): Singular value truncation cutoff for
+                MPS simulation. Defaults to None (the service decides).
+            remove_swaps (bool, optional): Whether to remove SWAP gates.
+                Defaults to None (the service decides).
+            canonicaldecompose (bool, optional): Whether to decompose into
+                ``GateU`` and ``GateCX``. Defaults to None (the service
+                decides).
+            fuse (bool, optional): Whether to fuse gates. Defaults to None (the
+                service decides).
+            reorderqubits (bool or str, optional): Whether to reorder qubits,
+                or the reordering method. Defaults to None (the service
+                decides).
+            reorderqubits_seed (int, optional): Seed for the qubit reordering.
+                Defaults to None (derived from ``seed``).
+            seed (int, optional): Seed for the random number generator.
+                Defaults to None (a random seed).
+            history (bool): If True, record every evaluation of the
+                optimization. Defaults to False.
+            force (bool): If True, allow ``entdim`` below 4 with a warning.
+                Defaults to False.
+            debug (bool): If True, keep the temporary upload directory.
+                Defaults to False.
+            mpsmethod (str, optional): ``"vmpoa"``, ``"vmpob"`` or ``"dmpo"``.
+                Defaults to None (the service decides).
+            mpotraversal (str, optional): ``"sequential"``, ``"bfs"`` or
+                ``"frontierpack"``. Defaults to None (the service decides).
+            streaming (bool, optional): Whether to use the streaming
+                simulator. Defaults to None (the service decides).
+
+        Returns:
+            str: The identifier of the execution on the remote service.
+
+        Raises:
+            ValueError: If a parameter is out of range, no experiment is
+                given, or ``algorithm`` is ``"auto"`` with more than one
+                experiment.
+            TypeError: If an item is not an
+                :class:`~mimiqcircuits.OptimizationExperiment`, or a
+                preparation flag has the wrong type.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> conn = MimiqConnection()
+            >>> conn.connect()  # doctest: +SKIP
+
+            Build a one-parameter circuit and the quantity to minimise.
+
+            >>> from symengine import symbols
+            >>> x = symbols("x")
+            >>> c = Circuit()
+            >>> c.push(GateRX(x), 0)
+            1-qubit circuit with 1 instruction:
+            └── RX(x) @ q[0]
+            <BLANKLINE>
+            >>> c.push(ExpectationValue(GateZ()), 0, 0)
+            1-qubit, 1-zvar circuit with 2 instructions:
+            ├── RX(x) @ q[0]
+            └── ⟨Z⟩ @ q[0], z[0]
+            <BLANKLINE>
+
+            Minimise z[0] starting from x = 0.5, then fetch the best value.
+
+            >>> ex = OptimizationExperiment(c, {x: 0.5}, zregister=0)
+            >>> job = conn.optimize(ex)  # doctest: +SKIP
+            >>> res = conn.get_result(job)  # doctest: +SKIP
+            >>> res.get_best()  # doctest: +SKIP
+        """
         from mimiqcircuits.optimization_remote import optimize_impl
 
         return optimize_impl(
@@ -657,6 +878,9 @@ class RemoteConnection:
             history=history,
             force=force,
             debug=debug,
+            mpsmethod=mpsmethod,
+            mpotraversal=mpotraversal,
+            streaming=streaming,
         )
 
     def __repr__(self):
@@ -669,44 +893,130 @@ class RemoteConnection:
 
 
 class MimiqConnection(RemoteConnection):
-    """Represents a connection to the Mimiq Server via direct cloud connection.
+    """Connection to the MIMIQ cloud services.
 
-    This is a wrapper around mimiqlink.MimiqConnection to provide the circuit execution API.
+    Wraps a ``mimiqlink.MimiqConnection``, or a ``mimiqlink.QhiveConnection``
+    for Quantum Hive deployments, and adds the circuit execution API described
+    in :class:`RemoteConnection`. The object is created unauthenticated: call
+    ``connect`` (or ``loadtoken``) before submitting anything.
+
+    Examples:
+        Connect to the default MIMIQ cloud. Without arguments ``connect``
+        opens a login page in the browser.
+
+        >>> from mimiqcircuits import *
+        >>> conn = MimiqConnection()
+        >>> conn.connect()  # doctest: +SKIP
+
+        Save the session token to reuse it later without logging in again.
+
+        >>> conn.savetoken("qperfect.json")  # doctest: +SKIP
+        >>> conn = MimiqConnection().loadtoken("qperfect.json")  # doctest: +SKIP
+
+        Submit a circuit and wait for its results.
+
+        >>> c = Circuit()
+        >>> c.push(GateH(), 0)
+        1-qubit circuit with 1 instruction:
+        └── H @ q[0]
+        <BLANKLINE>
+        >>> c.push(Measure(), 0, 0)
+        1-qubit, 1-bit circuit with 2 instructions:
+        ├── H @ q[0]
+        └── M @ q[0], c[0]
+        <BLANKLINE>
+        >>> job = conn.submit(c, nsamples=100)  # doctest: +SKIP
+        >>> res = conn.get_result(job)  # doctest: +SKIP
+
+        List past executions and close the session.
+
+        >>> conn.requests()  # doctest: +SKIP
+        >>> conn.close()  # doctest: +SKIP
     """
 
     def __init__(self, url=None, auth_url=None):
-        """Initialize a MimiqConnection.
+        """Create an unauthenticated connection.
 
         Args:
-            url (str, optional): The URL of the Mimiq server. Defaults to None (using default cloud URL).
-            auth_url (str, optional): The URL of the authentication server. Giving one, or
-                giving ``QPERFECT_CLOUD_V2`` or ``QPERFECT_DEV`` as ``url``, connects to Quantum
-                Hive, which authenticates through Keycloak. The known URLs pick their own
-                authentication server, so ``auth_url`` is only needed for other deployments.
-                Defaults to None.
+            url (str, optional): The URL of the MIMIQ service. Defaults to None
+                (``mimiqlink.QPERFECT_CLOUD``, or
+                ``mimiqlink.QPERFECT_CLOUD_V2`` when ``auth_url`` is given).
+            auth_url (str, optional): The URL of the authentication server.
+                Giving one, or giving ``mimiqlink.QPERFECT_CLOUD_V2`` or
+                ``mimiqlink.QPERFECT_DEV`` as ``url``, connects to Quantum
+                Hive, which authenticates through Keycloak. The known URLs pick
+                their own authentication server, so ``auth_url`` is only
+                needed for other deployments. Defaults to None.
+
+        Warns:
+            FutureWarning: When connecting to the current MIMIQ web service,
+                which will be deprecated in favour of MIMIQ V2. Set the
+                ``MIMIQ_V2_WARNING`` environment variable to ``off``, ``false``,
+                ``no`` or ``0`` to silence it.
         """
         import mimiqlink
 
         if auth_url is not None or url in (mimiqlink.QPERFECT_CLOUD_V2, mimiqlink.QPERFECT_DEV):
             connection = mimiqlink.QhiveConnection(url, auth_url)
         else:
+            if os.environ.get("MIMIQ_V2_WARNING", "").strip().lower() not in ("0", "false", "no", "off"):
+                import warnings
+
+                warnings.warn(
+                    "You are connecting to the current MIMIQ web service, which "
+                    "will be deprecated. See "
+                    "https://docs.qperfect.io/mimiqcircuits-python/migration_v2.html. "
+                    "Set MIMIQ_V2_WARNING=off to silence this warning.",
+                    FutureWarning,
+                    stacklevel=2,
+                )
             connection = mimiqlink.MimiqConnection(url)
         super().__init__(connection)
 
 
 class PlanqkConnection(RemoteConnection):
-    """Represents a connection to the Mimiq Server via PlanQK.
+    """Connection to the MIMIQ services through the PlanQK gateway.
 
-    This is a wrapper around mimiqlink.PlanqkConnection to provide the circuit execution API.
+    Wraps a ``mimiqlink.PlanqkConnection`` and adds the circuit execution API
+    described in :class:`RemoteConnection`. Call ``connect`` before
+    submitting anything.
+
+    Examples:
+        Connect with explicit credentials. Without arguments, ``connect``
+        reads ``PLANQK_CONSUMER_KEY`` and ``PLANQK_CONSUMER_SECRET`` from the
+        environment.
+
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.remote import PlanqkConnection
+        >>> conn = PlanqkConnection()
+        >>> conn.connect("my_consumer_key", "my_consumer_secret")  # doctest: +SKIP
+
+        Submit and retrieve results as with :class:`MimiqConnection`.
+
+        >>> c = Circuit()
+        >>> c.push(GateX(), 0)
+        1-qubit circuit with 1 instruction:
+        └── X @ q[0]
+        <BLANKLINE>
+        >>> c.push(Measure(), 0, 0)
+        1-qubit, 1-bit circuit with 2 instructions:
+        ├── X @ q[0]
+        └── M @ q[0], c[0]
+        <BLANKLINE>
+        >>> job = conn.submit(c)  # doctest: +SKIP
+        >>> res = conn.get_result(job)  # doctest: +SKIP
     """
 
     def __init__(self, url=None, consumer_key=None, consumer_secret=None):
-        """Initialize a PlanqkConnection.
+        """Create an unauthenticated PlanQK connection.
 
         Args:
-            url (str, optional): The URL of the PlanQK API. Defaults to None (using default PlanQK URL).
-            consumer_key (str, optional): The consumer key for PlanQK authentication. Defaults to None.
-            consumer_secret (str, optional): The consumer secret for PlanQK authentication. Defaults to None.
+            url (str, optional): The URL of the PlanQK gateway. Defaults to
+                None (``mimiqlink.PLANQK_API``).
+            consumer_key (str, optional): The PlanQK consumer key. Defaults to
+                None.
+            consumer_secret (str, optional): The PlanQK consumer secret.
+                Defaults to None.
         """
         import mimiqlink
 

@@ -19,24 +19,22 @@
 import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.utils import power_idempotent, control_one_defined
-import mimiqcircuits as mc
 from symengine import Matrix
 
 
 class GateSWAP(mcg.Gate):
     r"""Two qubit SWAP gate.
 
-    See Also :func:`GateISWAP`
+    Exchanges the states of the two qubits.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{SWAP} = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 0 & 1 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & 0 & 1
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{SWAP} = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 0 & 1 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & 0 & 1
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -49,6 +47,10 @@ class GateSWAP(mcg.Gate):
         [0, 0, 0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateSWAP(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instruction:
+        └── SWAP @ q[0:1]
+        <BLANKLINE>
         >>> GateSWAP().power(2), GateSWAP().inverse()
         (⨷ ² ID, SWAP)
         >>> GateSWAP().decompose()
@@ -57,6 +59,9 @@ class GateSWAP(mcg.Gate):
         ├── CX @ q[1], q[0]
         └── CX @ q[0], q[1]
         <BLANKLINE>
+
+    See Also:
+        :class:`GateISWAP`, :class:`GateCSWAP`
     """
 
     _name = "SWAP"
@@ -76,7 +81,8 @@ class GateSWAP(mcg.Gate):
         return power_idempotent(self, p)
 
     def _control(self, n):
-        return control_one_defined(n, self, mc.GateCSWAP())
+        from mimiqcircuits.operations.gates.standard.cswap import GateCSWAP
+        return control_one_defined(n, self, GateCSWAP())
 
     def _decompose(self, circ, qubits, bits, zvars):
         c, t = qubits

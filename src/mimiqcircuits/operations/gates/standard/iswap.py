@@ -21,23 +21,23 @@ from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
 from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 from symengine import Matrix, I
-import mimiqcircuits as mc
+from mimiqcircuits.operations.inverse import Inverse, canonical_inverse
 
 
 class GateISWAP(mcg.Gate):
-    r""" Two qubit ISWAP gate.
+    r"""Two qubit iSWAP gate.
 
-    See Also :class:`GateISWAPDG` and :class:`GateSWAP`
+    Swaps the states of the two qubits and adds a phase :math:`i` to
+    :math:`|01\rangle` and :math:`|10\rangle`.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{ISWAP} = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 0 & i & 0 \\
-            0 & i & 0 & 0 \\
-            0 & 0 & 0 & 1
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{ISWAP} = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 0 & i & 0 \\
+                0 & i & 0 & 0 \\
+                0 & 0 & 0 & 1
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -50,6 +50,10 @@ class GateISWAP(mcg.Gate):
         [0, 0, 0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateISWAP(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instruction:
+        └── ISWAP @ q[0:1]
+        <BLANKLINE>
         >>> GateISWAP().power(2), GateISWAP().inverse()
         (ISWAP**2, ISWAP†)
         >>> GateISWAP().decompose()
@@ -61,6 +65,9 @@ class GateISWAP(mcg.Gate):
         ├── CX @ q[1], q[0]
         └── H @ q[1]
         <BLANKLINE>
+
+    See Also:
+        :class:`GateISWAPDG`, :class:`GateSWAP`
     """
 
     _name = "ISWAP"
@@ -85,21 +92,18 @@ class GateISWAP(mcg.Gate):
         return circ
 
 
-@mc.canonical_inverse(GateISWAP)
-class GateISWAPDG(mc.Inverse):
-    r"""Two qubit ISWAP† (iSWAP dagger) gate.
+@canonical_inverse(GateISWAP)
+class GateISWAPDG(Inverse):
+    r"""Two qubit iSWAP† gate, the inverse of :class:`GateISWAP`.
 
-    See Also :class:`GateISWAP` and :class:`GateSWAP`
-
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{ISWAP}^\dagger = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 0 & -i & 0 \\
-            0 & -i & 0 & 0 \\
-            0 & 0 & 0 & 1
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{ISWAP}^\dagger = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 0 & -i & 0 \\
+                0 & -i & 0 & 0 \\
+                0 & 0 & 0 & 1
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -112,6 +116,10 @@ class GateISWAPDG(mc.Inverse):
         [0, 0, 0, 1.0]
         <BLANKLINE>
         >>> c = Circuit().push(GateISWAPDG(), 0, 1)
+        >>> c
+        2-qubit circuit with 1 instruction:
+        └── ISWAP† @ q[0:1]
+        <BLANKLINE>
         >>> GateISWAPDG().power(2), GateISWAPDG().inverse()
         (ISWAP†**2, ISWAP)
         >>> GateISWAPDG().decompose()
@@ -123,10 +131,13 @@ class GateISWAPDG(mc.Inverse):
         ├── CX @ q[1], q[0]
         └── H @ q[1]
         <BLANKLINE>
+
+    See Also:
+        :class:`GateISWAP`, :class:`GateSWAP`
     """
 
     def __init__(self, operation=None):
-        """Initialize an ISWAP† gate."""
+        """Initialize an ISWAP† gate. The argument is unused."""
         super().__init__(GateISWAP())
 
     def inverse(self):

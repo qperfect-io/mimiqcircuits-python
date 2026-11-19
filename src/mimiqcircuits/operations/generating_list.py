@@ -18,187 +18,251 @@
 
 import inspect
 from collections import defaultdict
-from mimiqcircuits import *
+from mimiqcircuits.operations.gates.custom import GateCustom
+from mimiqcircuits.operations.gates.customdiagonal import GateCustomDiagonal
+from mimiqcircuits.operations.gates.standard.chadamard import GateCH
+from mimiqcircuits.operations.gates.standard.cnp import GateCCP
+from mimiqcircuits.operations.gates.standard.cnx import GateC3X, GateCCX
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX, GateCY, GateCZ
+from mimiqcircuits.operations.gates.standard.cphase import GateCP
+from mimiqcircuits.operations.gates.standard.crotations import GateCRX, GateCRY, GateCRZ
+from mimiqcircuits.operations.gates.standard.cs import GateCS, GateCSDG
+from mimiqcircuits.operations.gates.standard.cswap import GateCSWAP
+from mimiqcircuits.operations.gates.standard.csx import GateCSX, GateCSXDG
+from mimiqcircuits.operations.gates.standard.cu import GateCU
+from mimiqcircuits.operations.gates.standard.dcx import GateDCX
+from mimiqcircuits.operations.gates.standard.deprecated import GateU1, GateU2, GateU3
+from mimiqcircuits.operations.gates.standard.ecr import GateECR
+from mimiqcircuits.operations.gates.standard.hadamard import (
+    GateH,
+    GateHXY,
+    GateHXZ,
+    GateHYZ,
+)
+from mimiqcircuits.operations.gates.standard.id import GateID
+from mimiqcircuits.operations.gates.standard.interactions import (
+    GateRXX,
+    GateRYY,
+    GateRZX,
+    GateRZZ,
+    GateXXminusYY,
+    GateXXplusYY,
+)
+from mimiqcircuits.operations.gates.standard.iswap import GateISWAP
+from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
+from mimiqcircuits.operations.gates.standard.phase import GateP
+from mimiqcircuits.operations.gates.standard.rotations import (
+    GateR,
+    GateRX,
+    GateRY,
+    GateRZ,
+)
+from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+from mimiqcircuits.operations.gates.standard.swap import GateSWAP
+from mimiqcircuits.operations.gates.standard.sx import GateSX, GateSXDG
+from mimiqcircuits.operations.gates.standard.sy import GateSY, GateSYDG
+from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
+from mimiqcircuits.operations.gates.standard.u import GateU
 
 
 class InheritanceTree:
-    """Class to generate and display an inheritance tree for classes that inherit from a base class.
+    """Inheritance tree of the classes derived from a base class.
 
-    >>> from mimiqcircuits import *
-    >>> import mimiqcircuits as mc
-    >>> inheritance_tree = InheritanceTree(Operation)
-    >>> inheritance_tree.extract_classes(mc)
-    >>> inheritance_tree.extract_gate_functions(mc)
-    >>> inheritance_tree.print_tree()
-    :class:`Operation`
-        :class:`AbstractAnnotation`
-            :class:`Detector`
-            :class:`Lost`
-            :class:`ObservableInclude`
-            :class:`QubitCoordinates`
-            :class:`Reloaded`
-            :class:`ShiftCoordinates`
-            :class:`Tick`
-        :class:`AbstractClassical`
-            :class:`And`
-            :class:`Not`
-            :class:`Or`
-            :class:`SetBit0`
-            :class:`SetBit1`
-            :class:`Xor`
-        :class:`AbstractMeasurement`
-            :class:`Measure`
-            :class:`MeasurePauli`
-            :class:`MeasureReset`
-            :class:`MeasureResetX`
-            :class:`MeasureResetY`
-            :class:`MeasureResetZ`
-            :class:`MeasureX`
-            :class:`MeasureXX`
-            :class:`MeasureY`
-            :class:`MeasureYY`
-            :class:`MeasureZ`
-            :class:`MeasureZZ`
-        :class:`AbstractOperator`
-            :class:`DiagonalOp`
-            :class:`Gate`
-                :class:`Control`
-                    :class:`GateC3X`
-                    :class:`GateCCP`
-                    :class:`GateCCX`
-                    :class:`GateCH`
-                    :class:`GateCP`
-                    :class:`GateCRX`
-                    :class:`GateCRY`
-                    :class:`GateCRZ`
-                    :class:`GateCS`
-                    :class:`GateCSDG`
-                    :class:`GateCSWAP`
-                    :class:`GateCSX`
-                    :class:`GateCSXDG`
-                    :class:`GateCU`
-                    :class:`GateCX`
-                    :class:`GateCY`
-                    :class:`GateCZ`
-                :class:`Delay`
-                :class:`Diffusion`
-                :class:`GateCall`
-                :class:`GateCustom`
-                :class:`GateCustomDiagonal`
-                :class:`GateDCX`
-                :class:`GateECR`
-                :class:`GateH`
-                :class:`GateHXY`
-                :class:`GateHXZ`
-                :class:`GateHYZ`
-                :class:`GateID`
-                :class:`GateISWAP`
-                :class:`GateP`
-                :class:`GateR`
-                :class:`GateRNZ`
-                :class:`GateRX`
-                :class:`GateRXX`
-                :class:`GateRY`
-                :class:`GateRYY`
-                :class:`GateRZ`
-                :class:`GateRZX`
-                :class:`GateRZZ`
-                :class:`GateSWAP`
-                :class:`GateU`
-                :class:`GateU1`
-                :class:`GateU2`
-                :class:`GateU3`
-                :class:`GateX`
-                :class:`GateXXminusYY`
-                :class:`GateXXplusYY`
-                :class:`GateY`
-                :class:`GateZ`
-                :class:`Inverse`
-                    :class:`GateISWAPDG`
-                    :class:`GateSDG`
-                    :class:`GateSXDG`
-                    :class:`GateSYDG`
-                    :class:`GateTDG`
-                :class:`Parallel`
-                :class:`PauliString`
-                :class:`PhaseGradient`
-                :class:`PolynomialOracle`
-                :class:`Power`
-                    :class:`GateS`
-                    :class:`GateSX`
-                    :class:`GateSY`
-                    :class:`GateT`
-                :class:`QFT`
-                :class:`RPauli`
-            :class:`LossyOperator`
-            :class:`Operator`
-            :class:`Projector0`
-            :class:`Projector00`
-            :class:`Projector01`
-            :class:`Projector1`
-            :class:`Projector10`
-            :class:`Projector11`
-            :class:`ProjectorX0`
-            :class:`ProjectorX1`
-            :class:`ProjectorY0`
-            :class:`ProjectorY1`
-            :class:`ProjectorZ0`
-            :class:`ProjectorZ1`
-            :class:`RescaledGate`
-            :class:`SigmaMinus`
-            :class:`SigmaPlus`
-        :class:`Add`
-        :class:`Amplitude`
-        :class:`Barrier`
-        :class:`Block`
-        :class:`BondDim`
-        :class:`Check`
-        :class:`ExpectationValue`
-        :class:`IfStatement`
-        :class:`Loss`
-        :class:`MeasureCheck`
-        :class:`Multiply`
-        :class:`Pow`
-        :class:`ReadoutErr`
-        :class:`Reload`
-        :class:`Repeat`
-        :class:`SchmidtRank`
-        :class:`VonNeumannEntropy`
-        :class:`WhileStatement`
-        :class:`krauschannel`
-            :class:`AmplitudeDamping`
-            :class:`Depolarizing`
-            :class:`Depolarizing1`
-            :class:`Depolarizing2`
-            :class:`GeneralizedAmplitudeDamping`
-            :class:`Kraus`
-            :class:`MixedUnitary`
-            :class:`PauliNoise`
-            :class:`PauliX`
-            :class:`PauliY`
-            :class:`PauliZ`
-            :class:`PhaseAmplitudeDamping`
-            :class:`PrepareStateT`
-            :class:`ProjectiveNoise`
-            :class:`ProjectiveNoiseX`
-            :class:`ProjectiveNoiseY`
-            :class:`ProjectiveNoiseZ`
-            :class:`Reset`
-            :class:`ResetX`
-            :class:`ResetY`
-            :class:`ResetZ`
-            :class:`ThermalNoise`
-    <BLANKLINE>
+    Used to build the class hierarchies shown in the documentation of
+    :class:`OPERATIONS`, :class:`GATES` and the other listing classes.
+    Collect classes with :meth:`extract_classes` (and optionally
+    functions with :meth:`extract_gate_functions`), then render the tree
+    with :meth:`print_tree` or :meth:`generate_ascii_tree`.
+
+    Args:
+        base_class (type): The root of the tree.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> import mimiqcircuits as mc
+        >>> inheritance_tree = InheritanceTree(Operation)
+        >>> inheritance_tree.extract_classes(mc)
+        >>> inheritance_tree.extract_gate_functions(mc)
+        >>> inheritance_tree.print_tree()
+        :class:`Operation`
+            :class:`AbstractAnnotation`
+                :class:`AncillaAlloc`
+                :class:`AncillaFree`
+                :class:`Detector`
+                :class:`Lost`
+                :class:`ObservableInclude`
+                :class:`QubitCoordinates`
+                :class:`Reloaded`
+                :class:`ShiftCoordinates`
+                :class:`Tick`
+            :class:`AbstractClassical`
+                :class:`And`
+                :class:`Not`
+                :class:`Or`
+                :class:`SetBit0`
+                :class:`SetBit1`
+                :class:`Xor`
+            :class:`AbstractMeasurement`
+                :class:`Measure`
+                :class:`MeasurePauli`
+                :class:`MeasureReset`
+                :class:`MeasureResetX`
+                :class:`MeasureResetY`
+                :class:`MeasureResetZ`
+                :class:`MeasureX`
+                :class:`MeasureXX`
+                :class:`MeasureY`
+                :class:`MeasureYY`
+                :class:`MeasureZ`
+                :class:`MeasureZZ`
+            :class:`AbstractOperator`
+                :class:`DiagonalOp`
+                :class:`Gate`
+                    :class:`Control`
+                        :class:`GateC3X`
+                        :class:`GateCCP`
+                        :class:`GateCCX`
+                        :class:`GateCH`
+                        :class:`GateCP`
+                        :class:`GateCRX`
+                        :class:`GateCRY`
+                        :class:`GateCRZ`
+                        :class:`GateCS`
+                        :class:`GateCSDG`
+                        :class:`GateCSWAP`
+                        :class:`GateCSX`
+                        :class:`GateCSXDG`
+                        :class:`GateCU`
+                        :class:`GateCX`
+                        :class:`GateCY`
+                        :class:`GateCZ`
+                    :class:`Delay`
+                    :class:`Diffusion`
+                    :class:`GateCall`
+                    :class:`GateCustom`
+                    :class:`GateCustomDiagonal`
+                    :class:`GateDCX`
+                    :class:`GateECR`
+                    :class:`GateH`
+                    :class:`GateHXY`
+                    :class:`GateHXZ`
+                    :class:`GateHYZ`
+                    :class:`GateID`
+                    :class:`GateISWAP`
+                    :class:`GateP`
+                    :class:`GateR`
+                    :class:`GateRNZ`
+                    :class:`GateRX`
+                    :class:`GateRXX`
+                    :class:`GateRY`
+                    :class:`GateRYY`
+                    :class:`GateRZ`
+                    :class:`GateRZX`
+                    :class:`GateRZZ`
+                    :class:`GateSWAP`
+                    :class:`GateU`
+                    :class:`GateU1`
+                    :class:`GateU2`
+                    :class:`GateU3`
+                    :class:`GateX`
+                    :class:`GateXXminusYY`
+                    :class:`GateXXplusYY`
+                    :class:`GateY`
+                    :class:`GateZ`
+                    :class:`Inverse`
+                        :class:`GateISWAPDG`
+                        :class:`GateSDG`
+                        :class:`GateSXDG`
+                        :class:`GateSYDG`
+                        :class:`GateTDG`
+                    :class:`Parallel`
+                    :class:`PauliString`
+                    :class:`PhaseGradient`
+                    :class:`PolynomialOracle`
+                    :class:`Power`
+                        :class:`GateS`
+                        :class:`GateSX`
+                        :class:`GateSY`
+                        :class:`GateT`
+                    :class:`QFT`
+                    :class:`RPauli`
+                :class:`LossyOperator`
+                :class:`Operator`
+                :class:`Projector0`
+                :class:`Projector00`
+                :class:`Projector01`
+                :class:`Projector1`
+                :class:`Projector10`
+                :class:`Projector11`
+                :class:`ProjectorX0`
+                :class:`ProjectorX1`
+                :class:`ProjectorY0`
+                :class:`ProjectorY1`
+                :class:`ProjectorZ0`
+                :class:`ProjectorZ1`
+                :class:`RescaledGate`
+                :class:`SigmaMinus`
+                :class:`SigmaPlus`
+            :class:`Add`
+            :class:`Amplitude`
+            :class:`Barrier`
+            :class:`Block`
+            :class:`BlockCall`
+            :class:`BondDim`
+            :class:`Check`
+            :class:`ExpectationValue`
+            :class:`IfStatement`
+            :class:`Loss`
+            :class:`MeasureCheck`
+            :class:`Multiply`
+            :class:`Pow`
+            :class:`ReadoutErr`
+            :class:`Reload`
+            :class:`Repeat`
+            :class:`SchmidtRank`
+            :class:`VonNeumannEntropy`
+            :class:`WhileStatement`
+            :class:`krauschannel`
+                :class:`AmplitudeDamping`
+                :class:`Depolarizing`
+                :class:`Depolarizing1`
+                :class:`Depolarizing2`
+                :class:`GeneralizedAmplitudeDamping`
+                :class:`Kraus`
+                :class:`MixedUnitary`
+                :class:`PauliNoise`
+                :class:`PauliX`
+                :class:`PauliY`
+                :class:`PauliZ`
+                :class:`PhaseAmplitudeDamping`
+                :class:`PrepareStateT`
+                :class:`ProjectiveNoise`
+                :class:`ProjectiveNoiseX`
+                :class:`ProjectiveNoiseY`
+                :class:`ProjectiveNoiseZ`
+                :class:`Reset`
+                :class:`ResetX`
+                :class:`ResetY`
+                :class:`ResetZ`
+                :class:`ThermalNoise`
+        <BLANKLINE>
     """
 
     def __init__(self, base_class):
-        """Initialize with the base class (e.g., Operation)."""
+        """Create an empty tree rooted at ``base_class``."""
         self.base_class = base_class
         self.class_tree = defaultdict(list)
-        self.function_registry = defaultdict(list)  # <-- added
+        self.function_registry = defaultdict(list)
 
     def extract_classes(self, module):
-        """Extract all classes from the module that inherit from the base class."""
+        """Add every subclass of the base class found in ``module``.
+
+        Each class is placed under its first base class. Aliases (names
+        that differ from the class's own name) are skipped.
+
+        Args:
+            module: The module to scan.
+        """
         classes = inspect.getmembers(module, inspect.isclass)
 
         for name, cls in classes:
@@ -211,7 +275,16 @@ class InheritanceTree:
                 self.class_tree[parent].append(name)
 
     def extract_gate_functions(self, module):
-        """Automatically extract gate-like functions that return subclasses of the base class."""
+        """Add the functions of ``module`` that build instances of the base class.
+
+        Every public function that can be called without arguments is
+        called once; if it returns an instance of the base class, it is
+        listed under the class of the result. Functions that raise are
+        skipped.
+
+        Args:
+            module: The module to scan.
+        """
         functions = inspect.getmembers(module, inspect.isfunction)
 
         for name, func in functions:
@@ -241,26 +314,44 @@ class InheritanceTree:
                 continue
 
     def generate_tree_output(self, class_name=None, level=0):
-        """Recursively generate the class hierarchy tree as a string."""
+        """Return the tree below ``class_name`` as indented ``:class:`` lines.
+
+        Args:
+            class_name (str): Name of the class to start from. Defaults to
+                the base class.
+            level (int): Indentation level of the first line.
+
+        Returns:
+            str: The tree, one class or function per line.
+        """
         if class_name is None:
             class_name = self.base_class.__name__
 
         result = "    " * level + f":class:`{class_name}`\n"
 
-        for func in sorted(self.function_registry.get(class_name, [])):  # <-- added
-            result += "    " * (level + 1) + f":func:`{func}`\n"  # <-- added
+        for func in sorted(self.function_registry.get(class_name, [])):
+            result += "    " * (level + 1) + f":func:`{func}`\n"
 
         for child_class in sorted(self.class_tree.get(class_name, [])):
             result += self.generate_tree_output(child_class, level + 1)
         return result
 
     def print_tree(self):
-        """Print the generated tree."""
+        """Print the output of :meth:`generate_tree_output`."""
         print(self.generate_tree_output())
 
     def generate_ascii_tree(self, class_name=None, prefix="", is_last=True):
-        """
-        Generate a clean ASCII tree showing class/function hierarchy.
+        """Return the tree below ``class_name`` drawn with ASCII branches.
+
+        Args:
+            class_name (str): Name of the class to start from. Defaults to
+                the base class.
+            prefix (str): Text placed before each line, used for recursion.
+            is_last (bool): Whether this node is the last child of its
+                parent, used for recursion.
+
+        Returns:
+            str: The tree, one class or function per line.
         """
         if class_name is None:
             class_name = self.base_class.__name__
@@ -292,7 +383,10 @@ class InheritanceTree:
 
 
 class OPERATIONS:
-    """All supported quantum operations. Use `help(OPERATIONS)` to view the hierarchy."""
+    """All supported operations. Use ``help(OPERATIONS)`` to view the hierarchy.
+
+    This class only carries documentation; it cannot be instantiated.
+    """
 
     def __new__(cls):
         raise NotImplementedError(
@@ -301,7 +395,10 @@ class OPERATIONS:
 
 
 class ANNOTATIONS:
-    """Annotation-related operations. Use `help(ANNOTATIONS)` to view the hierarchy."""
+    """Annotations. Use ``help(ANNOTATIONS)`` to view the hierarchy.
+
+    This class only carries documentation; it cannot be instantiated.
+    """
 
     def __new__(cls):
         raise NotImplementedError(
@@ -310,14 +407,20 @@ class ANNOTATIONS:
 
 
 class GATES:
-    """Gate operations. Use `help(GATES)` to view the hierarchy."""
+    """Gates. Use ``help(GATES)`` to view the hierarchy.
+
+    This class only carries documentation; it cannot be instantiated.
+    """
 
     def __new__(cls):
         raise NotImplementedError("Use `help(GATES)` to view available gates.")
 
 
 class KRAUSCHANNELS:
-    """Kraus channel operations. Use `help(KRAUSCHANNELS)` to view the hierarchy."""
+    """Kraus channels. Use ``help(KRAUSCHANNELS)`` to view the hierarchy.
+
+    This class only carries documentation; it cannot be instantiated.
+    """
 
     def __new__(cls):
         raise NotImplementedError(
@@ -326,7 +429,10 @@ class KRAUSCHANNELS:
 
 
 class MEASUREMENTS:
-    """Measurement operations. Use `help(MEASUREMENTS)` to view the hierarchy."""
+    """Measurements. Use ``help(MEASUREMENTS)`` to view the hierarchy.
+
+    This class only carries documentation; it cannot be instantiated.
+    """
 
     def __new__(cls):
         raise NotImplementedError(
@@ -335,7 +441,10 @@ class MEASUREMENTS:
 
 
 class SIMPLEGATES:
-    """Simple gates. Use `help(SIMPLEGATES)` to view the full list."""
+    """Standard gates. Use ``help(SIMPLEGATES)`` to view the full list.
+
+    This class only carries documentation; it cannot be instantiated.
+    """
 
     def __new__(cls):
         raise NotImplementedError(
@@ -344,7 +453,10 @@ class SIMPLEGATES:
 
 
 class CLASSICALOPERATIONS:
-    """Classical operations. Use `help(CLASSICALOPERATIONS)` to view the hierarchy."""
+    """Classical operations. Use ``help(CLASSICALOPERATIONS)`` to view the hierarchy.
+
+    This class only carries documentation; it cannot be instantiated.
+    """
 
     def __new__(cls):
         raise NotImplementedError(
@@ -353,6 +465,11 @@ class CLASSICALOPERATIONS:
 
     @staticmethod
     def list():
+        """Return the classes of the standard gates.
+
+        Returns:
+            list: Gate classes, from :class:`GateCustom` to :class:`GateP`.
+        """
         return [
             GateCustom,
             GateCustomDiagonal,
@@ -480,6 +597,16 @@ SIMPLEGATES_GROUPS = {
 
 
 def generate_ascii_gate_tree_grouped(groups):
+    """Return a text listing of gate classes grouped by section.
+
+    Args:
+        groups (dict): Map from section title to a list of gate classes,
+            such as ``SIMPLEGATES_GROUPS``.
+
+    Returns:
+        str: The sections in order, each followed by its gate names sorted
+        alphabetically and drawn as a tree.
+    """
     lines = ["Available quantum gates:\n"]
     for section, gates in groups.items():
         lines.append(f"*{section}*")
@@ -501,9 +628,17 @@ def _rst_fenced(text: str) -> str:
 def attach_inheritance_tree_to_docstring(
     base, module, target_object, title, start_from
 ):
-    """
-    Attach an ASCII inheritance tree to a class or module docstring,
-    wrapped in a proper Sphinx RST code-block so formatting is preserved.
+    """Append an ASCII inheritance tree to the docstring of ``target_object``.
+
+    The tree is wrapped in an RST ``code-block`` so that Sphinx keeps its
+    layout.
+
+    Args:
+        base: Root class used to collect the classes.
+        module: Module scanned for classes and functions.
+        target_object: Object whose ``__doc__`` is extended.
+        title (str): Heading written above the tree.
+        start_from (str): Name of the class the tree starts from.
     """
 
     tree = InheritanceTree(base)

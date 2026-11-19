@@ -18,7 +18,19 @@
 
 from fractions import Fraction
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.pauli import GateZ
+from mimiqcircuits.operations.gates.standard.u import GateU
+from mimiqcircuits.operations.inverse import (
+    Inverse,
+    canonical_inverse,
+    register_inverse_decomposition,
+)
+from mimiqcircuits.operations.power import (
+    Power,
+    canonical_power,
+    register_power_alias,
+    register_power_decomposition,
+)
 from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 
 
@@ -27,17 +39,18 @@ from mimiqcircuits.operations.gates.standard._angles import PI_4, NEG_PI_4
 _EXPONENT = Fraction(1, 4)
 
 
-@mc.canonical_power(mc.GateZ, _EXPONENT)
-class GateT(mc.Power):
-    r"""Single qubit T gate.
+@canonical_power(GateZ, _EXPONENT)
+class GateT(Power):
+    r"""Single qubit T gate, a phase gate with angle :math:`\pi/4`.
 
-    **Matrix representation:**
+    Equal to ``GateZ().power(1/4)`` and to ``GateP(pi/4)``.
 
-    .. math::
-        \operatorname{T} = \begin{pmatrix}
-            1 & 0 \\
-            0 & \exp\left(\frac{i\pi}{4}\right)
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{T} = \begin{pmatrix}
+                1 & 0 \\
+                0 & \exp\left(\frac{i\pi}{4}\right)
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -61,31 +74,30 @@ class GateT(mc.Power):
     """
 
     def __init__(self, operation=None, exponent=None):
-        """Initialize a T gate."""
-        super().__init__(mc.GateZ(), _EXPONENT)
+        """Initialize a T gate. The arguments are unused."""
+        super().__init__(GateZ(), _EXPONENT)
 
 
-mc.register_power_alias(mc.GateZ, 1 / 4, "T")
+register_power_alias(GateZ, 1 / 4, "T")
 
 
-@mc.register_power_decomposition(mc.GateZ, 1 / 4)
+@register_power_decomposition(GateZ, 1 / 4)
 def _decompose_gatet(self, circ, qubits, bits, zvars):
     q = qubits[0]
-    circ.push(mc.GateU(0, 0, PI_4), q)
+    circ.push(GateU(0, 0, PI_4), q)
     return circ
 
 
-@mc.canonical_inverse(GateT)
-class GateTDG(mc.Inverse):
-    r"""Single qubit T-dagger gate (conjugate transpose of the T gate).
+@canonical_inverse(GateT)
+class GateTDG(Inverse):
+    r"""Single qubit T† gate, the inverse of :class:`GateT`.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{T}^\dagger = \begin{pmatrix}
-            1 & 0 \\
-            0 & \exp\left(\frac{-i\pi}{4}\right)
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{T}^\dagger = \begin{pmatrix}
+                1 & 0 \\
+                0 & \exp\left(\frac{-i\pi}{4}\right)
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -109,12 +121,12 @@ class GateTDG(mc.Inverse):
     """
 
     def __init__(self, operation=None):
-        """Initialize a TDG gate."""
+        """Initialize a TDG gate. The argument is unused."""
         super().__init__(GateT())
 
 
-@mc.register_inverse_decomposition((mc.Power, mc.GateZ, 1 / 4))
+@register_inverse_decomposition((Power, GateZ, 1 / 4))
 def _decompose_gatetdg(gate, circ, qubits, bits, zvars):
     q = qubits[0]
-    circ.push(mc.GateU(0, 0, NEG_PI_4), q)
+    circ.push(GateU(0, 0, NEG_PI_4), q)
     return circ

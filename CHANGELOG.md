@@ -7,6 +7,108 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-11-19
+
+Results of `execute` with a `seed` differ from earlier versions, on local and remote backends: the random streams under a seed are derived differently. Regenerate any reference values that depend on a seed. `State.sample` no longer takes `seed`; pass `rng=random.Random(seed)` instead.
+
+### Added
+- `MimiqConnection` emits a `FutureWarning` when it connects to the current MIMIQ web service, pointing to the MIMIQ V2 migration guide. Set the `MIMIQ_V2_WARNING` environment variable to `off` to silence it.
+- `PolynomialOracle` decomposes into one multi-controlled Z per solution of the polynomial, so it runs on backends that do not implement it. The decomposition is practical only with few solutions.
+- `CanonicalBasis`, `CliffordTBasis` and `QASMBasis` take three ancilla options, all off by default. `borrow=True` lets decompositions borrow qubits of the circuit outside the operation, in any state. `max_ancillas=k` lets them add up to `k` clean ancillas after the qubits of the circuit, reused once freed. `allow_measurement=True` lets them undo steps by measuring an ancilla into one extra bit after the bits of the circuit; circuits without bits are refused.
+- With these options, a multi-controlled X with three or more controls decomposes into a linear number of gates: Toffolis with borrowed qubits (Barenco et al.), relative-phase Toffoli ladders with clean ancillas (8(n-2)+7 T gates), or measured ANDs (4(n-1) T gates, and 4 instead of 7 for a Toffoli in `CliffordTBasis`).
+- `AncillaAlloc` and `AncillaFree` annotations mark where a clean ancilla starts being used and where it is back in |0>. `decompose` places them, reads those already in its input, and reuses the ancillas they free. The OpenQASM writer drops them.
+- `GateDecl`, `BlockDecl` and `Block` take a `num_ancillas` argument: the number of their last qubits that are clean ancillas. Every operation has a `num_ancillas` property, 0 unless set. With `wrap=True`, a gate that uses clean ancillas becomes a call with `num_ancillas` set and markers around it; a gate whose body measures becomes a call to a `BlockDecl`, shared between identical gates like a `GateDecl`.
+- `ancillas(c)` lists the qubits that carry an `AncillaAlloc`, `merge_ancilla_windows(c)` joins windows that meet on a qubit, and `check_ancillas(c)` checks that the markers are consistent.
+- `DecompositionContext` carries the circuit width and the ancilla state to bases and rules, through `DecompositionBasis.decompose_ctx`, `RewriteRule.decompose_step_ctx` and `Operation._decompose_ctx`. Their defaults call the methods without a context, so existing bases and rules keep working.
+- The manual has a section on ancillas in decompositions.
+- `RemoteConnection.optimize` accepts `mpsmethod`, `mpotraversal` and `streaming`, as `submit` does. The executor must support them: an older executor ignores `mpotraversal` and `streaming` in optimization requests.
+- `submit` and `optimize` accept `mpotraversal="frontierpack"`.
+- `BlockDecl` declares a named block with symbolic arguments, and calling it gives a `BlockCall` that can be pushed to a circuit. Unlike `GateDecl`, the body can hold any instruction, including measurements, resets, noise and z-variable operations. All calls refer to the same declaration, and evaluating a call only changes its values.
+- The `blockdecl` decorator builds a `BlockDecl` from a function returning a circuit.
+- Noise models, `FlattenContainers` and `FlattenedBasis` expand a `BlockCall` like a `GateCall`.
+- `SweepExperiment` and `EquivalenceExperiment` have `saveproto` and `loadproto`, with the new `experiment.proto` schema (`ParameterTable`, `SweepExperiment`, `EquivalenceExperiment`), byte-identical to the one in `MimiqCircuitsBase.jl`.
+- `WIRE_FORMAT_VERSION` is now `1.4.0`: it adds `experiment.proto`, the `AncillaAlloc` and `AncillaFree` annotation types, and a `numancillas` field to `GateDecl`, `BlockDecl` and `Block`. Old payloads decode with no markers and `num_ancillas = 0`. The executor must speak 1.4.0 before this release goes out.
+
+### Changed
+- The keys of the cache of wrapped declarations are the symbolic operation together with the numbers of borrowed and clean qubits its body was offered.
+- `QASMBasis` keeps annotations, such as `Lost`, and the OpenQASM writer drops them, instead of failing on them.
+- `pauli_based_computation` drops `AncillaAlloc` and `AncillaFree`, since it moves Clifford gates across them.
+- The protobuf schema has a `BlockCall` operation and a `BlockDecl` declaration. A circuit stores each declaration once. Files written before still load; an older reader fails on a circuit that contains a `BlockCall`.
+- `symengine` is required at `>=0.15.0,<0.16` on Python 3.11 and newer. Python 3.10 stays on `>=0.14.1,<0.15`, the last line that supports it.
+- Free-threading is in effect on free-threaded CPython 3.14 (`python3.14t`): `symengine 0.15` declares itself safe to run without the GIL, so importing `mimiqcircuits` no longer re-enables it and `PYTHON_GIL=0` is not needed.
+- `register_inverse_alias` takes `(gate_type, name)` instead of `(exponent, gate_type, name)`. Calls with three arguments raise `TypeError`.
+- `RNGs.from_seed` scrambles the master seed before deriving its four streams, so two different seeds, however close, have no stream in common.
+- `derive_grid_seeds` scrambles the base seed before deriving the grid seeds, so two different base seeds have no seed in common.
+- The `LocalBackend.evolve` and `State.sample` contracts say what `rng` does: the generator is advanced, and without one the backend draws fresh entropy.
+
+### Removed
+- The `seed` argument of `State.sample`: a state takes its randomness from `rng` only, like `LocalBackend.evolve`.
+
+### Fixed
+- `push_suzukitrotter` and `push_yoshidatrotter` with `order >= 4` apply the target qubits once; they raised or acted on the wrong qubits when the targets were not `0..n-1`.
+- `Diffusion(1)` decomposes.
+- `Diffusion.inverse()` returns the diffusion operator itself instead of wrapping it in an inverse: the operator is its own inverse.
+- `GateCustomDiagonal` checks the modulus of its numeric entries also when another entry is symbolic.
+- `Power(GateT(), 2)` builds a `GateS`, like `Power(GateZ(), 1/2)`: a folded power uses the registered named class.
+- Calling a lazy expression with more arguments than placeholders raises `TypeError` instead of dropping the extra ones, as in `ShiftCoordinates()(0.1, 0.2)`. `Circuit.emplace` still fills a lazy expression from the sizes of its first registers, so `emplace(control(GateX()), [0, 1], [2])` works.
+- `get_inputs` keeps the downloaded files, so the paths returned for QASM and Stim inputs exist.
+- `matrices.kronecker` accepts a NumPy array mixed with a SymEngine matrix.
+- `MimiqRemoteBackend` names the `apply_noise_model` pass in its error when noise is given twice.
+- `CompiledProjection` leaves a bit untouched when its `Measure` reads a qubit outside the sample, as `evaluate_projection` does, instead of zeroing it.
+- `execute` no longer builds the Kraus matrices of every mixed-unitary channel to check for runtime loss. That took about 1.3 s per call on a circuit with 2400 depolarizing channels.
+- `RemoteConnection.optimize` checks the types of `fuse`, `canonicaldecompose`, `reorderqubits`, `remove_swaps` and `reorderqubits_seed`, as `submit` does, so `fuse=0` raises `TypeError` instead of being sent as set.
+- `GateCall.is_symbolic` returns `True` when a call's values are symbolic, and `GateCall.listvars` returns their symbols instead of an empty list.
+- The default `Backend.bind` substitutes the parameters with `Circuit.evaluate` instead of failing with `ImportError`.
+- OpenQASM includes are cached by their full path, so two files with the same name in different folders no longer share the first one's gates.
+- `qasm.dump` leaves an existing file untouched when serialization fails, instead of emptying it.
+- `AsciiCanvas()` without a width uses the terminal width instead of failing on the first row.
+- `plothistogram` honours `nobitstrings` with the MIMIQ style, accepts results without fidelities, and labels bars with `BitString.tointeger`.
+- The notebook table of `QCSResults` also labels states with `BitString.tointeger`, so it shows the same hexadecimal values as `plothistogram`: `"100"` is `0x1`, not `0x4`.
+- `isCPTP` returns `True` for every channel instead of `False`: each of them satisfies Σ E†E = I.
+- `MixedUnitary.unitarymatrices` returns the matrices of the unitaries instead of the gates.
+- `AmplitudeDamping.evaluate` keeps `gamma` symbolic when some of its symbols are left, like the other channels, instead of raising `RuntimeError`.
+- `ReadoutErr` range checks `p0` and `p1` separately, so a numeric one is checked even when the other is symbolic.
+- `ReadoutErr.evaluate` keeps `p0` and `p1` symbolic when some of their symbols are left, instead of raising `RuntimeError`.
+- `PauliY`, `PauliZ` and `Delay` report their `parnames` as a tuple.
+- `squaredkrausoperators` works for channels whose Kraus operators are `RescaledGate` (`PauliNoise`, `MixedUnitary`, `Depolarizing`): `RescaledGate.opsquared` returns a rescaled identity.
+- `krausoperators`, `krausmatrices` and `cumprobabilities` of `AmplitudeDamping`, `GeneralizedAmplitudeDamping`, `PhaseAmplitudeDamping`, `ThermalNoise` and the Pauli channels work with symbolic parameters. `DiagonalOp` accepts real and symbolic entries, and rejects complex ones.
+- `PhaseAmplitudeDamping` and `ThermalNoise` give valid Kraus operators when `gamma` rounds to 1 with `p = 1`, for example a `ThermalNoise` time much longer than `T1`, instead of dividing 0 by 0.
+- `ThermalNoise` requires `T1 > 0` and `T2 > 0`, and skips the `T2 <= 2 * T1` check while either is symbolic.
+- `ResetX` and `ResetY` implement `krausoperators`.
+- `Kraus(..., rtol=)` uses `rtol` for the completeness check, on the norm of Σ E†E − I; a stricter hard-coded check ran first.
+- `MixedUnitary` rejects numeric probabilities outside `[0, 1]` and checks that they sum to 1 in the `RescaledGate` form too.
+- Decomposing a rotation with a symbolic angle to `CliffordTBasis` or `StimBasis` raises `DecompositionError`; it used to raise `RuntimeError` from SymEngine, and in `CliffordTBasis` could loop forever.
+- `StimBasis` decomposes `GateECR` into `S`, `SX`, `CX` and `X`, since Stim has no ECR instruction; `CliffordTBasis` uses the same four gates, with no T gate.
+- `SpecialAngleRewrite.decompose_step` refuses what `matches` refuses, so `only_cliffords=True` never emits a `T` gate.
+- `GateCU(theta, phi, lmbda)` defaults `gamma` to 0, as in Julia, instead of building a gate whose matrix fails.
+- `GateDCX().power(p)` returns `Power(GateDCX(), p)` for a non-integer `p` instead of `None`.
+- `Pow.inverse` raises `TypeError`, like other operations without an inverse, since `z^p` has no inverse in general, instead of returning `Pow(-p)`.
+- `LazyExpr.power` raises `TypeError` for more than one argument instead of returning it.
+- `GateCustom` accepts symbolic expressions such as `exp(I*x)` in the matrix instead of failing in the unitarity check.
+- Decomposing a `WhileStatement` keeps the size of its body when the body leaves its last qubit unused.
+- `Detector(0.1, 0.9)` builds a usable annotation once given its number of bits.
+- `evaluate` on an operator with complex parameters, such as `SigmaPlus(1j)`, returns it unchanged instead of failing.
+- `register_inverse_alias(gate_type, name)` takes the gate class and the name, and `Inverse` prints the registered name.
+- `PauliString.unwrappedmatrix` returns the numeric matrix instead of raising `UnexpectedSymbolics`.
+- `RescaledGate.get_param` reads parameters of the wrapped gate instead of raising `AttributeError`.
+- `Circuit.copy` gives the copy its own list of instructions, as in Julia, so pushing to the copy no longer changes the original or leaves its cached qubit count stale.
+- `Circuit.get_on_qubits` no longer matches classical bit `k` as qubit `k`.
+- `RemoteConnection.check_equivalence` waits for the job and returns its score instead of always raising `RuntimeError`.
+- `RemoteConnection.submit` refuses `entdim` above `MAX_ENTDIM`, as in Julia.
+- `OptimizationExperiment.change_list_of_parameters` also works when `initparams` is keyed by symbol names.
+- `get_input` no longer takes keyword arguments it could not pass on.
+- Runs with different seeds no longer reuse each other's random numbers: the noise stream of one seed was the shot stream of a nearby one, and `derive_grid_seeds(1, n)` and `derive_grid_seeds(2, n)` shared all but one seed.
+- On a circuit with runtime loss, a local backend's `callback` is called as `callback(i, total)`, once per instruction, as on the other paths. It was called with the state and the instruction.
+
+### Docs
+- The documentation uses the MIMIQ v4 brand: the new logo, the QPerfect colours in light and dark mode, and fonts served with the docs instead of from Google Fonts.
+- The API reference shows short object names, renders `` `name` `` references as code instead of italics, gives gate matrices and supported operations their own headings, and no longer lists undocumented members or an `__init__` without a docstring.
+- The API reference also covers `BitString`, the declaration types, the sweep, equivalence and optimization experiments, `CircuitDAG`, the simplification and fusion passes, the z-register operations and the `qasm` module.
+- `Gate.inverse`, `AbstractPass` and the `LocalBackend` hooks have their own docstrings, and `GateH.inverse` and similar no longer show the non-unitary operator's text.
+- The docstrings across the package have been checked against the code, and wrong parameter names, defaults, return types, raised exceptions and matrices are corrected, among them `submit` (returns an execution id), `Circuit.add_noise`, `SolovayKitaevRewrite` defaults, and the `GateECR`, `GateU2`, `GateU3`, `ProjectiveNoiseZ` and `GeneralizedAmplitudeDamping` matrices.
+- Undocumented public API is documented, including the `Instruction` accessors, the `Hamiltonian` methods, `LossModel` and `NoiseModel` methods, the backend hooks a simulator author implements or may override, and the declaration types `GateDecl`, `GateCall`, `BlockDecl` and `BlockCall`.
+- Examples are added or rewritten to teach each feature, and every example runs as a doctest except those that need a MIMIQ connection or an optional dependency, draw to the terminal or write a file.
+
 ## [0.31.2] - 2026-11-01
 
 ### Changed

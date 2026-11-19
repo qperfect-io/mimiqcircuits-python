@@ -32,6 +32,12 @@ from mimiqcircuits.remote import RemoteConnection, TYPE_PROTO, TYPE_QASM, TYPE_S
 
 
 class QCSError:
+    """The error reported for one circuit of a remote job that failed.
+
+    :meth:`get_results` puts it in the list of results, in place of the
+    result of the failed circuit. Its ``error`` attribute holds the message.
+    """
+
     def __init__(self, error):
         self.error = error
 
@@ -115,17 +121,32 @@ def load_inputs(base_names, tmpdir):
 
 
 def get_results(self, execution, interval=1):
-    """Retrieve the results of a completed execution.
+    """Wait for a remote job to finish and return its results.
+
+    Available as a method of the connection: ``conn.get_results(job)``. The
+    call blocks, checking the job status every ``interval`` seconds, then
+    downloads the results.
 
     Args:
-        execution (str): The execution identifier.
-        interval (int): The interval (in seconds) for checking job status (default: 1).
+        execution (str): The job identifier returned by ``submit``.
+        interval (float): Seconds between status checks. Defaults to 1.
 
     Returns:
-        List[QCSResults | OptimizationResults]: A list of result instances.
+        list: One entry per circuit or experiment of the job, in order: a
+        :class:`QCSResults`, an ``OptimizationResults`` for optimization jobs,
+        or a :class:`QCSError` for a circuit that failed.
 
     Raises:
-        RuntimeError: If the remote job encounters an error.
+        RuntimeError: If the whole job failed or was canceled, or its result
+            files are missing.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> conn = MimiqConnection()  # doctest: +SKIP
+        >>> conn.connect()  # doctest: +SKIP
+        >>> c = Circuit().push(GateH(), 0).push(Measure(), 0, 0)
+        >>> job = conn.submit(c, nsamples=100)  # doctest: +SKIP
+        >>> results = conn.get_results(job)  # doctest: +SKIP
     """
     # Wait for the job to finish
     while not self.connection.isJobDone(execution):
@@ -174,17 +195,22 @@ def get_results(self, execution, interval=1):
 
 
 def get_result(self, execution, **kwargs):
-    """Retrieve the first result if multiple are found.
+    """Wait for a remote job to finish and return its first result.
+
+    Available as a method of the connection: ``conn.get_result(job)``. Use it
+    for jobs with a single circuit; if the job has more, a warning is printed
+    and only the first result is returned.
 
     Args:
-        execution (str): The execution identifier.
-        **kwargs: Additional keyword arguments for result retrieval.
+        execution (str): The job identifier returned by ``submit``.
+        **kwargs: Passed to :meth:`get_results`, such as ``interval``.
 
     Returns:
-        QCSResults | OptimizationResults: The first result found.
+        QCSResults: The first result, or an ``OptimizationResults`` or a
+        :class:`QCSError`, as for :meth:`get_results`.
 
     Raises:
-        RuntimeWarning: If multiple results are found.
+        RuntimeError: As for :meth:`get_results`.
     """
     results = self.get_results(execution, **kwargs)
 
@@ -195,42 +221,58 @@ def get_result(self, execution, **kwargs):
 
 
 def get_inputs(self, execution):
-    """Retrieve the inputs (circuits or experiments and parameters) of the execution.
+    """Download the inputs of a remote job: its circuits and its parameters.
+
+    Available as a method of the connection: ``conn.get_inputs(job)``. The
+    names of the downloaded files are printed.
 
     Args:
-        execution (str): The execution identifier.
+        execution (str): The job identifier returned by ``submit``.
 
     Returns:
-        tuple: A tuple containing a list of Circuit or OptimizationExperiment objects and parameters (dict).
+        tuple: ``(inputs, parameters)``. ``inputs`` is a list with one
+        :class:`Circuit` per circuit job entry (or the path of a downloaded
+        file for circuits submitted as QASM or Stim; the files are left in a
+        new temporary directory, which is not removed), or one
+        ``OptimizationExperiment`` per experiment of an optimization job.
+        ``parameters`` is the dict of job parameters.
 
     Raises:
-        RuntimeError: If required files are not found in the inputs.
+        RuntimeError: If the job files are not a valid circuit or
+            optimization job.
+        ValueError: If a circuit file has an unsupported type.
     """
-    with tempfile.TemporaryDirectory(prefix="mimiq_in_") as tmpdir:
-        names = self.connection.downloadJobFiles(execution, destdir=tmpdir)
-        base_names = [os.path.basename(name) for name in names]
+    # Not a TemporaryDirectory: QASM and Stim inputs are returned as paths
+    # into this directory, so it must outlive the call.
+    tmpdir = tempfile.mkdtemp(prefix="mimiq_in_")
+    names = self.connection.downloadJobFiles(execution, destdir=tmpdir)
+    base_names = [os.path.basename(name) for name in names]
 
-        print(f"Downloaded files: {base_names}")
+    print(f"Downloaded files: {base_names}")
 
-        is_validinputs(execution, base_names)
+    is_validinputs(execution, base_names)
 
-        joblist, parameters = load_inputs(base_names, tmpdir)
-        return joblist, parameters
+    return load_inputs(base_names, tmpdir)
 
 
-def get_input(self, execution, **kwargs):
-    """Retrieve the first circuit or experiment and parameters of the execution.
+def get_input(self, execution):
+    """Download the inputs of a remote job and return the first one with the parameters.
+
+    Available as a method of the connection: ``conn.get_input(job)``. If the
+    job has more than one input, a warning is printed and only the first is
+    returned.
 
     Args:
-        execution (str): The execution identifier.
+        execution (str): The job identifier returned by ``submit``.
 
     Returns:
-        tuple: A tuple containing the first Circuit or OptimizationExperiment object and parameters (dict).
+        tuple: ``(input, parameters)``, with ``input`` the first entry of
+        the list :meth:`get_inputs` returns.
 
     Raises:
-        RuntimeError: If required files are not found in the inputs.
+        RuntimeError: As for :meth:`get_inputs`.
     """
-    circuits, parameters = self.get_inputs(execution, **kwargs)
+    circuits, parameters = self.get_inputs(execution)
 
     if len(circuits) > 1:
         print("Warning: Multiple results found. Returning the first one.")

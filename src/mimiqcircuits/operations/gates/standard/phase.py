@@ -16,28 +16,30 @@
 #
 """Phase (P) gate."""
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.gate import Gate
+from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.matrices import pmatrix
 from mimiqcircuits import numerics as _nm
 from mimiqcircuits.operations.utils import control_one_defined
 from mimiqcircuits.operations.power import _scale_by_exponent
 
 
-class GateP(mc.Gate):
-    r"""Single qubit Phase gate.
+class GateP(Gate):
+    r"""Single qubit phase gate.
 
-    **Matrix representation:**
+    Adds a phase :math:`\mathrm{e}^{i\lambda}` to the :math:`|1\rangle` state.
 
-    .. math::
-        \operatorname{P}(\lambda) =
-        \operatorname{U}(0,0,\lambda) =
-        \begin{pmatrix}
-            1 & 0 \\
-            0 & \mathrm{e}^{i\lambda}
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{P}(\lambda) =
+            \operatorname{U}(0,0,\lambda) =
+            \begin{pmatrix}
+                1 & 0 \\
+                0 & \mathrm{e}^{i\lambda}
+            \end{pmatrix}
 
-    Parameters:
-        lambda: Phase angle
+    Args:
+        lmbda: Phase angle :math:`\lambda` in radians, numeric or symbolic.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -85,14 +87,16 @@ class GateP(mc.Gate):
         return GateP(_scale_by_exponent(self.lmbda, p))
 
     def _control(self, n):
+        from mimiqcircuits.operations.gates.standard.cphase import GateCP
+        from mimiqcircuits.operations.gates.standard.cnp import GateCCP
         return control_one_defined(
-            n, self, mc.GateCP(self.lmbda), mc.GateCCP(self.lmbda)
+            n, self, GateCP(self.lmbda), GateCCP(self.lmbda)
         )
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits
         circ.push(
-            mc.GateU(
+            GateU(
                 0,
                 0,
                 self.lmbda,

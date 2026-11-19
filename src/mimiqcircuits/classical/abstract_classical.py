@@ -14,13 +14,15 @@
 # limitations under the License.
 #
 
-from mimiqcircuits import Operation
+from mimiqcircuits.operations.operation import Operation
 
 
 class AbstractClassical(Operation):
-    """AbstractClassical
+    """Base class for operations that act only on classical bits.
 
-    SuperType for classical operations
+    Subclasses include :class:`Not`, :class:`SetBit0`, :class:`SetBit1`,
+    :class:`And`, :class:`Or` and :class:`Xor`. They read and write the
+    classical bits of a circuit and never touch qubits.
     """
 
     pass

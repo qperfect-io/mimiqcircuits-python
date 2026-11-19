@@ -17,7 +17,18 @@
 
 
 class AbstractCircuitRule:
-    """Shared base class for circuit transformation rules."""
+    """Base class for the rules of a :class:`NoiseModel` or a :class:`LossModel`.
+
+    A rule looks at one instruction at a time. :meth:`matches` says whether it
+    applies, and :meth:`apply_rule` builds what it produces. The model keeps
+    its rules sorted by :meth:`priority` and uses the first one that
+    produces something for an instruction. :meth:`before` and
+    :meth:`replaces` say where a noise rule's output goes relative to the
+    matched instruction.
+
+    Subclasses must implement :meth:`matches` and :meth:`apply_rule`. Two
+    rules are equal when they have the same type and the same attributes.
+    """
 
     def __eq__(self, other):
         return isinstance(other, type(self)) and self.__dict__ == other.__dict__
@@ -38,18 +49,40 @@ class AbstractCircuitRule:
         )
 
     def priority(self):
+        """Return the priority of the rule. Lower values are tried first.
+
+        The default is ``100``.
+        """
         return 100
 
     def before(self):
+        """Return ``True`` if the rule's output goes before the matched instruction.
+
+        The default is ``False``: the output goes after it.
+        """
         return False
 
     def replaces(self):
+        """Return ``True`` if the rule's output replaces the matched instruction.
+
+        The default is ``False``: the matched instruction is kept.
+        """
         return False
 
     def matches(self, inst):
+        """Return ``True`` if the rule applies to the instruction ``inst``.
+
+        Raises:
+            NotImplementedError: Unless a subclass implements it.
+        """
         raise NotImplementedError
 
     def apply_rule(self, inst):
+        """Return what the rule produces for ``inst``, or ``None`` if it does not apply.
+
+        Raises:
+            NotImplementedError: Unless a subclass implements it.
+        """
         raise NotImplementedError
 
 

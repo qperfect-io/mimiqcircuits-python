@@ -114,7 +114,7 @@ or evolving an initial state in real time.
 
 Because `H` has non-commuting terms, we use a **Trotter approximation**.
 
-`First-order Trotterization (Lie)` (:meth:`~mimiqcircuits.Circuit.push_lietrotter`)
+*First-order Trotterization (Lie)* (:meth:`~mimiqcircuits.Circuit.push_lietrotter`)
 
 .. doctest::
 
@@ -136,7 +136,7 @@ Because `H` has non-commuting terms, we use a **Trotter approximation**.
     <BLANKLINE>
     
 
-`Second-order Trotterization (Suzuki)` (:meth:`~mimiqcircuits.Circuit.push_suzukitrotter`)
+*Second-order Trotterization (Suzuki)* (:meth:`~mimiqcircuits.Circuit.push_suzukitrotter`)
 
 .. doctest::
 

@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
-import mimiqcircuits as mc
+from mimiqcircuits.lossmodel import DecorateRule, DropRule, LossModel, ReplaceRule
+from mimiqcircuits.operations.operation import Operation
 from mimiqcircuits.proto import circuitrules_pb2
 from mimiqcircuits.proto.circuitproto import toproto_operation, fromproto_operation
 
@@ -54,7 +55,7 @@ class CircuitRuleProtoRegistry:
 circuitrule_registry = CircuitRuleProtoRegistry()
 
 
-@circuitrule_registry.register_toproto(mc.DropRule)
+@circuitrule_registry.register_toproto(DropRule)
 def toproto_drop_rule(rule, declcache=None):
     msg = circuitrules_pb2.CircuitRule()
     msg.drop_rule.SetInParent()
@@ -66,13 +67,13 @@ def toproto_drop_rule(rule, declcache=None):
 @circuitrule_registry.register_fromproto("drop_rule")
 def fromproto_drop_rule(msg, declcache=None):
     if msg.HasField("operation"):
-        return mc.DropRule(fromproto_operation(msg.operation, declcache))
-    return mc.DropRule()
+        return DropRule(fromproto_operation(msg.operation, declcache))
+    return DropRule()
 
 
-@circuitrule_registry.register_toproto(mc.DecorateRule)
+@circuitrule_registry.register_toproto(DecorateRule)
 def toproto_decorate_rule(rule, declcache=None):
-    if not isinstance(rule.decoration, mc.Operation):
+    if not isinstance(rule.decoration, Operation):
         raise ValueError(
             "DecorateRule with instruction-list decoration is not serializable. "
             "The wire format only supports Operation decoration."
@@ -89,16 +90,16 @@ def toproto_decorate_rule(rule, declcache=None):
 
 @circuitrule_registry.register_fromproto("decorate_rule")
 def fromproto_decorate_rule(msg, declcache=None):
-    return mc.DecorateRule(
+    return DecorateRule(
         fromproto_operation(msg.operation, declcache),
         fromproto_operation(msg.decoration, declcache),
         before=msg.before,
     )
 
 
-@circuitrule_registry.register_toproto(mc.ReplaceRule)
+@circuitrule_registry.register_toproto(ReplaceRule)
 def toproto_replace_rule(rule, declcache=None):
-    if not isinstance(rule.replacement, mc.Operation):
+    if not isinstance(rule.replacement, Operation):
         raise ValueError(
             "ReplaceRule with instruction-list replacement is not serializable. "
             "The wire format only supports Operation replacement."
@@ -114,7 +115,7 @@ def toproto_replace_rule(rule, declcache=None):
 
 @circuitrule_registry.register_fromproto("replace_rule")
 def fromproto_replace_rule(msg, declcache=None):
-    return mc.ReplaceRule(
+    return ReplaceRule(
         fromproto_operation(msg.operation, declcache),
         fromproto_operation(msg.replacement, declcache),
     )
@@ -137,7 +138,7 @@ def toproto_lossmodel(model, declcache=None):
 
 
 def fromproto_lossmodel(msg, declcache=None):
-    model = mc.LossModel(name=msg.name)
+    model = LossModel(name=msg.name)
     for rule_msg in msg.rules:
         model.add_rule(fromproto_CircuitRule(rule_msg, declcache))
     return model

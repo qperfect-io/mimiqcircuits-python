@@ -14,13 +14,6 @@ def test_pow_operation_basic():
     assert op.format_with_targets([], [], [2]) == "z[2] = z[2]^3"
 
 
-def test_pow_inverse():
-    op = mc.Pow(4)
-    inv = op.inverse()
-    assert isinstance(inv, mc.Pow)
-    assert inv.exponent == -4
-
-
 def test_pow_noop_warning():
     with pytest.warns(UserWarning, match="Pow\\(1\\) will be equivalent to a no-op."):
         mc.Pow(1)
@@ -57,3 +50,8 @@ def test_multiply_invalid_argument():
 def test_unwrappedmatrix_accepts_fraction_parameters():
     mat = mc.GateRX(Fraction(1, 2)).unwrappedmatrix()
     assert mat.shape == (2, 2)
+
+
+def test_pow_has_no_inverse():
+    with pytest.raises(TypeError, match="Pow is not inversible"):
+        mc.Pow(2).inverse()

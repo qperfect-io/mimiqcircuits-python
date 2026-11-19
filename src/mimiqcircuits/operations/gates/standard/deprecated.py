@@ -25,20 +25,19 @@ from mimiqcircuits.operations.power import _scale_by_exponent
 
 
 class GateU1(mcg.Gate):
-    r"""Single qubit generic unitary gate :math:`{U_1}`.
+    r"""Single qubit phase gate :math:`U_1`, equivalent to :class:`GateP`.
 
-    Equivalent to :func:`GateP`
+    Kept for compatibility with OpenQASM 2; :class:`GateP` is the same gate.
 
-    **Matrix representation:**
+    Matrix Representation:
+        .. math::
+            \operatorname{U1}(\lambda) = \begin{pmatrix}
+                1 & 0 \\
+                0 & e^{i\lambda}
+            \end{pmatrix}
 
-    .. math::
-        \operatorname{U1}(\lambda) = \begin{pmatrix}
-            1 & 0 \\
-            0 & e^{i\lambda}
-        \end{pmatrix}
-
-    Parameters:
-        lambda (float): Euler angle 3 in radians.
+    Args:
+        lmbda: Phase angle :math:`\lambda` in radians.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -89,20 +88,21 @@ class GateU1(mcg.Gate):
 
 
 class GateU2(mcg.Gate):
-    r"""Single qubit generic unitary gate :math:`{U_2}`.
+    r"""Single qubit gate :math:`U_2`, equal to :math:`U(\pi/2, \phi, \lambda)`.
 
+    Kept for compatibility with OpenQASM 2; :class:`GateU` covers the same
+    gates.
 
-    **Matrix representation:**
+    Matrix Representation:
+        .. math::
+            \operatorname{U2}(\phi,\lambda) = \frac{1}{\sqrt{2}}\begin{pmatrix}
+                1 & -e^{i\lambda} \\
+                e^{i\phi} & e^{i(\phi+\lambda)}
+            \end{pmatrix}
 
-    .. math::
-        \operatorname{U2}(\phi,\lambda) = \frac{1}{\sqrt{2}}e^{-(\phi+\lambda)/2}\begin{pmatrix}
-            1 & -e^{i\lambda} \\
-            e^{i\phi} & e^{i(\phi+\lambda)}
-        \end{pmatrix}
-
-    Parameters:
-        phi: Euler angle in radians.
-        lambda: Euler angle in radians.
+    Args:
+        phi: Euler angle :math:`\phi` in radians.
+        lmbda: Euler angle :math:`\lambda` in radians.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -151,23 +151,22 @@ class GateU2(mcg.Gate):
 
 
 class GateU3(mcg.Gate):
-    r"""Single qubit generic unitary gate :math:`{U_3}`.
+    r"""Single qubit gate :math:`U_3`, equal to :class:`GateU` with no global phase.
 
-    This gate is equivalent to :func:`GateU` up to a global phase, :math:`\operatorname{U3}(\theta,\phi,\lambda) = e^{-i(\phi + \lambda + \theta)/2} \operatorname{U}(\theta,\phi,\lambda)` 
+    Kept for compatibility with OpenQASM 2; :class:`GateU` covers the same
+    gates.
 
-    **Matrix representation:**
+    Matrix Representation:
+        .. math::
+            \operatorname{U3}(\theta,\phi,\lambda) = \begin{pmatrix}
+                \cos\left(\frac{\theta}{2}\right) & -\mathrm{e}^{i\lambda}\sin\left(\frac{\theta}{2}\right) \\
+                \mathrm{e}^{i\phi}\sin\left(\frac{\theta}{2}\right) & \mathrm{e}^{i(\phi+\lambda)}\cos\left(\frac{\theta}{2}\right)
+            \end{pmatrix}
 
-    .. math::
-        \operatorname{U3}(\theta,\phi,\lambda) = \frac{1}{2}e^{-i(\phi + \lambda + \theta)/2}
-        \begin{pmatrix}
-        1 + e^{i\theta} & -i e^{i\lambda}(1 - e^{i\theta}) \\
-        i e^{i\phi}(1 - e^{i\theta}) & e^{i(\phi + \lambda)}(1 + e^{i\theta})
-        \end{pmatrix}
-
-    Parameters:
-        theta: Euler angle 1 in radians.
-        phi: Euler angle 2 in radians.
-        lambda: Euler angle 3 in radians.
+    Args:
+        theta: Euler angle :math:`\theta` in radians.
+        phi: Euler angle :math:`\phi` in radians.
+        lmbda: Euler angle :math:`\lambda` in radians.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -180,6 +179,10 @@ class GateU3(mcg.Gate):
         [exp(I*phi)*sin((1/2)*theta), exp(I*(lambda + phi))*cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateU3(theta, phi, lmbda), 0)
+        >>> c
+        1-qubit circuit with 1 instruction:
+        └── U3(theta, phi, lambda) @ q[0]
+        <BLANKLINE>
         >>> GateU3(theta, phi, lmbda).power(2), GateU3(theta, phi, lmbda).inverse()
         (U3(theta, phi, lambda)**2, U3(-theta, -lambda, -phi))
         >>> GateU3(theta, phi, lmbda).decompose()

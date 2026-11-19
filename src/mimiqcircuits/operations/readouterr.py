@@ -18,41 +18,76 @@
 import numpy as np
 import symengine as se
 from mimiqcircuits._sympycheck import _is_basic, _is_sympy_matrix
-from mimiqcircuits import Operation
+from mimiqcircuits.operations.operation import Operation
 
 
 class ReadoutErr(Operation):
-    r"""Represents a classical readout error applied immediately after a measurement.
+    r"""Classical readout error on one bit, applied after a measurement.
 
-    The readout error is modeled by a 2×2 *confusion matrix*:
+    The operation flips the recorded bit at random: a 0 is reported as 1 with
+    probability :math:`p_0` and a 1 is reported as 0 with probability
+    :math:`p_1`. This is the confusion matrix
 
     .. math::
 
         \begin{pmatrix}
-            P(\text{report } 0 | \text{true } 0) &
-            P(\text{report } 1 | \text{true } 0) = p_0 \\
-            P(\text{report } 0 | \text{true } 1) = p_1 &
-            P(\text{report } 1 | \text{true } 1)
+            P(0 | 0) & P(1 | 0) \\
+            P(0 | 1) & P(1 | 1)
         \end{pmatrix}
+        =
+        \begin{pmatrix}
+            1 - p_0 & p_0 \\
+            p_1 & 1 - p_1
+        \end{pmatrix},
 
-    Can be initialized either from the error probabilities ``p0``, ``p1`` or
-    directly from a 2×2 confusion matrix. Accepts NumPy, SymPy, or SymEngine matrices.
+    where :math:`P(r | t)` is the probability of reporting :math:`r` when the
+    true outcome is :math:`t`. The operation targets one classical bit and no
+    qubits.
+
+    Args:
+        p0: Probability of reporting 1 when the outcome is 0, in
+            :math:`[0, 1]`. It may also be a 2×2 confusion matrix (numpy,
+            sympy or symengine) as above, with ``p1`` omitted; its entries
+            must be numeric, in :math:`[0, 1]`, with rows adding up to 1.
+        p1: Probability of reporting 0 when the outcome is 1, in
+            :math:`[0, 1]`.
+
+    A symbolic ``p0`` or ``p1`` is not range checked.
+
+    Raises:
+        TypeError: If ``p1`` is omitted and ``p0`` is not a matrix, or the
+            matrix has symbolic entries.
+        ValueError: If the matrix is not 2×2, has entries outside
+            :math:`[0, 1]` or rows not adding up to 1, or if ``p0`` or ``p1``
+            is outside :math:`[0, 1]`.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # 2% chance to read 1 instead of 0, 3% to read 0 instead of 1
         >>> ReadoutErr(0.02, 0.03)
         RErr(0.02,0.03)
 
+        >>> # the same error from its confusion matrix
         >>> import numpy as np
         >>> ReadoutErr(np.array([[0.98, 0.02],
         ...                      [0.03, 0.97]]))
         RErr(0.02,0.03)
-        
+
+        >>> # apply it to bit 0, where a measurement result is stored
         >>> c = Circuit()
-        >>> c.push(ReadoutErr(0.01, 0.02),0)
-        1-bit circuit with 1 instruction:
+        >>> c.push(Measure(), 0, 0)
+        1-qubit, 1-bit circuit with 1 instruction:
+        └── M @ q[0], c[0]
+        <BLANKLINE>
+        >>> c.push(ReadoutErr(0.01, 0.02), 0)
+        1-qubit, 1-bit circuit with 2 instructions:
+        ├── M @ q[0], c[0]
         └── RErr(0.01, 0.02) @ c[0]
         <BLANKLINE>
+
+    See Also:
+        :meth:`NoiseModel.add_readout_noise`, which adds readout errors after
+        measurements.
     """
 
     _name = "RErr"
@@ -106,32 +141,49 @@ class ReadoutErr(Operation):
         self.p0 = p0
         self.p1 = p1
 
-        if not _is_basic(self.p0) and not _is_basic(self.p1):
-            if not (0.0 <= self.p0 <= 1.0):
-                raise ValueError(f"p0 must be in [0,1], got {self.p0}")
-            if not (0.0 <= self.p1 <= 1.0):
-                raise ValueError(f"p1 must be in [0,1], got {self.p1}")
+        if not _is_basic(self.p0) and not (0.0 <= self.p0 <= 1.0):
+            raise ValueError(f"p0 must be in [0,1], got {self.p0}")
+        if not _is_basic(self.p1) and not (0.0 <= self.p1 <= 1.0):
+            raise ValueError(f"p1 must be in [0,1], got {self.p1}")
 
         super().__init__()
 
     def evaluate(self, d={}):
-        """Evaluate symbolic parameters numerically.
-        Returns a new ReadoutErr instance with evaluated parameters.
+        """Return a copy with symbols in ``p0`` and ``p1`` substituted by values.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            ReadoutErr: A new operation; a probability becomes a float once no
+            symbol is left in it.
+
+        Raises:
+            ValueError: If a substituted probability is outside :math:`[0, 1]`.
         """
-        p0_eval = (
-            float(self.p0.subs(d).evalf()) if hasattr(self.p0, "subs") else self.p0
-        )
-        p1_eval = (
-            float(self.p1.subs(d).evalf()) if hasattr(self.p1, "subs") else self.p1
-        )
 
-        if not (0.0 <= p0_eval <= 1.0) or not (0.0 <= p1_eval <= 1.0):
-            raise ValueError("Readout probabilities must be in [0,1].")
+        def sub(p):
+            if not hasattr(p, "subs"):
+                return p
+            p = p.subs(d)
+            return float(p.evalf()) if p.is_number else p
 
-        return ReadoutErr(p0_eval, p1_eval)
+        # The constructor range checks every numeric probability.
+        return ReadoutErr(sub(self.p0), sub(self.p1))
 
     def matrix(self):
-        """Return the confusion matrix as a symengine.Matrix."""
+        """Return the confusion matrix ``[[1 - p0, p0], [p1, 1 - p1]]``.
+
+        Returns:
+            symengine.Matrix: The 2×2 confusion matrix.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> ReadoutErr(0.25, 0.5).matrix()
+            [0.75, 0.25]
+            [0.5, 0.5]
+            <BLANKLINE>
+        """
         return se.Matrix(
             [
                 [1 - self.p0, self.p0],

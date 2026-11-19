@@ -197,8 +197,8 @@ class _RXState:
     @property
     def complex_values(self): return [0j] * self._nz
 
-    def sample(self, nsamples, rng=None, *, seed=None):
-        rng = rng if rng is not None else random.Random(seed)
+    def sample(self, nsamples, rng=None):
+        rng = rng if rng is not None else random.Random()
         p = math.sin(self.theta / 2) ** 2
         return [mc.BitString([rng.random() < p]) for _ in range(nsamples)]
 
@@ -320,3 +320,30 @@ def test_equality():
 def test_from_dicts_refuses_a_symbol_given_twice():
     with pytest.raises(ValueError):
         ParameterTable.from_dicts([{theta: 0.0, "theta": 1.0}])
+
+
+def test_saveproto_roundtrip(tmp_path):
+    theta, phi = symbols("theta phi")
+    c = mc.Circuit().push(mc.GateRX(theta), 0)
+    c.push(mc.GateCRZ(2 * phi), 0, 1)
+    c.push(mc.Measure(), range(2), range(2))
+    # Non-square, so a transposed layout would not round trip.
+    ex = SweepExperiment(c, gridtable({theta: [0.0, 0.5, 1.0], phi: [0.25, -1.5]}))
+
+    fname = tmp_path / "sweep.pb"
+    ex.saveproto(str(fname))
+    loaded = SweepExperiment.loadproto(str(fname))
+
+    assert loaded == ex
+    assert all(loaded[i] == ex[i] for i in range(len(ex)))
+
+
+def test_fromproto_rejects_bad_shape():
+    from mimiqcircuits.proto import circuit_pb2, experiment_pb2
+    from mimiqcircuits.proto.experimentproto import fromproto_parametertable
+
+    msg = experiment_pb2.ParameterTable(
+        symbols=[circuit_pb2.Symbol(value="theta")], npoints=4, values=[1.0]
+    )
+    with pytest.raises(ValueError):
+        fromproto_parametertable(msg)

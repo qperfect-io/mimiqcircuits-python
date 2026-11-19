@@ -18,7 +18,9 @@
 import numpy as np
 import symengine as se
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.generalized.rnz import GateRNZ
+from mimiqcircuits.operations.gates.standard.rotations import GateRZ
+from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.gate import Gate
 from mimiqcircuits.operations.decompositions.matrix_decompositions.utils import (
     _as_numpy_numeric,
@@ -41,22 +43,45 @@ def _fwht(a):
 
 
 class GateCustomDiagonal(Gate):
-    """Gate diagonal in the computational basis, given by its diagonal.
+    r"""Gate diagonal in the computational basis, given by its diagonal.
 
-    Same role as :class:`GateCustom`, but only the ``2**n`` diagonal entries
-    are stored, so a wide diagonal block costs ``2**n`` numbers instead of
-    ``4**n``. Every entry must be a phase, ``abs(d) == 1``.
+    Same role as :class:`GateCustom`, but only the :math:`2^n` diagonal
+    entries are stored, so a wide diagonal gate costs :math:`2^n` numbers
+    instead of :math:`4^n`. The entries of a numeric diagonal must be phases,
+    ``abs(d) == 1`` within ``1e-8``; a diagonal with a symbolic entry is not
+    checked.
 
     The entries follow the diagonal of the dense matrix, in the basis
     ``|0...0>, ..., |1...1>`` with the first target qubit as the most
-    significant bit — the same convention as :class:`GateCustom`.
+    significant bit, the same convention as :class:`GateCustom`.
+
+    Args:
+        diagonal (list, tuple, numpy.ndarray or symengine.Matrix): The
+            :math:`2^n` diagonal entries, :math:`n \geq 1`.
+
+    Raises:
+        TypeError: If ``diagonal`` is not one of the accepted types.
+        ValueError: If the number of entries is not a power of two greater
+            than one, or a numeric entry does not have modulus one.
 
     Examples:
-        >>> from mimiqcircuits import Circuit, GateCustomDiagonal
+        >>> from mimiqcircuits import *
+        >>> # the diagonal of a CZ gate
+        >>> g = GateCustomDiagonal([1, 1, 1, -1])
+        >>> g.num_qubits
+        2
         >>> c = Circuit()
-        >>> c.push(GateCustomDiagonal([1, 1, 1, -1]), 0, 1)
+        >>> c.push(g, 0, 1)
         2-qubit circuit with 1 instruction:
         └── CustomDiagonal(...) @ q[0:1]
+        <BLANKLINE>
+        >>> # the decomposition uses one Z-parity rotation per Walsh term
+        >>> g.decompose()
+        2-qubit circuit with 4 instructions:
+        ├── RZ(1.5707963267948966) @ q[1]
+        ├── RZ(1.5707963267948966) @ q[0]
+        ├── RNZ(-1.5707963267948966) @ q[0:1]
+        └── U(0, 0, 0, 0.7853981633974483) @ q[0]
         <BLANKLINE>
     """
 
@@ -87,9 +112,12 @@ class GateCustomDiagonal(Gate):
             numeric = _as_numpy_numeric(d)
         except TypeError:
             numeric = None
+        fixed = numeric
+        if fixed is None:
+            fixed = np.array([complex(e) for e in d if not e.free_symbols])
+        if not np.allclose(np.abs(fixed), 1.0, rtol=0, atol=1e-8):
+            raise ValueError("Diagonal is not unitary")
         if numeric is not None:
-            if not np.allclose(np.abs(numeric), 1.0, rtol=0, atol=1e-8):
-                raise ValueError("Diagonal is not unitary")
             # Store numeric entries as floats, so that a diagonal given as
             # integers compares equal to the same one given as floats.
             d = _to_symengine_matrix(numeric.reshape(-1, 1))
@@ -103,18 +131,25 @@ class GateCustomDiagonal(Gate):
     def _matrix(self):
         return se.diag(*list(self._d))
 
+    # Overridden for the same reason as GateCustom.matrix: the inherited
+    # version caches on the class, so every instance would share one matrix.
     def matrix(self):
-        """Dense matrix, entries evaluated numerically where possible.
+        r"""Return the dense diagonal matrix as a SymEngine matrix.
 
-        Not inherited from :class:`AbstractOperator` for the same reason as
-        :meth:`GateCustom.matrix`: that version memoises on the *class* for
-        parameter-free operators, which would make every instance share
-        whichever matrix was built first.
+        Entries that can be converted to a complex number are returned as
+        complex numbers; symbolic entries are kept as they are.
+
+        Returns:
+            symengine.Matrix: A new :math:`2^n \times 2^n` matrix on each call.
         """
         return se.diag(*self.diagonal())
 
     def diagonal(self):
-        """The stored diagonal entries, evaluated numerically where possible."""
+        """Return the diagonal entries as a list.
+
+        Entries that can be converted to a complex number are returned as
+        ``complex``; symbolic entries are kept as they are.
+        """
         out = []
         for x in self._d:
             try:
@@ -124,18 +159,24 @@ class GateCustomDiagonal(Gate):
         return out
 
     def unwrappeddiagonal(self):
-        """The diagonal as a ``numpy.ndarray[complex128]``.
+        """Return the diagonal as a ``complex128`` NumPy array.
 
         Raises:
-            TypeError: if any entry is still symbolic.
+            TypeError: If any entry is still symbolic.
         """
         return _as_numpy_numeric(self._d).ravel()
 
     def unwrappedmatrix(self):
+        """Return the dense matrix as a ``complex128`` NumPy array.
+
+        Raises:
+            TypeError: If any entry is still symbolic.
+        """
         return np.diag(self.unwrappeddiagonal())
 
     @property
     def num_qubits(self):
+        r"""Number of qubits the gate acts on, :math:`\log_2` of the diagonal length."""
         return self._num_qubits
 
     # The diagonal entries are the parameters, named by their index.
@@ -143,12 +184,19 @@ class GateCustomDiagonal(Gate):
     # `GateCustom`.
     @property
     def parnames(self):
+        """Parameter names: the 1-based indices of the diagonal entries."""
         return tuple(range(1, len(self._d) + 1))
 
     def getparams(self):
+        """Return the stored diagonal entries as a list."""
         return list(self._d)
 
     def getparam(self, pn):
+        """Return the diagonal entry with 1-based index ``pn``.
+
+        Raises:
+            IndexError: If ``pn`` is outside ``1..2**n``.
+        """
         # 1-based; a plain index would let 0 and
         # negative values wrap around to the last entries.
         if not 1 <= pn <= len(self._d):
@@ -165,6 +213,7 @@ class GateCustomDiagonal(Gate):
         return f"{self._name}(...)"
 
     def pretty_print(self):
+        """Return a multi-line string listing the diagonal entries."""
         result = f"{self._num_qubits}-qubit GateCustomDiagonal:\n"
         entries = list(self._d)
         for i, entry in enumerate(entries):
@@ -175,6 +224,15 @@ class GateCustomDiagonal(Gate):
         return result
 
     def evaluate(self, d):
+        """Substitute symbols in the diagonal entries and return a new gate.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            GateCustomDiagonal: ``self`` if no entry is symbolic, otherwise a
+            new gate built from the substituted entries.
+        """
         if not self.is_symbolic():
             return self
         import sympy as sp
@@ -217,13 +275,13 @@ class GateCustomDiagonal(Gate):
             # most-significant-first order of the diagonal itself
             qs = [qubits[p] for p in range(n) if (s >> (n - 1 - p)) & 1]
             if len(qs) == 1:
-                circ.push(mc.GateRZ(-2 * alpha[s]), qs[0])
+                circ.push(GateRZ(-2 * alpha[s]), qs[0])
             else:
-                circ.push(mc.GateRNZ(len(qs), -2 * alpha[s]), *qs)
+                circ.push(GateRNZ(len(qs), -2 * alpha[s]), *qs)
 
         # alpha[0] is the global phase left over
         if abs(alpha[0]) >= 1e-14:
-            circ.push(mc.GateU(0, 0, 0, alpha[0]), qubits[0])
+            circ.push(GateU(0, 0, 0, alpha[0]), qubits[0])
 
         return circ
 

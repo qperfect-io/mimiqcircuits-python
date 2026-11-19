@@ -17,7 +17,10 @@
 
 import numpy as np
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.gates.standard.t import GateT
+from mimiqcircuits.operations.operators.custom import Operator
+from mimiqcircuits.operations.reset import Reset
 from mimiqcircuits.operations.krauschannel import krauschannel
 
 
@@ -37,7 +40,10 @@ class PrepareStateT(krauschannel):
     The operation is a Kraus channel with operators :math:`T\ket{+}\bra{0}` and
     :math:`T\ket{+}\bra{1}`, and is equivalent to :class:`Reset`,
     :class:`GateH`, :class:`GateT`. It cannot be inverted, raised to a power
-    or controlled.
+    or controlled: ``inverse``, ``power`` and ``control`` raise
+    ``TypeError``.
+
+    ``PrepareMagic`` is a deprecated alias of this class.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -59,7 +65,7 @@ class PrepareStateT(krauschannel):
         └── T @ q[0]
         <BLANKLINE>
 
-    .. seealso::
+    See Also:
         :class:`Reset`, :class:`ResetX`, :class:`MeasurePauli`
     """
 
@@ -91,18 +97,23 @@ class PrepareStateT(krauschannel):
         return self._name
 
     def krausoperators(self):
-        # T|+⟩⟨0| and T|+⟩⟨1|: whatever the input, the output is T|+⟩.
+        r"""Return the Kraus operators :math:`T\ket{+}\bra{0}` and :math:`T\ket{+}\bra{1}`.
+
+        Returns:
+            list: Two :class:`Operator` objects.
+        """
+        # Whatever the input, the output is T|+⟩.
         m = np.array([1, np.exp(1j * np.pi / 4)]) / np.sqrt(2)
         return [
-            mc.Operator(np.outer(m, [1, 0])),
-            mc.Operator(np.outer(m, [0, 1])),
+            Operator(np.outer(m, [1, 0])),
+            Operator(np.outer(m, [0, 1])),
         ]
 
     def _decompose(self, circ, qtargets, bits=None, zvars=None):
         q = qtargets[0]
-        circ.push(mc.Reset(), q)
-        circ.push(mc.GateH(), q)
-        circ.push(mc.GateT(), q)
+        circ.push(Reset(), q)
+        circ.push(GateH(), q)
+        circ.push(GateT(), q)
         return circ
 
 

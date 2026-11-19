@@ -25,7 +25,134 @@ from symengine.lib.symengine_wrapper import Zero as seZero
 from symengine.lib.symengine_wrapper import One as seOne
 from symengine.lib.symengine_wrapper import NegativeOne as seNegativeOne
 
-import mimiqcircuits as mc
+from mimiqcircuits.bitstrings import BitString
+from mimiqcircuits.blockdecl import BlockCall, BlockDecl
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.classical.and_operation import And
+from mimiqcircuits.classical.not_operation import Not
+from mimiqcircuits.classical.or_operation import Or
+from mimiqcircuits.classical.setbits import SetBit0, SetBit1
+from mimiqcircuits.classical.xor_operation import Xor
+from mimiqcircuits.complex import Add, Multiply, Pow
+from mimiqcircuits.gatedecl import GateCall, GateDecl
+from mimiqcircuits.instruction import Instruction
+from mimiqcircuits.operations.amplitude import Amplitude
+from mimiqcircuits.operations.annotations import (
+    AncillaAlloc,
+    AncillaFree,
+    Detector,
+    Lost,
+    ObservableInclude,
+    QubitCoordinates,
+    Reloaded,
+    ShiftCoordinates,
+    Tick,
+)
+from mimiqcircuits.operations.barrier import Barrier
+from mimiqcircuits.operations.block import Block
+from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.entanglement import (
+    BondDim,
+    SchmidtRank,
+    VonNeumannEntropy,
+)
+from mimiqcircuits.operations.expectationvalue import ExpectationValue
+from mimiqcircuits.operations.gates.custom import GateCustom
+from mimiqcircuits.operations.gates.customdiagonal import GateCustomDiagonal
+from mimiqcircuits.operations.gates.delay import Delay
+from mimiqcircuits.operations.gates.gate import Gate
+from mimiqcircuits.operations.gates.generalized.diffusion import Diffusion
+from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
+from mimiqcircuits.operations.gates.generalized.phasegradient import PhaseGradient
+from mimiqcircuits.operations.gates.generalized.polynomialoracle import PolynomialOracle
+from mimiqcircuits.operations.gates.generalized.qft import QFT
+from mimiqcircuits.operations.gates.generalized.rnz import GateRNZ
+from mimiqcircuits.operations.gates.standard.dcx import GateDCX
+from mimiqcircuits.operations.gates.standard.deprecated import GateU1, GateU2, GateU3
+from mimiqcircuits.operations.gates.standard.ecr import GateECR
+from mimiqcircuits.operations.gates.standard.hadamard import GateH, GateHXY, GateHYZ
+from mimiqcircuits.operations.gates.standard.id import GateID
+from mimiqcircuits.operations.gates.standard.interactions import (
+    GateRXX,
+    GateRYY,
+    GateRZX,
+    GateRZZ,
+    GateXXminusYY,
+    GateXXplusYY,
+)
+from mimiqcircuits.operations.gates.standard.iswap import GateISWAP
+from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
+from mimiqcircuits.operations.gates.standard.phase import GateP
+from mimiqcircuits.operations.gates.standard.rotations import (
+    GateR,
+    GateRX,
+    GateRY,
+    GateRZ,
+)
+from mimiqcircuits.operations.gates.standard.s import GateS
+from mimiqcircuits.operations.gates.standard.swap import GateSWAP
+from mimiqcircuits.operations.gates.standard.t import GateT
+from mimiqcircuits.operations.gates.standard.u import GateU
+from mimiqcircuits.operations.ifstatement import IfStatement
+from mimiqcircuits.operations.inverse import Inverse
+from mimiqcircuits.operations.krauschannel import krauschannel
+from mimiqcircuits.operations.losschannel import Check, Loss, MeasureCheck, Reload
+from mimiqcircuits.operations.magic import PrepareStateT
+from mimiqcircuits.operations.measure import Measure, MeasureX, MeasureY, MeasureZ
+from mimiqcircuits.operations.measurepauli import MeasurePauli
+from mimiqcircuits.operations.measurereset import (
+    MeasureReset,
+    MeasureResetX,
+    MeasureResetY,
+)
+from mimiqcircuits.operations.noisechannel.kraus import Kraus
+from mimiqcircuits.operations.noisechannel.mixedunitary import MixedUnitary
+from mimiqcircuits.operations.noisechannel.standards.ampdamping import (
+    AmplitudeDamping,
+    GeneralizedAmplitudeDamping,
+)
+from mimiqcircuits.operations.noisechannel.standards.depolarizing import Depolarizing
+from mimiqcircuits.operations.noisechannel.standards.pauli import (
+    PauliNoise,
+    PauliX,
+    PauliY,
+    PauliZ,
+)
+from mimiqcircuits.operations.noisechannel.standards.phaseamplitudedamping import (
+    PhaseAmplitudeDamping,
+    ThermalNoise,
+)
+from mimiqcircuits.operations.noisechannel.standards.projectivenoise import (
+    ProjectiveNoise,
+    ProjectiveNoiseX,
+    ProjectiveNoiseY,
+    ProjectiveNoiseZ,
+)
+from mimiqcircuits.operations.operator import AbstractOperator
+from mimiqcircuits.operations.operators.custom import Operator
+from mimiqcircuits.operations.operators.diagonals import DiagonalOp
+from mimiqcircuits.operations.operators.lossyoperator import LossyOperator
+from mimiqcircuits.operations.operators.projectors import (
+    Projector0,
+    Projector00,
+    Projector01,
+    Projector1,
+    Projector10,
+    Projector11,
+    ProjectorX0,
+    ProjectorX1,
+    ProjectorY0,
+    ProjectorY1,
+)
+from mimiqcircuits.operations.operators.sigmas import SigmaMinus, SigmaPlus
+from mimiqcircuits.operations.pairmeasure import MeasureXX, MeasureYY, MeasureZZ
+from mimiqcircuits.operations.parallel import Parallel
+from mimiqcircuits.operations.power import Power
+from mimiqcircuits.operations.readouterr import ReadoutErr
+from mimiqcircuits.operations.repeat import Repeat
+from mimiqcircuits.operations.rescaledgates import RescaledGate
+from mimiqcircuits.operations.reset import Reset, ResetX, ResetY, ResetZ
+from mimiqcircuits.operations.whilestatement import WhileStatement
 from mimiqcircuits.proto import circuit_pb2, pauli_pb2
 from mimiqcircuits.proto.bitvector import fromproto_bitvector, toproto_bitvector
 from mimiqcircuits.operations.gates.generalized.rpauli import RPauli
@@ -124,35 +251,35 @@ operator_registry = ProtoRegistry()
 
 # Gate mapping: mimiqcircuits -> protobuf
 GATEMAP = {
-    mc.GateID: circuit_pb2.GateType.GateID,
-    mc.GateX: circuit_pb2.GateType.GateX,
-    mc.GateY: circuit_pb2.GateType.GateY,
-    mc.GateZ: circuit_pb2.GateType.GateZ,
-    mc.GateH: circuit_pb2.GateType.GateH,
-    mc.GateHXY: circuit_pb2.GateType.GateHXY,
-    mc.GateHYZ: circuit_pb2.GateType.GateHYZ,
-    mc.GateS: circuit_pb2.GateType.GateS,
-    mc.GateT: circuit_pb2.GateType.GateT,
-    mc.Delay: circuit_pb2.GateType.Delay,
-    mc.GateU: circuit_pb2.GateType.GateU,
-    mc.GateP: circuit_pb2.GateType.GateP,
-    mc.GateRX: circuit_pb2.GateType.GateRX,
-    mc.GateRY: circuit_pb2.GateType.GateRY,
-    mc.GateRZ: circuit_pb2.GateType.GateRZ,
-    mc.GateR: circuit_pb2.GateType.GateR,
-    mc.GateU1: circuit_pb2.GateType.GateU1,
-    mc.GateU2: circuit_pb2.GateType.GateU2,
-    mc.GateU3: circuit_pb2.GateType.GateU3,
-    mc.GateSWAP: circuit_pb2.GateType.GateSWAP,
-    mc.GateISWAP: circuit_pb2.GateType.GateISWAP,
-    mc.GateECR: circuit_pb2.GateType.GateECR,
-    mc.GateDCX: circuit_pb2.GateType.GateDCX,
-    mc.GateRXX: circuit_pb2.GateType.GateRXX,
-    mc.GateRYY: circuit_pb2.GateType.GateRYY,
-    mc.GateRZZ: circuit_pb2.GateType.GateRZZ,
-    mc.GateRZX: circuit_pb2.GateType.GateRZX,
-    mc.GateXXplusYY: circuit_pb2.GateType.GateXXplusYY,
-    mc.GateXXminusYY: circuit_pb2.GateType.GateXXminusYY,
+    GateID: circuit_pb2.GateType.GateID,
+    GateX: circuit_pb2.GateType.GateX,
+    GateY: circuit_pb2.GateType.GateY,
+    GateZ: circuit_pb2.GateType.GateZ,
+    GateH: circuit_pb2.GateType.GateH,
+    GateHXY: circuit_pb2.GateType.GateHXY,
+    GateHYZ: circuit_pb2.GateType.GateHYZ,
+    GateS: circuit_pb2.GateType.GateS,
+    GateT: circuit_pb2.GateType.GateT,
+    Delay: circuit_pb2.GateType.Delay,
+    GateU: circuit_pb2.GateType.GateU,
+    GateP: circuit_pb2.GateType.GateP,
+    GateRX: circuit_pb2.GateType.GateRX,
+    GateRY: circuit_pb2.GateType.GateRY,
+    GateRZ: circuit_pb2.GateType.GateRZ,
+    GateR: circuit_pb2.GateType.GateR,
+    GateU1: circuit_pb2.GateType.GateU1,
+    GateU2: circuit_pb2.GateType.GateU2,
+    GateU3: circuit_pb2.GateType.GateU3,
+    GateSWAP: circuit_pb2.GateType.GateSWAP,
+    GateISWAP: circuit_pb2.GateType.GateISWAP,
+    GateECR: circuit_pb2.GateType.GateECR,
+    GateDCX: circuit_pb2.GateType.GateDCX,
+    GateRXX: circuit_pb2.GateType.GateRXX,
+    GateRYY: circuit_pb2.GateType.GateRYY,
+    GateRZZ: circuit_pb2.GateType.GateRZZ,
+    GateRZX: circuit_pb2.GateType.GateRZX,
+    GateXXplusYY: circuit_pb2.GateType.GateXXplusYY,
+    GateXXminusYY: circuit_pb2.GateType.GateXXminusYY,
 }
 #
 # Reverse gate mapping: protobuf -> mimiqcircuits
@@ -160,26 +287,26 @@ REVERSE_GATEMAP = {v: k for k, v in GATEMAP.items()}
 
 # Operation mapping: mimiqcircuits -> protobuf
 OPERATIONMAP = {
-    mc.MeasureX: circuit_pb2.OperationType.MeasureX,
-    mc.MeasureY: circuit_pb2.OperationType.MeasureY,
-    mc.MeasureZ: circuit_pb2.OperationType.MeasureZ,
-    mc.Measure: circuit_pb2.OperationType.MeasureZ,
-    mc.MeasureXX: circuit_pb2.OperationType.MeasureXX,
-    mc.MeasureYY: circuit_pb2.OperationType.MeasureYY,
-    mc.MeasureZZ: circuit_pb2.OperationType.MeasureZZ,
-    mc.MeasureResetX: circuit_pb2.OperationType.MeasureResetX,
-    mc.MeasureResetY: circuit_pb2.OperationType.MeasureResetY,
-    mc.MeasureReset: circuit_pb2.OperationType.MeasureResetZ,
-    mc.BondDim: circuit_pb2.OperationType.BondDim,
-    mc.SchmidtRank: circuit_pb2.OperationType.SchmidtRank,
-    mc.VonNeumannEntropy: circuit_pb2.OperationType.VonNeumannEntropy,
-    mc.Not: circuit_pb2.OperationType.Not,
-    mc.Pow: circuit_pb2.OperationType.Pow,
-    mc.SetBit0: circuit_pb2.OperationType.SetBit0,
-    mc.SetBit1: circuit_pb2.OperationType.SetBit1,
-    mc.Reload: circuit_pb2.OperationType.Reload,
-    mc.Check: circuit_pb2.OperationType.Check,
-    mc.MeasureCheck: circuit_pb2.OperationType.MeasureCheck,
+    MeasureX: circuit_pb2.OperationType.MeasureX,
+    MeasureY: circuit_pb2.OperationType.MeasureY,
+    MeasureZ: circuit_pb2.OperationType.MeasureZ,
+    Measure: circuit_pb2.OperationType.MeasureZ,
+    MeasureXX: circuit_pb2.OperationType.MeasureXX,
+    MeasureYY: circuit_pb2.OperationType.MeasureYY,
+    MeasureZZ: circuit_pb2.OperationType.MeasureZZ,
+    MeasureResetX: circuit_pb2.OperationType.MeasureResetX,
+    MeasureResetY: circuit_pb2.OperationType.MeasureResetY,
+    MeasureReset: circuit_pb2.OperationType.MeasureResetZ,
+    BondDim: circuit_pb2.OperationType.BondDim,
+    SchmidtRank: circuit_pb2.OperationType.SchmidtRank,
+    VonNeumannEntropy: circuit_pb2.OperationType.VonNeumannEntropy,
+    Not: circuit_pb2.OperationType.Not,
+    Pow: circuit_pb2.OperationType.Pow,
+    SetBit0: circuit_pb2.OperationType.SetBit0,
+    SetBit1: circuit_pb2.OperationType.SetBit1,
+    Reload: circuit_pb2.OperationType.Reload,
+    Check: circuit_pb2.OperationType.Check,
+    MeasureCheck: circuit_pb2.OperationType.MeasureCheck,
 }
 
 # Reverse operation mapping: protobuf -> mimiqcircuits
@@ -187,38 +314,38 @@ REVERSE_OPERATIONMAP = {v: k for k, v in OPERATIONMAP.items()}
 
 # Generalized operation mapping: mimiqcircuits -> protobuf
 GENERALIZEDOPERATIONMAP = {
-    mc.Barrier: circuit_pb2.GeneralizedOperationType.Barrier,
-    mc.Add: circuit_pb2.GeneralizedOperationType.Add,
-    mc.Multiply: circuit_pb2.GeneralizedOperationType.Multiply,
-    mc.And: circuit_pb2.GeneralizedOperationType.And,
-    mc.Or: circuit_pb2.GeneralizedOperationType.Or,
-    mc.Xor: circuit_pb2.GeneralizedOperationType.Xor,
+    Barrier: circuit_pb2.GeneralizedOperationType.Barrier,
+    Add: circuit_pb2.GeneralizedOperationType.Add,
+    Multiply: circuit_pb2.GeneralizedOperationType.Multiply,
+    And: circuit_pb2.GeneralizedOperationType.And,
+    Or: circuit_pb2.GeneralizedOperationType.Or,
+    Xor: circuit_pb2.GeneralizedOperationType.Xor,
 }
 
 # Reverse generalized operation mapping: protobuf -> mimiqcircuits
 REVERSE_GENERALIZEDOPERATIONMAP = {v: k for k, v in GENERALIZEDOPERATIONMAP.items()}
 # Files written before ParityCheck was deprecated still carry its enum value.
-REVERSE_GENERALIZEDOPERATIONMAP[circuit_pb2.GeneralizedOperationType.ParityCheck] = mc.Xor
+REVERSE_GENERALIZEDOPERATIONMAP[circuit_pb2.GeneralizedOperationType.ParityCheck] = Xor
 
 # Kraus Channel mapping: mimiqcircuits -> protobuf
 KRAUSCHANNELMAP = {
-    mc.Reset: circuit_pb2.KrausChannelType.ResetZ,
-    mc.ResetZ: circuit_pb2.KrausChannelType.ResetZ,
-    mc.ResetX: circuit_pb2.KrausChannelType.ResetX,
-    mc.ResetY: circuit_pb2.KrausChannelType.ResetY,
-    mc.ResetZ: circuit_pb2.KrausChannelType.ResetZ,
-    mc.AmplitudeDamping: circuit_pb2.KrausChannelType.AmplitudeDamping,
-    mc.GeneralizedAmplitudeDamping: circuit_pb2.KrausChannelType.GeneralizedAmplitudeDamping,
-    mc.PhaseAmplitudeDamping: circuit_pb2.KrausChannelType.PhaseAmplitudeDamping,
-    mc.ThermalNoise: circuit_pb2.KrausChannelType.ThermalNoise,
-    mc.PauliX: circuit_pb2.KrausChannelType.PauliX,
-    mc.PauliY: circuit_pb2.KrausChannelType.PauliY,
-    mc.PauliZ: circuit_pb2.KrausChannelType.PauliZ,
-    mc.ProjectiveNoiseX: circuit_pb2.KrausChannelType.ProjectiveNoiseX,
-    mc.ProjectiveNoiseY: circuit_pb2.KrausChannelType.ProjectiveNoiseY,
-    mc.ProjectiveNoiseZ: circuit_pb2.KrausChannelType.ProjectiveNoiseZ,
-    mc.ProjectiveNoise: circuit_pb2.KrausChannelType.ProjectiveNoiseZ,
-    mc.PrepareStateT: circuit_pb2.KrausChannelType.PrepareStateT,
+    Reset: circuit_pb2.KrausChannelType.ResetZ,
+    ResetZ: circuit_pb2.KrausChannelType.ResetZ,
+    ResetX: circuit_pb2.KrausChannelType.ResetX,
+    ResetY: circuit_pb2.KrausChannelType.ResetY,
+    ResetZ: circuit_pb2.KrausChannelType.ResetZ,
+    AmplitudeDamping: circuit_pb2.KrausChannelType.AmplitudeDamping,
+    GeneralizedAmplitudeDamping: circuit_pb2.KrausChannelType.GeneralizedAmplitudeDamping,
+    PhaseAmplitudeDamping: circuit_pb2.KrausChannelType.PhaseAmplitudeDamping,
+    ThermalNoise: circuit_pb2.KrausChannelType.ThermalNoise,
+    PauliX: circuit_pb2.KrausChannelType.PauliX,
+    PauliY: circuit_pb2.KrausChannelType.PauliY,
+    PauliZ: circuit_pb2.KrausChannelType.PauliZ,
+    ProjectiveNoiseX: circuit_pb2.KrausChannelType.ProjectiveNoiseX,
+    ProjectiveNoiseY: circuit_pb2.KrausChannelType.ProjectiveNoiseY,
+    ProjectiveNoiseZ: circuit_pb2.KrausChannelType.ProjectiveNoiseZ,
+    ProjectiveNoise: circuit_pb2.KrausChannelType.ProjectiveNoiseZ,
+    PrepareStateT: circuit_pb2.KrausChannelType.PrepareStateT,
 }
 
 # Reverse Kraus Channel mapping: protobuf -> mimiqcircuits
@@ -226,19 +353,19 @@ REVERSE_KRAUSCHANNELMAP = {v: k for k, v in KRAUSCHANNELMAP.items()}
 
 # Operator mapping: mimiqcircuits -> protobuf
 OPERATORMAP = {
-    mc.SigmaMinus: circuit_pb2.OperatorType.SigmaMinus,
-    mc.SigmaPlus: circuit_pb2.OperatorType.SigmaPlus,
-    mc.Projector0: circuit_pb2.OperatorType.Projector0,
-    mc.Projector1: circuit_pb2.OperatorType.Projector1,
-    mc.Projector00: circuit_pb2.OperatorType.Projector00,
-    mc.Projector01: circuit_pb2.OperatorType.Projector01,
-    mc.Projector10: circuit_pb2.OperatorType.Projector10,
-    mc.Projector11: circuit_pb2.OperatorType.Projector11,
-    mc.ProjectorX0: circuit_pb2.OperatorType.ProjectorX0,
-    mc.ProjectorX1: circuit_pb2.OperatorType.ProjectorX1,
-    mc.ProjectorY0: circuit_pb2.OperatorType.ProjectorY0,
-    mc.ProjectorY1: circuit_pb2.OperatorType.ProjectorY1,
-    mc.DiagonalOp: circuit_pb2.OperatorType.DiagonalOp,
+    SigmaMinus: circuit_pb2.OperatorType.SigmaMinus,
+    SigmaPlus: circuit_pb2.OperatorType.SigmaPlus,
+    Projector0: circuit_pb2.OperatorType.Projector0,
+    Projector1: circuit_pb2.OperatorType.Projector1,
+    Projector00: circuit_pb2.OperatorType.Projector00,
+    Projector01: circuit_pb2.OperatorType.Projector01,
+    Projector10: circuit_pb2.OperatorType.Projector10,
+    Projector11: circuit_pb2.OperatorType.Projector11,
+    ProjectorX0: circuit_pb2.OperatorType.ProjectorX0,
+    ProjectorX1: circuit_pb2.OperatorType.ProjectorX1,
+    ProjectorY0: circuit_pb2.OperatorType.ProjectorY0,
+    ProjectorY1: circuit_pb2.OperatorType.ProjectorY1,
+    DiagonalOp: circuit_pb2.OperatorType.DiagonalOp,
 }
 
 # Reverse operator mapping: protobuf -> mimiqcircuits
@@ -246,11 +373,11 @@ REVERSE_OPERATORMAP = {v: k for k, v in OPERATORMAP.items()}
 
 # Generalized gate mappings
 GENERALIZEDGATEMAP = {
-    mc.QFT: circuit_pb2.GeneralizedType.QFT,
-    mc.PhaseGradient: circuit_pb2.GeneralizedType.PhaseGradient,
-    mc.PolynomialOracle: circuit_pb2.GeneralizedType.PolynomialOracle,
-    mc.Diffusion: circuit_pb2.GeneralizedType.Diffusion,
-    mc.GateRNZ: circuit_pb2.GeneralizedType.GateRNZ,
+    QFT: circuit_pb2.GeneralizedType.QFT,
+    PhaseGradient: circuit_pb2.GeneralizedType.PhaseGradient,
+    PolynomialOracle: circuit_pb2.GeneralizedType.PolynomialOracle,
+    Diffusion: circuit_pb2.GeneralizedType.Diffusion,
+    GateRNZ: circuit_pb2.GeneralizedType.GateRNZ,
 }
 
 # Expression mappings: regex -> protobuf
@@ -278,19 +405,21 @@ IRRATIONALPROTO = {v: k for k, v in IRRATIONALSYMENGINE.items()}
 
 # Annotation mappings : mimiqcircuits -> protobuf
 ANNOTATIONMAP = {
-    mc.QubitCoordinates: circuit_pb2.AnnotationType.QubitCoordinates,
-    mc.ShiftCoordinates: circuit_pb2.AnnotationType.ShiftCoordinates,
-    mc.Tick: circuit_pb2.AnnotationType.Tick,
-    mc.Lost: circuit_pb2.AnnotationType.Lost,
-    mc.Reloaded: circuit_pb2.AnnotationType.Reloaded,
+    QubitCoordinates: circuit_pb2.AnnotationType.QubitCoordinates,
+    ShiftCoordinates: circuit_pb2.AnnotationType.ShiftCoordinates,
+    Tick: circuit_pb2.AnnotationType.Tick,
+    Lost: circuit_pb2.AnnotationType.Lost,
+    Reloaded: circuit_pb2.AnnotationType.Reloaded,
+    AncillaAlloc: circuit_pb2.AnnotationType.AncillaAlloc,
+    AncillaFree: circuit_pb2.AnnotationType.AncillaFree,
 }
 # Reverse annotation mappings: protobuf -> mimiqcircuits
 REVERSE_ANNOTATIONMAP = {v: k for k, v in ANNOTATIONMAP.items()}
 
 # Generalized annotation mappings
 GENERALIZEDANNOTATIONMAP = {
-    mc.Detector: circuit_pb2.GeneralizedAnnotationType.Detector,
-    mc.ObservableInclude: circuit_pb2.GeneralizedAnnotationType.ObservableInclude,
+    Detector: circuit_pb2.GeneralizedAnnotationType.Detector,
+    ObservableInclude: circuit_pb2.GeneralizedAnnotationType.ObservableInclude,
 }
 
 # Reverse generalized annotation mappings
@@ -646,7 +775,7 @@ def fromproto_gate(gate_proto, declcache=None):
 
 
 # Register specific gate converters
-@gate_registry.register_toproto(mc.PauliString)
+@gate_registry.register_toproto(PauliString)
 def toproto_paulistring(gate, declcache=None):
     """Convert a PauliString to protocol buffer format."""
     return circuit_pb2.Gate(
@@ -654,7 +783,7 @@ def toproto_paulistring(gate, declcache=None):
     )
 
 
-@gate_registry.register_toproto(mc.GateCustom)
+@gate_registry.register_toproto(GateCustom)
 def toproto_customgate(gate, declcache=None):
     """Convert a GateCustom to protocol buffer format."""
     U = [toproto_complex(param) for param in gate._U.T]
@@ -663,7 +792,7 @@ def toproto_customgate(gate, declcache=None):
     )
 
 
-@gate_registry.register_toproto(mc.GateCustomDiagonal)
+@gate_registry.register_toproto(GateCustomDiagonal)
 def toproto_customdiagonalgate(gate, declcache=None):
     """Convert a GateCustomDiagonal to protocol buffer format."""
     d = [toproto_complex(entry) for entry in gate._d]
@@ -684,11 +813,14 @@ def toproto_gatedecl(gate, declcache=None):
     )
     arguments = [circuit_pb2.Symbol(value=str(arg)) for arg in gate.arguments]
     return circuit_pb2.GateDecl(
-        name=gate.name, args=arguments, instructions=instructions_proto
+        name=gate.name,
+        args=arguments,
+        instructions=instructions_proto,
+        numancillas=gate.num_ancillas,
     )
 
 
-@gate_registry.register_toproto(mc.GateCall)
+@gate_registry.register_toproto(GateCall)
 def toproto_gatecall(gate, declcache=None):
     """Convert a GateCall to protocol buffer format."""
     args_proto = [toproto_arg(arg) for arg in gate._args]
@@ -709,7 +841,7 @@ def toproto_gatecall(gate, declcache=None):
         )
 
 
-@gate_registry.register_toproto(mc.Control)
+@gate_registry.register_toproto(Control)
 def toproto_control(gate, declcache=None):
     """Convert a Control gate to protocol buffer format."""
     control_gate_proto = toproto_gate(gate.op, declcache)
@@ -720,7 +852,7 @@ def toproto_control(gate, declcache=None):
     )
 
 
-@gate_registry.register_toproto(mc.Power)
+@gate_registry.register_toproto(Power)
 def toproto_power(gate, declcache=None):
     """Convert a Power gate to protocol buffer format."""
     base_gate_proto = toproto_gate(gate.op, declcache)
@@ -747,14 +879,14 @@ def toproto_power(gate, declcache=None):
     return circuit_pb2.Gate(power=power_proto)
 
 
-@gate_registry.register_toproto(mc.Inverse)
+@gate_registry.register_toproto(Inverse)
 def toproto_inverse(gate, declcache=None):
     """Convert an Inverse gate to protocol buffer format."""
     base_gate_proto = toproto_gate(gate.op, declcache)
     return circuit_pb2.Gate(inverse=circuit_pb2.Inverse(operation=base_gate_proto))
 
 
-@gate_registry.register_toproto(mc.Parallel)
+@gate_registry.register_toproto(Parallel)
 def toproto_parallel(gate, declcache=None):
     """Convert a Parallel gate to protocol buffer format."""
     base_gate_proto = toproto_gate(gate.op, declcache)
@@ -777,7 +909,7 @@ def toproto_generalized_gate(gate, declcache=None):
     args = [toproto_arg(param) for param in gate.getparams()]
 
     # Special Case: PolynomialOracle (Ensures Correct Parameter Order)
-    if isinstance(gate, mc.PolynomialOracle):
+    if isinstance(gate, PolynomialOracle):
         args = [toproto_arg(arg) for arg in gate._params[2:]]  # Skip nx, ny
 
     return circuit_pb2.Gate(
@@ -793,7 +925,7 @@ def toproto_generalized_gate(gate, declcache=None):
 @gate_registry.register_fromproto("paulistring")
 def fromproto_paulistring(paulistring_proto, declcache=None):
     """Convert a protocol buffer PauliString to a mimiqcircuits PauliString."""
-    return mc.PauliString(paulistring_proto.pauli)
+    return PauliString(paulistring_proto.pauli)
 
 
 @gate_registry.register_fromproto("customgate")
@@ -802,14 +934,14 @@ def fromproto_customgate(customgate_proto, declcache=None):
     U_matrix = [fromproto_complex(val) for val in customgate_proto.matrix]
     matrix_size = 2**customgate_proto.numqubits
     original_matrix = np.array(U_matrix).reshape(matrix_size, matrix_size).T
-    return mc.GateCustom(matrix=original_matrix)
+    return GateCustom(matrix=original_matrix)
 
 
 @gate_registry.register_fromproto("customdiagonalgate")
 def fromproto_customdiagonalgate(customdiagonalgate_proto, declcache=None):
     """Convert a protocol buffer CustomDiagonalGate to a GateCustomDiagonal."""
     d = [fromproto_complex(val) for val in customdiagonalgate_proto.diagonal]
-    return mc.GateCustomDiagonal(d)
+    return GateCustomDiagonal(d)
 
 
 @gate_registry.register_fromproto("generalized")
@@ -828,7 +960,7 @@ def fromproto_generalized_gate(generalized_proto, declcache=None):
 def fromproto_control(control_proto, declcache=None):
     """Convert a protocol buffer Control gate to a mimiqcircuits Control gate."""
     control_gate = fromproto_gate(control_proto.operation, declcache)
-    return mc.Control(control_proto.numcontrols, control_gate)
+    return Control(control_proto.numcontrols, control_gate)
 
 
 @gate_registry.register_fromproto("power")
@@ -847,21 +979,21 @@ def fromproto_power(power_proto, declcache=None):
     else:
         raise ValueError("Unsupported power value type in proto")
 
-    return mc.Power(base_gate, power_value)
+    return Power(base_gate, power_value)
 
 
 @gate_registry.register_fromproto("inverse")
 def fromproto_inverse(inverse_proto, declcache=None):
     """Convert a protocol buffer Inverse gate to a mimiqcircuits Inverse gate."""
     base_gate = fromproto_gate(inverse_proto.operation, declcache)
-    return mc.Inverse(base_gate)
+    return Inverse(base_gate)
 
 
 @gate_registry.register_fromproto("parallel")
 def fromproto_parallel(parallel_proto, declcache=None):
     """Convert a protocol buffer Parallel gate to a mimiqcircuits Parallel gate."""
     base_gate = fromproto_gate(parallel_proto.operation, declcache)
-    return mc.Parallel(parallel_proto.numrepeats, base_gate)
+    return Parallel(parallel_proto.numrepeats, base_gate)
 
 
 @gate_registry.register_fromproto("gatecall")
@@ -870,7 +1002,7 @@ def fromproto_gatecall(gatecall_proto, declcache=None):
     # Deserialize the GateDecl using the correct function
     decl = fromproto_gatedecl(gatecall_proto.decl)
     args = [fromproto_arg(arg) for arg in gatecall_proto.args]
-    return mc.GateCall(decl, args)
+    return GateCall(decl, args)
 
 
 @gate_registry.register_fromproto("cachedgatecall")
@@ -887,7 +1019,7 @@ def fromproto_cachedgatecall(cachedgatecall_proto, declcache):
         raise ValueError(f"GateDecl with ID {declid} not found in cache")
 
     decl = declcache[0][declid]
-    return mc.GateCall(decl, args)
+    return GateCall(decl, args)
 
 
 def fromproto_gatedecl(gatedecl_proto, declcache=None):
@@ -898,8 +1030,11 @@ def fromproto_gatedecl(gatedecl_proto, declcache=None):
         fromproto_instruction(inst, declcache) for inst in gatedecl_proto.instructions
     ]
 
-    return mc.GateDecl(
-        name=name, arguments=tuple(arguments), circuit=mc.Circuit(instructions)
+    return GateDecl(
+        name=name,
+        arguments=tuple(arguments),
+        circuit=Circuit(instructions),
+        num_ancillas=gatedecl_proto.numancillas,
     )
 
 
@@ -914,7 +1049,7 @@ def toproto_operator(operator, declcache=None):
         return converter(operator, declcache)
 
     # Simple operator types from the mapping
-    if isinstance(operator, mc.AbstractOperator):
+    if isinstance(operator, AbstractOperator):
         operator_type = OPERATORMAP.get(type(operator))
         if operator_type is not None:
             params = [toproto_arg(param) for param in operator.getparams()]
@@ -925,7 +1060,7 @@ def toproto_operator(operator, declcache=None):
             )
 
     # Fall back to case-by-case handling
-    if isinstance(operator, mc.Gate):
+    if isinstance(operator, Gate):
         gate_proto = toproto_gate(operator, declcache)
         return circuit_pb2.Operator(
             **{
@@ -981,7 +1116,7 @@ def fromproto_operator(operator_proto, declcache=None):
 
 
 # Register specific operator converters
-@operator_registry.register_toproto(mc.RescaledGate)
+@operator_registry.register_toproto(RescaledGate)
 def toproto_rescaledgate(operator, declcache=None):
     """Convert a RescaledGate to protocol buffer format."""
     base_gate_proto = toproto_gate(operator.get_operation(), declcache)
@@ -993,7 +1128,7 @@ def toproto_rescaledgate(operator, declcache=None):
     )
 
 
-@operator_registry.register_toproto(mc.Operator)
+@operator_registry.register_toproto(Operator)
 def toproto_customoperator(operator, declcache=None):
     """Convert a custom Operator to protocol buffer format."""
     matrix_data = operator.matrix() if callable(operator.matrix) else operator.matrix
@@ -1010,7 +1145,7 @@ def toproto_customoperator(operator, declcache=None):
     )
 
 
-@operator_registry.register_toproto(mc.LossyOperator)
+@operator_registry.register_toproto(LossyOperator)
 def toproto_lossyoperator(operator, declcache=None):
     matrix_data = operator.matrix()
     matrix = [
@@ -1032,7 +1167,7 @@ def fromproto_rescaledgate(rescaledgate_proto, declcache=None):
     """Convert a protocol buffer RescaledGate to a mimiqcircuits RescaledGate."""
     base_gate = fromproto_gate(rescaledgate_proto.operation, declcache)
     scale = fromproto_arg(rescaledgate_proto.scale)
-    return mc.RescaledGate(base_gate, scale)
+    return RescaledGate(base_gate, scale)
 
 
 @operator_registry.register_fromproto("customoperator")
@@ -1043,7 +1178,7 @@ def fromproto_customoperator(customoperator_proto, declcache=None):
         2**customoperator_proto.numqubits,
         2**customoperator_proto.numqubits,
     )
-    return mc.Operator(mat=matrix)
+    return Operator(mat=matrix)
 
 
 @operator_registry.register_fromproto("lossyoperator")
@@ -1051,7 +1186,7 @@ def fromproto_lossyoperator(lossyoperator_proto, declcache=None):
     matrix = [fromproto_complex(val) for val in lossyoperator_proto.matrix]
     size = 2**lossyoperator_proto.numqubits
     matrix = np.array(matrix).reshape(size, size)
-    return mc.LossyOperator(mat=matrix, lossy=tuple(lossyoperator_proto.lossy))
+    return LossyOperator(mat=matrix, lossy=tuple(lossyoperator_proto.lossy))
 
 
 # ---------------------- Kraus Channel Conversion Functions ----------------------
@@ -1105,7 +1240,7 @@ def fromproto_krauschannel(kraus_proto, declcache=None):
 
 
 # Register specific krauschannel converters
-@krauschannel_registry.register_toproto(mc.Kraus)
+@krauschannel_registry.register_toproto(Kraus)
 def toproto_kraus(kraus_channel, declcache=None):
     """Convert a Kraus to protocol buffer format."""
     operators_proto = [
@@ -1130,7 +1265,7 @@ def _mask_to_lossy(mask):
     return tuple(q for q in range(1, mask.bit_length() + 1) if mask & (1 << (q - 1)))
 
 
-@krauschannel_registry.register_toproto(mc.MixedUnitary)
+@krauschannel_registry.register_toproto(MixedUnitary)
 def toproto_mixedunitary(kraus_channel, declcache=None):
     """Convert a MixedUnitary to protocol buffer format."""
     operators_proto = []
@@ -1161,7 +1296,7 @@ def toproto_mixedunitary(kraus_channel, declcache=None):
     )
 
 
-@krauschannel_registry.register_toproto(mc.PauliNoise)
+@krauschannel_registry.register_toproto(PauliNoise)
 def toproto_paulinoise(kraus_channel, declcache=None):
     """Convert a PauliNoise to protocol buffer format."""
     # Call probabilities as a method
@@ -1177,7 +1312,7 @@ def toproto_paulinoise(kraus_channel, declcache=None):
     )
 
 
-@krauschannel_registry.register_toproto(mc.Depolarizing)
+@krauschannel_registry.register_toproto(Depolarizing)
 def toproto_depolarizing(kraus_channel, declcache=None):
     """Convert a Depolarizing to protocol buffer format."""
     return circuit_pb2.KrausChannel(
@@ -1208,7 +1343,7 @@ def fromproto_customkrauschannel(customkrauschannel_proto, declcache=None):
 
             # Reshape the list of elements into a symengine matrix
             matrix = se.Matrix(matrix_size, matrix_size, matrix_elements)
-            operators.append(mc.Operator(mat=matrix))
+            operators.append(Operator(mat=matrix))
 
         elif op_proto.HasField("simpleoperator"):
             # Handle SimpleOperator by mapping its type and parameters
@@ -1234,14 +1369,14 @@ def fromproto_customkrauschannel(customkrauschannel_proto, declcache=None):
 
             matrix = np.array(matrix_elements).reshape(matrix_size, matrix_size)
             operators.append(
-                mc.LossyOperator(
+                LossyOperator(
                     mat=matrix, lossy=tuple(op_proto.lossyoperator.lossy)
                 )
             )
         else:
             raise ValueError("Unsupported operator type in customkrauschannel")
 
-    return mc.Kraus(operators)
+    return Kraus(operators)
 
 
 @krauschannel_registry.register_fromproto("mixedunitarychannel")
@@ -1258,9 +1393,9 @@ def fromproto_mixedunitarychannel(mixedunitary_proto, declcache=None):
 
     masks = list(mixedunitary_proto.lossy_masks)
     if not masks:
-        return mc.MixedUnitary(probabilities, unitary_matrices)
+        return MixedUnitary(probabilities, unitary_matrices)
     lossy = [_mask_to_lossy(m) for m in masks]
-    return mc.MixedUnitary(probabilities, unitary_matrices, lossy=lossy)
+    return MixedUnitary(probabilities, unitary_matrices, lossy=lossy)
 
 
 @krauschannel_registry.register_fromproto("paulichannel")
@@ -1268,9 +1403,9 @@ def fromproto_paulichannel(paulichannel_proto, declcache=None):
     """Convert a protocol buffer PauliChannel to a mimiqcircuits PauliNoise."""
     probabilities = [fromproto_arg(prob) for prob in paulichannel_proto.probabilities]
     pauli_strings = [
-        mc.PauliString(pauli_str.pauli) for pauli_str in paulichannel_proto.paulistrings
+        PauliString(pauli_str.pauli) for pauli_str in paulichannel_proto.paulistrings
     ]
-    return mc.PauliNoise(probabilities, pauli_strings)
+    return PauliNoise(probabilities, pauli_strings)
 
 
 @krauschannel_registry.register_fromproto("depolarizingchannel")
@@ -1278,7 +1413,7 @@ def fromproto_depolarizing(depolarizing_proto, declcache=None):
     """Convert a protocol buffer DepolarizingChannel to a mimiqcircuits Depolarizing."""
     num_qubits = depolarizing_proto.numqubits
     probability = fromproto_arg(depolarizing_proto.probability)
-    return mc.Depolarizing(num_qubits, probability)
+    return Depolarizing(num_qubits, probability)
 
 
 # ---------------------- Operation Conversion Functions ----------------------
@@ -1390,7 +1525,7 @@ def toproto_operation(operation, declcache=None):
     if converter:
         return converter(operation, declcache)
 
-    if isinstance(operation, mc.krauschannel):
+    if isinstance(operation, krauschannel):
         kraus_proto = toproto_krauschannel(operation, declcache)
         kraus_field_name = kraus_proto.WhichOneof("krauschannel")
         return circuit_pb2.Operation(
@@ -1398,7 +1533,7 @@ def toproto_operation(operation, declcache=None):
         )
 
     # Check if the operation is a gate
-    if isinstance(operation, mc.Gate):
+    if isinstance(operation, Gate):
         gate_proto = toproto_gate(operation, declcache)
         gate_field_name = gate_proto.WhichOneof("gate")
         return circuit_pb2.Operation(
@@ -1406,8 +1541,8 @@ def toproto_operation(operation, declcache=None):
         )
 
     # Check if the operation is an operator (but not a gate)
-    if isinstance(operation, mc.AbstractOperator) and not isinstance(
-        operation, mc.Gate
+    if isinstance(operation, AbstractOperator) and not isinstance(
+        operation, Gate
     ):
         operator_proto = toproto_operator(operation, declcache)
         operator_field_name = operator_proto.WhichOneof("operator")
@@ -1426,7 +1561,7 @@ _LEGACY_QUBITLOSS = 16  # pre-redesign OperationType tag, folded into Loss
 def fromproto_simpleoperation(simpleoperation_proto, declcache=None):
     # Legacy: pre-redesign certain loss (QubitLoss) folded into Loss().
     if simpleoperation_proto.mtype == _LEGACY_QUBITLOSS:
-        return mc.Loss()
+        return Loss()
     args = [fromproto_arg(param) for param in simpleoperation_proto.parameters]
     operation_class = REVERSE_OPERATIONMAP.get(simpleoperation_proto.mtype)
     if operation_class:
@@ -1465,9 +1600,9 @@ def fromproto_simpleannotation(simpleannotation_proto, declcache=None):
     notes = [fromproto_note(note) for note in simpleannotation_proto.notes]
 
     # Handle specific annotation classes
-    if annotation_class is mc.Tick:
-        return mc.Tick()
-    elif annotation_class in {mc.ShiftCoordinates, mc.QubitCoordinates}:
+    if annotation_class is Tick:
+        return Tick()
+    elif annotation_class in {ShiftCoordinates, QubitCoordinates}:
         return annotation_class(notes)
 
     return annotation_class(*notes)
@@ -1550,14 +1685,14 @@ def fromproto_operation(operation_proto, declcache=None):
 
 
 # Register specific operation converters
-@operation_registry.register_toproto(mc.Amplitude)
+@operation_registry.register_toproto(Amplitude)
 def toproto_amplitude(operation, declcache=None):
     """Convert an Amplitude operation to protocol buffer format."""
     bitstring_proto = toproto_bitvector(operation.bs)
     return circuit_pb2.Operation(amplitude=circuit_pb2.Amplitude(bs=bitstring_proto))
 
 
-@operation_registry.register_toproto(mc.ExpectationValue)
+@operation_registry.register_toproto(ExpectationValue)
 def toproto_expectationvalue(operation, declcache=None):
     """Convert an ExpectationValue operation to protocol buffer format."""
     operator_proto = toproto_operator(operation.op, declcache)
@@ -1566,7 +1701,7 @@ def toproto_expectationvalue(operation, declcache=None):
     )
 
 
-@operation_registry.register_toproto(mc.IfStatement)
+@operation_registry.register_toproto(IfStatement)
 def toproto_ifstatement(operation, declcache=None):
     """Convert an IfStatement operation to protocol buffer format."""
     bitstring_proto = toproto_bitvector(operation.bitstring)
@@ -1578,7 +1713,7 @@ def toproto_ifstatement(operation, declcache=None):
     )
 
 
-@operation_registry.register_toproto(mc.Not)
+@operation_registry.register_toproto(Not)
 def toproto_not(operation, declcache=None):
     """Convert a Not operation to protocol buffer format."""
     return circuit_pb2.Operation(
@@ -1589,26 +1724,26 @@ def toproto_not(operation, declcache=None):
 @operation_registry.register_fromproto("amplitude")
 def fromproto_amplitude(amplitude_proto, declcache=None):
     """Convert a protocol buffer Amplitude to a mimiqcircuits Amplitude."""
-    bitstring = mc.BitString(fromproto_bitvector(amplitude_proto.bs))
-    return mc.Amplitude(bitstring)
+    bitstring = BitString(fromproto_bitvector(amplitude_proto.bs))
+    return Amplitude(bitstring)
 
 
 @operation_registry.register_fromproto("expectationvalue")
 def fromproto_expectationvalue(expectationvalue_proto, declcache=None):
     """Convert a protocol buffer ExpectationValue to a mimiqcircuits ExpectationValue."""
     operator = fromproto_operator(expectationvalue_proto.operator, declcache)
-    return mc.ExpectationValue(operator)
+    return ExpectationValue(operator)
 
 
 @operation_registry.register_fromproto("ifstatement")
 def fromproto_ifstatement(ifstatement_proto, declcache=None):
     """Convert a protocol buffer IfStatement to a mimiqcircuits IfStatement."""
     operation = fromproto_operation(ifstatement_proto.operation, declcache)
-    bitstring = mc.BitString(fromproto_bitvector(ifstatement_proto.bitstring))
-    return mc.IfStatement(operation=operation, bitstring=bitstring)
+    bitstring = BitString(fromproto_bitvector(ifstatement_proto.bitstring))
+    return IfStatement(operation=operation, bitstring=bitstring)
 
 
-@operation_registry.register_toproto(mc.WhileStatement)
+@operation_registry.register_toproto(WhileStatement)
 def toproto_whilestatement(operation, declcache=None):
     """Convert a WhileStatement operation to protocol buffer format."""
     bitstring_proto = toproto_bitvector(operation.bitstring)
@@ -1624,11 +1759,11 @@ def toproto_whilestatement(operation, declcache=None):
 def fromproto_whilestatement(whilestatement_proto, declcache=None):
     """Convert a protocol buffer WhileStatement to a mimiqcircuits WhileStatement."""
     operation = fromproto_operation(whilestatement_proto.operation, declcache)
-    bitstring = mc.BitString(fromproto_bitvector(whilestatement_proto.bitstring))
-    return mc.WhileStatement(operation=operation, bitstring=bitstring)
+    bitstring = BitString(fromproto_bitvector(whilestatement_proto.bitstring))
+    return WhileStatement(operation=operation, bitstring=bitstring)
 
 
-@operation_registry.register_toproto(mc.ReadoutErr)
+@operation_registry.register_toproto(ReadoutErr)
 def toproto_readouterr(operation, declcache=None):
     """Convert a ReadoutErr operation to protobuf format."""
     msg = circuit_pb2.Operation()
@@ -1640,13 +1775,13 @@ def toproto_readouterr(operation, declcache=None):
 @operation_registry.register_fromproto("readouterr")
 def fromproto_readouterr(readouterr_proto, declcache=None):
     """Convert protobuf ReadoutErr to mimiqcircuits ReadoutErr."""
-    return mc.ReadoutErr(
+    return ReadoutErr(
         fromproto_arg(readouterr_proto.p0),
         fromproto_arg(readouterr_proto.p1),
     )
 
 
-@operation_registry.register_toproto(mc.Loss)
+@operation_registry.register_toproto(Loss)
 def toproto_loss(operation, declcache=None):
     """Convert a Loss operation to protobuf format."""
     msg = circuit_pb2.Operation()
@@ -1657,10 +1792,10 @@ def toproto_loss(operation, declcache=None):
 @operation_registry.register_fromproto("loss")
 def fromproto_loss(loss_proto, declcache=None):
     """Convert protobuf Loss to mimiqcircuits Loss."""
-    return mc.Loss(fromproto_arg(loss_proto.p))
+    return Loss(fromproto_arg(loss_proto.p))
 
 
-@operation_registry.register_toproto(mc.MeasurePauli)
+@operation_registry.register_toproto(MeasurePauli)
 def toproto_measurepauli(operation, declcache=None):
     """Convert a MeasurePauli operation to protobuf format."""
     return circuit_pb2.Operation(
@@ -1675,17 +1810,17 @@ def toproto_measurepauli(operation, declcache=None):
 @operation_registry.register_fromproto("measurepauli")
 def fromproto_measurepauli(measurepauli_proto, declcache=None):
     """Convert protobuf MeasurePauli to mimiqcircuits MeasurePauli."""
-    return mc.MeasurePauli(measurepauli_proto.pauli.pauli)
+    return MeasurePauli(measurepauli_proto.pauli.pauli)
 
 
 # ------------ Block & Repeat -----------
 
 
-@operation_registry.register_toproto(mc.Block)
+@operation_registry.register_toproto(Block)
 def toproto_block(op, declcache=None):
     proto_insts = [
         toproto_instruction(
-            mc.Instruction(
+            Instruction(
                 inst.operation,
                 qubits=tuple(inst.qubits),
                 bits=tuple(inst.bits),
@@ -1700,6 +1835,7 @@ def toproto_block(op, declcache=None):
         numbits=op.num_bits,
         numzvars=op.num_zvars,
         instructions=proto_insts,
+        numancillas=op.num_ancillas,
     )
 
     return circuit_pb2.Operation(block=block_msg)
@@ -1710,10 +1846,68 @@ def fromproto_block(proto, declcache=None):
     instructions = [
         fromproto_instruction(inst, declcache) for inst in proto.instructions
     ]
-    return mc.Block(proto.numqubits, proto.numbits, proto.numzvars, instructions)
+    return Block(
+        proto.numqubits,
+        proto.numbits,
+        proto.numzvars,
+        instructions,
+        num_ancillas=proto.numancillas,
+    )
 
 
-@operation_registry.register_toproto(mc.Repeat)
+def toproto_blockdecl(decl, declcache=None):
+    """Convert a BlockDecl to protocol buffer format."""
+    return circuit_pb2.BlockDecl(
+        name=decl.name,
+        args=[circuit_pb2.Symbol(value=str(arg)) for arg in decl.arguments],
+        numqubits=decl.num_qubits,
+        numbits=decl.num_bits,
+        numzvars=decl.num_zvars,
+        instructions=[toproto_instruction(inst, declcache) for inst in decl],
+        numancillas=decl.num_ancillas,
+    )
+
+
+def fromproto_blockdecl(proto, declcache=None):
+    """Convert a protocol buffer BlockDecl to a mimiqcircuits BlockDecl."""
+    # Pushed one by one: the Block constructor deep-copies, which would give
+    # nested calls their own copy of a shared declaration.
+    body = Block(proto.numqubits, proto.numbits, proto.numzvars)
+    for inst in proto.instructions:
+        body.push(fromproto_instruction(inst, declcache))
+    return BlockDecl(
+        proto.name,
+        tuple(se.Symbol(arg.value) for arg in proto.args),
+        body,
+        num_ancillas=proto.numancillas,
+    )
+
+
+@operation_registry.register_toproto(BlockCall)
+def toproto_blockcall(op, declcache=None):
+    args = [toproto_arg(arg) for arg in op.arguments]
+    # Outside a circuit there is no declaration table, so the decl goes inline.
+    if declcache is None:
+        msg = circuit_pb2.BlockCall(args=args, decl=toproto_blockdecl(op.decl))
+        return circuit_pb2.Operation(blockcall=msg)
+    declid = id(op.decl)
+    if declid not in declcache[0]:
+        declcache[0][declid] = toproto_blockdecl(op.decl, declcache)
+        declcache[1].append(declid)
+    return circuit_pb2.Operation(blockcall=circuit_pb2.BlockCall(id=declid, args=args))
+
+
+@operation_registry.register_fromproto("blockcall")
+def fromproto_blockcall(proto, declcache=None):
+    args = [fromproto_arg(arg) for arg in proto.args]
+    if proto.HasField("decl"):
+        return BlockCall(fromproto_blockdecl(proto.decl, declcache), args)
+    if declcache is None or proto.id not in declcache[0]:
+        raise ValueError(f"BlockDecl with ID {proto.id} not found in cache")
+    return BlockCall(declcache[0][proto.id], args)
+
+
+@operation_registry.register_toproto(Repeat)
 def toproto_repeat(op, declcache=None):
     proto_op = toproto_operation(op.get_operation(), declcache)
     return circuit_pb2.Operation(
@@ -1724,7 +1918,7 @@ def toproto_repeat(op, declcache=None):
 @operation_registry.register_fromproto("repeat")
 def fromproto_repeat(proto, declcache=None):
     inner_op = fromproto_operation(proto.operation, declcache)
-    return mc.Repeat(proto.numrepeats, inner_op)
+    return Repeat(proto.numrepeats, inner_op)
 
 
 # ---------------------- Instruction Conversion Functions ----------------------
@@ -1742,7 +1936,7 @@ def toproto_instruction(inst, declcache=None):
 
 def fromproto_instruction(inst_proto, declcache=None):
     """Convert a protocol buffer instruction to a mimiqcircuits instruction."""
-    return mc.Instruction(
+    return Instruction(
         operation=fromproto_operation(inst_proto.operation, declcache),
         qubits=tuple([x - 1 for x in inst_proto.qtargets]),
         bits=tuple([x - 1 for x in inst_proto.ctargets]),
@@ -1763,6 +1957,8 @@ def toproto_circuit(circuit):
     for k, decl in declcache[0].items():
         if isinstance(decl, circuit_pb2.GateDecl):
             decls_map[k] = circuit_pb2.Declaration(gatedecl=decl)
+        elif isinstance(decl, circuit_pb2.BlockDecl):
+            decls_map[k] = circuit_pb2.Declaration(blockdecl=decl)
         elif isinstance(decl, circuit_pb2.Block):
             decls_map[k] = circuit_pb2.Declaration(block=decl)
         else:
@@ -1784,13 +1980,15 @@ def fromproto_circuit(circuit_proto):
             declcache[0][k] = fromproto_gatedecl(decl.gatedecl, declcache)
         elif which == "block":
             declcache[0][k] = fromproto_block(decl.block, declcache)
+        elif which == "blockdecl":
+            declcache[0][k] = fromproto_blockdecl(decl.blockdecl, declcache)
         else:
             raise ValueError(f"Unknown declaration type in proto: {which}")
 
     instructions = [
         fromproto_instruction(inst, declcache) for inst in circuit_proto.instructions
     ]
-    return mc.Circuit(instructions)
+    return Circuit(instructions)
 
 
 # --- Gate Conversion for RPauli ---
@@ -1808,7 +2006,7 @@ def toproto_rpauli(gate, declcache=None):
 
 @operation_registry.register_fromproto("rpauli")
 def fromproto_rpauli_operation(msg, declcache=None):
-    return mc.RPauli(fromproto_paulistring(msg.pauli), fromproto_arg(msg.theta))
+    return RPauli(fromproto_paulistring(msg.pauli), fromproto_arg(msg.theta))
 
 
 # ------------- Operation-direct gate converters (skip Gate wrapper) ----------
@@ -1831,7 +2029,7 @@ def toproto_operation_simplegate(gate, declcache=None):
 
 
 def toproto_operation_generalized_gate(gate, declcache=None):
-    if isinstance(gate, mc.PolynomialOracle):
+    if isinstance(gate, PolynomialOracle):
         args = [toproto_arg(arg) for arg in gate._params[2:]]
     else:
         args = [toproto_arg(p) for p in gate.getparams()]
@@ -1946,28 +2144,28 @@ def register_operation_direct_gates():
             gate_class, toproto_operation_generalized_gate
         )
     operation_registry.register_toproto_direct(
-        mc.PauliString, toproto_operation_paulistring
+        PauliString, toproto_operation_paulistring
     )
     operation_registry.register_toproto_direct(
-        mc.GateCustom, toproto_operation_customgate
+        GateCustom, toproto_operation_customgate
     )
     operation_registry.register_toproto_direct(
-        mc.GateCustomDiagonal, toproto_operation_customdiagonalgate
+        GateCustomDiagonal, toproto_operation_customdiagonalgate
     )
     operation_registry.register_toproto_direct(
-        mc.GateCall, toproto_operation_gatecall
+        GateCall, toproto_operation_gatecall
     )
     operation_registry.register_toproto_direct(
-        mc.Control, toproto_operation_control
+        Control, toproto_operation_control
     )
     operation_registry.register_toproto_direct(
-        mc.Power, toproto_operation_power
+        Power, toproto_operation_power
     )
     operation_registry.register_toproto_direct(
-        mc.Inverse, toproto_operation_inverse
+        Inverse, toproto_operation_inverse
     )
     operation_registry.register_toproto_direct(
-        mc.Parallel, toproto_operation_parallel
+        Parallel, toproto_operation_parallel
     )
     operation_registry.register_toproto_direct(RPauli, toproto_operation_rpauli)
 

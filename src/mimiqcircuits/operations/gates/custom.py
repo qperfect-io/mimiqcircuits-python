@@ -17,7 +17,7 @@
 """Custom gate definition."""
 
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.gate import Gate
 import symengine as se
 import numpy as np
@@ -29,19 +29,41 @@ from mimiqcircuits.operations.decompositions.matrix_decompositions.zyz import  _
 
 
 class GateCustom(Gate):
-    """Custom gate defined by a unitary matrix.
+    r"""Custom gate defined by a unitary matrix.
 
-    The matrix must be square with a power of two number of rows, and it acts
-    on ``log2(rows)`` qubits.
+    The matrix must be square with :math:`2^n` rows, :math:`n \geq 1`; the gate
+    then acts on :math:`n` qubits. Qubits are ordered big-endian: the first
+    target qubit is the most significant bit of the row index. Numeric
+    matrices are checked for unitarity with an absolute tolerance of
+    ``1e-8``. The check is skipped when an entry is a plain symbol, so a
+    symbolic matrix can be filled in later with :meth:`evaluate`.
+
+    Args:
+        matrix (numpy.ndarray or symengine.Matrix): The unitary matrix.
+
+    Raises:
+        TypeError: If ``matrix`` is neither a NumPy array nor a SymEngine
+            matrix.
+        ValueError: If the matrix is not square, not unitary, or its size is
+            not a power of two greater than one.
 
     Examples:
-        >>> from mimiqcircuits import Circuit, GateCustom
+        >>> from mimiqcircuits import *
         >>> import numpy as np
+        >>> # a controlled-Y written out as a 4x4 matrix
         >>> matrix = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 0, -1j],[0, 0, 1j, 0]])
+        >>> g = GateCustom(matrix)
+        >>> g.num_qubits
+        2
         >>> c = Circuit()
-        >>> c.push(GateCustom(matrix), 0, 1)
+        >>> c.push(g, 0, 1)
         2-qubit circuit with 1 instruction:
         └── Custom(...) @ q[0:1]
+        <BLANKLINE>
+        >>> # a single qubit custom gate decomposes into one GateU
+        >>> GateCustom(np.array([[0, 1], [1, 0]])).decompose()
+        1-qubit circuit with 1 instruction:
+        └── U(3.141592653589793, 0.0, -3.141592653589793, 0.0) @ q[0]
         <BLANKLINE>
     """
 
@@ -77,7 +99,7 @@ class GateCustom(Gate):
             if not self.is_unitary(matrix, tol=tolerance):
                 raise ValueError("Matrix is not unitary")
         elif not any(
-            isinstance(mat[i, j], (se.Symbol, str))
+            isinstance(mat[i, j], str) or getattr(mat[i, j], "free_symbols", None)
             for i in range(mat.rows)
             for j in range(mat.cols)
         ):
@@ -97,14 +119,17 @@ class GateCustom(Gate):
     def _matrix(self):
         return self._U
 
+    # Not inherited from AbstractOperator: that version caches on the class
+    # for parameter-free operators, so every GateCustom would share the first
+    # matrix built. `unwrappedmatrix` is overridden for the same reason.
     def matrix(self):
-        """Numerically evaluate entries where possible, otherwise keep symbolic.
+        """Return the gate matrix as a SymEngine matrix.
 
-        Deliberately not inherited from :class:`AbstractOperator`: that version
-        memoises on the *class* for parameter-free operators, which is right for
-        a named gate but would make every ``GateCustom`` share whichever matrix
-        was built first. ``unwrappedmatrix`` below is overridden for the same
-        reason.
+        Entries that can be converted to a complex number are returned as
+        complex numbers; symbolic entries are kept as they are.
+
+        Returns:
+            symengine.Matrix: A new matrix on each call.
         """
         out = []
         for x in self._U:
@@ -117,6 +142,7 @@ class GateCustom(Gate):
 
     @property
     def num_qubits(self):
+        r"""Number of qubits the gate acts on, :math:`\log_2` of the matrix size."""
         return self._num_qubits
 
     # The matrix entries are the parameters, in column-major order, named by
@@ -124,12 +150,19 @@ class GateCustom(Gate):
     # decomposition does not try to rebuild the gate from one symbol per entry.
     @property
     def parnames(self):
+        """Parameter names: the 1-based linear indices of the matrix entries."""
         return tuple(range(1, self._U.rows * self._U.cols + 1))
 
     def getparams(self):
+        """Return the matrix entries as a list, in column-major order."""
         return list(self._U.T)
 
     def getparam(self, pn):
+        """Return the matrix entry with 1-based column-major index ``pn``.
+
+        Raises:
+            IndexError: If ``pn`` is outside ``1..rows*cols``.
+        """
         # 1-based; a plain index would let 0 and
         # negative values wrap around to the last entries.
         params = self.getparams()
@@ -142,6 +175,15 @@ class GateCustom(Gate):
 
     @staticmethod
     def is_unitary(matrix, tol=1e-8):
+        r"""Return whether :math:`U U^\dagger` equals the identity within ``tol``.
+
+        Args:
+            matrix (numpy.ndarray or symengine.Matrix): The matrix to check.
+            tol (float): Absolute tolerance on each entry. Defaults to ``1e-8``.
+
+        Returns:
+            bool: ``True`` if the matrix is unitary.
+        """
         # Fully numeric entries go through NumPy. The symbolic path below builds
         # a dense SymEngine product and then walks its 4^n entries in Python, so
         # for a wide gate it dominates construction: at 9 qubits it takes ~13s
@@ -172,6 +214,7 @@ class GateCustom(Gate):
         return f"{self._name}(...)"
 
     def pretty_print(self):
+        """Return a multi-line string showing the matrix row by row."""
         if isinstance(self._U, se.Matrix):
             U = np.array(self._U.tolist(), dtype=object)
         else:
@@ -190,6 +233,16 @@ class GateCustom(Gate):
         return result
 
     def evaluate(self, d):
+        """Substitute symbols in the matrix entries and return a new gate.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            GateCustom: ``self`` if the matrix has no symbols, otherwise a new
+            gate built from the substituted matrix (checked for unitarity
+            again).
+        """
         if not self.is_symbolic():
             return self
         import sympy as sp
@@ -204,6 +257,11 @@ class GateCustom(Gate):
         return GateCustom(evaluated_matrix)
 
     def unwrappedmatrix(self):
+        """Return the matrix as a ``complex128`` NumPy array.
+
+        Raises:
+            TypeError: If an entry is still symbolic.
+        """
         return _as_numpy_numeric(self._U)
 
     def _decompose(self, circ, qubits, bits, zvars):
@@ -214,7 +272,7 @@ class GateCustom(Gate):
         if N == 1:
             U_num = self.unwrappedmatrix()
             theta, phi, lam, gamma = _zyz_decomposition(U_num)
-            circ.push(mc.GateU(theta, phi, lam, gamma), qubits[0])
+            circ.push(GateU(theta, phi, lam, gamma), qubits[0])
             return circ
 
         U_num = self.unwrappedmatrix() 
@@ -234,7 +292,7 @@ class GateCustom(Gate):
         # proportional to it, which matters as soon as the gate sits under a
         # Control or the circuit is read through amplitudes.
         if abs(phase) > 1e-14:
-            circ.push(mc.GateU(0, 0, 0, phase), qubits[0])
+            circ.push(GateU(0, 0, 0, phase), qubits[0])
 
         return circ
 

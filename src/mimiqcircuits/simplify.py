@@ -349,6 +349,8 @@ def remove_identities(circuit):
     a global phase, like ``GateRX(2π)``, is kept. Gates with symbolic
     parameters, ``Delay`` and non-unitary operations are always kept.
 
+    Returns a new circuit; ``circuit`` is not changed.
+
     Examples:
         >>> import mimiqcircuits as mc
         >>> c = mc.Circuit()
@@ -383,6 +385,8 @@ def cancel_inverses(circuit):
 
     Non-unitary operations, barriers and classically controlled gates are never
     moved across, and the search looks back a bounded number of instructions.
+
+    Returns a new circuit; ``circuit`` is not changed.
 
     Examples:
         >>> import mimiqcircuits as mc
@@ -426,6 +430,8 @@ def merge_rotations(circuit):
     ``GateRZ``, ``GateRX`` and ``GateRY`` merge only with themselves, since they
     differ from the other members of their family by a global phase.
 
+    Returns a new circuit; ``circuit`` is not changed.
+
     Examples:
         >>> import mimiqcircuits as mc
         >>> c = mc.Circuit()
@@ -447,6 +453,8 @@ def resynthesize_1q(circuit):
 
     A run ends at any instruction touching the qubit that is not a single-qubit
     gate with numeric parameters. Single gates are left as they are.
+
+    Returns a new circuit; ``circuit`` is not changed.
 
     Examples:
         >>> import mimiqcircuits as mc
@@ -474,6 +482,8 @@ def resynthesize_2q(circuit):
 
     Gates with symbolic parameters and non-unitary operations are left alone
     and end the blocks around them.
+
+    Returns a new circuit; ``circuit`` is not changed.
 
     Examples:
         >>> import mimiqcircuits as mc
@@ -503,6 +513,8 @@ def resynthesize_linear(circuit):
     It is not one of the :data:`DEFAULT_SIMPLIFY_PASSES`: circuits where CX
     networks are a small part gain little from it. Pass it to :func:`simplify`
     explicitly when they are not.
+
+    Returns a new circuit; ``circuit`` is not changed.
 
     Examples:
         >>> import mimiqcircuits as mc
@@ -562,6 +574,14 @@ def simplify(circuit, passes=DEFAULT_SIMPLIFY_PASSES, maxiter=10):
     :func:`resynthesize_linear` is not a default pass: add it for circuits with
     large CX networks.
 
+    Args:
+        circuit (Circuit): The circuit to simplify. It is not changed.
+        passes: The passes to run in each round, in order.
+        maxiter (int): The largest number of rounds. Defaults to 10.
+
+    Returns:
+        Circuit: The simplified circuit.
+
     Examples:
         >>> import mimiqcircuits as mc
         >>> c = mc.Circuit()
@@ -615,6 +635,10 @@ class SimplifyPass(AbstractPass):
     Only these named passes are allowed, so that the pass can be described to
     a remote executor; to run other functions, call :func:`simplify` on the
     circuit before executing it.
+
+    Raises:
+        ValueError: If a name in ``passes`` is not one of the above, or
+            ``maxiter`` is not an integer of at least 1.
 
     Examples:
         >>> import mimiqcircuits as mc

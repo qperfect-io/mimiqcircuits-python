@@ -24,34 +24,49 @@ from symengine import pi
 
 
 class QFT(mcg.Gate):
-    """
-    Quantum Fourier transform.
+    r"""Quantum Fourier transform on ``num_qubits`` qubits.
 
-    Performs the quantum Fourier transform on a register of `n` qubits.
+    Implements the unitary
+
+    .. math::
+        \frac{1}{2^{n/2}} \sum_{x=0}^{2^n-1} \sum_{y=0}^{2^n-1}
+        e^{2\pi i \frac{xy}{2^n}} |y\rangle\langle \tilde{x}|
+
+    where :math:`\tilde{x}` is :math:`x` with its bits reversed: the input is
+    read with the first qubit as the least significant bit, the output with
+    the first qubit as the most significant bit. The decomposition uses
+    Hadamard and controlled-phase gates and no final SWAPs. The inverse is
+    ``QFT(n).inverse()``. ``QFT()`` with no arguments returns a lazy
+    expression that takes the number of qubits later.
+
+    The gate has no matrix representation: :meth:`matrix` raises
+    ``NotImplementedError``.
 
     Args:
-        n (int): The number of qubits in the quantum register.
+        num_qubits (int): Number of qubits, at least 1.
 
     Raises:
-        ValueError: If the number of qubits is less than 1.
-
-    Returns:
-        QFT: The Quantum Fourier Transform operation.
-
-    Attributes:
-        name (str): The name of the operation.
-        num_qubits (int): The number of qubits in the quantum register.
-        qregsizes (list of int): The sizes of the quantum registers.
+        ValueError: If ``num_qubits`` is less than 1, or more than one
+            argument is given.
 
     Examples:
-
         >>> from mimiqcircuits import *
-        >>> c=Circuit()
-        >>> c.push(QFT(2),1,2)
+        >>> c = Circuit()
+        >>> c.push(QFT(2), 1, 2)
         3-qubit circuit with 1 instruction:
         └── QFT @ q[1:2]
         <BLANKLINE>
-
+        >>> c.push(QFT(2).inverse(), 1, 2)
+        3-qubit circuit with 2 instructions:
+        ├── QFT @ q[1:2]
+        └── QFT† @ q[1:2]
+        <BLANKLINE>
+        >>> QFT(2).decompose()
+        2-qubit circuit with 3 instructions:
+        ├── H @ q[1]
+        ├── CP((1/2)*pi) @ q[0], q[1]
+        └── H @ q[0]
+        <BLANKLINE>
     """
 
     _name = "QFT"

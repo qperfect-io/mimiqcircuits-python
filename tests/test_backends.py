@@ -436,13 +436,42 @@ def test_rngs_from_seed_deterministic():
     assert r1.pass_.random() == r2.pass_.random()
 
 
+def _first_draws(rngs, n=4):
+    return [
+        tuple(gen.getrandbits(64) for _ in range(n))
+        for gen in (rngs.shot, rngs.noise, rngs.trajectory, rngs.pass_)
+    ]
+
+
 def test_rngs_streams_are_independent():
-    r = RNGs.from_seed(7)
-    # different streams have different first draws (probabilistic, but
-    # masks differ deterministically so this holds)
-    a = r.shot.random()
-    b = r.noise.random()
+    assert len(set(_first_draws(RNGs.from_seed(7)))) == 4
+
+
+def test_rngs_nearby_seeds_share_no_stream():
+    draws = [d for s in range(64) for d in _first_draws(RNGs.from_seed(s))]
+    assert len(set(draws)) == len(draws)
+
+
+def test_rngs_stream_seeds_reference():
+    """Fixed values: AbstractQCSs.jl derives the same stream seeds."""
+    from mimiqcircuits.backends._rng_utils import _stream_seeds
+
+    assert _stream_seeds(42) == (
+        5887382703759883361,
+        3709218962045521162,
+        433811668733097660,
+        2056722548127737028,
+    )
+    # A negative seed wraps to 64 bits.
+    assert _stream_seeds(-5) == _stream_seeds(-5 % (1 << 64))
+
+
+def test_rngs_from_generator_advances_it():
+    gen = random.Random(1)
+    a = _first_draws(RNGs.from_generator(gen))
+    b = _first_draws(RNGs.from_generator(gen))
     assert a != b
+    assert a == _first_draws(RNGs.from_generator(random.Random(1)))
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -475,6 +504,26 @@ def test_derive_grid_seeds_distinct():
     assert len(set(seeds)) == 4
     # Same input twice → same output (determinism).
     assert seeds == derive_grid_seeds(42, 4)
+
+
+def test_derive_grid_seeds_reference():
+    """Fixed values: AbstractQCSs.jl derives the same sweep seeds."""
+    assert derive_grid_seeds(42, 3) == [
+        8158750646017520414,
+        3971326422713500075,
+        6617854336665132764,
+    ]
+
+
+def test_derive_grid_seeds_nearby_bases_share_no_seed():
+    seeds = [s for base in range(64) for s in derive_grid_seeds(base, 16)]
+    assert len(set(seeds)) == len(seeds)
+
+
+def test_derive_grid_seeds_differ_from_stream_seeds():
+    from mimiqcircuits.backends._rng_utils import _stream_seeds
+
+    assert not set(derive_grid_seeds(42, 16)) & set(_stream_seeds(42))
 
 
 def test_derive_grid_seeds_none_base():
@@ -525,7 +574,7 @@ class _MockState:
     @property
     def num_zvars(self): return self._nz
 
-    def sample(self, nsamples, rng=None, *, seed=None):
+    def sample(self, nsamples, rng=None):
         import mimiqcircuits as mc
         return [mc.BitString(self._fixed) for _ in range(nsamples)]
 
@@ -577,6 +626,24 @@ class _MockBackend(LocalBackend):
     def evolve(self, state, compiled, *, rng=None, callback=None, stopped=None):
         self.evolve_calls += 1
         return state, 1.0
+
+
+def test_localbackend_bind_evaluates_and_recompiles_without_mutating_source():
+    import mimiqcircuits as mc
+    from symengine import Symbol
+
+    theta = Symbol("theta")
+    source = mc.Circuit().push(mc.GateRX(theta), 0)
+    compiled = CompiledParametricCircuit(source)
+    backend = _MockBackend()
+
+    bound = backend.bind(compiled, {theta: 0.5})
+
+    assert isinstance(bound, DefaultCompiledCircuit)
+    assert backend.compile_calls == 1
+    assert float(bound.source[0].operation.theta) == 0.5
+    assert bound.source is not source
+    assert compiled.source[0].operation.theta == theta
 
 
 def test_localbackend_execute_routes_reset_between_measures_to_sampling():

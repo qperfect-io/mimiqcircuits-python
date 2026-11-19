@@ -16,7 +16,7 @@
 #
 """Lazy evaluation and composition functions."""
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.operation import Operation
 
 
 class LazyArg:
@@ -32,9 +32,14 @@ class LazyArg:
 class LazyExpr:
     """Operation whose construction waits for some of its arguments.
 
-    Calling ``control``, ``parallel``, ``power`` or ``repeat`` without the
-    count returns a ``LazyExpr``. Calling it fills the ``LazyArg``
-    placeholders, innermost first, and builds the operation.
+    Calling ``control``, ``parallel``, ``power`` or ``repeat`` on a gate
+    without the count, or a size-dependent gate such as ``QFT()`` without
+    its size, returns a ``LazyExpr``. A ``LazyExpr`` can be wrapped further
+    with :meth:`control`, :meth:`parallel`, :meth:`power` and
+    :meth:`inverse`. Calling it fills the ``LazyArg`` placeholders, in the
+    order they appear in the printed expression (left to right), and builds
+    the operation. Passing more arguments than placeholders raises
+    ``TypeError``.
 
     Args:
         obj: Callable that builds the operation.
@@ -42,11 +47,18 @@ class LazyExpr:
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # leave the number of controls open
         >>> lazy = control(GateX())
         >>> lazy
         lazy control(?, X)
         >>> lazy(2)
         C₂X
+        >>> # nest lazy operations: the placeholders are filled left to right
+        >>> lazy = GateX().power().control()
+        >>> lazy
+        lazy control(?, lazy power(X, ?))
+        >>> lazy(2, 0.5)
+        C₂SX
     """
 
     def __init__(self, obj, *args):
@@ -66,12 +78,29 @@ class LazyExpr:
         return self.obj(*actual)
 
     def __call__(self, *args):
-        return self._lazy_recursive_evaluate(list(reversed(args)))
+        remaining = list(reversed(args))
+        result = self._lazy_recursive_evaluate(remaining)
+        if remaining:
+            raise TypeError(
+                f"Lazy expression got {len(args)} arguments, "
+                f"expected {len(args) - len(remaining)}."
+            )
+        return result
 
     def inverse(self):
+        """Return a lazy expression for the inverse of this expression."""
         return LazyExpr(inverse, self)
 
     def parallel(self, *args):
+        """Return a lazy expression for the parallel repetition of this expression.
+
+        Args:
+            *args: Optional number of repetitions. Without it, the number
+                becomes a new placeholder.
+
+        Raises:
+            TypeError: If more than one argument is given.
+        """
         if len(args) == 0:
             return LazyExpr(parallel, LazyArg(), self)
         elif len(args) == 1:
@@ -81,6 +110,15 @@ class LazyExpr:
             raise TypeError("Invalid number of arguments.")
 
     def control(self, *args):
+        """Return a lazy expression for the controlled version of this expression.
+
+        Args:
+            *args: Optional number of controls. Without it, the number
+                becomes a new placeholder.
+
+        Raises:
+            TypeError: If more than one argument is given.
+        """
         if len(args) == 0:
             return LazyExpr(control, LazyArg(), self)
         elif len(args) == 1:
@@ -90,13 +128,19 @@ class LazyExpr:
             raise TypeError("Invalid number of arguments.")
 
     def power(self, *args):
+        """Return a lazy expression for a power of this expression.
+
+        Args:
+            *args: Optional exponent. Without it, the exponent becomes a new
+                placeholder.
+        """
         if len(args) == 0:
             return LazyExpr(power, self, LazyArg())
         elif len(args) == 1:
             p = args[0]
             return LazyExpr(power, self, p)
         else:
-            return TypeError("Invalid number of arguments.")
+            raise TypeError("Invalid number of arguments.")
 
     def __str__(self):
         return f"lazy {self.obj.__name__}({', '.join(map(str, self.args))})"
@@ -106,41 +150,35 @@ class LazyExpr:
 
 
 def control(*args):
-    """
-    Apply a control to a quantum operation or creating a lazy expression.
-
-    This function can be used in two ways:
-    1. To create a controlled version of a `Gate` or `Operation`.
-    2. To create a lazy expression that will apply a control to a future argument.
+    """Return a controlled operation, or a lazy expression for one.
 
     Args:
-        *args: Variable length argument list.
+        *args: One of the following.
 
-            - If one argument is provided and it's an operation, returns a lazy
-              expression `control(?, op)`.
-            - If one argument is provided and it's an integer (num_controls),
-              returns a lazy expression `control(n, ?)`.
-            - If two arguments are provided (num_controls, gate), returns the
-              controlled operation `gate.control(num_controls)`.
+            - ``(num_controls, op)``: return ``op.control(num_controls)``.
+            - ``(op,)``: return the lazy expression ``control(?, op)``.
+            - ``(num_controls,)`` with an ``int``: return the lazy expression
+              ``control(num_controls, ?)``.
 
     Returns:
-        Union[Operation, LazyExpr]: The controlled operation or a lazy expression.
+        Operation or LazyExpr: The controlled operation or a lazy expression.
 
     Raises:
-        TypeError: If the arguments are of invalid types or count.
+        TypeError: If a single argument is neither an :class:`Operation` nor
+            an ``int``, or the number of arguments is not 1 or 2.
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> op = control(2, GateX())
-        >>> op
+        >>> control(2, GateX())
         C₂X
+        >>> # fix the number of controls, give the operation later
         >>> lazy_ctrl = control(2)
         >>> lazy_ctrl(GateX())
         C₂X
     """
     if len(args) == 1:
         arg = args[0]
-        if isinstance(arg, mc.Operation):
+        if isinstance(arg, Operation):
             return LazyExpr(control, LazyArg(), arg)
         elif isinstance(arg, int):
             return LazyExpr(control, arg, LazyArg())
@@ -154,36 +192,34 @@ def control(*args):
 
 
 def parallel(*args):
-    """
-    Create a parallel execution of a quantum operation or a lazy expression.
-
-    This function can be used to apply an operation multiple times in parallel across different qubits.
+    """Return an operation repeated in parallel on separate qubits, or a lazy expression for one.
 
     Args:
-        *args: Variable length argument list.
+        *args: One of the following.
 
-            - If one argument is provided and it's an operation, returns a lazy
-              expression `parallel(?, op)`.
-            - If one argument is provided and it's an integer (num_repeats),
-              returns a lazy expression `parallel(n, ?)`.
-            - If two arguments are provided (num_repeats, gate), returns the
-              parallel operation `gate.parallel(num_repeats)`.
+            - ``(num_repeats, op)``: return ``op.parallel(num_repeats)``.
+            - ``(op,)``: return the lazy expression ``parallel(?, op)``.
+            - ``(num_repeats,)`` with an ``int``: return the lazy expression
+              ``parallel(num_repeats, ?)``.
 
     Returns:
-        Union[Operation, LazyExpr]: The parallel operation or a lazy expression.
+        Operation or LazyExpr: The parallel operation or a lazy expression.
 
     Raises:
-        TypeError: If the arguments are of invalid types or count.
+        TypeError: If a single argument is neither an :class:`Operation` nor
+            an ``int``, or the number of arguments is not 1 or 2.
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> op = parallel(3, GateH())
-        >>> op
+        >>> parallel(3, GateH())
+        ⨷ ³ H
+        >>> # fix the number of repetitions, give the operation later
+        >>> parallel(3)(GateH())
         ⨷ ³ H
     """
     if len(args) == 1:
         arg = args[0]
-        if isinstance(arg, mc.Operation):
+        if isinstance(arg, Operation):
             return LazyExpr(parallel, LazyArg(), arg)
         elif isinstance(arg, int):
             return LazyExpr(parallel, arg, LazyArg())
@@ -197,14 +233,13 @@ def parallel(*args):
 
 
 def inverse(op):
-    """
-    Compute the inverse of a quantum operation.
+    """Return the inverse of an operation; same as ``op.inverse()``.
 
     Args:
-        op (Operation): The operation to invert.
+        op (Operation or LazyExpr): The operation to invert.
 
     Returns:
-        Operation: The inverse of the operation.
+        Operation or LazyExpr: The inverse.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -216,34 +251,35 @@ def inverse(op):
 
 
 def power(*args):
-    """
-    Raise a quantum operation to a power or create a lazy expression.
+    """Return a power of an operation, or a lazy expression for one.
 
     Args:
-        *args: Variable length argument list.
+        *args: One of the following.
 
-            - If one argument is provided and it's an operation, returns a lazy
-              expression `power(op, ?)`.
-            - If one argument is provided and it's a number (exponent), returns
-              a lazy expression `power(?, exponent)`.
-            - If two arguments are provided (gate, exponent), returns the
-              powered operation `gate.power(exponent)`.
+            - ``(op, exponent)``: return ``op.power(exponent)``.
+            - ``(op,)``: return the lazy expression ``power(op, ?)``.
+            - ``(exponent,)`` with an ``int``: return the lazy expression
+              ``power(?, exponent)``. A non-integer exponent cannot be given
+              alone.
 
     Returns:
-        Union[Operation, LazyExpr]: The powered operation or a lazy expression.
+        Operation or LazyExpr: The powered operation or a lazy expression.
 
     Raises:
-        TypeError: If the arguments are of invalid types or count.
+        TypeError: If a single argument is neither an :class:`Operation` nor
+            an ``int``, or the number of arguments is not 1 or 2.
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> op = power(GateX(), 0.5)
-        >>> op
+        >>> power(GateX(), 0.5)
         SX
+        >>> # fix the exponent, give the operation later
+        >>> power(2)(GateS())
+        Z
     """
     if len(args) == 1:
         arg = args[0]
-        if isinstance(arg, mc.Operation):
+        if isinstance(arg, Operation):
             return LazyExpr(power, arg, LazyArg())
         elif isinstance(arg, int):
             return LazyExpr(power, LazyArg(), arg)

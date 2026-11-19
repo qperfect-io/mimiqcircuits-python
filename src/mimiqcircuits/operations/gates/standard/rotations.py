@@ -21,25 +21,23 @@ from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.standard.deprecated import GateU3
 from mimiqcircuits.operations.utils import control_one_defined
 from mimiqcircuits import numerics as _nm
-import mimiqcircuits as mc
 from symengine import Matrix, cos, sin, I, exp
 from mimiqcircuits.operations.gates.standard._angles import PI_2, NEG_PI_2
 from mimiqcircuits.operations.power import _scale_by_exponent
 
 
 class GateRX(mcg.Gate):
-    r"""Single qubit Rotation gate around the axis :math:`\hat{x}`
+    r"""Single qubit rotation around the :math:`\hat{x}` axis.
 
-    **Matrix representation:**
+    Matrix Representation:
+        .. math::
+            \operatorname{RX}(\theta) = \begin{pmatrix}
+                \cos\frac{\theta}{2} & -i\sin\frac{\theta}{2} \\
+                -i\sin\frac{\theta}{2} & \cos\frac{\theta}{2}
+            \end{pmatrix}
 
-    .. math::
-        \operatorname{RX}(\theta) = \begin{pmatrix}
-            \cos\frac{\theta}{2} & -i\sin\frac{\theta}{2} \\
-            -i\sin\frac{\theta}{2} & \cos\frac{\theta}{2}
-        \end{pmatrix}
-
-    Parameters:
-        theta: Rotation angle in radians.
+    Args:
+        theta: Rotation angle in radians, numeric or symbolic.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -97,7 +95,8 @@ class GateRX(mcg.Gate):
         return False
 
     def _control(self, n):
-        return control_one_defined(n, self, mc.GateCRX(self.theta))
+        from mimiqcircuits.operations.gates.standard.crotations import GateCRX
+        return control_one_defined(n, self, GateCRX(self.theta))
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
@@ -106,18 +105,17 @@ class GateRX(mcg.Gate):
 
 
 class GateRY(mcg.Gate):
-    r"""Single qubit Rotation gate around the axis :math:`\hat{y}`
+    r"""Single qubit rotation around the :math:`\hat{y}` axis.
 
-    **Matrix representation:**
+    Matrix Representation:
+        .. math::
+            \operatorname{RY}(\theta) = \begin{pmatrix}
+                \cos\frac{\theta}{2} & -\sin\frac{\theta}{2} \\
+                \sin\frac{\theta}{2} & \cos\frac{\theta}{2}
+            \end{pmatrix}
 
-    .. math::
-        \operatorname{RY}(\theta) = \begin{pmatrix}
-            \cos\frac{\theta}{2} & -\sin\frac{\theta}{2} \\
-            \sin\frac{\theta}{2} & \cos\frac{\theta}{2}
-        \end{pmatrix}
-
-    Parameters:
-        theta (float): Rotation angle in radians.
+    Args:
+        theta: Rotation angle in radians, numeric or symbolic.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -175,7 +173,8 @@ class GateRY(mcg.Gate):
         return False
 
     def _control(self, n):
-        return control_one_defined(n, self, mc.GateCRY(self.theta))
+        from mimiqcircuits.operations.gates.standard.crotations import GateCRY
+        return control_one_defined(n, self, GateCRY(self.theta))
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
@@ -184,18 +183,17 @@ class GateRY(mcg.Gate):
 
 
 class GateRZ(mcg.Gate):
-    r"""Single qubit Rotation gate around the axis :math:`\hat{z}`
+    r"""Single qubit rotation around the :math:`\hat{z}` axis.
 
-    **Matrix representation:**
+    Matrix Representation:
+        .. math::
+            \operatorname{RZ}(\lambda) = \begin{pmatrix}
+                e^{-i\frac{\lambda}{2}} & 0 \\
+                0 & e^{i\frac{\lambda}{2}}
+            \end{pmatrix}
 
-    .. math::
-        \operatorname{RZ}(\lambda) = \begin{pmatrix}
-            e^{-i\frac{\lambda}{2}} & 0 \\
-            0 & e^{i\frac{\lambda}{2}}
-        \end{pmatrix}
-
-    Parameters:
-        lambda: Rotation angle in radians.
+    Args:
+        lmbda: Rotation angle :math:`\lambda` in radians, numeric or symbolic.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -248,7 +246,8 @@ class GateRZ(mcg.Gate):
         return False
 
     def _control(self, n):
-        return control_one_defined(n, self, mc.GateCRZ(self.lmbda))
+        from mimiqcircuits.operations.gates.standard.crotations import GateCRZ
+        return control_one_defined(n, self, GateCRZ(self.lmbda))
 
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
@@ -257,21 +256,21 @@ class GateRZ(mcg.Gate):
 
 
 class GateR(mcg.Gate):
-    r"""Single qubit Rotation gate around the axis :math:`\cos(\phi)\hat{x} + \sin(\phi)\hat{y}`.
+    r"""Single qubit rotation around the axis :math:`\cos(\phi)\hat{x} + \sin(\phi)\hat{y}`.
 
-    **Matrix representation:**
+    Matrix Representation:
+        .. math::
+            \operatorname R(\theta,\phi) = \begin{pmatrix}
+              \cos \frac{\theta}{2}  & -i e^{-i\phi} \sin \frac{\theta}{2} \\
+              -i e^{i \phi} \sin \frac{\theta}{2}  &  \cos \frac{\theta}{2}
+            \end{pmatrix}
 
-    .. math::
-        \operatorname R(\theta,\phi) = \begin{pmatrix}
-          \cos \frac{\theta}{2}  & -i e^{-i\phi} \sin \frac{\theta}{2} \\
-          -i e^{i \phi} \sin \frac{\theta}{2}  &  \cos \frac{\theta}{2}
-        \end{pmatrix}
+    Args:
+        theta: Rotation angle in radians, numeric or symbolic.
+        phi: Angle of the rotation axis from :math:`\hat{x}` in the
+            :math:`xy` plane, in radians.
 
-    Parameters:
-        theta (float): The rotation angle in radians.
-        phi (float): The axis of rotation in radians.
-
-    Example:
+    Examples:
         >>> from mimiqcircuits import *
         >>> from symengine import *
         >>> theta, phi = symbols('theta phi')
@@ -282,6 +281,10 @@ class GateR(mcg.Gate):
         [-I*exp(I*phi)*sin((1/2)*theta), cos((1/2)*theta)]
         <BLANKLINE>
         >>> c = Circuit().push(GateR(theta, phi), 0)
+        >>> c
+        1-qubit circuit with 1 instruction:
+        └── R(theta, phi) @ q[0]
+        <BLANKLINE>
         >>> GateR(theta, phi).power(2), GateR(theta, phi).inverse()
         (R(2*theta, phi), R(-theta, phi))
         >>> GateR(theta, phi).decompose()

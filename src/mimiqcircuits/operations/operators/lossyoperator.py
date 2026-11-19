@@ -15,7 +15,8 @@
 # limitations under the License.
 #
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.operator import AbstractOperator
+from mimiqcircuits.operations.operators.custom import Operator
 import symengine as se
 from mimiqcircuits._sympycheck import _is_sympy_matrix
 import numpy as np
@@ -33,12 +34,10 @@ def _normalize_lossy(lossy):
     raise TypeError("lossy must be an int, tuple, or list of integers")
 
 
-class LossyOperator(mc.AbstractOperator):
-    r"""N-qubit operator specified by a :math:`2^N \times 2^N` matrix and a
-    set of lossy qubit indices.
+class LossyOperator(AbstractOperator):
+    r"""Kraus operator of a loss branch: a matrix plus the qubits it loses.
 
-    .. note::
-        Only one and two qubit lossy operators are supported.
+    Only one- and two-qubit lossy operators are supported.
 
     A ``LossyOperator`` represents a tagged custom operator used as a loss
     branch inside a :class:`Kraus` channel. The matrix is expressed in the
@@ -46,8 +45,7 @@ class LossyOperator(mc.AbstractOperator):
     which of the operator's local qubits leak when this branch is selected.
 
     The ``lossy`` indices are local to the operator and numbered from 1 to
-    ``N``. They are not circuit-global qubit
-    indices. When a surrounding :class:`Kraus` channel is applied to circuit
+    ``N`` (not from 0). They are not circuit-global qubit indices. When a surrounding :class:`Kraus` channel is applied to circuit
     targets ``(q_1, ..., q_N)``, each local index ``i`` in ``lossy`` maps to
     the corresponding physical target ``q_i``.
 
@@ -59,13 +57,20 @@ class LossyOperator(mc.AbstractOperator):
     See Also:
         :class:`AbstractOperator`, :class:`Operator`, :class:`Kraus`
 
-    Parameters:
-        mat (symengine.Matrix | sympy.Matrix | np.ndarray): The :math:`2^N \times 2^N` matrix
-            representing the operator.
-        lossy (int | tuple | list, optional): One or more local qubit indices
-            in ``1:N`` that leak when this branch is selected. For one-qubit
-            operators, the default is ``(1,)``. For multi-qubit operators, the
-            lossy qubits must be specified explicitly.
+    Args:
+        mat (symengine.Matrix | sympy.Matrix | numpy.ndarray): The
+            :math:`2^N \times 2^N` matrix of the operator.
+        lossy (int | tuple | list): One or more local qubit indices, from 1
+            to ``N``, that leak when this branch is selected. Stored sorted
+            in the ``lossy`` attribute. For one-qubit operators the default
+            is ``(1,)``; for two-qubit operators it must be given.
+
+    Raises:
+        TypeError: If ``mat`` is not a SymEngine, SymPy or NumPy matrix, or
+            ``lossy`` is not an int, tuple or list.
+        ValueError: If ``mat`` is not square, its size is not 2 or 4,
+            ``lossy`` is missing for a two-qubit operator, or an index is out
+            of range or repeated.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -76,6 +81,7 @@ class LossyOperator(mc.AbstractOperator):
         ├── 0 1
         └── 0 0
 
+        >>> # amplitude damping where the decay branch also loses the qubit
         >>> c = Circuit()
         >>> c.push(Kraus([Matrix([[1, 0], [0, sqrt(0.9)]]),
         ...               LossyOperator(Matrix([[0, sqrt(0.1)], [0, 0]]))]), 1)
@@ -138,6 +144,7 @@ class LossyOperator(mc.AbstractOperator):
 
     @staticmethod
     def is_valid_power_of_2(n):
+        """Return whether ``n`` is a positive power of 2."""
         return n > 0 and (n & (n - 1)) == 0
 
     def _convert_to_symengine_matrix(self, matrix):
@@ -146,12 +153,14 @@ class LossyOperator(mc.AbstractOperator):
         return matrix
 
     def opname(self):
+        """Return ``"LossyOperator"``."""
         return self._name
 
     def _matrix(self):
         return self.mat
 
     def iswrapper(self):
+        """Lossy operators do not wrap another operation. Returns ``None``."""
         pass
 
     @property
@@ -162,9 +171,35 @@ class LossyOperator(mc.AbstractOperator):
         return self.pretty_print()
 
     def lossyqubits(self):
+        """Return the local indices of the lost qubits, numbered from 1.
+
+        Returns:
+            tuple: The sorted ``lossy`` indices.
+        """
         return self.lossy
 
     def lossytargets(self, *targets):
+        """Return the circuit qubits lost by this branch for the given targets.
+
+        Args:
+            *targets: The ``N`` circuit qubits the operator is applied to,
+                as separate arguments or as one tuple.
+
+        Returns:
+            tuple: The entries of ``targets`` selected by the ``lossy``
+            indices.
+
+        Raises:
+            ValueError: If the number of targets is not ``N``.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> from symengine import Matrix
+            >>> # a two-qubit branch that loses its second qubit
+            >>> op = LossyOperator(Matrix([[0, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]), 2)
+            >>> op.lossytargets(5, 7)
+            (7,)
+        """
         if len(targets) == 1 and isinstance(targets[0], tuple):
             targets = targets[0]
         if len(targets) != self.N:
@@ -177,15 +212,25 @@ class LossyOperator(mc.AbstractOperator):
         return _matrix_to_ndarray(self, self.mat)
 
     def evaluate(self, values):
+        """Substitute values for the symbols in the matrix.
+
+        Args:
+            values (dict): Map from symbols to values.
+
+        Returns:
+            LossyOperator: A new operator with the same ``lossy`` indices.
+        """
         evaluated = se.Matrix(
             [[element.subs(values) for element in row] for row in self.mat.tolist()]
         )
         return LossyOperator(evaluated, self.lossy)
 
     def opsquared(self):
-        return mc.Operator(self.mat.T.conjugate() * self.mat)
+        r"""Return :math:`O^\dagger O` as a plain :class:`Operator`."""
+        return Operator(self.mat.T.conjugate() * self.mat)
 
     def rescale(self, scale):
+        """Return a new lossy operator with the matrix multiplied by ``scale``."""
         return LossyOperator(self.mat * scale, self.lossy)
 
     def __eq__(self, other):
@@ -208,6 +253,7 @@ class LossyOperator(mc.AbstractOperator):
         return f"{self.opname()}(...; lossy={self.lossy})"
 
     def pretty_print(self):
+        """Return the matrix and lossy indices as a multi-line string."""
         U = np.array(self.mat.tolist(), dtype=object)
         result = f"{self.N}-qubit LossyOperator (lossy={self.lossy}):\n"
 

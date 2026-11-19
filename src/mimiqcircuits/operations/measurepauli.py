@@ -20,7 +20,10 @@ from typing import Union
 from mimiqcircuits.operations.operation import Operation
 from mimiqcircuits.operations.measure import AbstractMeasurement, Measure
 from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.gates.standard.id import GateID
+from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 
 
 class MeasurePauli(AbstractMeasurement):
@@ -39,19 +42,32 @@ class MeasurePauli(AbstractMeasurement):
     :class:`Not`.
 
     Args:
-        pauli (PauliString or str): the observable, as a :class:`PauliString`
-            or a string of ``I``, ``X``, ``Y``, ``Z``.
+        pauli: The observable, as a :class:`PauliString` or a string of
+            ``I``, ``X``, ``Y``, ``Z``. Stored in the ``pauli`` attribute as
+            a :class:`PauliString`.
 
     Raises:
-        TypeError: if ``pauli`` is neither a :class:`PauliString` nor a
+        TypeError: If ``pauli`` is neither a :class:`PauliString` nor a
             ``str``.
-        ValueError: if the string is empty, contains a character other than
+        ValueError: If the string is empty, contains a character other than
             ``I``, ``X``, ``Y``, ``Z``, or is the identity.
 
     See Also:
         :class:`PauliString`, :class:`RPauli`, :class:`MeasureZZ`,
         :class:`MeasureXX`, :class:`MeasureYY`,
         :func:`pauli_based_computation`
+
+    Each measured qubit is rotated to the Z basis (``H`` for ``X``, ``SDG``
+    then ``H`` for ``Y``), CX gates collect the parity of the measured
+    qubits on the last one, that qubit is measured, and the CX gates and
+    rotations are undone. Only ``H``, ``S``, ``SDG``, ``CX``, ``Measure`` and
+    ``ID`` (on a trailing identity factor, to keep the width) appear, so
+    :class:`QASMBasis` decomposes it. :class:`StimBasis` and
+    :class:`CliffordTBasis` keep it as it is, as Stim measures Pauli products
+    natively (``MPP``).
+
+    Measurements are not reversible: ``inverse``, ``power`` and ``control``
+    raise ``TypeError``.
 
     Examples:
 
@@ -67,12 +83,7 @@ class MeasurePauli(AbstractMeasurement):
         └── MP(XIZ) @ q[0:2], c[0]
         <BLANKLINE>
 
-    Decomposition:
-
-        Each measured qubit is rotated to the Z basis (``H`` for ``X``,
-        ``SDG`` then ``H`` for ``Y``), CX gates collect the parity of the
-        measured qubits on the last one, that qubit is measured, and the CX
-        gates and rotations are undone:
+        One decomposition step shows the basis change and parity collection:
 
         >>> decompose_step(MeasurePauli("XZ"))
         2-qubit, 1-bit circuit with 5 instructions:
@@ -82,11 +93,6 @@ class MeasurePauli(AbstractMeasurement):
         ├── CX @ q[0], q[1]
         └── H @ q[0]
         <BLANKLINE>
-
-        Only ``H``, ``S``, ``SDG``, ``CX`` and ``Measure`` appear, so
-        :class:`QASMBasis` decomposes it. :class:`StimBasis` keeps it, as Stim
-        measures Pauli products natively (``MPP``), and so does
-        :class:`CliffordTBasis`.
     """
 
     _name = "MeasurePauli"
@@ -141,28 +147,28 @@ class MeasurePauli(AbstractMeasurement):
         # Keep the decomposed circuit as wide as the instruction.
         max_targ = max(qubits)
         if all(q != max_targ for _, q in active):
-            circ.push(mc.GateID(), max_targ)
+            circ.push(GateID(), max_targ)
 
         # H·S† maps Y to Z using only gates that the Stim and QASM bases keep.
         for p, q in active:
             if p == "Y":
-                circ.push(mc.GateSDG(), q)
+                circ.push(GateSDG(), q)
             if p != "Z":
-                circ.push(mc.GateH(), q)
+                circ.push(GateH(), q)
         for _, q in active:
             if q != target:
-                circ.push(mc.GateCX(), q, target)
+                circ.push(GateCX(), q, target)
 
         circ.push(Measure(), target, bits[0])
 
         for _, q in reversed(active):
             if q != target:
-                circ.push(mc.GateCX(), q, target)
+                circ.push(GateCX(), q, target)
         for p, q in reversed(active):
             if p != "Z":
-                circ.push(mc.GateH(), q)
+                circ.push(GateH(), q)
             if p == "Y":
-                circ.push(mc.GateS(), q)
+                circ.push(GateS(), q)
 
         return circ
 

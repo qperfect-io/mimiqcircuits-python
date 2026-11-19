@@ -401,7 +401,7 @@ def test_thermal_noise():
         assert is_close(kmats_pad[i], kmats_tn[i])
 
     # Test wrong parameter values
-    with pytest.raises(ValueError, match=r"Value of T1 must be >= 0\."):
+    with pytest.raises(ValueError, match=r"Value of T1 must be > 0\."):
         ThermalNoise(-0.1, T2, time, ne)
     with pytest.raises(ValueError, match=r"Value of T2 must be <= 2 \* T1\."):
         ThermalNoise(T1, 2 * T1 + 0.1, time, ne)
@@ -420,3 +420,133 @@ def test_mixedunitary_repr_with_custom_gates(U):
     op = MixedUnitary([0.5, 0.5], [GateCustom(U), GateX()])
     assert 'Custom([' in repr(op)
     assert 'Custom([' in str(op)
+
+
+def test_channels_are_cptp():
+    assert mc.Depolarizing(1, 0.1).isCPTP()
+    assert mc.AmplitudeDamping(0.1).isCPTP()
+
+
+def test_mixed_unitary_unitarymatrices_are_matrices():
+    mu = MixedUnitary([0.5, 0.5], [GateX(), GateID()])
+    mats = [np.array(m.tolist(), dtype=np.complex128) for m in mu.unitarymatrices()]
+    assert np.allclose(mats[0], [[0, 1], [1, 0]])
+    assert np.allclose(mats[1], np.eye(2))
+
+
+def test_amplitude_damping_partial_evaluate_stays_symbolic():
+    x, y = se.symbols("x y")
+    ch = AmplitudeDamping(x * y).evaluate({x: 0.5})
+    assert ch.gamma == 0.5 * y
+    assert AmplitudeDamping(x).evaluate({x: 0.3}).gamma == 0.3
+
+
+def test_readout_error_checks_the_numeric_probability():
+    x = se.Symbol("x")
+    with pytest.raises(ValueError):
+        ReadoutErr(x, 2.0)
+    with pytest.raises(ValueError):
+        ReadoutErr(2.0, x)
+
+
+def test_readout_error_partial_evaluate_keeps_symbols():
+    x, y = se.symbols("x y")
+    e = ReadoutErr(x, y).evaluate({x: 0.1})
+    assert e.p0 == 0.1 and e.p1 == y
+    e = e.evaluate({y: 0.2})
+    assert (e.p0, e.p1) == (0.1, 0.2)
+    with pytest.raises(ValueError):
+        ReadoutErr(x, y).evaluate({x: 1.5})
+
+
+def test_pauli_channels_parnames_are_tuples():
+    assert PauliY(0.1).parnames == ("p",)
+    assert PauliZ(0.1).parnames == ("p",)
+    assert Delay(0.1).parnames == ("t",)
+
+
+def test_squaredkrausoperators_rescaled():
+    for ch in (PauliNoise([0.5, 0.5], ["X", "I"]), MixedUnitary([0.5, 0.5], [GateID(), GateX()])):
+        ops = ch.squaredkrausoperators()
+        total = sum(np.array(op.matrix().tolist(), dtype=complex) for op in ops)
+        assert np.allclose(total, np.eye(2))
+    two = Depolarizing2(0.1).squaredkrausoperators()
+    assert two[0].matrix().shape == (4, 4)
+
+
+def test_symbolic_krausoperators():
+    x = se.Symbol("x")
+    for ch in (
+        AmplitudeDamping(x),
+        GeneralizedAmplitudeDamping(x, 0.2),
+        PhaseAmplitudeDamping(x, 0.2, 0.3),
+        PauliX(x),
+        PauliY(x),
+        PauliZ(x),
+        PauliNoise([x, 1 - x], ["X", "I"]),
+        ThermalNoise(x, 0.6, 1.2, 0.3),
+    ):
+        ops = ch.krausoperators()
+        mats = ch.krausmatrices()
+        assert len(ops) == len(mats)
+        assert any(e.free_symbols for m in mats for e in m)
+    assert PauliX(x).cumprobabilities() == [1 - x, 1]
+
+
+def test_thermal_noise_symbolic_and_zero_times():
+    x, y = se.Symbol("x"), se.Symbol("y")
+    ThermalNoise(x, 0.6, 1.2, 0.3)
+    ThermalNoise(x, y, 1.2, 0.3).evaluate({y: 0.6})
+    with pytest.raises(ValueError, match="T2 must be <= 2"):
+        ThermalNoise(x, y, 1.2, 0.3).evaluate({x: 0.2, y: 0.6})
+    with pytest.raises(ValueError, match="T1 must be > 0"):
+        ThermalNoise(0, 0, 1.2, 0.3)
+    with pytest.raises(ValueError, match="T2 must be > 0"):
+        ThermalNoise(0.5, 0, 1.2, 0.3)
+
+
+@pytest.mark.parametrize("reset, basis", [(ResetX(), GateH()), (ResetY(), GateHYZ())])
+def test_resetxy_krausoperators(reset, basis):
+    ops = [np.array(op.matrix().tolist(), dtype=complex) for op in reset.krausoperators()]
+    assert np.allclose(sum(k.conj().T @ k for k in ops), np.eye(2))
+    # the channel maps every state to the target state of the reset
+    target = np.array(basis.matrix().tolist(), dtype=complex)[:, 0]
+    for rho in (np.diag([1, 0]), np.diag([0, 1]), np.full((2, 2), 0.5)):
+        out = sum(k @ rho @ k.conj().T for k in ops)
+        assert np.allclose(out, np.outer(target, target.conj()))
+
+
+def test_kraus_rtol_is_used():
+    Kraus([np.eye(2) * (1 + 1e-6)], rtol=1e-3)
+    with pytest.raises(ValueError):
+        Kraus([np.eye(2) * (1 + 1e-6)])
+
+
+def test_mixedunitary_probability_checks():
+    with pytest.raises(ValueError, match="between 0 and 1"):
+        MixedUnitary([1.5, -0.5], [GateID(), GateX()])
+    with pytest.raises(ValueError, match="sum to 1"):
+        MixedUnitary([RescaledGate(GateX(), 0.5)])
+    x = se.Symbol("x")
+    MixedUnitary([x, 1 - x], [GateID(), GateX()])
+
+
+def test_thermal_noise_after_a_long_time():
+    # time >> T1 rounds gamma to 1; with ne = 0 the formula used to divide 0 by 0.
+    Es = [np.array(E.matrix().tolist(), dtype=complex) for E in ThermalNoise(1, 1, 40, 0).krausoperators()]
+    assert np.allclose(sum(E.conj().T @ E for E in Es), np.eye(2))
+    # Same first operator as Julia: 1 - 2*beta = exp(-20).
+    assert np.isclose(Es[0][0, 0].real, np.exp(-20))
+
+
+def test_diagonalop_rejects_complex():
+    with pytest.raises(ValueError):
+        DiagonalOp(1j, 0.5)
+    DiagonalOp(se.Symbol("x"), np.float64(0.5))
+
+
+def test_kraus_rtol_covers_off_diagonal_errors():
+    E = np.array([[1, 1e-6], [0, 1]])
+    Kraus([E], rtol=1e-3)
+    with pytest.raises(ValueError):
+        Kraus([E])

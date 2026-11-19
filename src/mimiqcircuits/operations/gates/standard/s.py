@@ -18,7 +18,19 @@
 
 from fractions import Fraction
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.pauli import GateZ
+from mimiqcircuits.operations.gates.standard.u import GateU
+from mimiqcircuits.operations.inverse import (
+    Inverse,
+    canonical_inverse,
+    register_inverse_decomposition,
+)
+from mimiqcircuits.operations.power import (
+    Power,
+    canonical_power,
+    register_power_alias,
+    register_power_decomposition,
+)
 from mimiqcircuits.operations.gates.standard._angles import PI_2, NEG_PI_2
 
 
@@ -27,19 +39,18 @@ from mimiqcircuits.operations.gates.standard._angles import PI_2, NEG_PI_2
 _EXPONENT = Fraction(1, 2)
 
 
-@mc.canonical_power(mc.GateZ, _EXPONENT)
-class GateS(mc.Power):
-    r"""Single qubit gate S.
+@canonical_power(GateZ, _EXPONENT)
+class GateS(Power):
+    r"""Single qubit S gate, a phase gate with angle :math:`\pi/2`.
 
-    It induces a :math:`\frac{\pi}{2}` phase gate.
+    Equal to ``GateZ().power(1/2)`` and to ``GateP(pi/2)``.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{S} = \begin{pmatrix}
-            1 & 0 \\
-            0 & i
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{S} = \begin{pmatrix}
+                1 & 0 \\
+                0 & i
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -63,31 +74,30 @@ class GateS(mc.Power):
     """
 
     def __init__(self, operation=None, exponent=None):
-        """Initialize an S gate."""
-        super().__init__(mc.GateZ(), _EXPONENT)
+        """Initialize an S gate. The arguments are unused."""
+        super().__init__(GateZ(), _EXPONENT)
 
 
-mc.register_power_alias(mc.GateZ, 1 / 2, "S")
+register_power_alias(GateZ, 1 / 2, "S")
 
 
-@mc.register_power_decomposition(mc.GateZ, 1 / 2)
+@register_power_decomposition(GateZ, 1 / 2)
 def _decompose_gates(self, circ, qubits, bits, zvars):
     q = qubits[0]
-    circ.push(mc.GateU(0, 0, PI_2), q)
+    circ.push(GateU(0, 0, PI_2), q)
     return circ
 
 
-@mc.canonical_inverse(GateS)
-class GateSDG(mc.Inverse):
-    r"""Single qubit S-dagger gate (conjugate transpose of the S gate).
+@canonical_inverse(GateS)
+class GateSDG(Inverse):
+    r"""Single qubit S† gate, the inverse of :class:`GateS`.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{S}^\dagger = \begin{pmatrix}
-            1 & 0 \\
-            0 & -i
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{S}^\dagger = \begin{pmatrix}
+                1 & 0 \\
+                0 & -i
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -111,12 +121,12 @@ class GateSDG(mc.Inverse):
     """
 
     def __init__(self, operation=None):
-        """Initialize an SDG gate."""
+        """Initialize an SDG gate. The argument is unused."""
         super().__init__(GateS())
 
 
-@mc.register_inverse_decomposition((mc.Power, mc.GateZ, 1 / 2))
+@register_inverse_decomposition((Power, GateZ, 1 / 2))
 def _decompose_gatesdg(self, circ, qubits, bits, zvars):
     q = qubits[0]
-    circ.push(mc.GateU(0, 0, NEG_PI_2), q)
+    circ.push(GateU(0, 0, NEG_PI_2), q)
     return circ

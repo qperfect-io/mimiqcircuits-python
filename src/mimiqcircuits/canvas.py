@@ -15,7 +15,13 @@
 # limitations under the License.
 #
 
-import mimiqcircuits as mc
+from mimiqcircuits.instruction import Instruction
+from mimiqcircuits.operations.barrier import Barrier
+from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.gates.generalized.paulistring import PauliString
+from mimiqcircuits.operations.ifstatement import IfStatement
+from mimiqcircuits.operations.parallel import Parallel
+from mimiqcircuits.operations.reset import Reset
 import shutil
 import math
 from mimiqcircuits.instruction_extras import _find_unit_range, _string_with_square
@@ -25,7 +31,7 @@ def _classical_label(operation, bits, zvars):
     # An operation on classical bits and z-variables only is labelled with its
     # instruction text, such as ``c[0] = c[1] ^ c[2]``, which already names
     # every target, rather than with the operation and a list of indices.
-    return str(mc.Instruction(operation, (), tuple(bits), tuple(zvars)))
+    return str(Instruction(operation, (), tuple(bits), tuple(zvars)))
 
 
 def _gate_name_padding(qubits, bits, zvars):
@@ -39,19 +45,53 @@ def _gate_name_padding(qubits, bits, zvars):
 
 
 class AsciiCanvas:
+    """A grid of characters for drawing text diagrams.
+
+    The canvas is a list of rows of single characters. It starts empty and
+    grows downwards as rows are written; each new row is ``width`` spaces
+    wide. Index it with ``canvas[row, col]``: reading outside the drawn rows
+    returns a space, and writing there adds rows and columns as needed.
+    ``str(canvas)`` joins the rows with newlines.
+
+    This is the low-level layer under :class:`AsciiCircuit`, which
+    :meth:`~mimiqcircuits.Circuit.draw` uses.
+
+    Args:
+        width (int): The width of a new row, in characters. Defaults to
+            None (the width of the terminal).
+
+    Examples:
+        Draw a 5 by 3 box and write a gate name inside it.
+
+        >>> from mimiqcircuits import *
+        >>> canvas = AsciiCanvas(5)
+        >>> _ = canvas.draw_box(0, 0, 5, 3).draw_text("H", 1, 2)
+        >>> print(canvas)
+        ┌───┐
+        │ H │
+        └───┘
+        >>> canvas.get_rows()
+        3
+        >>> canvas[1, 2]
+        'H'
+    """
+
     def __init__(self, width=None):
         if width is None:
-            _, self.width = 0, shutil.get_terminal_size().columns
+            width = shutil.get_terminal_size().columns
         self.width = width
         self.data = []
 
     def get_rows(self):
+        """Return the number of rows drawn so far."""
         return len(self.data)
 
     def get_cols(self):
+        """Return the width of a new row."""
         return self.width
 
     def push_line(self):
+        """Append a row of spaces at the bottom."""
         self.data.append([" "] * self.width)
 
     def __getitem__(self, position):
@@ -72,6 +112,11 @@ class AsciiCanvas:
         return "\n".join("".join(row) for row in self.data if row)
 
     def draw_hline(self, row, col, width):
+        """Draw a horizontal line of ``width`` characters starting at ``(row, col)``.
+
+        Line ends and crossings with existing lines are joined with the
+        matching box-drawing characters.
+        """
         start_col, stop_col = min(col, col + width - 1), max(col, col + width - 1)
 
         for i in range(start_col, stop_col + 1):
@@ -140,6 +185,11 @@ class AsciiCanvas:
         return mid_char
 
     def draw_vline(self, row, col, height):
+        """Draw a vertical line of ``height`` characters starting at ``(row, col)``.
+
+        Line ends and crossings with existing lines are joined with the
+        matching box-drawing characters.
+        """
         start_row, stop_row = min(row, row + height - 1), max(row, row + height - 1)
         for i in range(start_row, stop_row + 1):
             current_char = self[i, col]
@@ -207,6 +257,7 @@ class AsciiCanvas:
         return self
 
     def draw_double_hline(self, row, col, width):
+        """Draw a double horizontal line, used for classical wires."""
         start_col, stop_col = min(col, col + width - 1), max(col, col + width - 1)
         for i in range(start_col, stop_col + 1):
             if self[row, i] == "│":
@@ -261,6 +312,7 @@ class AsciiCanvas:
                 self[row, i] = "═"
 
     def draw_double_vline(self, row, col, height):
+        """Draw a double vertical line, used for classical connections."""
         start_row, stop_row = min(row, row + height - 1), max(row, row + height - 1)
         for i in range(start_row, stop_row + 1):
             if self[i, col] == "─":
@@ -315,11 +367,17 @@ class AsciiCanvas:
                 self[i, col] = "║"
 
     def draw_fill(self, char, row, col, width, height):
+        """Fill a rectangle with ``char``."""
         for i in range(row, row + height):
             for j in range(col, col + width):
                 self[i, j] = char
 
     def draw_empty(self, row, col, width, height):
+        """Clear wire and line characters in a rectangle.
+
+        Other characters, such as text, are kept. Lines cut by the edge of the
+        rectangle get a half-line end.
+        """
         for i in range(row, row + height):
             while i >= len(self.data):
                 self.push_line()
@@ -350,6 +408,11 @@ class AsciiCanvas:
                         self.data[i][j] = " "
 
     def draw_box(self, row, col, width, height, clean=False):
+        """Clear a rectangle and draw a box around it.
+
+        The top-left corner is at ``(row, col)``. ``clean`` is not used.
+        Returns the canvas.
+        """
         self.draw_empty(row, col, width, height)
 
         self.draw_hline(row, col, width)
@@ -359,21 +422,41 @@ class AsciiCanvas:
         return self
 
     def draw_text(self, text, row, col):
+        """Write ``text`` left to right starting at ``(row, col)``. Returns the canvas."""
         for i, char in enumerate(text):
             self[row, col + i] = char
         return self
 
     def draw_vtext(self, text, row, col):
+        """Write ``text`` top to bottom starting at ``(row, col)``. Returns the canvas."""
         for i, char in enumerate(text):
             self[row + i, col] = char
         return self
 
     def reset(self):
+        """Remove every row. Returns the canvas."""
         self.data = []
         return self
 
 
 class AsciiCircuit:
+    """Text drawing of a circuit, built one instruction at a time.
+
+    It holds an :class:`AsciiCanvas` (the ``canvas`` attribute) and the layout
+    state: the canvas row of each qubit wire, of the classical and ``z``
+    registers, and the current column where the next operation is drawn.
+    :meth:`~mimiqcircuits.Circuit.draw` uses it; call that to draw a circuit.
+
+    To draw by hand, call :meth:`draw_wires` once, then
+    :meth:`draw_instruction` for each instruction, then print ``canvas``.
+    Nothing wraps: operations drawn past the canvas width extend the rows,
+    with no wire under them.
+
+    Args:
+        width (int, optional): The width of the canvas, in characters.
+            Defaults to None (the width of the terminal).
+    """
+
     def __init__(self, width=None):
         if width is None:
             _, width = 0, shutil.get_terminal_size().columns
@@ -387,21 +470,27 @@ class AsciiCircuit:
         self.frontier = []
 
     def set_current_col(self, col):
+        """Move the current column to ``col`` if it is further right."""
         self.currentcol = max(self.currentcol, col)
 
     def get_current_col(self):
+        """Return the column where the next operation is drawn."""
         return self.currentcol
 
     def get_qubit_row(self, qubit):
+        """Return the canvas row of ``qubit``'s wire, or None if it has none."""
         return self.qubitrow.get(qubit)
 
     def get_bit_row(self):
+        """Return the canvas row of the classical register, or None."""
         return self.bitrow
 
     def get_zvars_row(self):
+        """Return the canvas row of the ``z`` register, or None."""
         return self.zvarrow
 
     def reset(self):
+        """Clear the canvas and the layout. Returns the drawing."""
         self.canvas.reset()
         self.qubitrow = {}
         self.bitrow = None
@@ -412,6 +501,18 @@ class AsciiCircuit:
         return self
 
     def draw_wires(self, qubits, bits, zvars):
+        """Draw the labelled wires for the given qubits and registers.
+
+        Each qubit gets a single wire; the classical register and the ``z``
+        register get one double wire each, drawn only when ``bits`` or
+        ``zvars`` is non-empty. Sets the current column after the labels.
+        Returns the drawing.
+
+        Args:
+            qubits (iterable of int): The qubit indices, drawn top to bottom.
+            bits (sequence of int): The classical bits used.
+            zvars (sequence of int): The ``z`` variables used.
+        """
         # Draw qubit wires and labels
         for i, q in enumerate(qubits):
             row = i * 2 + 1
@@ -483,7 +584,7 @@ class AsciiCircuit:
         classical operations are always drawn one after the other. Operations
         with no targets block everything.
         """
-        if not isinstance(instruction, mc.Instruction):
+        if not isinstance(instruction, Instruction):
             raise TypeError("Must be an Instruction")
 
         rows = [self.get_qubit_row(q) for q in instruction.qubits]
@@ -525,6 +626,13 @@ class AsciiCircuit:
         return groups
 
     def draw_operation(self, operation, qubits, bits=None, zvars=None):
+        """Draw ``operation`` as a box at the current column. Returns the drawing.
+
+        The box spans the rows of ``qubits`` and connects to the classical and
+        ``z`` wires when ``bits`` or ``zvars`` are given. Controlled
+        operations, ``IfStatement``, ``Barrier``, resets, ``Parallel`` and
+        ``PauliString`` have their own ``draw_*`` methods.
+        """
         # Initialize default values for bits and zvars if they are None
         bits = bits or []
         zvars = zvars or []
@@ -722,7 +830,12 @@ class AsciiCircuit:
         return self
 
     def draw_control(self, operation, qubits, _):
-        if not isinstance(operation, mc.Control):
+        """Draw a controlled operation: dots on the controls joined to the target box.
+
+        A controlled operation on more than one target qubit is drawn as a
+        single box over all its qubits.
+        """
+        if not isinstance(operation, Control):
             raise TypeError("operation must be an instance of Operation")
 
         if operation.op.num_qubits == 1:
@@ -744,6 +857,7 @@ class AsciiCircuit:
             self.draw_operation(operation, qubits, [])
 
     def draw_barrier(self, barrier, qubits, bits, zvars):
+        """Draw a barrier as a shaded column across ``qubits``. Returns the drawing."""
         for qubit in qubits:
             qubit_row = self.get_qubit_row(qubit)
             current_col = self.get_current_col()
@@ -756,6 +870,7 @@ class AsciiCircuit:
         return self
 
     def draw_ifstatement(self, g, qubits, bits, zvars):
+        """Draw an ``IfStatement``: its operation and the condition on the classical wire. Returns the drawing."""
         # rows for each register
         qubitrow = [self.get_qubit_row(q) for q in qubits]
         bitrow = self.get_bit_row()
@@ -787,17 +902,17 @@ class AsciiCircuit:
         if qubitrow or zvars:
             saved_col = self.get_current_col()
             self.currentcol = ifcol
-            if isinstance(inner, mc.Control):
+            if isinstance(inner, Control):
                 self.draw_control(inner, qubits, op_bits)
-            elif isinstance(inner, mc.PauliString):
+            elif isinstance(inner, PauliString):
                 self.draw_paulistring(inner, qubits, op_bits, zvars)
-            elif isinstance(inner, mc.Reset):
+            elif isinstance(inner, Reset):
                 self.draw_reset(inner, qubits, op_bits, zvars)
-            elif isinstance(inner, mc.Barrier):
+            elif isinstance(inner, Barrier):
                 self.draw_barrier(inner, qubits, op_bits, zvars)
-            elif isinstance(inner, mc.Parallel):
+            elif isinstance(inner, Parallel):
                 self.draw_parallel(inner, qubits, op_bits, zvars)
-            elif isinstance(inner, mc.IfStatement):
+            elif isinstance(inner, IfStatement):
                 # allow nested IF
                 self.draw_ifstatement(inner, qubits, op_bits, zvars)
             else:
@@ -829,7 +944,8 @@ class AsciiCircuit:
         return self
 
     def draw_reset(self, reset, qubits, _, zvars):
-        if not isinstance(reset, mc.Reset):
+        """Draw a reset operation. Returns the drawing."""
+        if not isinstance(reset, Reset):
             raise TypeError("Must be a Reset Operation")
 
         qubit_row = self.get_qubit_row(qubits[0])
@@ -844,7 +960,8 @@ class AsciiCircuit:
         return self
 
     def draw_parallel(self, parallel, qubits, _, zvars):
-        if not isinstance(parallel, mc.Parallel):
+        """Draw each repetition of a ``Parallel`` operation. Returns the drawing."""
+        if not isinstance(parallel, Parallel):
             raise TypeError("Must be a Parallel")
 
         op = parallel.get_operation()
@@ -858,6 +975,7 @@ class AsciiCircuit:
         return self
 
     def draw_paulistring(self, g, qubits, bits, zvars):
+        """Draw a ``PauliString`` as one box with a Pauli label per qubit. Returns the drawing."""
         ccol = self.get_current_col()
         qubitrow = [self.get_qubit_row(q) for q in qubits]
 
@@ -879,7 +997,15 @@ class AsciiCircuit:
         return self
 
     def draw_instruction(self, instruction):
-        if not isinstance(instruction, mc.Instruction):
+        """Draw an :class:`~mimiqcircuits.Instruction` at the current column with :meth:`draw_operation`.
+
+        Returns the drawing.
+
+        Raises:
+            TypeError: If ``instruction`` is not an
+                :class:`~mimiqcircuits.Instruction`.
+        """
+        if not isinstance(instruction, Instruction):
             raise TypeError("Must be an Instruction")
 
         return self.draw_operation(

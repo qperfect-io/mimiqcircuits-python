@@ -16,7 +16,7 @@
 #
 """Inverse operation."""
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import Control
 import mimiqcircuits.lazy as lz
 from mimiqcircuits.printutils import print_wrapped_parens
 from mimiqcircuits.operations.gates.gate import Gate
@@ -29,14 +29,34 @@ _inverse_aliases_registry = {}
 _inverse_canonical_types: Dict[Type, Type] = {}
 
 
-def register_inverse_alias(exponent, gate_type, name):
-    """Register an alias for an inverse gate definition"""
-    key = (exponent, gate_type)
-    _inverse_aliases_registry[key] = name
+def register_inverse_alias(gate_type, name):
+    """Register a display name for the inverse of a gate.
+
+    ``Inverse(gate_type(...))`` then prints as ``name``.
+
+    Args:
+        gate_type: The gate class.
+        name: The name to print.
+    """
+    _inverse_aliases_registry[(gate_type,)] = name
 
 
 def register_inverse_decomposition(gate_type):
-    """Decorator to register a decomposition function for a gate type"""
+    """Decorator that registers a custom decomposition for the inverse of a gate.
+
+    The decorated function is used to decompose every :class:`Inverse`
+    whose wrapped gate has type key ``gate_type``. It is called as
+    ``func(op, circ, qubits, bits, zvars)``, must push the decomposition of
+    ``op`` on ``qubits`` to ``circ``, and must return ``circ``.
+
+    Args:
+        gate_type: Type key of the wrapped gate. For plain gates this is the
+            gate class; for wrapped gates it is the value of their
+            ``gettypekey()``, for example ``(Power, GateZ, 1/4)``.
+
+    Returns:
+        The decorator. It registers the function and returns it unchanged.
+    """
 
     def decorator(decomp_func):
         key = (gate_type,)
@@ -47,22 +67,25 @@ def register_inverse_decomposition(gate_type):
 
 
 def canonical_inverse(inner_gate_type: Type):
-    """Decorator to register a canonical Inverse subclass.
+    """Decorator that registers a named subclass of :class:`Inverse`.
 
-    When Inverse(inner_gate_type()) is called, it will
-    return an instance of the decorated subclass instead.
+    After registration, ``Inverse(g)`` with ``g`` an instance of
+    ``inner_gate_type`` builds an instance of the decorated class instead of
+    a plain ``Inverse``. This is how named gates such as :class:`GateSDG`
+    (``Inverse(GateS())``) are defined.
+
+    Registering a class for a type that already has one replaces it for the
+    rest of the session.
 
     Args:
-        inner_gate_type: Type of the inner gate
+        inner_gate_type: Class of the wrapped gate.
 
     Returns:
-        Decorator that registers the class
+        The decorator. It registers the class and returns it unchanged.
 
-    Example:
+    Examples:
         >>> from mimiqcircuits import *
-        >>> @canonical_inverse(GateS)
-        ... class GateSDG(Inverse):
-        ...     pass
+        >>> # GateSDG is registered as the inverse of GateS
         >>> isinstance(Inverse(GateS()), GateSDG)
         True
     """
@@ -75,25 +98,39 @@ def canonical_inverse(inner_gate_type: Type):
 
 
 class Inverse(Gate):
-    """Inverse of the wrapped quantum operation.
+    r"""Inverse of a gate.
 
-    The inversion is not performed right away, but only when the circuit is
-    cached or executed.
+    ``Inverse(gate)`` is the unitary :math:`U^\dagger`, where :math:`U` is the
+    matrix of ``gate``. The inverse is kept as a wrapper: it is not
+    rewritten into another gate when built.
 
-    When a canonical subclass is registered (e.g., GateSDG for Inverse(GateS())),
-    constructing Inverse with matching arguments will return an instance of that
-    subclass. This enables isinstance() checks to work correctly:
+    The constructor takes the gate, or a gate class followed by its
+    constructor arguments.
 
+    When a named subclass is registered for the gate type (see
+    :func:`canonical_inverse`), the constructor returns an instance of that
+    subclass: ``Inverse(GateS())`` is a :class:`GateSDG`.
 
-    .. warning::
+    Args:
+        operation: The gate to invert, or a gate class.
+        *args: Constructor arguments when ``operation`` is a class.
+        **kwargs: Constructor keyword arguments when ``operation`` is a class.
 
-        Users should not use `Inverse` directly but rather the `inverse` method,
-        which performs all the necessary simplifications (e.g., `op.inverse().inverse() == op`)
+    Raises:
+        ValueError: If ``operation`` is not a gate or gate class.
+
+    Warning:
+        Prefer the ``inverse`` method of a gate to building ``Inverse``
+        directly. The method simplifies where it can, for example
+        ``GateH().inverse()`` is ``GateH()`` and
+        ``op.inverse().inverse()`` is ``op``.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # the generic form returns the named gate when one exists
         >>> isinstance(Inverse(GateS()), GateSDG)
         True
+        >>> # the matrix is the conjugate transpose of the gate's matrix
         >>> Inverse(GateP(1)).matrix()
         [1.0, 0]
         [0, 0.54030230586814 - 0.841470984807897*I]
@@ -134,9 +171,9 @@ class Inverse(Gate):
                 return object.__new__(cls)
 
             # Resolve the operation to get its type
-            if isinstance(operation, type) and issubclass(operation, mc.Gate):
+            if isinstance(operation, type) and issubclass(operation, Gate):
                 inner_type = operation
-            elif isinstance(operation, mc.Gate):
+            elif isinstance(operation, Gate):
                 inner_type = type(operation)
             else:
                 # Let __init__ handle the error
@@ -150,9 +187,9 @@ class Inverse(Gate):
         return object.__new__(cls)
 
     def __init__(self, operation, *args, **kwargs):
-        if isinstance(operation, type) and issubclass(operation, mc.Gate):
+        if isinstance(operation, type) and issubclass(operation, Gate):
             op = operation(*args, **kwargs)
-        elif isinstance(operation, mc.Gate):
+        elif isinstance(operation, Gate):
             op = operation
         else:
             raise ValueError("Operation must be an Gate object or type.")
@@ -185,13 +222,15 @@ class Inverse(Gate):
         return self.op
 
     def inverse(self):
+        """Return the wrapped gate, undoing the inversion."""
         return self.op
 
     def getparams(self):
         return self.op.getparams()
 
     def _power(self, pwr):
-        return mc.Power(self, pwr)
+        from mimiqcircuits.operations.power import Power
+        return Power(self, pwr)
 
     def power(self, *args):
         if len(args) == 0:
@@ -210,16 +249,17 @@ class Inverse(Gate):
             return lz.control(self)
         elif len(args) == 1:
             num_controls = args[0]
-            return mc.Control(num_controls, self)
+            return Control(num_controls, self)
         else:
             raise ValueError("Invalid number of arguments.")
 
     def parallel(self, *args):
+        from mimiqcircuits.operations.parallel import Parallel
         if len(args) == 0:
             return lz.parallel(self)
         elif len(args) == 1:
             num_repeats = args[0]
-            return mc.Parallel(num_repeats, self)
+            return Parallel(num_repeats, self)
         else:
             raise ValueError("Invalid number of arguments.")
 
@@ -240,11 +280,12 @@ class Inverse(Gate):
         return (Inverse, self.op.gettypekey())
 
     def _decompose(self, circ, qubits, bits, zvars):
+        from mimiqcircuits.circuit import Circuit
         key = self.gettypekey()[1:]
         if key in _inverse_decomposition_registry:
             return _inverse_decomposition_registry[key](self, circ, qubits, bits, zvars)
 
-        newc = self.op._decompose(mc.Circuit(), qubits, bits, zvars).inverse()
+        newc = self.op._decompose(Circuit(), qubits, bits, zvars).inverse()
         circ.append(newc)
         return circ
 

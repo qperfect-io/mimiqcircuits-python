@@ -5,7 +5,30 @@ import io
 import re
 from typing import Any, Dict, List, Union
 
-import mimiqcircuits as mc
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.instruction import Instruction
+from mimiqcircuits.operations.barrier import Barrier
+from mimiqcircuits.operations.block import Block
+from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.gates.standard.chadamard import GateCH
+from mimiqcircuits.operations.gates.standard.cnx import GateC3X, GateCCX
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX, GateCY, GateCZ
+from mimiqcircuits.operations.gates.standard.crotations import GateCRX, GateCRY, GateCRZ
+from mimiqcircuits.operations.gates.standard.cswap import GateCSWAP
+from mimiqcircuits.operations.gates.standard.deprecated import GateU1, GateU2, GateU3
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.gates.standard.id import GateID
+from mimiqcircuits.operations.gates.standard.interactions import GateRXX, GateRZZ
+from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
+from mimiqcircuits.operations.gates.standard.rotations import GateRX, GateRY, GateRZ
+from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+from mimiqcircuits.operations.gates.standard.swap import GateSWAP
+from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
+from mimiqcircuits.operations.gates.standard.u import GateU
+from mimiqcircuits.operations.ifstatement import IfStatement
+from mimiqcircuits.operations.measure import Measure
+from mimiqcircuits.operations.operation import Operation
+from mimiqcircuits.operations.reset import Reset
 from mimiqcircuits.gatedecl import GateCall, GateDecl
 from mimiqcircuits.qasm.exceptions import QASMSerializationError
 from mimiqcircuits.qasm.parser import QASMExpr
@@ -14,35 +37,35 @@ from mimiqcircuits.qasm.parser import QASMExpr
 # terminal: the OpenQASM 2.0 built-ins and the gates of qelib1.inc. Every
 # other gate reaches the serializer wrapped in a gate definition.
 TYPE_TO_NAME = {
-    mc.GateU: "U",
-    mc.GateCX: "CX",
-    mc.GateU3: "u3",
-    mc.GateU2: "u2",
-    mc.GateU1: "u1",
-    mc.GateID: "id",
-    mc.GateX: "x",
-    mc.GateY: "y",
-    mc.GateZ: "z",
-    mc.GateH: "h",
-    mc.GateS: "s",
-    mc.GateSDG: "sdg",
-    mc.GateT: "t",
-    mc.GateTDG: "tdg",
-    mc.GateRX: "rx",
-    mc.GateRY: "ry",
-    mc.GateRZ: "rz",
-    mc.GateCZ: "cz",
-    mc.GateCY: "cy",
-    mc.GateSWAP: "swap",
-    mc.GateCH: "ch",
-    mc.GateCCX: "ccx",
-    mc.GateCSWAP: "cswap",
-    mc.GateCRX: "crx",
-    mc.GateCRY: "cry",
-    mc.GateCRZ: "crz",
-    mc.GateRXX: "rxx",
-    mc.GateRZZ: "rzz",
-    mc.GateC3X: "c3x",
+    GateU: "U",
+    GateCX: "CX",
+    GateU3: "u3",
+    GateU2: "u2",
+    GateU1: "u1",
+    GateID: "id",
+    GateX: "x",
+    GateY: "y",
+    GateZ: "z",
+    GateH: "h",
+    GateS: "s",
+    GateSDG: "sdg",
+    GateT: "t",
+    GateTDG: "tdg",
+    GateRX: "rx",
+    GateRY: "ry",
+    GateRZ: "rz",
+    GateCZ: "cz",
+    GateCY: "cy",
+    GateSWAP: "swap",
+    GateCH: "ch",
+    GateCCX: "ccx",
+    GateCSWAP: "cswap",
+    GateCRX: "crx",
+    GateCRY: "cry",
+    GateCRZ: "crz",
+    GateRXX: "rxx",
+    GateRZZ: "rzz",
+    GateC3X: "c3x",
 }
 
 CHAR_REPLACEMENTS = {
@@ -166,15 +189,15 @@ def _sanitize_identifier(name: str) -> str:
 def uses_std_gates(instructions) -> bool:
     for inst in instructions:
         op = inst.operation
-        if isinstance(op, mc.IfStatement):
+        if isinstance(op, IfStatement):
             op = op.get_operation()
         # Built-in gates: U, Measure, Reset, Barrier. CX is also built-in.
-        if isinstance(op, (mc.GateU, mc.Measure, mc.Reset, mc.Barrier)):
+        if isinstance(op, (GateU, Measure, Reset, Barrier)):
             continue
 
         # Check for CX (Control(1, X))
-        if isinstance(op, mc.Control):
-            if op.num_controls == 1 and isinstance(op.get_operation(), mc.GateX):
+        if isinstance(op, Control):
+            if op.num_controls == 1 and isinstance(op.get_operation(), GateX):
                 continue  # CX is built-in
             # Other controls might need include (e.g. cy, cz, ch are in qelib1)
             pass
@@ -188,20 +211,20 @@ def uses_std_gates(instructions) -> bool:
     return False
 
 
-def gate_to_qasm(gate: mc.Operation) -> str:
+def gate_to_qasm(gate: Operation) -> str:
     # Special handling for Control gates (CX, CY, CZ, CH, etc)
-    if isinstance(gate, mc.Control):
+    if isinstance(gate, Control):
         if gate.num_controls == 1:
             base = gate.get_operation()
-            if isinstance(base, mc.GateX):
+            if isinstance(base, GateX):
                 return "cx"
-            if isinstance(base, mc.GateY):
+            if isinstance(base, GateY):
                 return "cy"
-            if isinstance(base, mc.GateZ):
+            if isinstance(base, GateZ):
                 return "cz"
-            if isinstance(base, mc.GateH):
+            if isinstance(base, GateH):
                 return "ch"
-            if isinstance(base, mc.GateSWAP):
+            if isinstance(base, GateSWAP):
                 return "cswap"
             # Add others if needed
 
@@ -216,13 +239,13 @@ def gate_to_qasm(gate: mc.Operation) -> str:
     raise QASMSerializationError(f"Unsupported gate type: {t}")
 
 
-def args_to_qasm(gate: mc.Operation) -> List[Any]:
+def args_to_qasm(gate: Operation) -> List[Any]:
     if isinstance(gate, GateCall):
         return list(gate.arguments)
 
     # GateU special case: OpenQASM U(theta, phi, lambda) has 3 params,
     # but GateU._parnames includes gamma. Skip gamma.
-    if isinstance(gate, mc.GateU):
+    if isinstance(gate, GateU):
         return [gate.theta, gate.phi, gate.lmbda]
 
     # Generic: works for all gates including Control subclasses
@@ -237,7 +260,7 @@ def qubits_to_qasm(qubits: Union[int, List[int]], size: int) -> List[QASMExpr]:
 
 
 def instruction_to_qasm(
-    inst: mc.Instruction,
+    inst: Instruction,
     num_qubits: int,
     decl_names: Dict[GateDecl, str] = None,
     sanitize_names: bool = False,
@@ -246,19 +269,19 @@ def instruction_to_qasm(
     op = inst.operation
     qs = inst.qubits
 
-    if isinstance(op, mc.IfStatement):
+    if isinstance(op, IfStatement):
         return _ifstatement_to_qasm(inst, num_qubits, decl_names, num_bits)
 
-    if isinstance(op, mc.Measure):
+    if isinstance(op, Measure):
         q_expr = qubits_to_qasm(qs[0], num_qubits)[0]
         cs = inst.bits
         c_expr = QASMExpr("ref", ["c", cs[0]]) if cs else QASMExpr("ref", ["c", qs[0]])
         return QASMExpr("measure", [q_expr, c_expr])
 
-    if isinstance(op, mc.Reset):
+    if isinstance(op, Reset):
         return QASMExpr("reset", qubits_to_qasm(qs, num_qubits))
 
-    if isinstance(op, mc.Barrier):
+    if isinstance(op, Barrier):
         return QASMExpr("barrier", qubits_to_qasm(qs, num_qubits))
 
     if isinstance(op, GateCall):
@@ -294,7 +317,7 @@ def _ifstatement_to_qasm(inst, num_qubits, decl_names, num_bits):
             op,
         )
     qop = instruction_to_qasm(
-        mc.Instruction(inner, tuple(inst.qubits), tuple(inst.bits[:nb])),
+        Instruction(inner, tuple(inst.qubits), tuple(inst.bits[:nb])),
         num_qubits,
         decl_names,
     )
@@ -304,7 +327,7 @@ def _ifstatement_to_qasm(inst, num_qubits, decl_names, num_bits):
 
 
 def collect_gatedecls(
-    c: mc.Circuit, sanitize_names: bool = False
+    c: Circuit, sanitize_names: bool = False
 ) -> Dict[GateDecl, str]:
     decls = {}
     _collect_gatedecls(decls, c.instructions, sanitize_names=sanitize_names)
@@ -314,7 +337,7 @@ def collect_gatedecls(
 def _collect_gatedecls(decls: Dict, instructions, sanitize_names: bool = False):
     for inst in instructions:
         op = inst.operation
-        if isinstance(op, mc.IfStatement):
+        if isinstance(op, IfStatement):
             op = op.get_operation()
         if isinstance(op, GateCall):
             # If already collected, skip to avoid infinite recursion or re-ordering
@@ -402,11 +425,11 @@ def _inline_blocks(instructions):
     """
     for inst in instructions:
         op = inst.operation
-        if not isinstance(op, mc.Block):
+        if not isinstance(op, Block):
             yield inst
             continue
         for sub in _inline_blocks(op.instructions):
-            yield mc.Instruction(
+            yield Instruction(
                 sub.operation,
                 tuple(inst.qubits[q] for q in sub.qubits),
                 tuple(inst.bits[b] for b in sub.bits),
@@ -414,16 +437,20 @@ def _inline_blocks(instructions):
             )
 
 
-def circuit_to_qasm(c: mc.Circuit, sanitize_names: bool = True) -> QASMExpr:
+def circuit_to_qasm(c: Circuit, sanitize_names: bool = True) -> QASMExpr:
     from mimiqcircuits.decomposition import decompose
     from mimiqcircuits.decomposition.basis import QASMBasis
+    from mimiqcircuits.operations.annotations import AbstractAnnotation
 
     # Decompose with wrapping: produces only terminal ops, GateCalls and
     # Blocks. Blocks are then written inline.
-    c = mc.Circuit(list(_inline_blocks(decompose(c, QASMBasis(), wrap=True))))
+    c = Circuit(list(_inline_blocks(decompose(c, QASMBasis(), wrap=True))))
 
     n_qubits = c.num_qubits()
     n_cbits = c.num_bits()
+
+    # OpenQASM 2.0 has no annotations. They carry no gate, so they are dropped.
+    c = Circuit([i for i in c if not isinstance(i.operation, AbstractAnnotation)])
 
     if c.num_zvars() > 0:
         raise QASMSerializationError(
@@ -587,17 +614,62 @@ def _expr_to_str(expr):
 
 
 def dumps(
-    c: mc.Circuit, decompose_wrappers: bool = False, sanitize_names: bool = True
+    c: Circuit, decompose_wrappers: bool = False, sanitize_names: bool = True
 ) -> str:
-    """Serialize a circuit to an OpenQASM 2.0 string.
+    """Write a circuit as an OpenQASM 2.0 program.
+
+    Operations that OpenQASM 2.0 cannot express directly are decomposed into
+    ``qelib1.inc`` gates, and gate declarations (:class:`~mimiqcircuits.GateDecl`)
+    become ``gate`` definitions. All qubits go in one register ``q`` and all
+    bits in one register ``c``.
 
     Args:
-        c (mc.Circuit): The circuit to serialize.
-        decompose_wrappers: Kept for backward compatibility, ignored.
-        sanitize_names: Whether to sanitize gate names for QASM compliance.
+        c: The circuit to write.
+        decompose_wrappers: Not used.
+        sanitize_names: If True, rewrite gate declaration names into valid
+            OpenQASM identifiers. If False, an invalid name raises
+            :class:`QASMSerializationError`. Defaults to True.
 
     Returns:
-        str: The OpenQASM 2.0 string representation.
+        str: The OpenQASM 2.0 source.
+
+    Raises:
+        DecompositionError: If an operation cannot be decomposed into the
+            OpenQASM 2.0 basis, such as a noise channel or a classical or
+            z-variable operation.
+        QASMSerializationError: If a name or an ``IfStatement`` condition
+            cannot be expressed in OpenQASM 2.0.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits import qasm
+        >>> c = Circuit()
+        >>> c.push(GateH(), 0)
+        1-qubit circuit with 1 instruction:
+        └── H @ q[0]
+        <BLANKLINE>
+        >>> c.push(GateCX(), 0, 1)
+        2-qubit circuit with 2 instructions:
+        ├── H @ q[0]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
+        >>> c.push(Measure(), range(2), range(2))
+        2-qubit, 2-bit circuit with 4 instructions:
+        ├── H @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── M @ q[0], c[0]
+        └── M @ q[1], c[1]
+        <BLANKLINE>
+        >>> print(qasm.dumps(c))
+        OPENQASM 2.0;
+        include "qelib1.inc";
+        qreg q[2];
+        creg c[2];
+        h q[0];
+        cx q[0],q[1];
+        measure q[0] -> c[0];
+        measure q[1] -> c[1];
+        <BLANKLINE>
     """
     expr = circuit_to_qasm(c, sanitize_names=sanitize_names)
     s = io.StringIO()
@@ -606,25 +678,31 @@ def dumps(
 
 
 def dump(
-    c: mc.Circuit,
+    c: Circuit,
     filename: str,
     decompose_wrappers: bool = False,
     sanitize_names: bool = True,
 ):
-    """Serialize a circuit to an OpenQASM 2.0 file.
+    """Write a circuit as an OpenQASM 2.0 program to a file.
+
+    The file is overwritten, unless serialization fails. See :func:`dumps` for how the circuit is
+    written; :func:`~mimiqcircuits.qasm.load` reads the file back.
 
     Args:
-        c (mc.Circuit): The circuit to serialize.
-        filename (str): The file path to write to.
-        decompose_wrappers: Kept for backward compatibility, ignored.
-        sanitize_names: Whether to sanitize gate names for QASM compliance.
+        c: The circuit to write.
+        filename: The path of the file.
+        decompose_wrappers: Not used.
+        sanitize_names: If True, rewrite gate declaration names into valid
+            OpenQASM identifiers. Defaults to True.
+
+    Raises:
+        DecompositionError: If an operation cannot be decomposed into the
+            OpenQASM 2.0 basis.
+        QASMSerializationError: If a name or an ``IfStatement`` condition
+            cannot be expressed in OpenQASM 2.0.
     """
+    # Serialize first, so a failure leaves an existing file untouched.
+    text = dumps(c, decompose_wrappers=decompose_wrappers, sanitize_names=sanitize_names)
     with open(filename, "w") as f:
-        f.write(
-            dumps(
-                c,
-                decompose_wrappers=decompose_wrappers,
-                sanitize_names=sanitize_names,
-            )
-        )
+        f.write(text)
 

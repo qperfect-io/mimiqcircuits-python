@@ -23,7 +23,8 @@ from typing import TYPE_CHECKING, Sequence
 from mimiqcircuits.decomposition.abstract import DecompositionError, RewriteRule
 
 if TYPE_CHECKING:
-    from mimiqcircuits import Circuit, Operation
+    from mimiqcircuits.circuit import Circuit
+    from mimiqcircuits.operations.operation import Operation
 
 
 def _iszero(val) -> bool:
@@ -33,53 +34,61 @@ def _iszero(val) -> bool:
     if _is_basic(val):
         try:
             return complex(val) == 0
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, RuntimeError):
             return False
     return val == 0
 
 
 class ZYZRewrite(RewriteRule):
-    """Rewrite rule for ZYZ Euler angle decomposition.
+    r"""Rewrite rule for the ZYZ Euler decomposition of single-qubit gates.
 
-    Decomposes single-qubit unitaries into the ZYZ Euler angle form:
-    ``RZ(phi) * RY(theta) * RZ(lambda)``
+    Writes a single-qubit gate as Z and Y rotations, the Euler form
+    :math:`R_Z(\phi) R_Y(\theta) R_Z(\lambda)`.
 
-    This is a standard decomposition for arbitrary single-qubit gates,
-    producing only Z and Y rotations (plus a global phase for GateU).
+    Supported Operations:
+        - ``GateU(theta, phi, lambda, gamma)``, except the identity (all of
+          ``theta``, ``phi`` and ``lambda`` zero), to ``RZ(lambda)``,
+          ``RY(theta)``, ``RZ(phi)`` in circuit order, followed by
+          ``GateU(0, 0, 0, gamma)`` for the phase ``gamma``. Rotations by a
+          zero angle are left out. The result equals the gate up to a
+          global phase.
+        - ``GateRX(theta)`` to ``S``, ``RY(theta)``, ``S†`` in circuit
+          order, which is exact.
 
-    Supported operations:
-        - ``GateU(theta, phi, lambda, gamma)`` -> ``RZ(lambda) * RY(theta) * RZ(phi) * Phase(gamma)``
-        - ``GateRX(theta)`` -> ``S * RY(theta) * Sdg``
-
-    Identity rotations (angle = 0) are omitted from the output.
-
-    Example:
-        >>> from mimiqcircuits import GateU
-        >>> from mimiqcircuits.decomposition import ZYZRewrite
+    Examples:
+        >>> from mimiqcircuits import *
         >>> from symengine import pi
         >>> rule = ZYZRewrite()
-        >>> circ = rule.decompose_step(GateU(pi/2, pi/4, pi/3), [0], [], [])
+        >>> # the Euler angles of GateU become Z and Y rotations
+        >>> rule.decompose_step(GateU(pi/2, pi/4, pi/3), [0], [], [])
+        1-qubit circuit with 3 instructions:
+        ├── RZ((1/3)*pi) @ q[0]
+        ├── RY((1/2)*pi) @ q[0]
+        └── RZ((1/4)*pi) @ q[0]
+        <BLANKLINE>
     """
 
     def matches(self, op: Operation) -> bool:
-        """Check if this rule can decompose the operation.
+        """Check whether an operation is a ``GateU`` or ``GateRX``.
 
-        Matches GateU (unless it's identity) and GateRX.
+        A ``GateU`` whose ``theta``, ``phi`` and ``lambda`` are all zero is
+        not matched, since it is only a phase.
 
         Args:
             op: The operation to check.
 
         Returns:
-            True if this rule can decompose the operation.
+            ``True`` for ``GateRX`` and for a non-identity ``GateU``.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.operations.gates.standard.rotations import GateRX
+        from mimiqcircuits.operations.gates.standard.u import GateU
 
-        if isinstance(op, mc.GateU):
+        if isinstance(op, GateU):
             # Match unless it's the identity (all angles zero)
             return not (
                 _iszero(op.theta) and _iszero(op.phi) and _iszero(op.lmbda)
             )
-        if isinstance(op, mc.GateRX):
+        if isinstance(op, GateRX):
             return True
         return False
 
@@ -90,31 +99,38 @@ class ZYZRewrite(RewriteRule):
         bits: Sequence[int],
         zvars: Sequence[int],
     ) -> Circuit:
-        """Apply ZYZ decomposition to the operation.
+        """Rewrite a ``GateU`` or ``GateRX`` as Z and Y rotations.
 
         Args:
-            op: The operation to decompose (GateU or GateRX).
-            qubits: Qubit indices for the operation.
+            op: The ``GateU`` or ``GateRX`` to rewrite.
+            qubits: Qubit index the gate acts on.
             bits: Classical bit indices (unused).
             zvars: Z-variable indices (unused).
 
         Returns:
-            A Circuit containing the decomposed instructions.
+            A new :class:`~mimiqcircuits.Circuit` with the rewrite.
 
         Raises:
-            DecompositionError: If the operation is not supported.
+            DecompositionError: If :meth:`matches` rejects ``op``.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.circuit import Circuit
+        from mimiqcircuits.operations.gates.standard.rotations import (
+            GateRX,
+            GateRY,
+            GateRZ,
+        )
+        from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+        from mimiqcircuits.operations.gates.standard.u import GateU
 
         if not self.matches(op):
             raise DecompositionError(
                 f"ZYZRewrite cannot decompose {type(op).__name__}"
             )
 
-        circ = mc.Circuit()
+        circ = Circuit()
         q = qubits[0]
 
-        if isinstance(op, mc.GateU):
+        if isinstance(op, GateU):
             # GateU(theta, phi, lambda, gamma) = e^{i*gamma} * RZ(phi) * RY(theta) * RZ(lambda)
             # Emit gates right-to-left (matrix multiplication order)
             lmbda = op.lmbda
@@ -123,20 +139,20 @@ class ZYZRewrite(RewriteRule):
             gamma = op.gamma
 
             if not _iszero(lmbda):
-                circ.push(mc.GateRZ(lmbda), q)
+                circ.push(GateRZ(lmbda), q)
             if not _iszero(theta):
-                circ.push(mc.GateRY(theta), q)
+                circ.push(GateRY(theta), q)
             if not _iszero(phi):
-                circ.push(mc.GateRZ(phi), q)
+                circ.push(GateRZ(phi), q)
             if not _iszero(gamma):
-                circ.push(mc.GateU(0, 0, 0, gamma), q)
+                circ.push(GateU(0, 0, 0, gamma), q)
 
-        elif isinstance(op, mc.GateRX):
+        elif isinstance(op, GateRX):
             # RX(theta) = S * RY(theta) * Sdg
             # This converts X-rotation to Y-rotation via S conjugation
-            circ.push(mc.GateS(), q)
-            circ.push(mc.GateRY(op.theta), q)
-            circ.push(mc.GateSDG(), q)
+            circ.push(GateS(), q)
+            circ.push(GateRY(op.theta), q)
+            circ.push(GateSDG(), q)
 
         return circ
 

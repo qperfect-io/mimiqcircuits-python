@@ -17,6 +17,12 @@
 
 
 def print_wrapped_parens(op):
+    """Return ``str(op)``, in parentheses when ``op`` wraps another operation.
+
+    Used when printing composite operations, so that for example the
+    inverse of a controlled gate reads unambiguously. Operations that wrap
+    another one but print as an alias (``op.isopalias()``) are not wrapped.
+    """
     if op.iswrapper() and not op.isopalias():
         return f"({op})"
     else:

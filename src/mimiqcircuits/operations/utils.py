@@ -22,6 +22,15 @@ from mimiqcircuits.operations.gates.standard.id import GateID
 
 
 def power_idempotent(op, pow):
+    """Return ``op`` raised to ``pow`` for an operation that squares to the identity.
+
+    The exponent is reduced modulo 2: even exponents give the identity on
+    ``op.num_qubits`` qubits, odd exponents give ``op``, and other values
+    give a :class:`Power` with the reduced exponent.
+
+    Raises:
+        ValueError: If the exponent is even and ``op`` acts on no qubits.
+    """
     pmod = pow % 2
 
     if pmod == 0:
@@ -40,6 +49,11 @@ def power_idempotent(op, pow):
 
 
 def control_one_defined(n, op, cop, ccop=None, c3op=None):
+    """Return ``op`` controlled by ``n`` qubits, preferring named gates.
+
+    Returns ``cop``, ``ccop`` or ``c3op`` for one, two or three controls
+    when given, and ``Control(n, op)`` otherwise.
+    """
     if n == 1:
         return cop
     elif n == 2 and ccop is not None:

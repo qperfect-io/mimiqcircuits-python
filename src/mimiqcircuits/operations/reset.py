@@ -16,8 +16,19 @@
 #
 """Reset operations."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from mimiqcircuits.operations.krauschannel import krauschannel
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.hadamard import GateH, GateHYZ
+from mimiqcircuits.operations.operators.projectors import Projector0
+from mimiqcircuits.operations.operators.sigmas import SigmaMinus
+from mimiqcircuits.operations.operators.custom import Operator
+import numpy as np
+
+if TYPE_CHECKING:
+    from mimiqcircuits.circuit import Circuit
 
 
 def _check_normaliz_length(normaliz, expected_length):
@@ -26,33 +37,41 @@ def _check_normaliz_length(normaliz, expected_length):
 
 
 class Reset(krauschannel):
-    """Reset operation.
+    r"""Reset a qubit to :math:`|0⟩`.
 
-    Quantum operation that resets the status of one qubit to the :math:`\\ket{0}` state.
+    Puts the qubit in :math:`|0⟩` whatever its state, without recording an
+    outcome. It is the Kraus channel with operators
+    :math:`|0⟩⟨0|` and :math:`|0⟩⟨1|`.
 
-    .. warning::
-        This operation is non-reversible.
+    Warning:
+        Not reversible: ``inverse``, ``power`` and ``control`` raise
+        ``TypeError``.
+
+    See Also:
+        :class:`ResetX`, :class:`ResetY`, :class:`ResetZ`,
+        :class:`MeasureReset`
 
     Examples:
-        Adding Reset operation to the Circuit (The args can be: range, list, tuple, set or int)
-
         >>> from mimiqcircuits import *
-        >>> c= Circuit()
+        >>> c = Circuit()
         >>> c.push(Reset(), 0)
         1-qubit circuit with 1 instruction:
         └── Reset @ q[0]
         <BLANKLINE>
-        >>> from mimiqcircuits import *
-        >>> c= Circuit()
+
+        Targets can be ranges, lists or tuples; one instruction is added per
+        qubit:
+
+        >>> c = Circuit()
         >>> c.push(Reset(),(0,1,2))
         3-qubit circuit with 3 instructions:
         ├── Reset @ q[0]
         ├── Reset @ q[1]
         └── Reset @ q[2]
         <BLANKLINE>
-
-    .. seealso::
-        :class:`ResetX`, :class:`ResetY`, :class:`ResetZ` - Variants of the Reset operation along different axes.
+        >>> # the two Kraus operators: project on |0>, or move |1> to |0>
+        >>> Reset().krausoperators()
+        [P₀(1.0), SigmaMinus(1.0)]
     """
 
     _name = "Reset"
@@ -79,41 +98,54 @@ class Reset(krauschannel):
         return 5
 
     def krausoperators(self, normaliz=None):
+        """Return the Kraus operators :math:`|0⟩⟨0|` and :math:`|0⟩⟨1|`.
+
+        Args:
+            normaliz (list): Two numbers; each operator is divided by the
+                matching entry. Defaults to ``[1, 1]``.
+
+        Returns:
+            list: ``[Projector0(...), SigmaMinus(...)]``.
+
+        Raises:
+            ValueError: If ``normaliz`` does not have length 2.
+        """
         if normaliz is None:
             normaliz = [1, 1]
         _check_normaliz_length(normaliz, 2)
-        return [mc.Projector0(1 / normaliz[0]), mc.SigmaMinus(1 / normaliz[1])]
+        return [Projector0(1 / normaliz[0]), SigmaMinus(1 / normaliz[1])]
 
     def __str__(self):
         return self._name
 
 
 class ResetX(krauschannel):
-    """ResetX operation.
+    r"""Reset a qubit to :math:`|+⟩`.
 
-    This operation is performed by applying a Hadamard gate (H) to the qubit, which transforms the
-    qubit from the computational basis (:math:`\\ket{0}` or :math:`\\ket{1}`) to the superposition
-    basis (:math:`\\ket{+}` or :math:`\\ket{-}`). After applying the Hadamard gate, a standard Reset
-    operation is performed, resetting the qubit to the :math:`\\ket{0}` state. Finally, another Hadamard
-    gate is applied to convert the :math:`\\ket{0}` state back into the :math:`\\ket{+}` state.
+    Decomposes into a Hadamard gate, a :class:`Reset` and a second Hadamard
+    gate: the reset puts the qubit in :math:`|0⟩` and the last Hadamard
+    turns it into :math:`|+⟩`.
 
-    .. warning::
-        This operation is non-reversible.
+    Warning:
+        Not reversible: ``inverse``, ``power`` and ``control`` raise
+        ``TypeError``.
+
+    See Also:
+        :class:`Reset`, :class:`ResetY`, :class:`ResetZ`
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> c= Circuit()
+        >>> c = Circuit()
         >>> c.push(ResetX(), 0)
         1-qubit circuit with 1 instruction:
         └── ResetX @ q[0]
         <BLANKLINE>
-        >>> c.decompose()
-        1-qubit circuit with 1 instruction:
-        └── ResetX @ q[0]
+        >>> ResetX().decompose()
+        1-qubit circuit with 3 instructions:
+        ├── H @ q[0]
+        ├── Reset @ q[0]
+        └── H @ q[0]
         <BLANKLINE>
-
-    .. seealso::
-        :class:`Reset`, :class:`ResetY`, :class:`ResetZ` - Variants of the Reset operation along different axes.
     """
 
     _name = "ResetX"
@@ -140,26 +172,38 @@ class ResetX(krauschannel):
     def _matrix(self):
         raise AttributeError("ResetX has no attribute 'matrix'.")
 
+    def krausoperators(self):
+        """Return the two Kraus operators of the reset, as :class:`Operator`."""
+        s = 1 / np.sqrt(2)
+        return [
+            Operator(np.array([[s, 0], [1 * s, 0]])),
+            Operator(np.array([[0, s], [0, 1 * s]])),
+        ]
+
     def __str__(self):
         return self._name
 
-    def _decompose(self, circ: mc.Circuit, qtargets, bits=None, zvars=None):
+    def _decompose(self, circ: Circuit, qtargets, bits=None, zvars=None):
         q = qtargets[0]
-        circ.push(mc.GateH(), q)
+        circ.push(GateH(), q)
         circ.push(Reset(), q)
-        circ.push(mc.GateH(), q)
+        circ.push(GateH(), q)
         return circ
 
 
 class ResetY(krauschannel):
-    """ResetY operation.
+    r"""Reset a qubit to :math:`|{+i}⟩`.
 
-    The `ResetY` operation works by first rotating the qubit's state so that the Y-axis aligns with the Z-axis,
-    applying a standard reset (which resets the qubit to the :math:`\\ket{0}` state), and then rotating the qubit
-    back to its original basis.
+    Decomposes into a :class:`GateHYZ`, a :class:`Reset` and a second
+    :class:`GateHYZ`: the reset puts the qubit in :math:`|0⟩` and the last
+    gate turns it into :math:`|{+i}⟩`.
 
-    .. warning::
-        This operation is non-reversible.
+    Warning:
+        Not reversible: ``inverse``, ``power`` and ``control`` raise
+        ``TypeError``.
+
+    See Also:
+        :class:`Reset`, :class:`ResetX`, :class:`ResetZ`
 
     Examples:
         >>> from mimiqcircuits import *
@@ -168,13 +212,12 @@ class ResetY(krauschannel):
         1-qubit circuit with 1 instruction:
         └── ResetY @ q[0]
         <BLANKLINE>
-        >>> c.decompose()
-        1-qubit circuit with 1 instruction:
-        └── ResetY @ q[0]
+        >>> ResetY().decompose()
+        1-qubit circuit with 3 instructions:
+        ├── HYZ @ q[0]
+        ├── Reset @ q[0]
+        └── HYZ @ q[0]
         <BLANKLINE>
-
-    .. seealso::
-        :class:`Reset`, :class:`ResetX`, :class:`ResetZ` - Variants of the Reset operation along different axes.
     """
 
     _name = "ResetY"
@@ -200,40 +243,40 @@ class ResetY(krauschannel):
     def _matrix(self):
         raise AttributeError("ResetY has no attribute 'matrix'.")
 
+    def krausoperators(self):
+        """Return the two Kraus operators of the reset, as :class:`Operator`."""
+        s = 1 / np.sqrt(2)
+        return [
+            Operator(np.array([[s, 0], [1j * s, 0]])),
+            Operator(np.array([[0, s], [0, 1j * s]])),
+        ]
+
     def __str__(self):
         return self._name
 
-    def _decompose(self, circ: mc.Circuit, qtargets, bits=None, zvars=None):
+    def _decompose(self, circ: Circuit, qtargets, bits=None, zvars=None):
         q = qtargets[0]
-        circ.push(mc.GateHYZ(), q)
+        circ.push(GateHYZ(), q)
         circ.push(Reset(), q)
-        circ.push(mc.GateHYZ(), q)
+        circ.push(GateHYZ(), q)
         return circ
 
 
 class ResetZ(krauschannel):
-    """ResetZ operation.
+    r"""Reset a qubit to :math:`|0⟩`, an alias of :class:`Reset`.
 
-    Quantum operation that resets the status of one qubit to the :math:`\\ket{0}` state along the Z-axis.
-    This operation is an alias of the :class:`Reset` operation.
+    ``ResetZ()`` returns a :class:`Reset` instance.
 
-    .. warning::
-        This operation is non-reversible.
+    See Also:
+        :class:`Reset`, :class:`ResetX`, :class:`ResetY`
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> c= Circuit()
+        >>> c = Circuit()
         >>> c.push(ResetZ(), 0)
         1-qubit circuit with 1 instruction:
         └── Reset @ q[0]
         <BLANKLINE>
-        >>> c.decompose()
-        1-qubit circuit with 1 instruction:
-        └── Reset @ q[0]
-        <BLANKLINE>
-
-    .. seealso::
-        :class:`Reset`, :class:`ResetX`, :class:`ResetY` - Variants of the Reset operation along different axes.
     """
 
     def __new__(self):

@@ -14,14 +14,17 @@
 # limitations under the License.
 #
 
-from mimiqcircuits import Operation
+from mimiqcircuits.operations.operation import Operation
 import warnings
 
 
-# raises a z-variable to a given power (passwd as a parameter of the operation)
 class Pow(Operation):
-    """
-    Raises a z-variable to a given power (passed as a parameter of the operation).
+    """Raise a z-variable to a power in place: ``z[i] = z[i]^exponent``.
+
+    Acts on one z-variable. ``Pow(1)`` does nothing and emits a warning.
+
+    Args:
+        exponent: The exponent, a number.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -54,9 +57,14 @@ class Pow(Operation):
         self.exponent = exponent
 
     def inverse(self):
-        return Pow(-self.exponent)
+        """Raise :class:`TypeError`, as other non-invertible operations do.
+
+        :math:`z \\mapsto z^p` has no inverse in general: :math:`(-1)^2 = 1^2`.
+        """
+        raise TypeError("Pow is not inversible")
 
     def iswrapper(self):
+        """Return ``False``."""
         return False
 
     def __repr__(self):
@@ -76,14 +84,23 @@ class Pow(Operation):
 
 
 class Add(Operation):
-    """
-    Sum several z-register variables (and optionally a constant) and **assign**
-    the result to the first z-register variable given. The first target is the
-    destination; the remaining ``N-1`` targets are the inputs.
+    """Sum z-variables and a constant, and assign the result to the first z-variable.
 
-    To accumulate into the destination instead of overwriting it, alias the
-    destination as one of the inputs (z-variable aliasing is allowed for
-    ``Add``), e.g. ``c.push(Add(3), 0, 0, 1)`` evaluates ``z[0] = z[0] + z[1]``.
+    The operation acts on ``N`` z-variables: the first is the destination,
+    the remaining ``N-1`` are the inputs. The destination is overwritten:
+    ``z[0] = c + z[1] + ... + z[N-1]``.
+
+    To accumulate into the destination instead, pass it again as one of the
+    inputs (z-variable aliasing is allowed for ``Add``): for example
+    ``c.push(Add(3), 0, 0, 1)`` evaluates ``z[0] = z[0] + z[1]``.
+
+    Args:
+        N (int): Number of z-variables, destination included. At least 1.
+            Defaults to ``1``.
+        c: Constant term. Defaults to ``0.0``.
+
+    Raises:
+        ValueError: If ``N`` is less than 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -128,6 +145,7 @@ class Add(Operation):
         self.term = c
 
     def iswrapper(self):
+        """Return ``False``."""
         return False
 
     def __repr__(self):
@@ -149,15 +167,23 @@ class Add(Operation):
 
 
 class Multiply(Operation):
-    """
-    Multiply several z-register variables (and optionally a constant) and
-    **assign** the result to the first z-register variable given. The first
-    target is the destination; the remaining ``N-1`` targets are the inputs.
+    """Multiply z-variables and a constant, and assign the result to the first z-variable.
 
-    To accumulate into the destination instead of overwriting it, alias the
-    destination as one of the inputs (z-variable aliasing is allowed for
-    ``Multiply``), e.g. ``c.push(Multiply(3), 0, 0, 1)`` evaluates
-    ``z[0] = z[0] * z[1]``.
+    The operation acts on ``N`` z-variables: the first is the destination,
+    the remaining ``N-1`` are the inputs. The destination is overwritten:
+    ``z[0] = c * z[1] * ... * z[N-1]``.
+
+    To accumulate into the destination instead, pass it again as one of the
+    inputs (z-variable aliasing is allowed for ``Multiply``): for example
+    ``c.push(Multiply(3), 0, 0, 1)`` evaluates ``z[0] = z[0] * z[1]``.
+
+    Args:
+        N (int): Number of z-variables, destination included. At least 1.
+            Defaults to ``1``.
+        c: Constant factor. Defaults to ``1.0``.
+
+    Raises:
+        ValueError: If ``N`` is less than 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -202,6 +228,7 @@ class Multiply(Operation):
         self.factor = c
 
     def iswrapper(self):
+        """Return ``False``."""
         return False
 
     def __repr__(self):

@@ -16,8 +16,8 @@
 
 """Capability vocabulary, numeric limits, topology, and admission types.
 
-A backend's :meth:`Backend.capabilities` returns a set of
-:data:`Capability` tokens drawn from :data:`CAPABILITY_VOCABULARY`.
+A backend's :meth:`Backend.capabilities` returns a set of capability
+tokens drawn from :data:`CAPABILITY_VOCABULARY`.
 A backend's :meth:`Backend.limits` returns a :class:`Limits`
 instance, and :meth:`Backend.topology` returns one of the
 :class:`Topology` subclasses (:class:`AllToAll`,
@@ -37,11 +37,12 @@ from typing import Callable, Optional
 # Capability vocabulary
 # ──────────────────────────────────────────────────────────────────────────
 
+#: Type of a capability token: a string such as ``"noise"``.
 Capability = str
 
-#: Canonical capability tokens a backend may advertise. Informational:
-#: backends may declare tokens outside this set; conformance tests warn
-#: but never fail on extras.
+#: Capability tokens a backend may declare in :meth:`Backend.capabilities`.
+#: Informational: backends may declare tokens outside this set; conformance
+#: tests warn but never fail on extras.
 CAPABILITY_VOCABULARY: frozenset[Capability] = frozenset(
     [
         # core ops
@@ -89,10 +90,28 @@ CAPABILITY_VOCABULARY: frozenset[Capability] = frozenset(
 
 @dataclass(frozen=True)
 class Limits:
-    """Numeric limits a simulator advertises.
+    """Numeric limits a backend declares in :meth:`Backend.limits`.
 
-    `None` for any field means "unbounded" (or "not applicable" for fields
-    like `max_bond_dim` on a state-vector simulator).
+    ``None`` for a field means unbounded, or not applicable (such as
+    ``max_bond_dim`` on a state-vector simulator). The default
+    :meth:`Backend.can_handle` checks ``max_qubits``,
+    ``max_classical_bits`` and ``max_zvars``; the other fields are
+    informational.
+
+    Attributes:
+        max_qubits (int or None): Largest number of qubits.
+        max_bond_dim (int or None): Largest bond dimension.
+        max_classical_bits (int or None): Largest number of classical bits.
+        max_zvars (int or None): Largest number of z-variables.
+        max_samples (int or None): Largest number of shots per execution.
+        max_circuit_depth (int or None): Largest circuit depth.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import Limits
+        >>> lim = Limits(max_qubits=30)
+        >>> lim.max_qubits, lim.max_samples
+        (30, None)
     """
 
     max_qubits: Optional[int] = None
@@ -109,18 +128,24 @@ class Limits:
 
 
 class Topology:
-    """Base class for device / connectivity topologies."""
+    """Base class for the qubit connectivity a backend declares in
+    :meth:`Backend.topology`."""
 
 
 @dataclass(frozen=True)
 class AllToAll(Topology):
-    """All-to-all connectivity (no constraint). Default for simulators."""
+    """Every pair of qubits can interact. The default for simulators."""
 
 
 @dataclass(frozen=True)
 class CouplingMap(Topology):
-    """Coupling map: each edge ``(i, j)`` means qubits ``i`` and ``j`` can
-    interact directly. 1-based qubit indices to match the rest of MIMIQ.
+    """Connectivity given as a list of edges.
+
+    Each edge ``(i, j)`` means qubits ``i`` and ``j`` can interact directly.
+    Indices are 1-based.
+
+    Attributes:
+        edges (tuple[tuple[int, int], ...]): The coupled pairs.
     """
 
     edges: tuple[tuple[int, int], ...]
@@ -128,7 +153,11 @@ class CouplingMap(Topology):
 
 @dataclass(frozen=True)
 class LinearChain(Topology):
-    """Linear chain of ``n`` qubits with nearest-neighbor coupling."""
+    """Linear chain of ``n`` qubits, each coupled to its neighbours.
+
+    Attributes:
+        n (int): Number of qubits.
+    """
 
     n: int
 
@@ -139,7 +168,7 @@ class LinearChain(Topology):
 
 
 class AdmissionResult:
-    """Base class for ``can_handle(backend, circuit)`` results."""
+    """Base class for the results of :meth:`Backend.can_handle`."""
 
 
 @dataclass(frozen=True)
@@ -149,9 +178,13 @@ class Admissible(AdmissionResult):
 
 @dataclass(frozen=True)
 class Marginal(AdmissionResult):
-    """The backend can execute the circuit but it is near a limit
-    (memory, bond dimension, runtime). ``warning`` is a user-facing
-    message; downstream code still treats this as admissible.
+    """The backend can execute the circuit, but it is near a limit
+    (memory, bond dimension, runtime).
+
+    :func:`is_admissible` treats it as admissible.
+
+    Attributes:
+        warning (str): Message for the user.
     """
 
     warning: str
@@ -159,13 +192,36 @@ class Marginal(AdmissionResult):
 
 @dataclass(frozen=True)
 class Inadmissible(AdmissionResult):
-    """The backend cannot execute the circuit."""
+    """The backend cannot execute the circuit.
+
+    Attributes:
+        reason (str): Why the circuit is rejected.
+    """
 
     reason: str
 
 
 def is_admissible(result: AdmissionResult) -> bool:
-    """``True`` for :class:`Admissible` and :class:`Marginal`."""
+    """Return whether an admission result accepts the circuit.
+
+    Args:
+        result: The result of :meth:`Backend.can_handle`.
+
+    Returns:
+        ``True`` for :class:`Admissible` and :class:`Marginal`, ``False``
+        otherwise.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import (
+        ...     Admissible, Inadmissible, Marginal, is_admissible)
+        >>> is_admissible(Admissible())
+        True
+        >>> is_admissible(Marginal(warning="close to the memory limit"))
+        True
+        >>> is_admissible(Inadmissible(reason="too many qubits"))
+        False
+    """
     return isinstance(result, (Admissible, Marginal))
 
 
@@ -175,12 +231,16 @@ def is_admissible(result: AdmissionResult) -> bool:
 
 
 class UnsupportedCapabilityError(Exception):
-    """Raised when a backend is asked to run a feature it does not
-    advertise in :meth:`Backend.capabilities`.
+    """Error for a feature the backend does not declare in
+    :meth:`Backend.capabilities`.
 
-    Backends use this to fail loudly rather than silently degrade.
-    Tests rely on it to verify a backend's capability set is honest
-    (no "positive lies").
+    Backends raise it when asked to run such a feature, instead of running
+    something else in its place.
+
+    Args:
+        backend_name: Name of the backend.
+        capability: The capability token the circuit needs.
+        detail: Optional extra text for the message.
     """
 
     def __init__(self, backend_name: str, capability: Capability, detail: str = ""):
@@ -199,21 +259,28 @@ class UnsupportedCapabilityError(Exception):
 # ──────────────────────────────────────────────────────────────────────────
 
 
-#: Registry of probe-circuit factories keyed by capability. Populated
-#: lazily by callers (typically the conformance test module) so that
-#: importing this module does not drag in the full circuit-construction
-#: surface.
+#: Registry of probe-circuit factories keyed by capability, used by the
+#: conformance tests to check that a backend rejects what it does not
+#: declare. Importing :mod:`mimiqcircuits.backends` registers the default
+#: probes; :func:`register_cap_probe` adds more.
 CAP_PROBES: dict[Capability, Callable] = {}
 
 
 def register_cap_probe(capability: Capability, factory: Callable):
-    """Register a probe-circuit constructor for ``capability``.
+    """Register a probe-circuit factory for ``capability`` in
+    :data:`CAP_PROBES`.
 
-    ``factory()`` must return a Circuit whose execution requires the
-    named capability. Conformance tests use this registry to assert
-    that backends reject what they do not advertise — silently
-    accepting an undeclared feature would let "positive lies" slip
-    through.
+    Conformance tests run each probe on every backend that does not declare
+    its capability, and check that the backend rejects it. A factory
+    registered for a capability that already has one replaces it.
+
+    Args:
+        capability: The capability token.
+        factory: A function of no arguments that returns a circuit whose
+            execution needs ``capability``.
+
+    Returns:
+        ``factory``, unchanged.
     """
     CAP_PROBES[capability] = factory
     return factory

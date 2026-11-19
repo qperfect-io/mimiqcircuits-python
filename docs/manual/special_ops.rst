@@ -272,6 +272,11 @@ Use :class:`~mimiqcircuits.GateDecl` when you want to:
 - Create parameterized gates
 - Use symbolic arguments and controlled gate behavior
 
+Use :class:`~mimiqcircuits.BlockDecl` when you want a named, parametric
+routine that is not unitary, for example one that measures or resets. Calling
+it gives a :class:`~mimiqcircuits.BlockCall`, which you push like a block. All
+calls share the same declaration.
+
 
 Repeated Operations
 -------------------
@@ -620,6 +625,10 @@ Reference
 .. autofunction:: mimiqcircuits.gatedecl
     :noindex:
 .. autoclass:: mimiqcircuits.Block
+    :noindex:
+.. autoclass:: mimiqcircuits.BlockDecl
+    :noindex:
+.. autofunction:: mimiqcircuits.blockdecl
     :noindex:
 .. autoclass:: mimiqcircuits.Repeat
     :noindex:

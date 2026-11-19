@@ -37,7 +37,8 @@ from mimiqcircuits._core import gridsynth as _gridsynth
 from mimiqcircuits.decomposition.abstract import DecompositionError, RewriteRule
 
 if TYPE_CHECKING:
-    from mimiqcircuits import Circuit, Operation
+    from mimiqcircuits.circuit import Circuit
+    from mimiqcircuits.operations.operation import Operation
 
 _MASK64 = (1 << 64) - 1
 
@@ -69,10 +70,10 @@ def _gridsynth_word(epsilon: float, seed: int, theta: float) -> str:
 
 @dataclass(frozen=True)
 class GridSynthRewrite(RewriteRule):
-    """Rewrite rule that approximates ``GateRZ`` with a Clifford+T sequence,
-    using the Ross–Selinger gridsynth algorithm.
+    """Rewrite rule that approximates ``GateRZ`` with Clifford+T gates by gridsynth.
 
-    For ``GateRZ(λ)`` the rule emits a sequence of ``GateH``, ``GateS``,
+    It implements the Ross–Selinger gridsynth algorithm. For ``GateRZ(λ)``
+    the rule emits a sequence of ``GateH``, ``GateS``,
     ``GateSDG``, ``GateZ``, ``GateT`` and ``GateX`` whose unitary ``V``
     satisfies ``min_φ ‖RZ(λ) − e^{iφ}V‖ ≤ epsilon`` in operator norm. The
     approximation holds up to a global phase, which is dropped. The T-count
@@ -89,8 +90,8 @@ class GridSynthRewrite(RewriteRule):
     without holding the GIL, so several threads can synthesize in parallel.
 
     Args:
-        epsilon: Operator-norm tolerance, ``1e-100 <= epsilon < 1`` (default
-            ``1e-10``). A rotation takes a few milliseconds at ``1e-10`` and
+        epsilon: Operator-norm tolerance, with ``1e-100 <= epsilon < 1``
+            (default ``1e-10``). A rotation takes a few milliseconds at ``1e-10`` and
             up to about a second at ``1e-100``.
         seed: Seed of the randomized factoring step, an integer in
             ``[0, 2**64)`` (default ``0``).
@@ -100,7 +101,7 @@ class GridSynthRewrite(RewriteRule):
         TypeError: If ``epsilon`` is not a real number or ``seed`` is not an
             integer.
 
-    Supported operations:
+    Supported Operations:
         - ``GateRZ(λ)`` with a numeric angle ``λ``.
 
     Symbolic angles are not matched. ``GateRX``, ``GateRY`` and ``GateU``
@@ -108,9 +109,8 @@ class GridSynthRewrite(RewriteRule):
     :class:`ZYZRewrite` and :class:`ToZRotationRewrite`.
     :class:`CliffordTBasis` does this and uses this rule by default.
 
-    Example:
-        >>> from mimiqcircuits import GateRZ, GateT
-        >>> from mimiqcircuits.decomposition import GridSynthRewrite
+    Examples:
+        >>> from mimiqcircuits import *
         >>> def tcount(c):
         ...     return sum(isinstance(i.operation, GateT) for i in c)
         >>> # Approximate one rotation to the default tolerance 1e-10
@@ -152,9 +152,9 @@ class GridSynthRewrite(RewriteRule):
         Returns:
             True if the operation is a ``GateRZ`` with a numeric angle.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.operations.gates.standard.rotations import GateRZ
 
-        return isinstance(op, mc.GateRZ) and not op.is_symbolic()
+        return isinstance(op, GateRZ) and not op.is_symbolic()
 
     def decompose_step(
         self,
@@ -172,13 +172,18 @@ class GridSynthRewrite(RewriteRule):
             zvars: Z-variable indices (unused).
 
         Returns:
-            A Circuit containing the Clifford+T approximation.
+            A new :class:`~mimiqcircuits.Circuit` with the Clifford+T
+            approximation.
 
         Raises:
             DecompositionError: If the operation is not a numeric ``GateRZ``.
             ValueError: If the angle is not finite.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.circuit import Circuit
+        from mimiqcircuits.operations.gates.standard.hadamard import GateH
+        from mimiqcircuits.operations.gates.standard.pauli import GateX, GateZ
+        from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+        from mimiqcircuits.operations.gates.standard.t import GateT
 
         if not self.matches(op):
             raise DecompositionError(
@@ -190,7 +195,7 @@ class GridSynthRewrite(RewriteRule):
 
         word = _gridsynth_word(self.epsilon, self.seed, theta)
 
-        circ = mc.Circuit()
+        circ = Circuit()
         q = qubits[0]
         # The word is in matrix-product order, so the last letter acts first.
         i = len(word) - 1
@@ -203,18 +208,18 @@ class GridSynthRewrite(RewriteRule):
                     i -= 1
                 n &= 3
                 if n == 1:
-                    circ.push(mc.GateS(), q)
+                    circ.push(GateS(), q)
                 elif n == 2:
-                    circ.push(mc.GateZ(), q)
+                    circ.push(GateZ(), q)
                 elif n == 3:
-                    circ.push(mc.GateSDG(), q)
+                    circ.push(GateSDG(), q)
                 continue
             if c == "H":
-                circ.push(mc.GateH(), q)
+                circ.push(GateH(), q)
             elif c == "T":
-                circ.push(mc.GateT(), q)
+                circ.push(GateT(), q)
             elif c == "X":
-                circ.push(mc.GateX(), q)
+                circ.push(GateX(), q)
             i -= 1
         return circ
 

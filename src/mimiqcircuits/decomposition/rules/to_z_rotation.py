@@ -23,39 +23,45 @@ from typing import TYPE_CHECKING, Sequence
 from mimiqcircuits.decomposition.abstract import DecompositionError, RewriteRule
 
 if TYPE_CHECKING:
-    from mimiqcircuits import Circuit, Operation
+    from mimiqcircuits.circuit import Circuit
+    from mimiqcircuits.operations.operation import Operation
 
 
 class ToZRotationRewrite(RewriteRule):
-    """Rewrite rule that converts RX and RY rotations to RZ + Clifford gates.
+    """Rewrite rule that turns ``GateRX`` and ``GateRY`` into ``GateRZ`` and Cliffords.
 
-    This is useful for gate sets where only Z-rotations are available as
-    the parametric rotation (e.g., some hardware native gate sets).
+    Use it for gate sets whose only parametric rotation is ``GateRZ``. The
+    rewrite is exact, keeps the angle as it is (symbolic angles included),
+    and listed in circuit order is:
 
-    Transformations:
-        - ``RX(theta)`` -> ``H * RZ(theta) * H``
-        - ``RY(theta)`` -> ``Sdg * H * RZ(theta) * H * S``
+    - ``GateRX(theta)`` to ``H``, ``RZ(theta)``, ``H``;
+    - ``GateRY(theta)`` to ``S†``, ``H``, ``RZ(theta)``, ``H``, ``S``.
 
-    Example:
-        >>> from mimiqcircuits import GateRX, GateRY
-        >>> from mimiqcircuits.decomposition import ToZRotationRewrite
+    Examples:
+        >>> from mimiqcircuits import *
         >>> from symengine import pi
         >>> rule = ToZRotationRewrite()
-        >>> circ = rule.decompose_step(GateRX(pi/3), [0], [], [])
+        >>> # an X rotation is a Z rotation conjugated by Hadamard gates
+        >>> rule.decompose_step(GateRX(pi/3), [0], [], [])
+        1-qubit circuit with 3 instructions:
+        ├── H @ q[0]
+        ├── RZ((1/3)*pi) @ q[0]
+        └── H @ q[0]
+        <BLANKLINE>
     """
 
     def matches(self, op: Operation) -> bool:
-        """Check if this rule can decompose the operation.
+        """Check whether an operation is an X or Y rotation.
 
         Args:
             op: The operation to check.
 
         Returns:
-            True for GateRX and GateRY operations.
+            ``True`` for ``GateRX`` and ``GateRY``.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.operations.gates.standard.rotations import GateRX, GateRY
 
-        return isinstance(op, (mc.GateRX, mc.GateRY))
+        return isinstance(op, (GateRX, GateRY))
 
     def decompose_step(
         self,
@@ -64,43 +70,50 @@ class ToZRotationRewrite(RewriteRule):
         bits: Sequence[int],
         zvars: Sequence[int],
     ) -> Circuit:
-        """Convert RX or RY to RZ + Clifford gates.
+        """Rewrite an X or Y rotation as a Z rotation between Cliffords.
 
         Args:
-            op: The rotation operation (GateRX or GateRY).
-            qubits: Qubit indices for the operation.
+            op: The ``GateRX`` or ``GateRY`` to rewrite.
+            qubits: Qubit index the rotation acts on.
             bits: Classical bit indices (unused).
             zvars: Z-variable indices (unused).
 
         Returns:
-            A Circuit containing the decomposed instructions.
+            A new :class:`~mimiqcircuits.Circuit` with the rewrite.
 
         Raises:
-            DecompositionError: If the operation is not supported.
+            DecompositionError: If ``op`` is not a ``GateRX`` or ``GateRY``.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.circuit import Circuit
+        from mimiqcircuits.operations.gates.standard.hadamard import GateH
+        from mimiqcircuits.operations.gates.standard.rotations import (
+            GateRX,
+            GateRY,
+            GateRZ,
+        )
+        from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 
         if not self.matches(op):
             raise DecompositionError(
                 f"ToZRotationRewrite cannot decompose {type(op).__name__}"
             )
 
-        circ = mc.Circuit()
+        circ = Circuit()
         q = qubits[0]
 
-        if isinstance(op, mc.GateRX):
+        if isinstance(op, GateRX):
             # RX(theta) = H * RZ(theta) * H
-            circ.push(mc.GateH(), q)
-            circ.push(mc.GateRZ(op.theta), q)
-            circ.push(mc.GateH(), q)
+            circ.push(GateH(), q)
+            circ.push(GateRZ(op.theta), q)
+            circ.push(GateH(), q)
 
-        elif isinstance(op, mc.GateRY):
+        elif isinstance(op, GateRY):
             # RY(theta) = Sdg * H * RZ(theta) * H * S
-            circ.push(mc.GateSDG(), q)
-            circ.push(mc.GateH(), q)
-            circ.push(mc.GateRZ(op.theta), q)
-            circ.push(mc.GateH(), q)
-            circ.push(mc.GateS(), q)
+            circ.push(GateSDG(), q)
+            circ.push(GateH(), q)
+            circ.push(GateRZ(op.theta), q)
+            circ.push(GateH(), q)
+            circ.push(GateS(), q)
 
         return circ
 

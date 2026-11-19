@@ -109,7 +109,7 @@ def _synthesize(circuit, members, support):
 
     Each member acts at its local position within ``support``, applied in
     circuit order (the later gate on the left). Members are numeric by
-    construction — ``_is_fusible`` rejects symbolic gates — so this runs in
+    construction — ``_fusiondata`` rejects symbolic gates — so this runs in
     NumPy rather than through SymEngine.
     """
     nq = len(support)
@@ -143,12 +143,17 @@ def _synthesize_diagonal(circuit, members, support, diagonals):
 
 
 def fuse_circuit(circuit, max_support=2, max_diagonal_support=None):
-    """Fuse runs of adjacent gates in ``circuit`` into ``GateCustom`` blocks.
+    """Fuse groups of neighbouring gates in ``circuit`` into ``GateCustom`` blocks.
 
-    Returns a new circuit implementing the same unitary. See the module
-    docstring for the boundary rules. A run of a single gate is left as its
-    original instruction (never rewrapped as a one-qubit ``GateCustom``), and
-    qubit indices are never relabeled.
+    Gates are grouped into clusters acting on at most ``max_support`` qubits,
+    and each cluster becomes one :class:`GateCustom` whose matrix is the
+    product of its gates. Only gates with numeric parameters are fused.
+    Measurements, resets, noise channels, barriers, control flow and gates
+    with symbolic parameters are copied unchanged, and no gate is fused
+    across one of them on a shared qubit. A cluster of a single gate is left
+    as the original instruction, and qubit indices are never relabeled.
+    Clusters that commute may come out in a different order than their gates
+    had in the circuit.
 
     Raising ``max_support`` lets a block cover more wires and so emit fewer,
     wider blocks. Which gates end up together is decided greedily, so the
@@ -161,6 +166,17 @@ def fuse_circuit(circuit, max_support=2, max_diagonal_support=None):
     so it is usually worth allowing wider than a dense one. A cluster keeps the
     diagonal budget only while all of its gates are diagonal — the first dense
     gate joining it brings it back under ``max_support``.
+
+    Args:
+        circuit (Circuit): The circuit to fuse. It is not changed.
+        max_support (int): The largest number of qubits of a fused block.
+            Defaults to 2.
+        max_diagonal_support (int): The largest number of qubits of a fused
+            diagonal block. Defaults to ``max_support``.
+
+    Returns:
+        Circuit: A new circuit with the same unitary and the same non-unitary
+        operations.
 
     Examples:
         >>> import mimiqcircuits as mc
@@ -340,22 +356,34 @@ def fuse_circuit(circuit, max_support=2, max_diagonal_support=None):
 
 
 class FusePass(AbstractPass):
-    """Pass that fuses adjacent gates into ``GateCustom`` blocks.
+    """Pass that fuses neighbouring gates into ``GateCustom`` blocks.
 
-    Wraps :func:`fuse_circuit`; ``max_support`` caps the block width (default
-    ``2``). Runs through :class:`PassPipeline` like any other pass and does not
-    relabel qubits, so :attr:`PassResult.qubit_permutation` is ``None``.
+    Runs :func:`fuse_circuit` as a step of a :class:`PassPipeline`. It does
+    not relabel qubits, so :attr:`PassResult.qubit_permutation` is ``None``.
 
-    Runs made only of gates diagonal in the computational basis are budgeted by
-    ``max_diagonal_support`` instead and fuse into a ``GateCustomDiagonal``,
-    which stores ``2**k`` entries rather than ``4**k``. It defaults to
-    ``max_support``; raise it for backends that apply a diagonal without mixing
-    amplitudes.
+    Args:
+        max_support (int): The largest number of qubits of a fused block.
+            Defaults to 2.
+        max_diagonal_support (int): The largest number of qubits of a block
+            made only of gates diagonal in the computational basis, which
+            fuses into a :class:`GateCustomDiagonal` of ``2**k`` entries
+            rather than ``4**k``. Defaults to ``max_support``; raise it for
+            backends that apply a diagonal without mixing amplitudes.
+        qubit_threshold (int): Fuse only circuits with at least this many
+            qubits; smaller ones pass through unchanged, since fusing pays
+            off only when each gate application on the state vector is
+            costly. Defaults to 0, which always fuses.
 
-    Fusion runs only when the circuit has at least ``qubit_threshold`` qubits;
-    smaller circuits pass through unchanged, since fusing does not pay off until
-    the statevector is large enough that each gate application dominates.
-    ``qubit_threshold = 0`` (the default) always fuses.
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends.passes import PassContext
+        >>> c = Circuit().push(GateH(), 0).push(GateCX(), 0, 1)
+        >>> fused, result = FusePass().apply(PassContext(), c)
+        >>> # the H and the CX become one 2-qubit block
+        >>> fused
+        2-qubit circuit with 1 instruction:
+        └── Custom(...) @ q[0:1]
+        <BLANKLINE>
     """
 
     def __init__(self, max_support=2, max_diagonal_support=None, qubit_threshold=0):

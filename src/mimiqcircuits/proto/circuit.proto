@@ -156,6 +156,7 @@ message GateDecl {
     string name = 1;
     repeated Symbol args = 2;
     repeated Instruction instructions = 3;
+    int64 numancillas = 4;
 }
 
 message RPauli {
@@ -377,6 +378,8 @@ enum AnnotationType {
     Tick = 3;
     Lost = 4;
     Reloaded = 5;
+    AncillaAlloc = 6;
+    AncillaFree = 7;
 }
 
 message Note {
@@ -453,6 +456,7 @@ message Operation {
         WhileStatement whilestatement = 32;
         CustomDiagonalGate customdiagonalgate = 33;
         MeasurePauli measurepauli = 34;
+        BlockCall blockcall = 35;
     }
 }
 
@@ -467,6 +471,7 @@ message Declaration {
   oneof decl {
     GateDecl gatedecl = 1;
     Block block = 2;
+    BlockDecl blockdecl = 3;
   }
 }
 
@@ -481,4 +486,23 @@ message Block {
   int64 numbits = 2;
   int64 numzvars = 3;
   repeated Instruction instructions = 4;
+  int64 numancillas = 5;
+}
+
+message BlockDecl {
+  string name = 1;
+  repeated Symbol args = 2;
+  int64 numqubits = 3;
+  int64 numbits = 4;
+  int64 numzvars = 5;
+  repeated Instruction instructions = 6;
+  int64 numancillas = 7;
+}
+
+// A call refers to its declaration by `id` in `Circuit.decls`. When there is no
+// circuit to hold the declaration, it is written inline in `decl` instead.
+message BlockCall {
+  uint64 id = 1;
+  repeated Arg args = 2;
+  BlockDecl decl = 3;
 }

@@ -15,31 +15,30 @@
 # limitations under the License.
 #
 
-from mimiqcircuits import AbstractOperator
+from mimiqcircuits.operations.operator import AbstractOperator
 import symengine as se
-import mimiqcircuits as mc
+from mimiqcircuits.operations.operators.projectors import Projector0, Projector1
 
 
 class SigmaMinus(AbstractOperator):
     r"""One-qubit operator corresponding to :math:`|0 \rangle\langle 1|`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \begin{pmatrix}
+                0 & a\\
+                0 & 0
+            \end{pmatrix}
 
-    .. math::
-        \begin{pmatrix}
-            0 & a\\
-            0 & 0
-        \end{pmatrix}
+    The factor ``a`` scales the operator, for example to add a phase. The
+    operator is not unitary, so it cannot be applied to a circuit directly;
+    use it in an :class:`ExpectationValue` or as a Kraus operator.
 
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-
-    The parameter `a` is optional and is set to 1 by default.
+    Args:
+        a (complex): Scaling factor. Defaults to 1.
 
     See Also:
         :class:`SigmaPlus`
-
-    Parameters:
-        a (complex, optional): Scaling factor for the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -49,6 +48,7 @@ class SigmaMinus(AbstractOperator):
         >>> SigmaMinus(0.5)
         SigmaMinus(0.5)
 
+        >>> # expectation value on qubit 1, stored in z-variable 1
         >>> c = Circuit()
         >>> c.push(ExpectationValue(SigmaMinus()), 1, 1)
         2-qubit, 2-zvar circuit with 1 instruction:
@@ -78,7 +78,8 @@ class SigmaMinus(AbstractOperator):
         return se.Matrix([[0, self.a], [0, 0]])
 
     def opsquared(self):
-        return mc.Projector1(abs(self.a) ** 2)
+        r"""Return :math:`O^\dagger O = |a|^2 |1\rangle\langle 1|` as a :class:`Projector1`."""
+        return Projector1(abs(self.a) ** 2)
 
     def __str__(self):
         return f"{self.opname()}({self.a})"
@@ -87,23 +88,22 @@ class SigmaMinus(AbstractOperator):
 class SigmaPlus(AbstractOperator):
     r"""One-qubit operator corresponding to :math:`|1 \rangle\langle 0|`.
 
-    **Matrix Representation**
+    Matrix Representation:
+        .. math::
+            \begin{pmatrix}
+                0 & 0\\
+                a & 0
+            \end{pmatrix}
 
-    .. math::
-        \begin{pmatrix}
-            0 & 0\\
-            a & 0
-        \end{pmatrix}
+    The factor ``a`` scales the operator, for example to add a phase. The
+    operator is not unitary, so it cannot be applied to a circuit directly;
+    use it in an :class:`ExpectationValue` or as a Kraus operator.
 
-    This matrix is parametrized by `a` to allow for phases/rescaling.
-
-    The parameter `a` is optional and is set to 1 by default.
+    Args:
+        a (complex): Scaling factor. Defaults to 1.
 
     See Also:
         :class:`SigmaMinus`
-
-    Parameters:
-        a (complex, optional): Scaling factor for the matrix. Defaults to 1.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -113,6 +113,7 @@ class SigmaPlus(AbstractOperator):
         >>> SigmaPlus(0.5)
         SigmaPlus(0.5)
 
+        >>> # expectation value on qubit 1, stored in z-variable 1
         >>> c = Circuit()
         >>> c.push(ExpectationValue(SigmaPlus()), 1, 1)
         2-qubit, 2-zvar circuit with 1 instruction:
@@ -142,7 +143,8 @@ class SigmaPlus(AbstractOperator):
         return se.Matrix([[0, 0], [self.a, 0]])
 
     def opsquared(self):
-        return mc.Projector0(abs(self.a) ** 2)
+        r"""Return :math:`O^\dagger O = |a|^2 |0\rangle\langle 0|` as a :class:`Projector0`."""
+        return Projector0(abs(self.a) ** 2)
 
     def __str__(self):
         return f"{self.opname()}({self.a})"

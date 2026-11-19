@@ -17,16 +17,31 @@
 """Controlled-Controlled-X (Toffoli) and C3X gates."""
 
 from mimiqcircuits.operations.gates.standard.pauli import GateX
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import (
+    Control,
+    canonical_control,
+    register_control_decomposition,
+)
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.gates.standard.phase import GateP
+from mimiqcircuits.operations.gates.standard.t import GateT
 from mimiqcircuits.operations.gates.standard._angles import PI_8, NEG_PI_8
 
 
-@mc.canonical_control(2, GateX)
-class GateCCX(mc.Control):
-    """Three qubit Controlled-Controlled-X gate.
+@canonical_control(2, GateX)
+class GateCCX(Control):
+    r"""Three qubit Controlled-Controlled-X (Toffoli) gate.
 
     By convention, the first two qubits are the controls and the third is the
-    target.
+    target. The target is flipped when both controls are :math:`|1\rangle`.
+
+    Matrix Representation:
+        .. math::
+            \operatorname{CCX} = \begin{pmatrix}
+                I_6 & 0 \\
+                0 & \operatorname{X}
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -70,37 +85,45 @@ class GateCCX(mc.Control):
     """
 
     def __init__(self, num_controls=2, operation=None):
-        """Initialize a CCX (Toffoli) gate."""
-        super().__init__(2, mc.GateX())
+        """Initialize a CCX (Toffoli) gate. The arguments are unused."""
+        super().__init__(2, GateX())
 
 
-@mc.register_control_decomposition(2, mc.GateX)
+@register_control_decomposition(2, GateX)
 def _decompose_gateccx(self, circ, qubits, bits, zvars):
     c1, c2, t = qubits
-    circ.push(mc.GateH(), t)
-    circ.push(mc.GateCX(), c2, t)
-    circ.push(mc.GateT().inverse(), t)
-    circ.push(mc.GateCX(), c1, t)
-    circ.push(mc.GateT(), t)
-    circ.push(mc.GateCX(), c2, t)
-    circ.push(mc.GateT().inverse(), t)
-    circ.push(mc.GateCX(), c1, t)
-    circ.push(mc.GateT(), c2)
-    circ.push(mc.GateT(), t)
-    circ.push(mc.GateH(), t)
-    circ.push(mc.GateCX(), c1, c2)
-    circ.push(mc.GateT(), c1)
-    circ.push(mc.GateT().inverse(), c2)
-    circ.push(mc.GateCX(), c1, c2)
+    circ.push(GateH(), t)
+    circ.push(GateCX(), c2, t)
+    circ.push(GateT().inverse(), t)
+    circ.push(GateCX(), c1, t)
+    circ.push(GateT(), t)
+    circ.push(GateCX(), c2, t)
+    circ.push(GateT().inverse(), t)
+    circ.push(GateCX(), c1, t)
+    circ.push(GateT(), c2)
+    circ.push(GateT(), t)
+    circ.push(GateH(), t)
+    circ.push(GateCX(), c1, c2)
+    circ.push(GateT(), c1)
+    circ.push(GateT().inverse(), c2)
+    circ.push(GateCX(), c1, c2)
     return circ
 
 
-@mc.canonical_control(3, GateX)
-class GateC3X(mc.Control):
+@canonical_control(3, GateX)
+class GateC3X(Control):
     r"""Four qubit Controlled-Controlled-Controlled-X gate.
 
     By convention, the first three qubits are the controls and the fourth is
-    the target
+    the target. The target is flipped when all controls are
+    :math:`|1\rangle`.
+
+    Matrix Representation:
+        .. math::
+            \operatorname{C_3X} = \begin{pmatrix}
+                I_{14} & 0 \\
+                0 & \operatorname{X}
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -158,39 +181,39 @@ class GateC3X(mc.Control):
     """
 
     def __init__(self, num_controls=3, operation=None):
-        """Initialize a C3X gate."""
-        super().__init__(3, mc.GateX())
+        """Initialize a C3X gate. The arguments are unused."""
+        super().__init__(3, GateX())
 
 
-@mc.register_control_decomposition(3, mc.GateX)
+@register_control_decomposition(3, GateX)
 def _decompose_gatec3x(self, circ, qubits, bits, zvars):
     a, b, c, d = qubits
-    circ.push(mc.GateH(), d)
-    circ.push(mc.GateP(PI_8), qubits)
-    circ.push(mc.GateCX(), a, b)
-    circ.push(mc.GateP(NEG_PI_8), b)
-    circ.push(mc.GateCX(), a, b)
-    circ.push(mc.GateCX(), b, c)
-    circ.push(mc.GateP(NEG_PI_8), c)
-    circ.push(mc.GateCX(), a, c)
-    circ.push(mc.GateP(PI_8), c)
-    circ.push(mc.GateCX(), b, c)
-    circ.push(mc.GateP(NEG_PI_8), c)
-    circ.push(mc.GateCX(), a, c)
-    circ.push(mc.GateCX(), c, d)
-    circ.push(mc.GateP(NEG_PI_8), d)
-    circ.push(mc.GateCX(), b, d)
-    circ.push(mc.GateP(PI_8), d)
-    circ.push(mc.GateCX(), c, d)
-    circ.push(mc.GateP(NEG_PI_8), d)
-    circ.push(mc.GateCX(), a, d)
-    circ.push(mc.GateP(PI_8), d)
-    circ.push(mc.GateCX(), c, d)
-    circ.push(mc.GateP(NEG_PI_8), d)
-    circ.push(mc.GateCX(), b, d)
-    circ.push(mc.GateP(PI_8), d)
-    circ.push(mc.GateCX(), c, d)
-    circ.push(mc.GateP(NEG_PI_8), d)
-    circ.push(mc.GateCX(), a, d)
-    circ.push(mc.GateH(), d)
+    circ.push(GateH(), d)
+    circ.push(GateP(PI_8), qubits)
+    circ.push(GateCX(), a, b)
+    circ.push(GateP(NEG_PI_8), b)
+    circ.push(GateCX(), a, b)
+    circ.push(GateCX(), b, c)
+    circ.push(GateP(NEG_PI_8), c)
+    circ.push(GateCX(), a, c)
+    circ.push(GateP(PI_8), c)
+    circ.push(GateCX(), b, c)
+    circ.push(GateP(NEG_PI_8), c)
+    circ.push(GateCX(), a, c)
+    circ.push(GateCX(), c, d)
+    circ.push(GateP(NEG_PI_8), d)
+    circ.push(GateCX(), b, d)
+    circ.push(GateP(PI_8), d)
+    circ.push(GateCX(), c, d)
+    circ.push(GateP(NEG_PI_8), d)
+    circ.push(GateCX(), a, d)
+    circ.push(GateP(PI_8), d)
+    circ.push(GateCX(), c, d)
+    circ.push(GateP(NEG_PI_8), d)
+    circ.push(GateCX(), b, d)
+    circ.push(GateP(PI_8), d)
+    circ.push(GateCX(), c, d)
+    circ.push(GateP(NEG_PI_8), d)
+    circ.push(GateCX(), a, d)
+    circ.push(GateH(), d)
     return circ

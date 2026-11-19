@@ -16,7 +16,7 @@
 
 import symengine as se
 from symengine import Symbol, Number, sympify
-import mimiqcircuits as mc
+from mimiqcircuits.operations.operation import Operation
 
 
 class UndefinedValue(Exception):
@@ -28,20 +28,36 @@ class UndefinedValue(Exception):
 
 
 def unwrapvalue(g):
-    """Convert a symengine expression to a numeric value.
+    """Convert a number or a SymEngine expression to a Python number.
 
-    Attempts to extract a concrete numeric value (int, float, or complex)
-    from a symengine expression. If the expression contains free symbolic
-    variables, raises UndefinedValue.
+    Python ``int``, ``float`` and ``complex`` values are returned unchanged.
+    A SymEngine expression without free symbols is evaluated: a real result
+    is returned as ``int`` when it is a whole number and as ``float``
+    otherwise, a complex result as ``complex``. Other objects are passed to
+    ``float``.
 
     Args:
-        g: A numeric value or symengine expression.
+        g: A number or a SymEngine expression.
 
     Returns:
-        A Python numeric value (int, float, or complex).
+        int, float or complex: The numeric value.
 
     Raises:
-        UndefinedValue: If the expression contains unevaluated symbolic variables.
+        UndefinedValue: If ``g`` has free symbols or cannot be converted.
+
+    Examples:
+        >>> from symengine import pi, I, Integer, Symbol
+        >>> from mimiqcircuits import *
+        >>> unwrapvalue(pi)
+        3.141592653589793
+        >>> unwrapvalue(Integer(2))
+        2
+        >>> unwrapvalue(I)
+        1j
+        >>> unwrapvalue(Symbol('x'))
+        Traceback (most recent call last):
+            ...
+        mimiqcircuits.symbolics.UndefinedValue: Cannot convert symbolic expression to numeric value: x
     """
     # Plain Python numeric types pass through
     if isinstance(g, (int, float)):
@@ -80,13 +96,26 @@ def unwrapvalue(g):
 
 
 def listsymbols(g):
-    """Extract all symbolic variables from an expression.
+    """Return the free symbols of an expression or an operation.
 
     Args:
-        g: A symengine expression, operation, or iterable.
+        g: A number, a SymEngine expression or an :class:`Operation`.
 
     Returns:
-        list: A sorted list of symengine Symbol objects.
+        list: For an expression, its free symbols sorted by name. For an
+        operation, the result of its ``listvars()``. For a number or any
+        other object, an empty list.
+
+    Examples:
+        >>> from symengine import symbols
+        >>> from mimiqcircuits import *
+        >>> x, y = symbols('x y')
+        >>> listsymbols(y + x)
+        [x, y]
+        >>> listsymbols(GateRX(x))
+        [x]
+        >>> listsymbols(1.5)
+        []
     """
     if isinstance(g, (int, float, complex)):
         return []
@@ -97,7 +126,7 @@ def listsymbols(g):
         return []
 
     # For operations, delegate to listvars
-    if isinstance(g, mc.Operation):
+    if isinstance(g, Operation):
         return g.listvars()
 
     return []
@@ -136,13 +165,10 @@ def _validate_rule_gate_params(gate):
 
 
 def _extract_variables(gate):
-    """
-    Return tuple of symbolic variables (symengine.Symbol) or None for concrete.
-    Concrete parameters become None.
-    """
+    """Return the gate parameters, with ``None`` in place of non-symbol ones."""
     params = gate.getparams()
 
-    # Check if anu parameter is symbolic
+    # Check if any parameter is symbolic
     any_symbolic = False
     for p in params:
         if isinstance(p, Symbol):
@@ -159,9 +185,40 @@ def _extract_variables(gate):
     return variables
 
 
-def applyparams(source: mc.Operation, relation):
-    """
-    applyparams
+def applyparams(source: Operation, relation):
+    """Evaluate ``target`` with values taken from the parameters of ``source``.
+
+    ``relation`` is a pair ``(variables, target)``. The ``k``-th entry of
+    ``variables`` names the ``k``-th parameter of ``source``; ``None``
+    skips a parameter. The named symbols are replaced in ``target`` by the
+    matching parameter values. A single symbol may be given in place of a
+    tuple.
+
+    Args:
+        source (Operation): An operation with numeric parameters.
+        relation (tuple): ``(variables, target)``, where ``variables`` is a
+            symbol or a tuple of symbols and ``None``, and ``target`` is an
+            operation written with those symbols.
+
+    Returns:
+        Operation: ``target`` evaluated with the substituted values, or
+        ``target`` itself when ``variables`` is empty.
+
+    Raises:
+        ValueError: If ``source`` has symbolic parameters, an entry of
+            ``variables`` is not a symbol or ``None``, or ``variables`` is
+            longer than the parameter list of ``source``.
+
+    Examples:
+        >>> from symengine import symbols
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.symbolics import applyparams
+        >>> x = symbols('x')
+        >>> applyparams(GateRX(0.3), (x, GateRY(x)))
+        RY(0.3)
+        >>> # skip the first parameter of the source
+        >>> applyparams(GateU(0.1, 0.2, 0.3), ((None, x), GateRZ(x)))
+        RZ(0.2)
     """
     if source.is_symbolic():
         raise ValueError("source must be fully evaluated, got symbolic parameters")

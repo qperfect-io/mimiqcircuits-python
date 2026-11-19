@@ -734,3 +734,31 @@ def test_whilestatement_is_refused():
     c.push(mc.WhileStatement(mc.GateX(), mc.BitString("1")), 0, 0)
     with pytest.raises(DecompositionError, match="no loops"):
         dumps(c)
+
+
+def test_same_named_includes_from_different_folders(tmp_path):
+    for name, gate in (("a", "x"), ("b", "h")):
+        folder = tmp_path / name
+        folder.mkdir()
+        (folder / "lib.inc").write_text(f"gate foo q {{ {gate} q; }}\n")
+        (folder / "main.qasm").write_text(
+            'OPENQASM 2.0;\ninclude "lib.inc";\nqreg q[1];\nfoo q[0];\n'
+        )
+
+    a = load(str(tmp_path / "a" / "main.qasm")).decompose()
+    b = load(str(tmp_path / "b" / "main.qasm")).decompose()
+
+    assert str(a) != str(b)
+
+
+def test_dump_failure_keeps_the_existing_file(tmp_path):
+    import mimiqcircuits as mc
+
+    path = tmp_path / "out.qasm"
+    path.write_text("previous")
+    noisy = mc.Circuit().push(mc.Depolarizing(1, 0.1), 0)
+
+    with pytest.raises(Exception):
+        dump(noisy, str(path))
+
+    assert path.read_text() == "previous"

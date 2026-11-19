@@ -17,24 +17,53 @@
 """Conditional execution (IfStatement)."""
 
 from mimiqcircuits.operations.operation import Operation
-import mimiqcircuits as mc
+from mimiqcircuits.bitstrings import BitString
 from mimiqcircuits.instruction import _find_unit_range, _string_with_square
 
 
 class IfStatement(Operation):
-    """Conditional operation
+    """Operation applied only when classical bits match a bitstring.
 
-    This operation applies a specific operation if a given classical bit condition is met.
+    ``IfStatement(op, bs)`` applies ``op`` when the condition bits hold the
+    values in ``bs``, the first condition bit compared with the first
+    character of ``bs``, and so on. Otherwise it does nothing.
+
+    The instruction takes the targets of ``op`` followed by the condition
+    bits: qubits of ``op``, classical bits of ``op``, ``len(bs)`` condition
+    bits, then z-variables of ``op``. The condition bits may overlap with the
+    bits of ``op``.
+
+    Args:
+        operation: The operation to apply, or an operation class built with
+            no arguments.
+        bitstring: The values the condition bits must hold.
+
+    Raises:
+        ValueError: If ``operation`` is not an operation or ``bitstring`` is
+            not a :class:`BitString`.
 
     Examples:
         >>> from mimiqcircuits import *
         >>> c = Circuit()
-        >>> c.push(IfStatement(GateX(), BitString('1')), 0, 0)
+        >>> # measure qubit 0 into bit 0
+        >>> c.push(Measure(), 0, 0)
         1-qubit, 1-bit circuit with 1 instruction:
-        └── IF(c==1) X @ q[0], condition[0]
+        └── M @ q[0], c[0]
         <BLANKLINE>
-        >>> IfStatement(Parallel(4,GateH()), BitString("01"))
-        IF (c==01) ⨷ ⁴ H
+        >>> # flip qubit 1 only if bit 0 is 1
+        >>> c.push(IfStatement(GateX(), BitString('1')), 1, 0)
+        2-qubit, 1-bit circuit with 2 instructions:
+        ├── M @ q[0], c[0]
+        └── IF(c==1) X @ q[1], condition[0]
+        <BLANKLINE>
+        >>> # measure qubit 1 into bit 3 if bits 1 and 2 are 0 and 1:
+        >>> # the bit of the measurement comes before the condition bits
+        >>> c.push(IfStatement(Measure(), BitString('01')), 1, 3, 1, 2)
+        2-qubit, 4-bit circuit with 3 instructions:
+        ├── M @ q[0], c[0]
+        ├── IF(c==1) X @ q[1], condition[0]
+        └── IF(c==01) M @ q[1], c[3], condition[1:2]
+        <BLANKLINE>
     """
 
     _name = "If"
@@ -55,7 +84,7 @@ class IfStatement(Operation):
     _allow_bit_aliasing = True
     _allow_zvar_aliasing = True
 
-    def __init__(self, operation, bitstring: mc.BitString):
+    def __init__(self, operation, bitstring: BitString):
         if isinstance(operation, type) and issubclass(operation, Operation):
             op = operation()
         elif isinstance(operation, Operation):
@@ -63,7 +92,7 @@ class IfStatement(Operation):
         else:
             raise ValueError("Operation must be an Operation object or type.")
 
-        if not isinstance(bitstring, mc.BitString):
+        if not isinstance(bitstring, BitString):
             raise ValueError("bitstring must be a BitString object.")
 
         super().__init__()
@@ -83,6 +112,7 @@ class IfStatement(Operation):
 
     @property
     def op(self):
+        """The conditioned operation. Read-only."""
         return self._op
 
     @op.setter
@@ -91,6 +121,7 @@ class IfStatement(Operation):
 
     @property
     def bitstring(self):
+        """The values the condition bits must hold, as a :class:`BitString`."""
         return self._bitstring
 
     def iswrapper(self):
@@ -100,15 +131,31 @@ class IfStatement(Operation):
         return self.op.supports_canonical_rewrite()
 
     def getparams(self):
+        """Return the parameters of the conditioned operation."""
         return self.op.getparams()
 
     def inverse(self):
+        """Not supported for conditional operations.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError("Inverse not implemented for IfStatement")
 
     def power(self, power):
+        """Not supported for conditional operations.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError("Power not implemented for IfStatement")
 
     def control(self, num_controls):
+        """Not supported for conditional operations.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError("Control not implemented for IfStatement")
 
     def __str__(self):
@@ -119,7 +166,7 @@ class IfStatement(Operation):
         op = self.op
         chain = [self.bitstring.to01()]
 
-        while isinstance(op, mc.IfStatement):
+        while isinstance(op, IfStatement):
             chain.append(op.get_bitstring().to01())
             op = op.op
         if_chain = " ".join(f"IF(c=={bs})" for bs in chain)
@@ -149,9 +196,11 @@ class IfStatement(Operation):
         return IfStatement(self.op.evaluate(d), self.bitstring)
 
     def get_operation(self):
+        """Return the conditioned operation, :attr:`op`."""
         return self.op
 
     def get_bitstring(self):
+        """Return the condition, :attr:`bitstring`."""
         return self.bitstring
 
     def asciiwidth(self, qubits, bits, zvars):
@@ -163,17 +212,20 @@ class IfStatement(Operation):
         return max(gw, iw)
 
     def _decompose(self, circuit, qtargets, ctargets, ztargets):
+        return self._decompose_ctx(circuit, qtargets, ctargets, ztargets, None)
+
+    def _decompose_ctx(self, circuit, qtargets, ctargets, ztargets, ctx):
         from mimiqcircuits.decomposition.rules import CanonicalRewrite
 
         decomposed = _decompose_ifstatement(
-            CanonicalRewrite(), self, qtargets, ctargets, ztargets
+            CanonicalRewrite(), self, qtargets, ctargets, ztargets, ctx
         )
         for inst in decomposed:
             circuit.push(inst.operation, *inst.qubits, *inst.bits, *inst.zvars)
         return circuit
 
 
-def _decompose_ifstatement(basis, op, qubits, bits, zvars):
+def _decompose_ifstatement(basis, op, qubits, bits, zvars, ctx=None):
     """One decomposition step of the body of an IfStatement, kept conditional.
 
     Decomposes the body of ``op`` once with ``basis`` (a ``DecompositionBasis``
@@ -181,7 +233,8 @@ def _decompose_ifstatement(basis, op, qubits, bits, zvars):
     same bits. Bases reuse it so that a conditional gate follows the same rules
     as the bare gate. Nested conditions are merged into one IfStatement.
     """
-    from mimiqcircuits.decomposition.abstract import DecompositionBasis
+    from mimiqcircuits.circuit import Circuit
+    from mimiqcircuits.decomposition.abstract import _NO_CONTEXT, DecompositionBasis
 
     inner = op.op
     condition = op.bitstring
@@ -189,20 +242,28 @@ def _decompose_ifstatement(basis, op, qubits, bits, zvars):
     target_bits = list(bits[:nb])
     condition_bits = list(bits[nb:])
 
+    # Each piece is conditioned in turn, so none of them may measure.
+    ctx = _NO_CONTEXT if ctx is None else ctx.unitary()
     if isinstance(basis, DecompositionBasis):
-        decomposed = basis.decompose(inner, qubits, target_bits, zvars)
+        decomposed = basis.decompose_ctx(inner, qubits, target_bits, zvars, ctx)
     else:
-        decomposed = basis.decompose_step(inner, qubits, target_bits, zvars)
+        decomposed = basis.decompose_step_ctx(inner, qubits, target_bits, zvars, ctx)
 
-    circ = mc.Circuit()
+    from mimiqcircuits.operations.annotations import AncillaAlloc, AncillaFree
+
+    circ = Circuit()
     for inst in decomposed:
         body = inst.operation
-        if isinstance(body, mc.IfStatement):
+        if isinstance(body, (AncillaAlloc, AncillaFree)):
+            # The ancilla is in |0> before and after, whether the body runs or not.
+            circ.push(body, *inst.qubits)
+            continue
+        if isinstance(body, IfStatement):
             # Flatten the if statements, the topmost condition goes to the back.
-            merged = mc.BitString(list(body.bitstring) + list(condition))
-            body = mc.IfStatement(body.op, merged)
+            merged = BitString(list(body.bitstring) + list(condition))
+            body = IfStatement(body.op, merged)
         else:
-            body = mc.IfStatement(body, condition)
+            body = IfStatement(body, condition)
         circ.push(body, *inst.qubits, *inst.bits, *condition_bits, *inst.zvars)
     return circ
 

@@ -246,80 +246,80 @@ class _MimiqJob:
 
 
 class MimiqRemoteBackend(RemoteBackend):
-    """Cloud backend wrapping a
-    :class:`mimiqcircuits.remote.RemoteConnection`.
+    """Backend that runs circuits on the MIMIQ cloud service.
 
-    Construct with an authenticated connection (or any object that
-    exposes callable ``submit(...)`` and ``get_results(...)``
-    methods). The constructor pins the simulator ``algorithm`` (which
-    in turn shapes :meth:`capabilities`) and the label / poll
-    cadence; all other server knobs (``bonddim``, ``entdim``,
-    ``mpscutoff``, ``mpsmethod``, ``mpotraversal``, ``timelimit``,
-    ``noisemodel``) are passed at :meth:`submit` / :meth:`execute`
-    time.
+    It wraps a :class:`~mimiqcircuits.MimiqConnection` (or another
+    :class:`mimiqcircuits.remote.RemoteConnection`) so that cloud execution
+    takes the same ``seed``, ``rng`` and ``passes`` arguments as a local
+    backend and returns the same :class:`~mimiqcircuits.QCSResults`. The
+    simulator algorithm is fixed at construction; the other server options
+    (``bonddim``, ``entdim``, ``mpscutoff``, ``mpsmethod``,
+    ``mpotraversal``, ``timelimit``, ``noisemodel``) are given to
+    :meth:`execute` or :meth:`submit`.
 
-    Caveats:
+    Args:
+        connection: An authenticated connection, or any object with callable
+            ``submit(...)`` and ``get_results(...)`` methods. The constructor
+            does not log in, so call ``connection.connect()`` first.
+        algorithm: ``"auto"``, ``"mps"`` or ``"statevector"``. It also sets
+            :meth:`capabilities` and :meth:`limits`.
+        label: Label of the jobs on the service. Defaults to
+            ``"pyapi_remote_backend"``.
+        poll_interval: Seconds between two checks of a running job.
 
-    1. **Capabilities are synthesised client-side.** The server has
-       no capability endpoint yet, so :meth:`capabilities` returns a
-       conservative best-guess (``_BASE_REMOTE_CAPABILITIES`` plus
-       algorithm-conditional MPS tokens).
+    Raises:
+        TypeError: If ``connection`` lacks ``submit`` or ``get_results``.
 
-    2. **``pass_order_honored`` is not declared.** The server takes a
-       flat bag of booleans (``remove_swaps``, ``fuse``, …) with no
-       notion of pipeline order. A non-empty ``passes=`` with the
-       default ``strict_pass_order=True`` raises
-       :class:`RemotePassOrderError`. Opt out with
-       ``strict_pass_order=False``: recognised passes are translated
-       into legacy knobs and unrecognised ones are dropped with a
-       single :class:`UserWarning`.
+    Notes:
+        1. The capabilities are decided on the client, since the service does
+           not report them: a fixed set, plus ``"bond_dim"`` and
+           ``"schmidt_rank"`` when ``algorithm`` is ``"auto"`` or ``"mps"``.
+        2. ``"pass_order_honored"`` is not declared, because the service takes
+           a flat set of options (``remove_swaps``, ``fuse``, …), not an
+           ordered pipeline. A non-empty ``passes`` with the default
+           ``strict_pass_order=True`` raises :class:`RemotePassOrderError`.
+           With ``strict_pass_order=False`` the passes the service knows are
+           translated into options, and the others are dropped with one
+           :class:`UserWarning`.
+        3. ``param_grid`` raises :class:`NotImplementedError`. Evaluate the
+           circuit for each point and execute the results instead.
+        4. ``noisemodel=`` together with a pass named
+           ``"apply_noise_model"`` in ``passes`` raises :class:`ValueError`.
+        5. ``seed`` and ``rng`` are mutually exclusive. The seed sent to the
+           service is derived from them through an :class:`RNGs` bundle, so
+           it is not the integer passed in.
+        6. A single circuit returns a single :class:`~mimiqcircuits.QCSResults`;
+           a list returns a list of the same length. A list of more than
+           one circuit needs ``algorithm`` set to ``"mps"`` or
+           ``"statevector"``; with ``"auto"`` it raises :class:`ValueError`.
+        7. With ``algorithm="statevector"``, a ``noisemodel`` fails on the
+           service, and the MPS options (``bonddim``, ``entdim``,
+           ``mpscutoff``, ``mpsmethod``, ``mpotraversal``) have no effect.
+           They are still sent; the backend does not reject them for this
+           algorithm.
+        8. :meth:`execute` waits for the job without a time limit. For a
+           bounded wait, call :meth:`submit` and then
+           ``job.wait(timeout=seconds)``, which raises :class:`TimeoutError`.
 
-    3. **``param_grid=`` raises** :class:`NotImplementedError`. Loop
-       on the client side instead::
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import MimiqRemoteBackend
 
-           for params in grid:
-               backend.execute(c.evaluate(params), nsamples=n, seed=...)
+        Log in once, then wrap the connection in a backend that uses the MPS
+        simulator.
 
-    4. **``noisemodel=`` and ``ApplyNoiseModelPass`` are mutually
-       exclusive.** Specifying both raises :class:`ValueError`.
+        >>> conn = MimiqConnection()
+        >>> conn.connect()  # doctest: +SKIP
+        >>> backend = MimiqRemoteBackend(conn, algorithm="mps")
 
-    5. **``_MimiqJob.wait()`` blocks indefinitely by default.** Pass
-       ``timeout=<seconds>`` for a bounded wait that raises
-       :class:`TimeoutError`.
+        Run a Bell circuit; ``bonddim`` is an option of the service.
 
-    6. **``seed=`` / ``rng=`` are mutually exclusive.** The wire seed
-       is a deterministic xor-fold of the four-stream :class:`RNGs`
-       bundle derived from your input, not literally the integer
-       passed in.
-
-    7. **The connection must be authenticated** (``conn.connect()``
-       called) before the first :meth:`execute`. The constructor
-       does not trigger interactive auth, so an unauthenticated
-       connection produces a 401 at submit time.
-
-    8. **Output shape mirrors input:** a single ``Circuit`` returns
-       a single :class:`QCSResults`; a list returns a list of
-       matching length.
-
-    9. **``algorithm="statevector"`` + ``noisemodel=``** is a
-       server-side runtime error — state-vector cannot apply Kraus —
-       and there is currently no client-side guard.
-
-    10. **``algorithm="statevector"`` makes MPS knobs meaningless**
-        (``bonddim=``, ``entdim=``, ``mpscutoff=``, ``mpsmethod=``,
-        ``mpotraversal=``, ``BondDim`` / ``SchmidtRank`` instructions).
-        :meth:`capabilities` correctly omits ``:bond_dim`` /
-        ``:schmidt_rank`` in that mode and :meth:`limits` returns
-        ``max_bond_dim=None``, but :meth:`submit` still forwards the
-        kwargs to the server, which is canonical.
-
-    Example::
-
-        import mimiqcircuits as mc
-        conn = mc.MimiqConnection()
-        conn.connect()
-        backend = mc.backends.MimiqRemoteBackend(conn, algorithm="mps")
-        results = backend.execute(circuit, nsamples=1000, seed=42, bonddim=64)
+        >>> c = Circuit().push(GateH(), 0).push(GateCX(), 0, 1)
+        >>> c.push(Measure(), range(2), range(2))  # doctest: +ELLIPSIS
+        2-qubit, 2-bit circuit with 4 instructions:
+        ...
+        >>> res = backend.execute(c, nsamples=1000, seed=42, bonddim=64)  # doctest: +SKIP
+        >>> res.histogram()  # doctest: +SKIP
     """
 
     def __init__(
@@ -361,19 +361,22 @@ class MimiqRemoteBackend(RemoteBackend):
 
     @property
     def name(self) -> str:
+        """``"Mimiq"``."""
         return "Mimiq"
 
     @property
     def version(self) -> str:
+        """The version of the ``mimiqcircuits`` package."""
         from mimiqcircuits.__version__ import __version__
         return __version__
 
     # ── advertisement ──────────────────────────────────────────────────────
 
     def capabilities(self) -> set[str]:
-        """Synthesised client-side. Tensor-network annotations
-        (``:bond_dim``, ``:schmidt_rank``) are declared only when the
-        configured ``algorithm`` admits MPS execution.
+        """Return the capabilities, decided on the client.
+
+        ``"bond_dim"`` and ``"schmidt_rank"`` are included only when
+        ``algorithm`` is ``"auto"`` or ``"mps"``.
         """
         caps = set(_BASE_REMOTE_CAPABILITIES)
         if self.algorithm in {"auto", "mps"}:
@@ -381,8 +384,11 @@ class MimiqRemoteBackend(RemoteBackend):
         return caps
 
     def limits(self) -> Limits:
-        """Static client-side limits. ``max_bond_dim`` is dropped on
-        state-vector deployments where bond dimension is meaningless.
+        """Return the limits known to the client.
+
+        ``max_samples`` is the largest number of shots the client sends;
+        ``max_bond_dim`` is set only when ``algorithm`` is ``"auto"`` or
+        ``"mps"``.
         """
         from mimiqcircuits.remote import MAX_BONDDIM, MAX_SAMPLES
 
@@ -392,6 +398,7 @@ class MimiqRemoteBackend(RemoteBackend):
         return Limits(max_samples=MAX_SAMPLES, max_bond_dim=max_bd)
 
     def topology(self) -> Topology:
+        """Return :class:`AllToAll`."""
         return AllToAll()
 
     # ── submit / execute ───────────────────────────────────────────────────
@@ -424,12 +431,57 @@ class MimiqRemoteBackend(RemoteBackend):
         noisemodel=None,
         **kwargs,
     ) -> _MimiqJob:
-        """Submit ``circuits`` to the remote server.
+        """Submit ``circuits`` to the service without waiting.
 
-        Returns a :class:`_MimiqJob`. Calling ``job.wait()`` blocks
-        until results are available and post-processes
-        :class:`QCSResults.fidelities` into typed :class:`Fidelity`
-        instances.
+        :meth:`execute` calls it; call it directly to wait with a time
+        limit.
+
+        Args:
+            circuits: A circuit or a list of circuits.
+            nsamples: Number of shots.
+            rngs: An :class:`RNGs` bundle or an integer seed, folded into the
+                single seed sent to the service; ``None`` draws a random
+                seed.
+            passes: A :class:`PassPipeline`. See the class notes for how it
+                is handled.
+            callback: Accepted for compatibility with
+                :meth:`RemoteBackend.submit`; not used.
+            param_grid: Must be empty or ``None``.
+            strict_pass_order: See :meth:`Backend.execute`.
+            fuse: Server-side gate fusion; ``None`` lets the service choose.
+            reorderqubits: Server-side qubit reordering, as a bool or a
+                method name.
+            canonicaldecompose: Server-side decomposition into the canonical
+                gate set.
+            remove_swaps: Server-side SWAP removal.
+            reorderqubits_seed: Seed of the server-side reordering.
+            bonddim: Bond dimension of the MPS simulator.
+            entdim: Entanglement dimension of the MPS simulator.
+            mpscutoff: Singular-value cutoff of the MPS simulator.
+            mpsmethod: MPO application method of the MPS simulator.
+            mpotraversal: MPO compression traversal of the MPS simulator.
+            timelimit: Time limit of the job, in minutes.
+            noisemodel: A :class:`~mimiqcircuits.NoiseModel` applied to each
+                circuit before it is uploaded.
+            **kwargs: Only ``simplify``, which must be falsy.
+
+        Returns:
+            A job handle. Its ``request_id`` is the service's job id, and its
+            ``wait(timeout=None)`` blocks until the job is done and returns
+            the list of :class:`~mimiqcircuits.QCSResults`, with their
+            fidelities converted to :class:`Fidelity` types (exact for the
+            state-vector simulator, a truncation lower bound for MPS,
+            unknown otherwise). With a ``timeout`` in seconds it raises
+            :class:`TimeoutError` instead of waiting longer.
+
+        Raises:
+            ValueError: If a preparation flag is given with a non-empty
+                ``passes``, or ``noisemodel`` with a pass named
+                ``"apply_noise_model"``.
+            NotImplementedError: If ``param_grid`` is not empty, or
+                ``simplify`` is set.
+            RemotePassOrderError: See ``strict_pass_order``.
+            TypeError: For an unknown keyword.
         """
         if kwargs.pop("simplify", None):
             raise NotImplementedError(
@@ -475,7 +527,7 @@ class MimiqRemoteBackend(RemoteBackend):
                 "        backend.execute(c.evaluate(params), nsamples=n)"
             )
 
-        # Run the noisemodel/ApplyNoiseModelPass collision check
+        # Run the noisemodel/apply_noise_model collision check
         # *before* the strict-pass-order check: a user who passed
         # both wants "you specified noise twice" first, not the
         # generic order-not-honoured diagnostic.
@@ -485,7 +537,7 @@ class MimiqRemoteBackend(RemoteBackend):
                     raise ValueError(
                         "Specify noise via either the submit() "
                         "'noisemodel=' kwarg or via "
-                        "ApplyNoiseModelPass in passes=, not both."
+                        "an \"apply_noise_model\" pass in passes=, not both."
                     )
 
         # Re-run the strict-order check inside submit() so direct
@@ -557,19 +609,38 @@ class MimiqRemoteBackend(RemoteBackend):
         strict_pass_order: bool = True,
         **kwargs,
     ):
-        """Submit ``circuit`` to the cloud and wait for results.
+        """Submit ``circuit`` to the service and wait for the results.
 
-        ``seed`` and ``rng`` are mutually exclusive sources of
-        randomness. Submit-time tuning options (``bonddim``,
-        ``entdim``, ``mpscutoff``, ``mpsmethod``, ``mpotraversal``,
-        ``timelimit``, ``noisemodel``) pass through to :meth:`submit`.
+        To request specific amplitudes, push ``Amplitude`` instructions into
+        ``circuit`` and read ``results.zstates``.
 
-        Output shape mirrors input: a single :class:`Circuit` returns a
-        single :class:`QCSResults`; ``list[Circuit]`` returns
-        ``list[QCSResults]``.
+        Args:
+            circuit: A circuit or a list of circuits.
+            nsamples: Number of shots.
+            seed: Integer seed. Mutually exclusive with ``rng``; with
+                neither, a fresh seed is drawn.
+            rng: A :class:`random.Random` to draw the seed from.
+            passes: See the class notes.
+            callback: Not used.
+            param_grid: Must be empty or ``None``.
+            strict_pass_order: See :meth:`Backend.execute`.
+            **kwargs: Preparation flags and service options, passed to
+                :meth:`submit`: ``fuse``, ``reorderqubits``,
+                ``canonicaldecompose``, ``remove_swaps``,
+                ``reorderqubits_seed``, ``bonddim``, ``entdim``,
+                ``mpscutoff``, ``mpsmethod``, ``mpotraversal``,
+                ``timelimit``, ``noisemodel``.
 
-        To request specific amplitudes, push :class:`Amplitude`
-        instructions into ``circuit`` and read ``results.zstates``.
+        Returns:
+            A :class:`~mimiqcircuits.QCSResults` for a single circuit, or a
+            list of them for a list of circuits.
+
+        Raises:
+            TypeError: If both ``seed`` and ``rng`` are given, or for an
+                unknown keyword.
+            ValueError: See :meth:`submit`.
+            NotImplementedError: See :meth:`submit`.
+            RemotePassOrderError: See ``strict_pass_order``.
         """
         # The noisemodel duplication error is more specific than the
         # order-not-honoured diagnostic, so check it first.
@@ -580,7 +651,7 @@ class MimiqRemoteBackend(RemoteBackend):
                     raise ValueError(
                         "Specify noise via either the submit() "
                         "'noisemodel=' kwarg or via "
-                        "ApplyNoiseModelPass in passes=, not both."
+                        "an \"apply_noise_model\" pass in passes=, not both."
                     )
 
         # Surface the strict-pass-order error before any network call.
@@ -620,23 +691,53 @@ class MimiqRemoteBackend(RemoteBackend):
         rng=None,
         **kwargs,
     ):
-        """Run optimization experiments on the cloud and wait for the results.
+        """Run optimization experiments on the service and wait for the
+        results.
 
-        Takes the same arguments as :meth:`LocalBackend.optimize`: an
-        :class:`~mimiqcircuits.OptimizationExperiment`, a list of them, or a
-        circuit with its initial parameters and the experiment fields
+        Takes the same experiment arguments as :meth:`LocalBackend.optimize`:
+        an :class:`~mimiqcircuits.OptimizationExperiment`, a list of them, or
+        a circuit with its initial values and the experiment fields
         (``optimizer``, ``maxiters``, ``zregister``, ``label``) as keywords.
-        The server runs the optimizer with the backend's ``algorithm``.
+        The service runs the optimizer with the backend's ``algorithm``.
 
-        The other keywords go to the connection's ``optimize``: ``nsamples``,
-        ``timelimit``, ``bonddim``, ``entdim``, ``mpscutoff``, ``fuse``,
-        ``reorderqubits``, ``reorderqubits_seed``, ``canonicaldecompose``,
-        ``remove_swaps``. ``seed`` and ``rng`` are mutually exclusive.
+        Args:
+            experiment: An :class:`~mimiqcircuits.OptimizationExperiment`, a
+                list of them, or a symbolic circuit.
+            initparams: Initial values when ``experiment`` is a circuit.
+            return_history: Also return every evaluated run.
+            seed: Integer seed. Mutually exclusive with ``rng``.
+            rng: A :class:`random.Random` to draw the seed from.
+            **kwargs: Experiment fields (with a circuit only), and options of
+                the connection's ``optimize``: ``nsamples``, ``timelimit``,
+                ``bonddim``, ``entdim``, ``mpscutoff``, ``fuse``,
+                ``reorderqubits``, ``reorderqubits_seed``,
+                ``canonicaldecompose``, ``remove_swaps``, ``mpsmethod``,
+                ``mpotraversal``, ``streaming``.
 
-        Returns an :class:`~mimiqcircuits.OptimizationResults`, or a list of
-        them for a list of experiments. A list with more than one experiment
-        needs ``algorithm="mps"`` or ``"statevector"``; with ``"auto"`` it
-        raises :class:`ValueError`.
+        Returns:
+            An :class:`~mimiqcircuits.OptimizationResults`, or a list of them
+            for a list of experiments.
+
+        Raises:
+            TypeError: If the connection has no ``optimize`` method, or both
+                ``seed`` and ``rng`` are given.
+            ValueError: For more than one experiment with
+                ``algorithm="auto"``; use ``"mps"`` or ``"statevector"``.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> from mimiqcircuits.backends import MimiqRemoteBackend
+            >>> from symengine import symbols
+            >>> theta = symbols("theta")
+            >>> c = Circuit().push(GateRY(theta), 0)
+            >>> c.push(ExpectationValue(GateZ()), 0, 0)  # doctest: +ELLIPSIS
+            1-qubit, 1-zvar circuit with 2 instructions:
+            ...
+            >>> conn = MimiqConnection()
+            >>> conn.connect()  # doctest: +SKIP
+            >>> backend = MimiqRemoteBackend(conn, algorithm="statevector")
+            >>> res = backend.optimize(c, {theta: 0.1}, optimizer="COBYLA")  # doctest: +SKIP
+            >>> res.get_best().cost  # doctest: +SKIP
         """
         from mimiqcircuits.backends.optimize import as_experiments
 

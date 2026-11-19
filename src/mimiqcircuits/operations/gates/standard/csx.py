@@ -19,27 +19,24 @@
 from mimiqcircuits.operations.gates.standard.sx import GateSX, GateSXDG
 from mimiqcircuits.operations.gates.standard.hadamard import GateH
 from mimiqcircuits.operations.gates.standard.cs import GateCS, GateCSDG
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import Control, canonical_control
 
 
-@mc.canonical_control(1, GateSX)
-class GateCSX(mc.Control):
-    r"""Two qubit Controled-SX gate.
+@canonical_control(1, GateSX)
+class GateCSX(Control):
+    r"""Two qubit Controlled-SX gate.
 
-    By convention, the first qubit is the control and second one is the
-    targets.
+    By convention, the first qubit is the control and the second is
+    the target.
 
-
-    **Matrix representation:**
-
-    .. math::
-
-        \operatorname{CSX} =\begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & \frac{1+i}{2} & \frac{1-i}{2} \\
-            0 & 0 & \frac{1-i}{2} & \frac{1+i}{2}
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{CSX} =\begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & \frac{1+i}{2} & \frac{1-i}{2} \\
+                0 & 0 & \frac{1-i}{2} & \frac{1+i}{2}
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -67,7 +64,7 @@ class GateCSX(mc.Control):
     """
 
     def __init__(self, num_controls=1, operation=None):
-        """Initialize a CSX gate."""
+        """Initialize a CSX gate. The arguments are unused."""
         super().__init__(1, GateSX())
 
     def _decompose(self, circ, qubits, bits, zvars):
@@ -78,21 +75,21 @@ class GateCSX(mc.Control):
         return circ
 
 
+@canonical_control(1, GateSXDG)
+class GateCSXDG(Control):
+    r"""Two qubit Controlled-:class:`GateSXDG` gate, the adjoint of :class:`GateCSX`.
 
+    By convention, the first qubit is the control and the second is
+    the target.
 
-@mc.canonical_control(1, GateSXDG)
-class GateCSXDG(mc.Control):
-    r"""Two qubit :math:`{CSX}^\dagger` gate.
-
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{CSX}^{\dagger} =\begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & \frac{1-i}{2} & \frac{1+i}{2} \\
-            0 & 0 & \frac{1+i}{2} & \frac{1-i}{2}
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{CSX}^{\dagger} =\begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & \frac{1-i}{2} & \frac{1+i}{2} \\
+                0 & 0 & \frac{1+i}{2} & \frac{1-i}{2}
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -120,7 +117,7 @@ class GateCSXDG(mc.Control):
     """
 
     def __init__(self, num_controls=1, operation=None):
-        """Initialize a CSXDG gate."""
+        """Initialize a CSXDG gate. The arguments are unused."""
         super().__init__(1, GateSXDG())
 
     def _decompose(self, circ, qubits, bits, zvars):

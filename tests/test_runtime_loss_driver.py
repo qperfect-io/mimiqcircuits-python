@@ -40,7 +40,7 @@ class _LossMockState(State):
     def amplitude(self, bs):
         return 1.0 + 0j
 
-    def sample(self, nsamples, rng=None, *, seed=None):
+    def sample(self, nsamples, rng=None):
         return [mc.BitString(self.qubits) for _ in range(nsamples)]
 
     @property
@@ -149,6 +149,25 @@ def test_lost_qubit_reads_zero_and_check_reflects_loss():
     assert all(s[0] == 0 and s[1] == 0 for s in res.cstates)
 
 
+def test_callback_counts_every_instruction():
+    """The per-step callback gets ``(i, total)``, as on the paths without
+    loss: one call per instruction, from 1 to the circuit's length. The gate
+    dropped on the lost qubit still counts, so the total holds."""
+    backend = _LossMockBackend()
+    c = mc.Circuit()
+    c.push(mc.GateX(), 0)
+    c.push(_CERTAIN_LOSS, 0)     # qubit 0 leaks for sure
+    c.push(mc.GateX(), 0)        # dropped: target lost
+    c.push(mc.Measure(), 0, 0)
+
+    seen = []
+    backend.evolve_with_loss(
+        backend.build_state(1, 1), c, mc.LossModel(),
+        callback=lambda i, total: seen.append((i, total)),
+    )
+    assert seen == [(1, 4), (2, 4), (3, 4), (4, 4)]
+
+
 def test_surviving_qubit_keeps_state():
     backend = _LossMockBackend()
     c = mc.Circuit()
@@ -243,3 +262,21 @@ def test_lossmodel_rewrite_works_without_rng():
     assert [i.get_operation() for i in out] == [mc.Depolarizing1(0.2)]
     assert [i.get_qubits() for i in out] == [(0,)]
     assert lossmodel_rewrite(inst, lost, mc.LossModel()) == []
+
+
+def test_runtime_loss_check_skips_mixed_unitary_channels(monkeypatch):
+    # A mixed-unitary channel cannot carry loss, so the check must not build its
+    # Kraus operators: for Depolarizing that means Kronecker products, once per
+    # channel in the circuit, on every execute.
+    from mimiqcircuits.backends.backend import _circuit_has_runtime_loss
+
+    built = []
+    cls = type(mc.Depolarizing1(0.1))
+    monkeypatch.setattr(
+        cls, "krausoperators", lambda self: built.append(self) or []
+    )
+    c = mc.Circuit()
+    c.push(mc.Depolarizing1(0.1), 0)
+    c.push(mc.PauliX(0.2), 1)
+    assert not _circuit_has_runtime_loss(c)
+    assert built == []

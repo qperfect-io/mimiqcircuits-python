@@ -1,0 +1,286 @@
+/* MIMIQ brand for the Furo Sphinx theme.
+   Neutral surfaces; teal marks links in the text, and the octopus fuchsia
+   marks the current page in the sidebar. */
+
+body {
+  --font-stack: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-stack--headings: "Plus Jakarta Sans", var(--font-stack);
+  --font-stack--monospace: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-size--small: 87.5%;
+  --font-size--small--2: 81.25%;
+
+  --mimiq-accent: #e52b87;
+  --mimiq-surface: #f6f7f9;
+  --mimiq-code: #f1f3f5;
+  --mimiq-syn-keyword: #a51d63;
+  --mimiq-syn-string: #0f6f7d;
+  --mimiq-syn-number: #9a5800;
+  --mimiq-syn-comment: #7b8691;
+  --mimiq-syn-name: #17222b;
+
+  --color-foreground-primary: #17222b;
+  --color-foreground-secondary: #56636f;
+  --color-foreground-muted: #7b8691;
+  --color-foreground-border: #c9d0d6;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #ffffff;
+  --color-background-hover: #f1f3f5;
+  --color-background-hover--transparent: #f1f3f500;
+  --color-background-border: #e5e8eb;
+  --color-background-item: #c9d0d6;
+
+  --color-brand-primary: #17222b;
+  --color-brand-content: #0f6f7d;
+  --color-brand-visited: #0f6f7d;
+  --color-link-underline: #0f6f7d40;
+  --color-link-underline--hover: #0f6f7d;
+
+  --color-sidebar-background: var(--color-background-primary);
+  --color-sidebar-background-border: var(--color-background-border);
+  --color-sidebar-link-text: var(--color-foreground-secondary);
+  --color-sidebar-link-text--top-level: var(--color-foreground-primary);
+  --color-sidebar-item-background--hover: var(--color-background-hover);
+  --color-sidebar-item-expander-background--hover: var(--color-background-hover);
+  --color-sidebar-caption-text: var(--color-foreground-muted);
+  --color-sidebar-search-background: var(--color-background-primary);
+  --color-sidebar-search-background--focus: var(--color-background-hover);
+  --color-sidebar-search-border: var(--color-background-border);
+  --color-sidebar-search-icon: var(--color-foreground-muted);
+  --color-toc-item-text--active: var(--color-foreground-primary);
+
+  --color-api-name: var(--color-foreground-primary);
+  --color-api-pre-name: var(--color-foreground-secondary);
+  --color-api-paren: var(--color-foreground-secondary);
+  --color-api-keyword: var(--color-foreground-muted);
+  --color-api-background: var(--mimiq-surface);
+  --color-api-background-hover: var(--color-background-hover);
+  --color-inline-code-background: var(--mimiq-code);
+  --color-highlight-on-target: #fdf1cf;
+  --color-card-background: var(--mimiq-surface);
+  --color-card-border: var(--color-foreground-border);
+  --color-card-marginals-background: var(--mimiq-surface);
+  --color-announcement-background: #17222b;
+  --color-announcement-text: #eef1f4;
+  --color-admonition-background: transparent;
+  --color-admonition-title: #0f6f7d;
+  --color-admonition-title--note: #0f6f7d;
+  --color-admonition-title--seealso: #0f6f7d;
+  --color-admonition-title--hint: #0f6f7d;
+  --color-admonition-title--tip: #0f6f7d;
+  --color-admonition-title--important: #e52b87;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) {
+    --mimiq-accent: #f578b4;
+    --mimiq-surface: #161d24;
+    --mimiq-code: #1c242c;
+    --mimiq-syn-keyword: #f578b4;
+    --mimiq-syn-string: #5ec4d2;
+    --mimiq-syn-number: #e3b341;
+    --mimiq-syn-comment: #7c8792;
+    --mimiq-syn-name: #e8ecef;
+    --color-foreground-primary: #e8ecef;
+    --color-foreground-secondary: #a3adb7;
+    --color-foreground-muted: #7c8792;
+    --color-foreground-border: #3a4650;
+    --color-background-primary: #0f1419;
+    --color-background-secondary: #0f1419;
+    --color-background-hover: #1c242c;
+    --color-background-hover--transparent: #1c242c00;
+    --color-background-border: #242e37;
+    --color-background-item: #3a4650;
+    --color-brand-primary: #e8ecef;
+    --color-brand-content: #5ec4d2;
+    --color-brand-visited: #5ec4d2;
+    --color-link-underline: #5ec4d240;
+    --color-link-underline--hover: #5ec4d2;
+    --color-highlight-on-target: #3a3214;
+    --color-announcement-background: #1c242c;
+    --color-announcement-text: #e8ecef;
+    --color-card-background: var(--mimiq-surface);
+    --color-card-border: var(--color-foreground-border);
+    --color-card-marginals-background: var(--mimiq-surface);
+    --color-admonition-background: transparent;
+    --color-highlighted-background: #1d3b44;
+  }
+}
+body[data-theme="dark"] {
+  --mimiq-accent: #f578b4;
+  --mimiq-surface: #161d24;
+  --mimiq-code: #1c242c;
+  --mimiq-syn-keyword: #f578b4;
+  --mimiq-syn-string: #5ec4d2;
+  --mimiq-syn-number: #e3b341;
+  --mimiq-syn-comment: #7c8792;
+  --mimiq-syn-name: #e8ecef;
+  --color-foreground-primary: #e8ecef;
+  --color-foreground-secondary: #a3adb7;
+  --color-foreground-muted: #7c8792;
+  --color-foreground-border: #3a4650;
+  --color-background-primary: #0f1419;
+  --color-background-secondary: #0f1419;
+  --color-background-hover: #1c242c;
+  --color-background-hover--transparent: #1c242c00;
+  --color-background-border: #242e37;
+  --color-background-item: #3a4650;
+  --color-brand-primary: #e8ecef;
+  --color-brand-content: #5ec4d2;
+  --color-brand-visited: #5ec4d2;
+  --color-link-underline: #5ec4d240;
+  --color-link-underline--hover: #5ec4d2;
+  --color-highlight-on-target: #3a3214;
+  --color-announcement-background: #1c242c;
+  --color-announcement-text: #e8ecef;
+  --color-card-background: var(--mimiq-surface);
+  --color-card-border: var(--color-foreground-border);
+  --color-card-marginals-background: var(--mimiq-surface);
+  --color-admonition-background: transparent;
+  --color-highlighted-background: #1d3b44;
+}
+
+/* Type scale: one step apart, tight tracking on the display face. */
+body { line-height: 1.65; }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-stack--headings);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+h1 { font-size: 2.125rem; letter-spacing: -0.025em; margin-bottom: 1rem; }
+h2 { font-size: 1.5rem; margin-top: 2.75rem; }
+h3 { font-size: 1.1875rem; margin-top: 2rem; }
+h4, h5, h6 { font-size: 1rem; }
+.announcement-content { font-size: var(--font-size--small); }
+
+/* Sidebar: quiet text, the current page carries the accent. */
+.sidebar-tree .reference { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+.sidebar-tree .toctree-l1 > .reference { font-weight: 500; }
+.sidebar-tree .current-page > .reference {
+  font-weight: 600;
+  color: var(--color-foreground-primary);
+  box-shadow: inset 2px 0 0 var(--mimiq-accent);
+}
+.sidebar-tree .current > .reference { color: var(--color-foreground-primary); }
+
+/* Inline code reads as text, not as a chip. */
+code.literal, .sig-inline, p code.literal, p .sig-inline {
+  border: 0;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-size: 0.875em;
+  color: var(--color-foreground-primary);
+}
+a code.literal { color: inherit; }
+
+/* Code blocks sit on the neutral surface regardless of the Pygments style. */
+.highlight, .highlight pre { background: var(--mimiq-surface) !important; }
+div[class*="highlight-"], .literal-block-wrapper {
+  border: 1px solid var(--color-background-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.highlight pre { font-size: 0.8125rem; line-height: 1.6; padding: 0.875rem 1rem; }
+
+/* Syntax colours from the brand palette, replacing the Pygments style's. */
+.highlight, .highlight .n, .highlight .nn, .highlight .nx, .highlight .o, .highlight .p,
+.highlight .nf, .highlight .nc, .highlight .nb, .highlight .bp, .highlight .nv { color: var(--mimiq-syn-name) !important; font-weight: normal !important; }
+.highlight .k, .highlight .kn, .highlight .kc, .highlight .kd, .highlight .kr, .highlight .kt,
+.highlight .ow, .highlight .kp { color: var(--mimiq-syn-keyword) !important; font-weight: normal !important; }
+.highlight .s, .highlight .s1, .highlight .s2, .highlight .sa, .highlight .sb, .highlight .sc,
+.highlight .sd, .highlight .se, .highlight .sh, .highlight .si, .highlight .sx, .highlight .ss { color: var(--mimiq-syn-string) !important; font-style: normal !important; }
+.highlight .m, .highlight .mi, .highlight .mf, .highlight .mh, .highlight .mo { color: var(--mimiq-syn-number) !important; }
+.highlight .c, .highlight .c1, .highlight .cm, .highlight .ch, .highlight .cs, .highlight .gp,
+.highlight .go { color: var(--mimiq-syn-comment) !important; font-weight: normal !important; }
+.highlight .c, .highlight .c1, .highlight .cm { font-style: italic; }
+
+/* Links: colour plus a light underline that firms up on hover. */
+article a { text-underline-offset: 0.2em; }
+
+/* API entries: an outlined block with the signature on a grey bar. */
+dl.py:not(.docutils) {
+  border: 1px solid var(--color-background-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1.25rem 0 1.75rem;
+}
+dl.py:not(.docutils) > dt {
+  background: var(--mimiq-surface);
+  border: 0;
+  border-bottom: 1px solid var(--color-background-border);
+  margin: 0;
+  padding: 0.6rem 1rem;
+  text-indent: 0;
+}
+dl.py:not(.docutils) > dt:target { background: var(--color-highlight-on-target); }
+dl.py:not(.docutils) > dd { margin: 0; padding: 0.25rem 1rem 0.5rem; }
+/* Members without a docstring are just the signature bar. */
+dl.py:not(.docutils) > dd:not(:has(> :not(dl.field-list))):not(:has(dt)) { display: none; }
+dl.py:not(.docutils) > dt:has(+ dd:not(:has(> :not(dl.field-list))):not(:has(dt))) { border-bottom: 0; }
+dl.py:not(.docutils) dl.py:not(.docutils) { margin: 1rem 0; }
+.sig-name { font-weight: 600; }
+.sig .property, .sig-prename { color: var(--color-foreground-muted); }
+.sig .reference.internal .viewcode-link, .sig a.reference.external .viewcode-link { color: var(--color-foreground-muted); }
+
+/* Desktop layout anchored to the left, as in the Julia docs. */
+@media (min-width: 82em) {
+  .sidebar-drawer { width: 18em; justify-content: flex-start; }
+  .sidebar-container { width: 18em; }
+  .content { padding: 0 3.5em; }
+}
+
+/* Cards (sphinx-design): flat, outlined, the border answers hover. */
+.sd-card {
+  border: 1px solid var(--color-card-border) !important;
+  border-radius: 10px;
+  box-shadow: none !important;
+  background: var(--color-card-background);
+  transition: border-color 120ms ease;
+}
+.sd-card:hover { border-color: var(--color-brand-content) !important; }
+.sd-card-title { font-family: var(--font-stack--headings); font-weight: 650; }
+.sd-card-text { color: var(--color-foreground-secondary); }
+
+/* Admonitions: a thin coloured rule and a light title, no filled band. */
+.admonition, .topic {
+  border-radius: 8px;
+  box-shadow: none;
+  border: 1px solid var(--color-background-border);
+  border-left: 3px solid var(--color-admonition-title);
+}
+p.admonition-title, p.topic-title {
+  background: transparent !important;
+  font-weight: 600;
+  text-transform: none;
+}
+.admonition-title::before { opacity: 0.85; }
+
+/* Section labels in sentence case instead of Furo's small caps. */
+.field-list > dt, dd p.rubric, .toc-title, .sidebar-tree .caption, .sidebar-tree .caption-text,
+.toctree-wrapper.compound .caption {
+  text-transform: none !important;
+  letter-spacing: 0;
+}
+.sidebar-tree .caption { color: var(--color-foreground-muted); font-weight: 600; }
+
+/* Tables */
+table.docutils { border-radius: 8px; box-shadow: none; border: 1px solid var(--color-background-border); }
+table.docutils th { background: var(--mimiq-surface); }
+table.docutils td, table.docutils th { border-color: var(--color-background-border); }
+
+a.headerlink:hover { color: var(--mimiq-accent); }
+
+:focus-visible { outline: 2px solid var(--color-brand-content); outline-offset: 2px; }
+
+/* Right-hand table of contents: plain text entries. */
+.toc-tree code.literal {
+  background: transparent;
+  padding: 0;
+  font-size: 0.95em;
+  color: inherit;
+}
+.toc-tree li { word-break: normal; overflow-wrap: anywhere; }
+
+/* Autosummary tables span the column and line up with the text. */
+table.autosummary { width: 100%; }
+table.autosummary td { font-size: var(--font-size--small); }

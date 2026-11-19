@@ -16,10 +16,9 @@
 
 """Optimization-pass framework.
 
-A pass transforms a :class:`Circuit` before evolution; the
-:class:`PassPipeline` runs them in order and tracks qubit
-permutations so amplitude and expectation queries can be
-unscrambled back to the user's original qubit space at the end.
+A pass transforms a :class:`Circuit` before evolution. A
+:class:`PassPipeline` holds passes in order, and :func:`apply_passes` runs
+them and composes the qubit permutations they report.
 
 Parameters travel over the wire (to remote backends) through a
 JSON-safe ADT, :class:`PassParam`, instead of a loose ``dict``: the
@@ -49,42 +48,72 @@ import numpy as np
 
 
 class PassParam:
-    """Base class for the JSON-safe sum used to serialise pass parameters.
+    """Base class for the typed values used as pass parameters.
 
-    The tagged variants (:class:`PStr`, :class:`PInt`, :class:`PFloat`,
-    :class:`PBool`, :class:`PSym`, :class:`PList`, :class:`PDict`) keep
-    type information a plain dict would lose on the wire — e.g.
-    ``"greedy"`` (a :class:`PStr`) must not silently degrade and come
-    back as a :class:`PSym`. Equality is tag-sensitive:
-    ``PSym("x") != PStr("x")``.
+    The variants (:class:`PStr`, :class:`PInt`, :class:`PFloat`,
+    :class:`PBool`, :class:`PSym`, :class:`PList`, :class:`PDict`) keep type
+    information that a plain dictionary would lose when sent to a remote
+    backend: the string ``"greedy"`` (a :class:`PStr`) does not come back as
+    a symbol (a :class:`PSym`). Equality depends on the variant:
+    ``PSym("x") != PStr("x")``. Use :func:`to_pass_param` to convert plain
+    Python values.
     """
 
 
 @dataclass(frozen=True)
 class PStr(PassParam):
+    """String pass parameter.
+
+    Attributes:
+        value (str): The string.
+    """
+
     value: str
 
 
 @dataclass(frozen=True)
 class PInt(PassParam):
+    """Integer pass parameter.
+
+    Attributes:
+        value (int): The integer.
+    """
+
     value: int
 
 
 @dataclass(frozen=True)
 class PFloat(PassParam):
+    """Floating-point pass parameter.
+
+    Attributes:
+        value (float): The number.
+    """
+
     value: float
 
 
 @dataclass(frozen=True)
 class PBool(PassParam):
+    """Boolean pass parameter.
+
+    Attributes:
+        value (bool): The boolean.
+    """
+
     value: bool
 
 
 @dataclass(frozen=True)
 class PSym(PassParam):
     """Pass parameter that names one of a fixed set of choices, like an
-    :class:`enum.Enum` member. Distinct from :class:`PStr` at the
-    tag level.
+    :class:`enum.Enum` member.
+
+    It never compares equal to a :class:`PStr` with the same text, and
+    :func:`to_pass_param` never produces it: build it explicitly.
+
+    Attributes:
+        value (str): The name of the choice.
     """
 
     value: str
@@ -92,25 +121,53 @@ class PSym(PassParam):
 
 @dataclass(frozen=True)
 class PList(PassParam):
+    """List pass parameter.
+
+    Attributes:
+        items (tuple[PassParam, ...]): The elements.
+    """
+
     items: tuple[PassParam, ...]
 
 
 @dataclass(frozen=True)
 class PDict(PassParam):
-    # Tuple of (key, value) pairs rather than a dict so the wrapper
-    # itself remains hashable.
+    """Dictionary pass parameter with string keys.
+
+    Attributes:
+        items (tuple[tuple[str, PassParam], ...]): The ``(key, value)``
+            pairs, as a tuple so that the parameter stays hashable.
+    """
+
     items: tuple[tuple[str, PassParam], ...]
 
 
 def to_pass_param(x) -> PassParam:
-    """Coerce a common Python value into a :class:`PassParam`.
+    """Convert a plain Python value into a :class:`PassParam`.
 
-    The bool-before-int check is load-bearing: ``bool`` is a subclass
-    of ``int`` in Python, so ``isinstance(True, int)`` is ``True`` and
-    reversing the order would tag every boolean as :class:`PInt`.
+    Args:
+        x: A :class:`PassParam` (returned as it is), a ``bool``, ``int``,
+            ``float`` or ``str``, or a list, tuple or dictionary of such
+            values, converted recursively. Dictionary keys become strings.
+
+    Returns:
+        The matching :class:`PassParam`. Strings become :class:`PStr`,
+        never :class:`PSym`.
+
+    Raises:
+        TypeError: For any other type.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import to_pass_param
+        >>> to_pass_param(True)
+        PBool(value=True)
+        >>> to_pass_param({"method": "greedy", "steps": [1, 2]})
+        PDict(items=(('method', PStr(value='greedy')), ('steps', PList(items=(PInt(value=1), PInt(value=2))))))
     """
     if isinstance(x, PassParam):
         return x
+    # bool is a subclass of int, so it must be checked first.
     if isinstance(x, bool):
         return PBool(x)
     if isinstance(x, int):
@@ -133,16 +190,27 @@ def to_pass_param(x) -> PassParam:
 
 @dataclass(frozen=True)
 class PassSpec:
-    """Declarative summary of a pass.
+    """Description of a pass: its name and parameters.
 
-    Used for equality / memoisation (two passes with the same spec
-    have the same hash and compare equal), for remote dispatch (the
-    spec is the only thing shipped over the wire), and for
-    observability. Equality is structural.
+    Two specs with the same fields compare equal and hash the same. The
+    name identifies the kind of pass: the preparation flags of
+    :meth:`Backend.execute` find the pass they act on by name, and
+    :class:`MimiqRemoteBackend` translates passes to server options by name.
 
-    ``requires`` names other passes that must run *before* this one;
-    ``conflicts`` names passes that cannot coexist with this one in
-    the same pipeline. Both are advisory.
+    Attributes:
+        name (str): Name of the kind of pass, such as ``"fuse_gates"``.
+        parameters (tuple[tuple[str, PassParam], ...]): The parameters, as
+            ``(name, value)`` pairs.
+        requires (tuple[str, ...]): Names of passes that must run before
+            this one. Informational; nothing enforces it.
+        conflicts (tuple[str, ...]): Names of passes that cannot be in the
+            same pipeline. Informational; nothing enforces it.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import PassSpec
+        >>> PassSpec.from_dict("reorder_qubits", {"method": "sa"})
+        PassSpec(name='reorder_qubits', parameters=(('method', PStr(value='sa')),), requires=(), conflicts=())
     """
 
     name: str
@@ -154,6 +222,18 @@ class PassSpec:
     def from_dict(name: str, parameters: Optional[dict] = None,
                   requires: Iterable[str] = (), conflicts: Iterable[str] = ()
                   ) -> "PassSpec":
+        """Build a spec from plain Python values.
+
+        Args:
+            name: The name of the kind of pass.
+            parameters: The parameters, converted with
+                :func:`to_pass_param`.
+            requires: Names of passes that must run before this one.
+            conflicts: Names of passes that cannot be in the same pipeline.
+
+        Returns:
+            The new :class:`PassSpec`.
+        """
         params = tuple((str(k), to_pass_param(v))
                        for k, v in (parameters or {}).items())
         return PassSpec(name, params, tuple(requires), tuple(conflicts))
@@ -161,15 +241,15 @@ class PassSpec:
 
 @dataclass
 class PassResult:
-    """Side effects returned from :meth:`AbstractPass.apply`.
+    """What a pass reports besides the new circuit, returned by
+    :meth:`AbstractPass.apply`.
 
-    ``qubit_permutation`` is ``None`` when the pass leaves qubit
-    indices unchanged. Any pass that *does* relabel qubits must
-    return the relabel here so the pipeline can compose permutations
-    and un-shuffle downstream outputs.
-
-    ``metadata`` is free-form pass-specific information (timings,
-    gate counts, …) surfaced for observability.
+    Attributes:
+        qubit_permutation (list[int] or None): The 1-based relabelling of
+            qubits the pass applied, or ``None`` when indices are unchanged.
+            :func:`apply_passes` composes these across the pipeline.
+        metadata (dict[str, Any]): Free-form information about the run, such
+            as timings or gate counts.
     """
 
     qubit_permutation: Optional[list[int]] = None
@@ -178,15 +258,18 @@ class PassResult:
 
 @dataclass
 class PassContext:
-    """Inputs a pass needs but should not fetch from global state.
+    """Inputs a pass may need, given to :meth:`AbstractPass.apply`.
 
-    ``backend`` is the Backend the pipeline is compiling for, or
-    ``None`` for backend-agnostic runs. ``rng`` is the dedicated
-    pass-internal RNG. ``bitstrings`` are user-supplied amplitude
-    targets in the original qubit space; the pipeline rewrites them
-    into post-pass space as permutations compose. ``features`` are
-    detected on the input circuit and filter passes via
-    :py:meth:`AbstractPass.preserves`.
+    Attributes:
+        backend (Backend or None): The backend the circuit is prepared for,
+            or ``None``. With a backend, :func:`apply_passes` also checks
+            :meth:`Backend.accepts_pass` and :meth:`Backend.delegates_pass`.
+        rng (random.Random): The generator for randomised passes;
+            :meth:`LocalBackend.execute` passes :attr:`RNGs.pass_`.
+        bitstrings (list): Basis states for passes that need them. The
+            execute driver leaves it empty.
+        features (set[str]): Circuit features for passes that need them.
+            The execute driver leaves it empty.
     """
 
     backend: Optional[Any] = None
@@ -203,28 +286,68 @@ class PassContext:
 class AbstractPass(abc.ABC):
     """Base class for circuit-transformation passes.
 
-    Subclasses implement:
+    To write a pass, subclass it and implement :meth:`spec` and :meth:`apply`.
+    Override :meth:`preserves` when the pass breaks a circuit feature.
 
-    - :meth:`spec` — return a :class:`PassSpec` describing the pass
-      (used for equality, serialisation, and remote dispatch).
-    - :meth:`apply` — return ``(new_circuit, PassResult)``.
-    - :meth:`preserves` — override when the pass *breaks* a circuit
-      feature; the default returns ``True`` for every feature. The
-      pipeline filters passes by feature when the input circuit has
-      a feature that the pass must preserve.
+    Examples:
+        A pass that removes every ``Barrier``.
 
-    Recognised feature tokens: ``"feed_forward"``,
-    ``"midcircuit_measure"``, ``"parametric"``, ``"loss"``,
-    ``"exact_equivalence"``, ``"strict_qubit_count"``.
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import (
+        ...     AbstractPass, PassContext, PassResult, PassSpec)
+        >>> class DropBarriersPass(AbstractPass):
+        ...     def spec(self):
+        ...         return PassSpec("drop_barriers")
+        ...     def apply(self, ctx, circuit):
+        ...         kept = [i for i in circuit if not isinstance(i.operation, Barrier)]
+        ...         # No qubit is relabelled, so the result reports nothing.
+        ...         return Circuit(kept), PassResult()
+        >>> c = Circuit().push(GateH(), 0).push(Barrier(1), 0).push(GateX(), 0)
+        >>> new, result = DropBarriersPass().apply(PassContext(), c)
+        >>> new
+        1-qubit circuit with 2 instructions:
+        ├── H @ q[0]
+        └── X @ q[0]
+        <BLANKLINE>
+
+        To run it in an execution, give it to a backend as
+        ``backend.execute(c, passes=PassPipeline([DropBarriersPass()]))``.
     """
 
     @abc.abstractmethod
-    def spec(self) -> PassSpec: ...
+    def spec(self) -> PassSpec:
+        """Return a :class:`PassSpec` describing the pass.
+
+        Its name is how the preparation flags and
+        :class:`MimiqRemoteBackend` identify the pass.
+        """
 
     @abc.abstractmethod
-    def apply(self, ctx: PassContext, circuit) -> tuple[Any, PassResult]: ...
+    def apply(self, ctx: PassContext, circuit) -> tuple[Any, PassResult]:
+        """Run the pass on ``circuit``.
+
+        Args:
+            ctx: The :class:`PassContext` of the run.
+            circuit: The input circuit. Return a new circuit rather than
+                changing it in place.
+
+        Returns:
+            A tuple ``(new_circuit, PassResult)``. A pass that relabels
+            qubits reports it in :attr:`PassResult.qubit_permutation`.
+        """
 
     def preserves(self, feature: str) -> bool:
+        """Return whether the pass keeps ``feature`` of the input circuit intact.
+
+        The default returns ``True`` for every feature; override it when the
+        pass breaks one. Neither :func:`apply_passes` nor the execute driver
+        reads it.
+
+        Args:
+            feature: One of ``"feed_forward"``, ``"midcircuit_measure"``,
+                ``"parametric"``, ``"loss"``, ``"exact_equivalence"``,
+                ``"strict_qubit_count"``.
+        """
         return True
 
 
@@ -235,13 +358,35 @@ class AbstractPass(abc.ABC):
 
 @dataclass
 class PassPipeline:
-    """An ordered, iterable sequence of passes.
+    """An ordered sequence of passes.
 
-    Run via :func:`apply_passes`, which composes each pass's
-    ``qubit_permutation`` into a single permutation. Callers use the
-    inverse of that permutation to map samples and
-    ``Amplitude`` / ``ExpectationValue`` results back to the user's
-    original qubit space.
+    It supports ``len``, indexing and iteration, and ``+`` appends another
+    pipeline or a list of passes, returning a new pipeline. Run it with
+    :func:`apply_passes`, or give it to :meth:`Backend.execute` as
+    ``passes``.
+
+    Attributes:
+        passes (list[AbstractPass]): The passes, in the order they run.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import (
+        ...     CanonicalDecomposePass, PassContext, PassPipeline, apply_passes)
+        >>> pipeline = PassPipeline([CanonicalDecomposePass()])
+        >>> len(pipeline)
+        1
+
+        Run the pipeline on a circuit. The Hadamard becomes a ``U`` gate,
+        and no qubit was relabelled.
+
+        >>> c = Circuit().push(GateH(), 0)
+        >>> new, perm, results = apply_passes(pipeline, PassContext(), c)
+        >>> new
+        1-qubit circuit with 1 instruction:
+        └── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+        <BLANKLINE>
+        >>> perm is None
+        True
     """
 
     passes: list[AbstractPass] = field(default_factory=list)
@@ -466,11 +611,13 @@ def resolve_pipeline(
 
 
 class UnacceptedPassError(Exception):
-    """Raised when a pipeline contains a pass the backend rejects.
+    """Error for a pass the backend refuses in :meth:`Backend.accepts_pass`.
 
-    The backend's :meth:`Backend.accepts_pass` is the gate; the
-    pipeline fails loudly rather than silently dropping a pass the
-    user explicitly requested.
+    :func:`apply_passes` raises it instead of skipping the pass.
+
+    Args:
+        backend_name: Name of the backend.
+        pass_name: Name of the pass, from its :class:`PassSpec`.
     """
 
     def __init__(self, backend_name: str, pass_name: str):
@@ -483,13 +630,15 @@ class UnacceptedPassError(Exception):
 
 
 class RemotePassOrderError(Exception):
-    """Raised when an ordered pipeline is submitted to a remote
-    backend that does not advertise the ``"pass_order_honored"``
-    capability while ``strict_pass_order=True``.
+    """Error for a non-empty ``passes`` given to a remote backend that does
+    not declare ``"pass_order_honored"``, with ``strict_pass_order=True``.
 
-    Pass ``strict_pass_order=False`` to opt into an unordered
-    submission (recognised passes are translated into the server's
-    flat option set; unrecognised passes are dropped with a warning).
+    Pass ``strict_pass_order=False`` to submit the passes as an unordered
+    set instead: :class:`MimiqRemoteBackend` translates the passes it knows
+    into server options and drops the others with a warning.
+
+    Args:
+        backend_name: Name of the backend.
     """
 
     def __init__(self, backend_name: str):
@@ -521,7 +670,20 @@ def _compose_perm(prev: list[int], new: list[int]) -> list[int]:
 
 
 def invert_perm(perm: list[int]) -> list[int]:
-    """Inverse of a 1-based permutation."""
+    """Return the inverse of a 1-based permutation.
+
+    Args:
+        perm: The permutation, as a list of the values ``1`` to ``len(perm)``.
+
+    Returns:
+        The inverse permutation, also 1-based.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import invert_perm
+        >>> invert_perm([2, 3, 1])
+        [3, 1, 2]
+    """
     inv = [0] * len(perm)
     for i, p in enumerate(perm, start=1):
         inv[p - 1] = i
@@ -530,17 +692,29 @@ def invert_perm(perm: list[int]) -> list[int]:
 
 def apply_passes(pipeline: PassPipeline, ctx: PassContext, circuit
                  ) -> tuple[Any, Optional[list[int]], list[PassResult]]:
-    """Run ``pipeline`` against ``circuit``.
+    """Run the passes of ``pipeline`` on ``circuit``, in order.
 
-    Returns ``(transformed_circuit, composed_permutation,
-    per_pass_results)``. ``composed_permutation`` is ``None`` when
-    every pass left qubit indices unchanged.
+    When ``ctx.backend`` is set, each pass is first checked with
+    :meth:`Backend.accepts_pass`. A pass for which
+    :meth:`Backend.delegates_pass` returns ``True`` is not run: its result
+    is ``PassResult(metadata={"delegated": True})`` and the backend does the
+    work itself.
 
-    Raises :class:`UnacceptedPassError` if the backend rejects any
-    pass. When the backend reports ``delegates_pass(p) is True`` the
-    pass is *not* run here: the pipeline records a marker result and
-    the backend handles the pass natively inside its ``compile`` or
-    ``evolve``.
+    Args:
+        pipeline: The passes to run.
+        ctx: The :class:`PassContext` given to every pass.
+        circuit: The input circuit. It is passed to the first pass as it is.
+
+    Returns:
+        A tuple ``(circuit, permutation, results)``: the transformed circuit,
+        the composition of every reported ``qubit_permutation`` (``None``
+        when no pass reported one), and one :class:`PassResult` per pass.
+
+    Raises:
+        UnacceptedPassError: If the backend refuses a pass.
+
+    See Also:
+        :class:`PassPipeline`, whose example runs a pipeline.
     """
     backend = ctx.backend
     results: list[PassResult] = []

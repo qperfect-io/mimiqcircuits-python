@@ -19,7 +19,9 @@ import numpy as np
 from typing import List, Union
 import symengine as se
 from mimiqcircuits._sympycheck import _is_sympy_matrix
-import mimiqcircuits as mc
+from mimiqcircuits.operations.operator import AbstractOperator
+from mimiqcircuits.operations.operators.custom import Operator
+from mimiqcircuits.operations.operators.lossyoperator import LossyOperator
 from mimiqcircuits.operations.krauschannel import krauschannel
 
 
@@ -29,69 +31,72 @@ def is_valid_power_of_2(n):
 
 
 def _is_approx_identity(matrix, size, rtol=1e-12, atol=1e-12):
-    """Check if the matrix is approximately the identity matrix using relative and absolute tolerance."""
-    identity_matrix = se.eye(size)
-    for i in range(size):
-        for j in range(size):
-            diff = abs(matrix[i, j] - identity_matrix[i, j])
-            # Use both relative tolerance (rtol) and absolute tolerance (atol)
-            if diff > atol + rtol * abs(identity_matrix[i, j]):
-                return False
-    return True
+    """Whether ``matrix`` is close to the identity in norm, as Julia's ``isapprox``."""
+    m = np.asarray(matrix, dtype=np.complex128)
+    diff = np.linalg.norm(m - np.eye(size))
+    return diff <= max(atol, rtol * max(np.linalg.norm(m), np.sqrt(size)))
 
 
 class Kraus(krauschannel):
-    r"""Kraus(kmatrices).
+    r"""Custom N-qubit Kraus channel given by a list of Kraus operators.
 
-    Custom N-qubit Kraus channel specified by a list of 2^N x 2^N Kraus matrices.
-
-    A Kraus channel is defined by:
+    The channel acts on a density matrix as
 
     .. math::
         \mathcal{E}(\rho) = \sum_k E_k \rho E_k^\dagger,
 
-    where :math:`E_k` are Kraus matrices that need to fulfill :math:`\sum_k E_k^\dagger E_k = I`.
+    where the Kraus operators :math:`E_k` must fulfill
+    :math:`\sum_k E_k^\dagger E_k = I`. If all Kraus operators are proportional
+    to unitaries, :class:`MixedUnitary` is the better choice, since it can be
+    sampled as a random unitary.
 
-    If the Kraus matrices are all proportional to unitaries, use :func:`MixedUnitary` instead.
+    Matrices are written in the computational basis in the usual textbook order,
+    with the first qubit as the left-most one: :math:`|0\rangle, |1\rangle` for
+    one qubit, :math:`|00\rangle, |01\rangle, |10\rangle, |11\rangle` for two.
 
-    The Kraus matrices are defined in the computational basis in the usual textbook order
-    (the first qubit corresponds to the left-most qubit).
-    For 1 qubit, we have :math:`|0\rangle`, :math:`|1\rangle`.
-    For 2 qubits, we have :math:`|00\rangle`, :math:`|01\rangle`, :math:`|10\rangle`, :math:`|11\rangle`.
+    A `Kraus` channel models qubit loss when one or more of its operators is a
+    :class:`LossyOperator`. The entries of a :class:`LossyOperator` are
+    amplitudes, not probabilities: :meth:`losseffect` returns the loss
+    probabilities as :math:`\sum_k L_k^\dagger L_k` over the lossy branches
+    :math:`L_k`. :meth:`hasloss`, :meth:`lossoperators` and
+    :meth:`survivaloperators` split the channel into lossy and surviving
+    branches.
 
-    .. note::
-        Currently, only 1 and 2-qubit custom Kraus channels are supported.
+    Args:
+        E: Kraus operators, each a :math:`2^N \times 2^N` matrix (symengine,
+            sympy or numpy) or an operator such as :class:`Operator`,
+            :class:`Projector0` or :class:`LossyOperator`. Matrices are wrapped
+            in :class:`Operator`. All entries must act on the same number of
+            qubits :math:`N`.
+        rtol: Tolerance of the check :math:`\sum_k E_k^\dagger E_k = I`
+            (default ``1e-12``). The check is skipped when any entry is
+            symbolic.
 
-    A `Kraus` channel becomes loss-aware simply by including one or more
-    :class:`LossyOperator` branches in ``E``. In that case, :meth:`hasloss`
-    returns ``True`` and :meth:`lossoperators`, :meth:`survivaloperators`, and
-    :meth:`losseffect` can be used to inspect the leakage structure.
+    Raises:
+        ValueError: If ``E`` is empty, the operators have different sizes, the
+            size is not a power of 2, :math:`N` is not 1 or 2, or the numeric
+            operators do not fulfill :math:`\sum_k E_k^\dagger E_k = I`.
+        TypeError: If an entry of ``E`` is neither a matrix nor an operator.
 
-    The entries of a :class:`LossyOperator` are amplitudes, not probabilities.
-    The corresponding loss probabilities appear in :meth:`losseffect`, which
-    sums :math:`L_k^\dagger L_k` over all lossy branches :math:`L_k`.
+    Note:
+        Only 1- and 2-qubit custom Kraus channels are supported.
 
     See Also:
-        :class:`MixedUnitary`
-        :class:`GateCustom`
-        :class:`LossyOperator`
+        :class:`MixedUnitary`, :class:`GateCustom`, :class:`LossyOperator`,
         :class:`Operator`
-
-    Parameters:
-        kmatrices (list): List of :math:`2^N \times 2^N` complex matrices. The number of qubits is equal to :math:`N`.
 
     Examples:
         >>> from mimiqcircuits import *
         >>> from symengine import *
+        >>> # amplitude damping with gamma = 0.1, written out by hand
         >>> c = Circuit()
         >>> c.push(Kraus([Matrix([[1, 0], [0, sqrt(0.9)]]), Matrix([[0, sqrt(0.1)], [0, 0]])]), 0)
         1-qubit circuit with 1 instruction:
         └── Kraus(Operator([[1, 0], [0, 0.948683298050514]]), Operator([[0, 0.316227766016838], [0, 0]])) @ q[0]
         <BLANKLINE>
 
-        Kraus Matrices
-
-        >>> g=Kraus([Matrix([[1, 0], [0, sqrt(0.9)]]), Matrix([[0, sqrt(0.1)], [0, 0]])])
+        >>> # the Kraus matrices can be read back
+        >>> g = Kraus([Matrix([[1, 0], [0, sqrt(0.9)]]), Matrix([[0, sqrt(0.1)], [0, 0]])])
         >>> g.krausmatrices()
         [[1.0, 0]
         [0, 0.948683298050514]
@@ -99,24 +104,21 @@ class Kraus(krauschannel):
         [0, 0]
         ]
 
-        # Example 2: Kraus with Projector0 and Projector1
-
+        >>> # operators can be used directly: here a Z-basis dephasing
         >>> c = Circuit()
         >>> c.push(Kraus([Projector0(), Projector1()]), 0)
         1-qubit circuit with 1 instruction:
         └── Kraus(P₀(1), P₁(1)) @ q[0]
         <BLANKLINE>
 
-        # Example 3: Kraus with a matrix and Projector1
-
+        >>> # matrices and operators can be mixed
         >>> c = Circuit()
         >>> c.push(Kraus([Matrix([[1, 0], [0, 0]]), Projector1()]), 0)
         1-qubit circuit with 1 instruction:
         └── Kraus(Operator([[1, 0], [0, 0]]), P₁(1)) @ q[0]
         <BLANKLINE>
 
-        # Example 4: Loss-aware Kraus with a LossyOperator branch
-
+        >>> # a lossy branch: the qubit is lost from |1> with probability 0.2
         >>> lossy = LossyOperator(Matrix([[0, 0], [0, sqrt(0.2)]]))
         >>> survival = Operator(Matrix([[1, 0], [0, sqrt(0.8)]]))
         >>> lk = Kraus([survival, lossy])
@@ -134,9 +136,8 @@ class Kraus(krauschannel):
         1-qubit Operator:
         ├── 0.0 + 0.0*I 0.0 + 0.0*I
         └── 0.0 + 0.0*I 0.2 + 0.0*I
-        
-        # Example 5: Symbolic Kraus evaluation
 
+        >>> # symbolic parameters are substituted with evaluate
         >>> x = Symbol("x")
         >>> g = Kraus([Projector0(), Projector1(x)])
         >>> g
@@ -150,7 +151,7 @@ class Kraus(krauschannel):
 
     def __init__(
         self,
-        E: List[Union[se.Matrix, np.ndarray, "sympy.Matrix", mc.AbstractOperator]],
+        E: List[Union[se.Matrix, np.ndarray, "sympy.Matrix", AbstractOperator]],
         rtol=1e-12,
     ):
         if len(E) == 0:
@@ -158,10 +159,10 @@ class Kraus(krauschannel):
 
         Es = []
         for Ek in E:
-            if isinstance(Ek, mc.AbstractOperator):
+            if isinstance(Ek, AbstractOperator):
                 Es.append(Ek)
             elif isinstance(Ek, (se.Matrix, np.ndarray)) or _is_sympy_matrix(Ek):
-                Es.append(mc.Operator(self._convert_to_matrix(Ek)))
+                Es.append(Operator(self._convert_to_matrix(Ek)))
             else:
                 raise TypeError(f"Unsupported operator type: {type(Ek)}")
 
@@ -195,12 +196,6 @@ class Kraus(krauschannel):
                 @ np.array(op.matrix().tolist(), dtype=np.complex128)
                 for op in Es
             )
-            if not np.allclose(ksum, np.eye(M, dtype=np.complex128), rtol=1e-12):
-                raise ValueError(
-                    "List of Kraus matrices should fulfill \\sum_k E_k^\\dagger E_k = I."
-                )
-
-            # Check if ksum is approximately the identity matrix
             if not _is_approx_identity(ksum, M, rtol):
                 raise ValueError(
                     "List of Kraus matrices should fulfill \\sum_k E_k^\\dagger E_k = I."
@@ -213,17 +208,24 @@ class Kraus(krauschannel):
         self._parnames = ("E",)
 
     def evaluate(self, values: dict):
-        """Evaluates symbolic parameters in Kraus matrices using a dictionary of values.
+        """Return a copy with symbols substituted by values.
+
+        The normalization check runs again on the result when it is fully
+        numeric, with the default tolerance.
 
         Args:
-            values (dict): A dictionary where keys are symbolic variables and values are the corresponding numerical values.
+            values: Map from symbols to the values to substitute.
 
         Returns:
-            Kraus: A new Kraus instance with evaluated matrices.
+            Kraus: A new channel with substituted operators.
+
+        Raises:
+            ValueError: If the substituted operators do not fulfill
+                :math:`\\sum_k E_k^\\dagger E_k = I`.
         """
         evaluated_E = []
         for op in self.E:
-            if isinstance(op, mc.Operator):
+            if isinstance(op, Operator):
                 # Substitute symbolic parameters in the matrix
                 matrix = op.matrix()
                 evaluated_matrix = se.Matrix(
@@ -232,7 +234,7 @@ class Kraus(krauschannel):
                         for row in matrix.tolist()
                     ]
                 )
-                evaluated_E.append(mc.Operator(evaluated_matrix))
+                evaluated_E.append(Operator(evaluated_matrix))
             else:
                 # If it's already an AbstractOperator, we just append it
                 evaluated_E.append(op.evaluate(values))
@@ -255,20 +257,23 @@ class Kraus(krauschannel):
         return 1 << operator.num_qubits
 
     def krausoperators(self):
-        """Returns the Kraus operators."""
+        """Return the Kraus operators, in the order they were given."""
         return self.E
 
     def hasloss(self):
-        """Return True when the channel contains any LossyOperator branch."""
-        return any(isinstance(op, mc.LossyOperator) for op in self.E)
+        """Whether any Kraus operator is a :class:`LossyOperator`.
+
+        Same result as :meth:`haslossybranch`.
+        """
+        return any(isinstance(op, LossyOperator) for op in self.E)
 
     def lossoperators(self):
-        """Return the LossyOperator branches of the channel."""
-        return [op for op in self.E if isinstance(op, mc.LossyOperator)]
+        """Return the Kraus operators that are :class:`LossyOperator`, in order."""
+        return [op for op in self.E if isinstance(op, LossyOperator)]
 
     def survivaloperators(self):
-        """Return the non-lossy branches of the channel."""
-        return [op for op in self.E if not isinstance(op, mc.LossyOperator)]
+        """Return the Kraus operators that are not :class:`LossyOperator`, in order."""
+        return [op for op in self.E if not isinstance(op, LossyOperator)]
 
     def losseffect(self, tol=1e-12):
         r"""Compute the loss-probability operator over all lossy branches.
@@ -292,11 +297,6 @@ class Kraus(krauschannel):
         computational subspace. For a general state :math:`|\psi\rangle`, the
         total loss probability is :math:`\langle\psi|\Lambda|\psi\rangle`.
 
-        .. Note::
-            The entries of :class:`LossyOperator` are amplitudes, not
-            probabilities. ``losseffect()`` converts them into probabilities by
-            summing :math:`L_k^\dagger L_k`.
-
         The survival and lossy operators together satisfy
 
         .. math::
@@ -305,6 +305,16 @@ class Kraus(krauschannel):
         where :math:`S_k` are the non-lossy branches.
 
         If the channel has no lossy operators, the zero matrix is returned.
+
+        Args:
+            tol: Entries with absolute value below ``tol`` are set to zero
+                (default ``1e-12``).
+
+        Returns:
+            Operator: :math:`\Lambda` as a numeric :class:`Operator`.
+
+        Raises:
+            RuntimeError: If a lossy operator has symbolic entries.
 
         See Also:
             :class:`Kraus`, :meth:`lossoperators`, :meth:`survivaloperators`
@@ -322,14 +332,14 @@ class Kraus(krauschannel):
         M = 1 << self.N
         loss_ops = self.lossoperators()
         if not loss_ops:
-            return mc.Operator(np.zeros((M, M), dtype=np.complex128))
+            return Operator(np.zeros((M, M), dtype=np.complex128))
 
         effect = np.zeros((M, M), dtype=np.complex128)
         for op in loss_ops:
             effect += np.array(op.opsquared().matrix().tolist(), dtype=np.complex128)
 
         effect[np.abs(effect) < tol] = 0
-        return mc.Operator(effect)
+        return Operator(effect)
 
     def __str__(self):
         """String representation, listing either AbstractOperators or matrix slices."""
@@ -346,7 +356,7 @@ class Kraus(krauschannel):
         return f"{self._name}({matrices_str})"
 
     def unwrappedkrausmatrices(self):
-        """Returns the unwrapped Kraus matrices."""
+        """Return the Kraus matrices; same as :meth:`krausmatrices`."""
         return self.krausmatrices()
 
 

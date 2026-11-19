@@ -16,13 +16,14 @@
 #
 """Decomposition bases for quantum circuits.
 
-Available bases:
-    - :class:`CanonicalBasis`: Decomposes to GateU + GateCX (default)
-    - :class:`CliffordTBasis`: Decomposes to Clifford+T gate set
-    - :class:`FlattenedBasis`: Flattens container operations
-    - :class:`QASMBasis`: Decomposes to OpenQASM 2.0 gate set
-    - :class:`StimBasis`: Decomposes to Stim Clifford gate set
-    - :class:`RuleBasis`: Wraps a RewriteRule as a DecompositionBasis
+The available bases are:
+
+- :class:`CanonicalBasis`: Decomposes to GateU + GateCX (default)
+- :class:`CliffordTBasis`: Decomposes to Clifford+T gate set
+- :class:`FlattenedBasis`: Flattens container operations
+- :class:`QASMBasis`: Decomposes to OpenQASM 2.0 gate set
+- :class:`StimBasis`: Decomposes to Stim Clifford gate set
+- :class:`RuleBasis`: Wraps a RewriteRule as a DecompositionBasis
 """
 
 from mimiqcircuits.decomposition.basis.canonical import CanonicalBasis

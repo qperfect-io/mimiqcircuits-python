@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from mimiqcircuits.bitstrings import bitvec_to_int
 import math
 from statistics import mean, median, stdev
 
@@ -88,21 +87,93 @@ def _display_stdev(values):
 
 
 class QCSResults:
-    """
-    Represents the results of quantum computations obtained from quantum cloud services (QCS).
+    """Results of a circuit execution.
+
+    Remote executions (``get_result``/``get_results`` on a connection) and
+    local backends return this object. Every argument is optional and stored
+    as an attribute of the same name; missing lists and dictionaries start
+    empty.
 
     Args:
-        simulator (str): The name of the quantum simulator.
-        version (str): The version of the quantum simulator.
-        fidelities (list): List of fidelity estimates from different executions.
-        avggateerrors (list): List of average multi-qubit gate errors from different executions.
-        cstates (list[BitString]): List of classical states obtained from
-            executions. Always ``BitString``, whether the results come from a
-            local backend or are decoded from protobuf.
-        zstates (list): Not used in the current implementation.
-        amplitudes (dict): Dictionary of statevector amplitudes for different quantum states.
-        timings (dict): Dictionary of timing information for different phases of the computation.
+        simulator (str, optional): The name of the simulator.
+        version (str, optional): The version of the simulator.
+        fidelities (list, optional): One fidelity estimate per execution of
+            the circuit.
+        avggateerrors (list, optional): One average multi-qubit gate error
+            estimate per execution.
+        cstates (list[BitString], optional): The sampled classical registers,
+            one :class:`BitString` per sample.
+        zstates (list, optional): The sampled complex-valued ``z`` registers,
+            one sequence of numbers per sample.
+        amplitudes (dict, optional): Statevector amplitudes, mapping a
+            :class:`BitString` to a complex number.
+        timings (dict, optional): Time in seconds spent in each phase of the
+            computation, keyed by phase name (for example ``"total"``).
 
+    Examples:
+        Results normally come from a connection:
+
+        >>> from mimiqcircuits import *
+        >>> conn = MimiqConnection()
+        >>> conn.connect()  # doctest: +SKIP
+        >>> c = Circuit()
+        >>> c.push(GateH(), 0)
+        1-qubit circuit with 1 instruction:
+        └── H @ q[0]
+        <BLANKLINE>
+        >>> c.push(Measure(), 0, 0)
+        1-qubit, 1-bit circuit with 2 instructions:
+        ├── H @ q[0]
+        └── M @ q[0], c[0]
+        <BLANKLINE>
+        >>> job = conn.submit(c, nsamples=1000)  # doctest: +SKIP
+        >>> res = conn.get_result(job)  # doctest: +SKIP
+
+        Here we build one by hand to show how to inspect it: five samples of
+        a two-bit register and one amplitude.
+
+        >>> res = QCSResults(
+        ...     simulator="MIMIQ-StateVector",
+        ...     version="1.0",
+        ...     fidelities=[1.0],
+        ...     avggateerrors=[0.0],
+        ...     cstates=[BitString("00"), BitString("11"), BitString("11"),
+        ...              BitString("00"), BitString("11")],
+        ...     amplitudes={BitString("00"): 0.7071 + 0j},
+        ...     timings={"total": 0.0012, "sample": 0.0002},
+        ... )
+
+        The printed summary shows timings, fidelity, and the most sampled
+        states.
+
+        >>> res
+        QCSResults:
+        ├── simulator: MIMIQ-StateVector 1.0
+        ├── timings:
+        │    ├── sample time: 200μs
+        │    └── total time: 1.2ms
+        ├── fidelity estimate: 1
+        ├── average multi-qubit gate error estimate: 0
+        ├── most sampled:
+        │    ├── bs"11" => 3
+        │    └── bs"00" => 2
+        ├── 1 executions
+        ├── 1 amplitudes
+        └── 5 samples
+
+        The raw data is available as attributes.
+
+        >>> len(res.cstates)
+        5
+        >>> res.cstates[0]
+        bs"00"
+        >>> res.amplitudes[BitString("00")]
+        (0.7071+0j)
+
+        :meth:`histogram` counts how often each state was sampled.
+
+        >>> res.histogram()
+        {bs"00": 2, bs"11": 3}
     """
 
     def __init__(
@@ -251,7 +322,7 @@ class QCSResults:
             hist = self.histogram()
             outcomes = sorted(hist, key=hist.get, reverse=True)[0:10]
             for bs in outcomes:
-                html_output += f'<tr><td style="text-align:left;font-family: monospace;">{hex(bitvec_to_int(bs.bits))}</td><td style="text-align:left;font-family: monospace;">{bs.to01()}</td><td style="font-family: monospace;">{hist[bs]}</td></tr>'
+                html_output += f'<tr><td style="text-align:left;font-family: monospace;">{hex(bs.tointeger())}</td><td style="text-align:left;font-family: monospace;">{bs.to01()}</td><td style="font-family: monospace;">{hist[bs]}</td></tr>'
             html_output += "<tr><td colspan=2><hr></td></tr>"
 
         # Statevector Amplitudes
@@ -259,7 +330,7 @@ class QCSResults:
             html_output += "<tr><td colspan=2></td></tr>"
             html_output += '<tr><td colspan=2 style="text-align:center;"><strong>Statevector Amplitudes</strong></td></tr>'
             for bs, amp in self.amplitudes.items():
-                html_output += f'<tr><td style="text-align:left;">{hex(bitvec_to_int(bs.bits))}</td><td style="text-align:left;">{bs.to01()}</td><td>{amp:.3f}</td></tr>'
+                html_output += f'<tr><td style="text-align:left;">{hex(bs.tointeger())}</td><td style="text-align:left;">{bs.to01()}</td><td>{amp:.3f}</td></tr>'
             html_output += "<tr><td colspan=2><hr></td></tr>"
 
         if len(self.zstates) > 0 and any(len(zstate) > 0 for zstate in self.zstates):
@@ -275,14 +346,18 @@ class QCSResults:
         return html_output
 
     def histogram(self):
-        """Histogram of the obtained classical states' occurrences.
+        """Count how often each classical state was sampled.
 
         Returns:
-            A dictionary of classical states (``BitString``) and their
-            occurrences (float).
+            dict: A mapping from each sampled :class:`BitString` in
+            ``cstates`` to its number of occurrences (``int``), in order of
+            first appearance.
 
-        Raises:
-            TypeError: If a non QCSResults object is passed.
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> res = QCSResults(cstates=[BitString("01"), BitString("10"), BitString("01")])
+            >>> res.histogram()
+            {bs"01": 2, bs"10": 1}
         """
         hist = {}
 
@@ -295,8 +370,18 @@ class QCSResults:
         return hist
 
     def histzvars(self):
-        """
-        Histogram of the obtained zstates' occurrences.
+        """Count how often each ``z`` register state was sampled.
+
+        Returns:
+            dict: A mapping from each state in ``zstates``, converted to a
+            tuple, to its number of occurrences (``int``), in order of first
+            appearance.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> res = QCSResults(zstates=[[1.0], [0.5], [1.0]])
+            >>> res.histzvars()
+            {(1.0,): 2, (0.5,): 1}
         """
         hist = {}
 
@@ -310,78 +395,35 @@ class QCSResults:
         return hist
 
     def saveproto(self, file):
-        """Save QCSResults object to a Protocol Buffers file.
+        """Save the results to a protobuf file.
+
+        Args:
+            file (str or file-like): A path, or a binary file object with a
+                ``write`` method.
+
+        Returns:
+            int: The number of bytes written.
+
+        Raises:
+            ValueError: If the file cannot be written.
 
         Examples:
-
             >>> from mimiqcircuits import *
-            >>> from symengine import *
-            >>> import os
-            >>> import tempfile
-            >>> x, y = symbols("x y")
-            >>> c = Circuit()
-            >>> c.push(GateH(), 0)
-            1-qubit circuit with 1 instructions:
-            └── H @ q[0]
-            <BLANKLINE>
-            >>> conn = MimiqConnection()
-            >>> conn.connect(os.getenv("MIMIQUSER"), os.getenv("MIMIQPASS"))
-            MimiqConnection:
-            ├── url: https://mimiq.qperfect.io
-            ├── Max time limit per request: 360 minutes
-            ├── Default time limit is equal to max time limit: 360 minutes
-            └── status: open
-            >>> job = conn.execute(c)
-            >>> res = conn.get_result(job)
-            >>> res
-            QCSResults:
-            ├── simulator: MIMIQ-MPS 0.18.3
-            ├── timings:
-            │    ├── amplitudes time: 1.65e-07s
-            │    ├── sample time: 0.000204869s
-            │    ├── parse time: 0.000296368s
-            │    ├── total time: 0.001337133s
-            │    ├── compression time: 0.000166837s
-            │    └── apply time: 0.0003098s
-            ├── fidelity estimate: 1
-            ├── average multi-qubit gate error estimate: 0
-            ├── most sampled:
-            │    ├── bs"1" => 537
-            │    └── bs"0" => 463
-            ├── 1 executions
-            ├── 0 amplitudes
-            └── 1000 samples
+            >>> import os, tempfile
+            >>> res = QCSResults(
+            ...     simulator="MIMIQ-StateVector",
+            ...     version="1.0",
+            ...     cstates=[BitString("01"), BitString("01"), BitString("10")],
+            ... )
 
-            >>> tmpfile = tempfile.NamedTemporaryFile(suffix=".pb", delete=True)
-            >>> res.saveproto(tmpfile.name)
-            7161
-            >>> res.loadproto(tmpfile.name)
-            QCSResults:
-            ├── simulator: MIMIQ-MPS 0.18.3
-            ├── timings:
-            │    ├── parse time: 0.000296368s
-            │    ├── sample time: 0.000204869s
-            │    ├── amplitudes time: 1.65e-07s
-            │    ├── total time: 0.001337133s
-            │    ├── compression time: 0.000166837s
-            │    └── apply time: 0.0003098s
-            ├── fidelity estimate: 1
-            ├── average multi-qubit gate error estimate: 0
-            ├── most sampled:
-            │    ├── bs"1" => 537
-            │    └── bs"0" => 463
-            ├── 1 executions
-            ├── 0 amplitudes
-            └── 1000 samples
+            Write the results to a file, then read them back with the static
+            method :meth:`loadproto`.
 
-            Note:
-                This example uses a temporary file to demonstrate the save and load functionality.
-                You can save your file with any name at any location using:
-
-                .. code-block:: python
-
-                    res.saveproto("example.pb")
-                    res.loadproto("example.pb")
+            >>> path = os.path.join(tempfile.mkdtemp(), "results.pb")
+            >>> nbytes = res.saveproto(path)
+            >>> loaded = QCSResults.loadproto(path)
+            >>> loaded.histogram() == res.histogram()
+            True
         """
         from mimiqcircuits.proto.protoio import saveproto
 
@@ -389,14 +431,22 @@ class QCSResults:
 
     @staticmethod
     def loadproto(file):
-        """Load QCSResults object from a Protocol Buffers file.
+        """Load results from a protobuf file written by :meth:`saveproto`.
 
-        The :func:`loadproto` method is a static method and should be called on the class,
-        not on an instance of the class.
+        This is a static method: call it on the class.
 
-        Note:
+        Args:
+            file (str or file-like): A path, or a binary file object with a
+                ``read`` method.
 
-            Look for example in :func:`QCSResults.saveproto`
+        Returns:
+            QCSResults: The loaded results.
+
+        Raises:
+            ValueError: If the file cannot be read or parsed.
+
+        See Also:
+            :meth:`saveproto`, which has an example.
         """
         from mimiqcircuits.proto.protoio import loadproto
 

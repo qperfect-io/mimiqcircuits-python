@@ -14,56 +14,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Quantum circuit decomposition framework.
+"""Rewrite circuits into a target gate set.
 
-This module provides a flexible framework for decomposing quantum circuits
-into different target gate sets.
+The framework has two building blocks. A :class:`RewriteRule` says *how* to
+rewrite one operation into simpler ones, one step at a time, and nothing
+about when to stop. A :class:`DecompositionBasis` says *what is terminal*,
+the operations to keep, and how to rewrite everything else; :func:`decompose`
+applies it recursively until only terminal operations are left.
 
-Core Concepts
--------------
+.. rubric:: Functions
 
-**RewriteRule**: Single-step transformation rules that define *how* to
-transform operations, but not *when* to stop.
+- :func:`decompose`: recursively decompose a circuit, instruction or
+  operation to a basis, and return a new circuit.
+- :func:`eachdecomposed`: the same, as a lazy iterator over the resulting
+  instructions.
+- :func:`decompose_step`: apply a rewrite rule once, without recursion.
+- :class:`DecomposeIterator`: the iterator behind :func:`decompose` and
+  :func:`eachdecomposed`.
 
-**DecompositionBasis**: Recursive decomposition targets that define both
-*what is terminal* (operations that shouldn't be decomposed) and *how to
-decompose* non-terminal operations.
+A function that takes a basis also accepts a rewrite rule, wrapped in a
+:class:`RuleBasis`.
 
-Main Functions
---------------
+.. rubric:: Bases
 
-- :func:`decompose`: Recursively decompose a circuit to a target basis
-- :func:`decompose_step`: Apply a single decomposition step
+- :class:`CanonicalBasis`: ``GateU`` and ``GateCX``, plus the non-unitary
+  primitives. The default.
+- :class:`CliffordTBasis`: Clifford+T, approximating arbitrary rotations.
+- :class:`StimBasis`: the Clifford gates, measurements and noise of Stim.
+- :class:`QASMBasis`: the OpenQASM 2.0 gate library (``qelib1.inc``).
+- :class:`FlattenedBasis`: expands ``GateCall``, ``Block`` and ``BlockCall``
+  containers and keeps everything else.
+- :class:`RuleBasis`: applies one rewrite rule until it no longer matches.
 
-Available Bases
----------------
+.. rubric:: Rules
 
-- :class:`CanonicalBasis`: Decomposes to GateU + GateCX (default)
-- :class:`CliffordTBasis`: Decomposes to Clifford+T gate set
-- :class:`FlattenedBasis`: Flattens GateCall/Block containers
-- :class:`QASMBasis`: Decomposes to OpenQASM 2.0 gate set
-- :class:`StimBasis`: Decomposes to Stim Clifford gate set
-- :class:`RuleBasis`: Wraps any RewriteRule as a DecompositionBasis
+- :class:`CanonicalRewrite`: the built-in decomposition of each operation.
+- :class:`FlattenContainers`: expands one level of ``GateCall``, ``Block``
+  and ``BlockCall``.
+- :class:`ZYZRewrite`: ``GateU`` and ``GateRX`` to Z and Y rotations.
+- :class:`ToZRotationRewrite`: ``GateRX`` and ``GateRY`` to ``GateRZ`` and
+  Clifford gates.
+- :class:`SpecialAngleRewrite`: rotations by multiples of ``pi/4`` to exact
+  Clifford+T gates.
+- :class:`ToffoliToCliffordTRewrite`: ``GateCCX`` to Clifford+T with 7 T
+  gates.
+- :class:`GridSynthRewrite`: ``GateRZ`` approximated with Clifford+T by the
+  Ross-Selinger algorithm.
+- :class:`SolovayKitaevRewrite`: single-qubit rotations approximated with
+  Clifford+T by the Solovay-Kitaev algorithm.
 
-Available Rules
----------------
+An operation that a basis cannot rewrite raises :class:`DecompositionError`.
 
-- :class:`CanonicalRewrite`: Uses built-in gate decomposition methods
-- :class:`FlattenContainers`: Flattens GateCall/Block containers
-- :class:`ZYZRewrite`: ZYZ Euler angle decomposition
-- :class:`SpecialAngleRewrite`: Rotations with special angles -> Clifford+T
-- :class:`ToZRotationRewrite`: Convert RX/RY to RZ + Clifford
-- :class:`ToffoliToCliffordTRewrite`: Toffoli -> Clifford+T decomposition
-- :class:`SolovayKitaevRewrite`: Solovay-Kitaev approximation with Clifford+T
-- :class:`GridSynthRewrite`: Ross-Selinger approximation of RZ with Clifford+T
-
-Usage
------
-
-Basic decomposition to canonical basis (GateU + GateCX):
-
-    >>> from mimiqcircuits import Circuit, GateH, GateCCX
-    >>> from mimiqcircuits.decomposition import decompose
+Examples:
+    >>> from mimiqcircuits import *
     >>> c = Circuit()
     >>> c.push(GateH(), 0)
     1-qubit circuit with 1 instruction:
@@ -74,49 +77,28 @@ Basic decomposition to canonical basis (GateU + GateCX):
     ├── H @ q[0]
     └── C₂X @ q[0:1], q[2]
     <BLANKLINE>
-    >>> decomposed = decompose(c)
 
-Decompose to Clifford+T:
+    >>> # the default basis leaves only GateU and GateCX
+    >>> sorted({type(inst.operation).__name__ for inst in decompose(c)})
+    ['GateCX', 'GateU']
 
-    >>> from mimiqcircuits.decomposition import decompose, CliffordTBasis
-    >>> decomposed = decompose(c, CliffordTBasis())
+    >>> # the Clifford+T basis rewrites the Toffoli with H, T, T† and CX
+    >>> sorted({type(inst.operation).__name__ for inst in decompose(c, CliffordTBasis())})
+    ['GateCX', 'GateH', 'GateT', 'GateTDG']
 
-Use a specific rewrite rule:
+    >>> # a rule applied once rewrites the Toffoli into 15 gates and keeps H
+    >>> stepped = decompose_step(c, ToffoliToCliffordTRewrite())
+    >>> len(stepped), stepped[0].operation
+    (16, H)
 
-    >>> from mimiqcircuits.decomposition import decompose_step, ZYZRewrite
-    >>> stepped = decompose_step(c, ZYZRewrite())
-
-Creating Custom Rules
----------------------
-
-You can create custom rewrite rules by subclassing :class:`RewriteRule`:
-
-    >>> from mimiqcircuits.decomposition import RewriteRule
-    >>> class MyRewrite(RewriteRule):
-    ...     def matches(self, op):
-    ...         return isinstance(op, SomeGate)
-    ...
-    ...     def decompose_step(self, op, qubits, bits, zvars):
-    ...         from mimiqcircuits import Circuit
-    ...         circ = Circuit()
-    ...         # ... decomposition logic ...
-    ...         return circ
-
-And custom decomposition bases by subclassing :class:`DecompositionBasis`:
-
-    >>> from mimiqcircuits.decomposition import DecompositionBasis
-    >>> class MyBasis(DecompositionBasis):
-    ...     def isterminal(self, op):
-    ...         return isinstance(op, (TargetGate1, TargetGate2))
-    ...
-    ...     def decompose(self, op, qubits, bits, zvars):
-    ...         # Use a rewrite rule or custom logic
-    ...         return SomeRewrite().decompose_step(op, qubits, bits, zvars)
+    To add a gate set of your own, subclass :class:`RewriteRule` or
+    :class:`DecompositionBasis`; their documentation shows how.
 """
 
 # Abstract base classes
 from mimiqcircuits.decomposition.abstract import (
     DecompositionBasis,
+    DecompositionContext,
     DecompositionError,
     RewriteRule,
 )
@@ -155,6 +137,7 @@ __all__ = [
     # Abstract base classes
     "RewriteRule",
     "DecompositionBasis",
+    "DecompositionContext",
     "DecompositionError",
     # Decomposition bases
     "CanonicalBasis",

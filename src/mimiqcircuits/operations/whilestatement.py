@@ -17,37 +17,54 @@
 """Conditional loop (WhileStatement)."""
 
 from mimiqcircuits.operations.operation import Operation
-import mimiqcircuits as mc
+from mimiqcircuits.bitstrings import BitString
+from mimiqcircuits.operations.block import Block
 from mimiqcircuits.instruction import _find_unit_range, _string_with_square
 
 
 class WhileStatement(Operation):
-    """Conditional loop operation.
+    """Operation applied repeatedly while classical bits match a bitstring.
 
-    Repeatedly applies the provided operation while the classical register
-    matches the specified ``BitString``.
+    ``WhileStatement(op, bs)`` is the loop counterpart of
+    :class:`IfStatement`. Before each iteration the condition bits are
+    compared with ``bs``; while they match, ``op`` is applied again.
 
-    ``WhileStatement`` is the loop counterpart of :class:`IfStatement`. The body
-    operation ``op`` is executed once for every iteration in which the
-    classical register's state equals the ``BitString``. For the loop to
-    terminate, ``op`` must mutate at least one of the bits used in the
-    condition; ``WhileStatement`` allows body bits to alias condition bits,
-    which is the only way to make progress.
+    The instruction takes the same targets as an :class:`IfStatement`:
+    qubits of ``op``, classical bits of ``op``, ``len(bs)`` condition bits,
+    then z-variables of ``op``. For the loop to end, ``op`` must change at
+    least one condition bit, so the bits of ``op`` may overlap with the
+    condition bits. There is no limit on the number of iterations: a loop
+    whose condition never changes does not terminate.
 
-    There is no built-in iteration cap — a non-terminating circuit is the
-    user's responsibility, mirroring how every classical language treats
-    ``while``.
+    Args:
+        operation: The loop body, or an operation class built with no
+            arguments.
+        bitstring: The values the condition bits must hold for the loop to
+            continue.
+
+    Raises:
+        ValueError: If ``operation`` is not an operation or ``bitstring`` is
+            not a :class:`BitString`.
 
     Examples:
         >>> from mimiqcircuits import *
         >>> c = Circuit()
-        >>> c.push(WhileStatement(Not(), BitString('1')), 0, 0)
-        1-bit circuit with 1 instruction:
-        └── WHILE(c==1) ! @ c[0], condition[0]
+        >>> # measure and reset qubit 0 as long as bit 0 holds 1: the
+        >>> # measurement writes bit 0, which is also the condition bit, and
+        >>> # after the reset it reads 0, which ends the loop
+        >>> c.push(WhileStatement(MeasureReset(), BitString('1')), 0, 0, 0)
+        1-qubit, 1-bit circuit with 1 instruction:
+        └── WHILE(c==1) MR @ q[0], c[0], condition[0]
+        <BLANKLINE>
+        >>> # a classical body: flipping bit 1 while it is 1 runs at most once
+        >>> c.push(WhileStatement(Not(), BitString('1')), 1, 1)
+        1-qubit, 2-bit circuit with 2 instructions:
+        ├── WHILE(c==1) MR @ q[0], c[0], condition[0]
+        └── WHILE(c==1) ! @ c[1], condition[1]
         <BLANKLINE>
 
     See Also:
-        - :class:`IfStatement`
+        :class:`IfStatement`
     """
 
     _name = "While"
@@ -68,7 +85,7 @@ class WhileStatement(Operation):
     _allow_bit_aliasing = True
     _allow_zvar_aliasing = True
 
-    def __init__(self, operation, bitstring: mc.BitString):
+    def __init__(self, operation, bitstring: BitString):
         if isinstance(operation, type) and issubclass(operation, Operation):
             op = operation()
         elif isinstance(operation, Operation):
@@ -76,7 +93,7 @@ class WhileStatement(Operation):
         else:
             raise ValueError("Operation must be an Operation object or type.")
 
-        if not isinstance(bitstring, mc.BitString):
+        if not isinstance(bitstring, BitString):
             raise ValueError("bitstring must be a BitString object.")
 
         super().__init__()
@@ -96,6 +113,7 @@ class WhileStatement(Operation):
 
     @property
     def op(self):
+        """The loop body. Read-only."""
         return self._op
 
     @op.setter
@@ -104,21 +122,38 @@ class WhileStatement(Operation):
 
     @property
     def bitstring(self):
+        """The values the condition bits must hold, as a :class:`BitString`."""
         return self._bitstring
 
     def iswrapper(self):
         return True
 
     def getparams(self):
+        """Return the parameters of the loop body."""
         return self.op.getparams()
 
     def inverse(self):
+        """Not supported for loops.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError("Inverse not implemented for WhileStatement")
 
     def power(self, power):
+        """Not supported for loops.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError("Power not implemented for WhileStatement")
 
     def control(self, num_controls):
+        """Not supported for loops.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError("Control not implemented for WhileStatement")
 
     def __str__(self):
@@ -151,9 +186,11 @@ class WhileStatement(Operation):
         return WhileStatement(self.op.evaluate(d), self.bitstring)
 
     def get_operation(self):
+        """Return the loop body, :attr:`op`."""
         return self.op
 
     def get_bitstring(self):
+        """Return the condition, :attr:`bitstring`."""
         return self.bitstring
 
     def asciiwidth(self, qubits, bits, zvars):
@@ -198,7 +235,7 @@ class WhileStatement(Operation):
             new_bits = b + condition_bits
             circuit.push(WhileStatement(inner_op, bs), *q, *new_bits, *z)
         else:
-            block = mc.Block(instructions)
+            block = Block(op.num_qubits, op.num_bits, op.num_zvars, list(instructions))
             new_bits = target_bits + condition_bits
             circuit.push(
                 WhileStatement(block, bs),

@@ -29,7 +29,7 @@ class _OptState:
     @property
     def complex_values(self): return [complex(math.cos(self.theta))] * self._nz
 
-    def sample(self, nsamples, rng=None, *, seed=None):
+    def sample(self, nsamples, rng=None):
         return [mc.BitString(self._nq) for _ in range(nsamples)]
 
     def amplitude(self, bs):

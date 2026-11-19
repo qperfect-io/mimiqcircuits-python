@@ -24,17 +24,41 @@ from typing import TYPE_CHECKING, Sequence
 from mimiqcircuits.decomposition.abstract import DecompositionError, RewriteRule
 
 if TYPE_CHECKING:
-    from mimiqcircuits import Circuit, Operation
+    from mimiqcircuits.circuit import Circuit
+    from mimiqcircuits.operations.operation import Operation
 
 
 class ToffoliToCliffordTRewrite(RewriteRule):
-    """Decompose ``GateCCX`` into an explicit Clifford+T sequence."""
+    """Rewrite rule that turns a Toffoli gate into Clifford+T gates.
+
+    Replaces ``GateCCX`` by the standard exact circuit of 15 gates: 7 ``T``
+    or ``T†``, 2 ``H`` and 6 ``CX``. No ancilla is used.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> c.push(GateCCX(), 0, 1, 2)
+        3-qubit circuit with 1 instruction:
+        └── C₂X @ q[0:1], q[2]
+        <BLANKLINE>
+        >>> # count the T and T† gates of the rewrite
+        >>> ct = decompose_step(c, ToffoliToCliffordTRewrite())
+        >>> sum(isinstance(inst.operation, (GateT, GateTDG)) for inst in ct)
+        7
+    """
 
     def matches(self, op: Operation) -> bool:
-        """Return True for Toffoli (CCX) gates."""
-        import mimiqcircuits as mc
+        """Check whether an operation is a Toffoli gate.
 
-        return isinstance(op, mc.GateCCX)
+        Args:
+            op: The operation to check.
+
+        Returns:
+            ``True`` for ``GateCCX``.
+        """
+        from mimiqcircuits.operations.gates.standard.cnx import GateCCX
+
+        return isinstance(op, GateCCX)
 
     def decompose_step(
         self,
@@ -43,8 +67,25 @@ class ToffoliToCliffordTRewrite(RewriteRule):
         bits: Sequence[int],
         zvars: Sequence[int],
     ) -> Circuit:
-        """Apply the standard 7-T Toffoli decomposition."""
-        import mimiqcircuits as mc
+        """Rewrite a Toffoli gate as 15 Clifford+T gates.
+
+        Args:
+            op: The ``GateCCX`` to rewrite.
+            qubits: The two control qubits, then the target.
+            bits: Classical bit indices (unused).
+            zvars: Z-variable indices (unused).
+
+        Returns:
+            A new :class:`~mimiqcircuits.Circuit` with the rewrite.
+
+        Raises:
+            DecompositionError: If ``op`` is not a ``GateCCX`` or
+                ``qubits`` does not hold exactly 3 indices.
+        """
+        from mimiqcircuits.circuit import Circuit
+        from mimiqcircuits.operations.gates.standard.cpauli import GateCX
+        from mimiqcircuits.operations.gates.standard.hadamard import GateH
+        from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
 
         if not self.matches(op):
             raise DecompositionError(
@@ -57,23 +98,23 @@ class ToffoliToCliffordTRewrite(RewriteRule):
             )
 
         c1, c2, t = qubits
-        circ = mc.Circuit()
+        circ = Circuit()
 
-        circ.push(mc.GateH(), t)
-        circ.push(mc.GateCX(), c2, t)
-        circ.push(mc.GateTDG(), t)
-        circ.push(mc.GateCX(), c1, t)
-        circ.push(mc.GateT(), t)
-        circ.push(mc.GateCX(), c2, t)
-        circ.push(mc.GateTDG(), t)
-        circ.push(mc.GateCX(), c1, t)
-        circ.push(mc.GateT(), c2)
-        circ.push(mc.GateT(), t)
-        circ.push(mc.GateH(), t)
-        circ.push(mc.GateCX(), c1, c2)
-        circ.push(mc.GateT(), c1)
-        circ.push(mc.GateTDG(), c2)
-        circ.push(mc.GateCX(), c1, c2)
+        circ.push(GateH(), t)
+        circ.push(GateCX(), c2, t)
+        circ.push(GateTDG(), t)
+        circ.push(GateCX(), c1, t)
+        circ.push(GateT(), t)
+        circ.push(GateCX(), c2, t)
+        circ.push(GateTDG(), t)
+        circ.push(GateCX(), c1, t)
+        circ.push(GateT(), c2)
+        circ.push(GateT(), t)
+        circ.push(GateH(), t)
+        circ.push(GateCX(), c1, c2)
+        circ.push(GateT(), c1)
+        circ.push(GateTDG(), c2)
+        circ.push(GateCX(), c1, c2)
 
         return circ
 

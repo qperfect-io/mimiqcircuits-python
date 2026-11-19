@@ -24,32 +24,40 @@ from mimiqcircuits.operations.power import _scale_by_exponent
 
 
 class PhaseGradient(mcg.Gate):
-    """
-    Phase Gradient gate
+    r"""Phase gradient gate on ``num_qubits`` qubits.
 
-    A phase gradient gate applies a phase shift to a quantum register of `n` qubits,
-    where each computational basis state `|k⟩` experiences a phase
-    proportional to its integer value `k`
+    Each computational basis state :math:`|k\rangle` gets a phase
+    proportional to its integer value :math:`k`, with the first qubit as the
+    most significant bit:
+
+    .. math::
+        \operatorname{PhaseGradient} =
+        \sum_{k=0}^{2^n-1} \mathrm{e}^{i \frac{2 \pi}{2^n} k} |k\rangle\langle k|
+
+    The gate decomposes into one :class:`GateP` per qubit. ``PhaseGradient()``
+    with no arguments returns a lazy expression that takes the number of
+    qubits later. The gate has no matrix representation: :meth:`matrix`
+    raises ``NotImplementedError``.
 
     Args:
-        n (int): The number of qubits in the quantum register.
+        num_qubits (int): Number of qubits.
 
-    Returns:
-        PhaseGradient: The PhaseGradient gate.
-
-    Attributes:
-        name (str): The name of the operation.
-        num_qubits (int): The number of qubits in the quantum register.
-        qregsizes (list of int): The sizes of the quantum registers.
+    Raises:
+        ValueError: If more than one argument is given.
 
     Examples:
         >>> from mimiqcircuits import *
-        >>> c=Circuit()
-        >>> c.push(PhaseGradient(2),9,8)
+        >>> c = Circuit()
+        >>> c.push(PhaseGradient(2), 9, 8)
         10-qubit circuit with 1 instruction:
         └── PhaseGradient @ q[9,8]
         <BLANKLINE>
-
+        >>> PhaseGradient(3).decompose()
+        3-qubit circuit with 3 instructions:
+        ├── P((1/4)*pi) @ q[2]
+        ├── P((1/2)*pi) @ q[1]
+        └── P(pi) @ q[0]
+        <BLANKLINE>
     """
 
     _name = "PhaseGradient"

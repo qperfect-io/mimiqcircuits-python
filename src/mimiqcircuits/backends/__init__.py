@@ -14,19 +14,28 @@
 # limitations under the License.
 #
 
-"""
-mimiqcircuits.backends — abstract Backend interface for quantum simulators.
+"""Backend interface for quantum circuit simulators.
 
-Module map:
+Subclass :class:`LocalBackend` for a simulator that runs in this process, or
+:class:`RemoteBackend` for one that runs on a service;
+:class:`MimiqRemoteBackend` runs circuits on the MIMIQ cloud. See
+:doc:`/manual/implementing_backends` for a step-by-step guide.
 
-    capabilities, limits, topology  -> .capabilities
-    Backend, LocalBackend, RemoteBackend  -> .backend
-    Fidelity ADT  -> .fidelity
-    CompiledCircuit subclasses + bind  -> .compiled
-    AbstractPass + PassPipeline  -> .passes
-    Concrete passes (RemoveSwapsPass, …)  -> .concrete_passes
+Where things live::
 
-Recommended import:
+    capabilities, limits, topology, admission  -> .capabilities
+    Backend, LocalBackend, RemoteBackend, State -> .backend
+    Fidelity types and reducers                 -> .fidelity
+    CompiledCircuit types, CompileMetadata      -> .compiled
+    AbstractPass, PassPipeline, apply_passes    -> .passes
+    CanonicalDecomposePass                      -> .concrete_passes
+    extract_projection, evaluate_projection     -> .measure_analysis
+    CompiledProjection                          -> .compiled_projection
+    StochasticKind and helpers                  -> .stochastic_kind
+    Progress, TqdmProgress, NoProgress          -> .progress
+    MimiqRemoteBackend                          -> .remote
+
+Import the names from the package itself::
 
     from mimiqcircuits.backends import Backend, LocalBackend, ...
 """

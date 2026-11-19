@@ -142,3 +142,11 @@ def test_power_rejects_non_real_exponents(build):
 
 def test_power_accepts_numeric_symbolic_exponents():
     assert mc.Power(mc.GateH(), se.Rational(1, 2)) == mc.Power(mc.GateH(), 0.5)
+
+
+def test_folded_power_is_canonical():
+    s = mc.Power(mc.GateT(), 2)
+    assert isinstance(s, mc.GateS)
+    assert s == mc.GateS() == mc.Power(mc.GateZ(), 0.5)
+    assert isinstance(mc.Power(mc.GateT, 2), mc.GateS)
+    assert isinstance(mc.GateSX().power(2), mc.GateX)

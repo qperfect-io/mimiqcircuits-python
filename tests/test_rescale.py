@@ -44,3 +44,9 @@ def test_rescale_gate():
 
     with pytest.raises(TypeError):
         mc.GateH().rescale_inplace(0.5)
+
+
+def test_get_param_reads_the_wrapped_gate():
+    g = mc.RescaledGate(mc.GateRX(0.1), 0.5)
+    assert g.get_param("p") == 0.5
+    assert g.get_param("theta") == 0.1

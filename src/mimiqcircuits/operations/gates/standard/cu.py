@@ -19,31 +19,38 @@
 from mimiqcircuits.operations.gates.standard.cpauli import GateCX
 from mimiqcircuits.operations.gates.standard.u import GateU
 from mimiqcircuits.operations.gates.standard.phase import GateP
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import (
+    Control,
+    canonical_control,
+    register_control_decomposition,
+)
 
 
-@mc.canonical_control(1, GateU)
-class GateCU(mc.Control):
-    r"""Two qubit controlled unitary gate.
+@canonical_control(1, GateU)
+class GateCU(Control):
+    r"""Two qubit controlled-:class:`GateU` gate.
 
-    **Matrix representation:**
+    By convention, the first qubit is the control and the second is
+    the target.
 
-    .. math::
-        \operatorname{CU}(\theta, \phi, \lambda, \gamma) = \begin{pmatrix}
-            1 & 0 & 0 & 0 \\
-            0 & 1 & 0 & 0 \\
-            0 & 0 & e^{i\gamma} \cos\left(\frac{\theta}{2}\right) & -e^{i\gamma} e^{i\lambda}\sin\left(\frac{\theta}{2}\right) \\
-            0 & 0 & e^{i\gamma} \mathrm{e}^{i\phi}\sin\left(\frac{\theta}{2}\right) & e^{i\gamma} \mathrm{e}^{i(\phi+\lambda)}\cos\left(\frac{\theta}{2}\right)
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{CU}(\theta, \phi, \lambda, \gamma) = \begin{pmatrix}
+                1 & 0 & 0 & 0 \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & e^{i\gamma} \cos\left(\frac{\theta}{2}\right) & -e^{i\gamma} e^{i\lambda}\sin\left(\frac{\theta}{2}\right) \\
+                0 & 0 & e^{i\gamma} \mathrm{e}^{i\phi}\sin\left(\frac{\theta}{2}\right) & e^{i\gamma} \mathrm{e}^{i(\phi+\lambda)}\cos\left(\frac{\theta}{2}\right)
+            \end{pmatrix}
 
-    Parameters:
-        theta (float): Euler angle 1 in radians.
-        phi (float): Euler angle 2 in radians.
-        lmbda (float): Euler angle 3 in radians.
-        gamma (float): Global phase of the CU gate.
+    Args:
+        theta: Euler angle :math:`\theta` in radians.
+        phi: Euler angle :math:`\phi` in radians.
+        lmbda: Euler angle :math:`\lambda` in radians.
+        gamma: Phase :math:`\gamma` in radians. It multiplies the target
+            block only, so unlike the global phase of :class:`GateU` it is
+            observable once controlled. Defaults to 0.
 
     Examples:
-
         >>> from mimiqcircuits import *
         >>> from symengine import *
         >>> theta, phi, lmbda, gamma = symbols('theta phi lambda gamma')
@@ -75,17 +82,21 @@ class GateCU(mc.Control):
     """
 
     def __init__(self, theta_or_num_controls, phi_or_operation=None, lmbda=None, gamma=None, num_controls=None, operation=None):
-        """Initialize a CU gate.
+        r"""Initialize a CU gate.
+
+        Called directly as ``GateCU(theta, phi, lmbda, gamma)``. The signature
+        also accepts ``GateCU(1, GateU(...))``, the form :class:`Control` uses
+        to build its canonical subclass.
 
         Args:
-            theta_or_num_controls: Euler angle 1 in radians when called directly,
-                or num_controls when called from Control's canonical creation.
-            phi_or_operation: Euler angle 2 in radians when called directly, or
-                the GateU operation when called from Control's canonical creation.
-            lmbda: Euler angle 3 in radians.
-            gamma: Global phase of the CU gate.
-            num_controls: Ignored (for compatibility).
-            operation: Ignored (for compatibility).
+            theta_or_num_controls: Euler angle :math:`\theta` in radians, or
+                the number of controls (always 1) in the ``Control`` form.
+            phi_or_operation: Euler angle :math:`\phi` in radians, or the
+                ``GateU`` whose angles are taken in the ``Control`` form.
+            lmbda: Euler angle :math:`\lambda` in radians.
+            gamma: Phase :math:`\gamma` in radians. Defaults to 0.
+            num_controls: Unused.
+            operation: Unused.
         """
         # Detect if called from Control's canonical creation: Control(1, GateU(...))
         if isinstance(theta_or_num_controls, int) and isinstance(phi_or_operation, GateU):
@@ -97,10 +108,12 @@ class GateCU(mc.Control):
         else:
             theta = theta_or_num_controls
             phi = phi_or_operation
+            if gamma is None:
+                gamma = 0
         super().__init__(1, GateU(theta, phi, lmbda, gamma))
 
 
-@mc.register_control_decomposition(1, mc.GateU)
+@register_control_decomposition(1, GateU)
 def _decompose_gatecu(gate, circ, qubits, bits, zvars):
     c, t = qubits
     theta = gate.op.theta

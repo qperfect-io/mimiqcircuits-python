@@ -17,8 +17,8 @@
 
 
 from mimiqcircuits.operations.krauschannel import krauschannel
-import mimiqcircuits as mc
-import numpy as np
+from mimiqcircuits.operations.operators.diagonals import DiagonalOp
+from mimiqcircuits.operations.operators.sigmas import SigmaMinus, SigmaPlus
 import symengine as se
 from mimiqcircuits._sympycheck import _is_basic
 
@@ -26,36 +26,39 @@ from mimiqcircuits._sympycheck import _is_basic
 class AmplitudeDamping(krauschannel):
     r"""One-qubit amplitude damping noise channel.
 
-    The amplitude damping channel is defined by the Kraus operators
-    See Also:
-        :func:`GeneralizedAmplitudeDamping`
-
-    **Kraus Matrices representation:**
+    Models energy relaxation: the excited state :math:`|1\rangle` decays to
+    :math:`|0\rangle` with probability :math:`\gamma`. The Kraus operators are
 
     .. math::
-        \operatorname E_1 =
+        E_1 =
         \begin{pmatrix}
             1 & 0 \\
             0 & \sqrt{1-\gamma}
         \end{pmatrix}
         ,\quad
-        \operatorname E_2 =
+        E_2 =
         \begin{pmatrix}
             0 & \sqrt{\gamma} \\
             0 & 0
-        \end{pmatrix},
+        \end{pmatrix}.
 
-    Parameters:
-        gamma: ``gamma in [0,1]``.
+    Args:
+        gamma (float): Damping probability, in :math:`[0, 1]`; may be symbolic.
+
+    Raises:
+        ValueError: If a numeric ``gamma`` is outside :math:`[0, 1]`.
+
+    See Also:
+        :class:`GeneralizedAmplitudeDamping`, :class:`PhaseAmplitudeDamping`
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # |1> decays to |0> with probability 0.1
         >>> c = Circuit()
         >>> c.push(AmplitudeDamping(0.1), 0)
         1-qubit circuit with 1 instruction:
         └── AmplitudeDamping(0.1) @ q[0]
         <BLANKLINE>
-        
     """
 
     _num_qubits = 1
@@ -69,20 +72,32 @@ class AmplitudeDamping(krauschannel):
         self._parnames = ("gamma",)
 
     def evaluate(self, d={}):
-        evaluated_gamma = (
-            float(self.gamma.subs(d).evalf())
-            if hasattr(self.gamma, "subs")
-            else self.gamma
-        )
+        """Return a copy with symbols in ``gamma`` substituted by values.
 
-        if not (0 <= evaluated_gamma <= 1):
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            AmplitudeDamping: A new channel; ``gamma`` becomes a float when it
+            is fully numeric.
+
+        Raises:
+            ValueError: If the substituted ``gamma`` is outside :math:`[0, 1]`.
+        """
+        evaluated_gamma = self.gamma
+        if hasattr(evaluated_gamma, "subs"):
+            evaluated_gamma = evaluated_gamma.subs(d)
+            if evaluated_gamma.is_number:
+                evaluated_gamma = float(evaluated_gamma.evalf())
+
+        if isinstance(evaluated_gamma, (float, int)) and not (0 <= evaluated_gamma <= 1):
             raise ValueError("Probability after evaluation must be between 0 and 1.")
 
         return AmplitudeDamping(evaluated_gamma)
 
     def krausoperators(self):
-        E1 = mc.DiagonalOp(1, np.sqrt(1 - self.gamma))
-        E2 = mc.SigmaMinus(np.sqrt(self.gamma))
+        E1 = DiagonalOp(1, se.sqrt(1 - self.gamma))
+        E2 = SigmaMinus(se.sqrt(self.gamma))
         return [E1, E2]
 
     def krausmatrices(self):
@@ -106,53 +121,62 @@ class AmplitudeDamping(krauschannel):
 class GeneralizedAmplitudeDamping(krauschannel):
     r"""One-qubit generalized amplitude damping noise channel.
 
-    The amplitude generalized damping channel is defined by the Kraus operators.
-    
-    See Also:
-        :func:`AmplitudeDamping`
-
-    **Kraus Matrices representation:**
+    Amplitude damping towards a thermal state instead of :math:`|0\rangle`:
+    with weight :math:`p` the qubit decays from :math:`|1\rangle` to
+    :math:`|0\rangle`, with weight :math:`1-p` it is excited from
+    :math:`|0\rangle` to :math:`|1\rangle`, in both cases with probability
+    :math:`\gamma`. The Kraus operators are
 
     .. math::
-        \operatorname E_1 =
+        E_1 =
         \sqrt{p}
         \begin{pmatrix}
             1 & 0 \\
             0 & \sqrt{1-\gamma}
         \end{pmatrix}
         ,\quad
-        \operatorname E_2 =
-        \sqrt{p}
-        \begin{pmatrix}
-            0 & \sqrt{\gamma} \\
-            0 & 0
-        \end{pmatrix}
-        ,\quad
-        \operatorname E_3 =
+        E_2 =
         \sqrt{1-p}
         \begin{pmatrix}
             \sqrt{1-\gamma} & 0 \\
             0 & 1
         \end{pmatrix}
         ,\quad
-        \operatorname E_4 =
+        E_3 =
+        \sqrt{p}
+        \begin{pmatrix}
+            0 & \sqrt{\gamma} \\
+            0 & 0
+        \end{pmatrix}
+        ,\quad
+        E_4 =
         \sqrt{1-p}
         \begin{pmatrix}
             0 & 0 \\
             \sqrt{\gamma} & 0
-        \end{pmatrix},
+        \end{pmatrix}.
 
-    Parameters:
-        gamma: ``gamma in [0,1]``.
+    For :math:`p = 1` it reduces to :class:`AmplitudeDamping`.
+
+    Args:
+        p (float): Weight of the decay towards :math:`|0\rangle`, in
+            :math:`[0, 1]`; may be symbolic.
+        gamma (float): Damping probability, in :math:`[0, 1]`; may be symbolic.
+
+    Raises:
+        ValueError: If a numeric ``p`` or ``gamma`` is outside :math:`[0, 1]`.
+
+    See Also:
+        :class:`AmplitudeDamping`, :class:`PhaseAmplitudeDamping`
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # p = 1: pure decay to |0>, same as AmplitudeDamping(0.1)
         >>> c = Circuit()
-        >>> c.push(GeneralizedAmplitudeDamping(0.1,1), 0)
+        >>> c.push(GeneralizedAmplitudeDamping(1, 0.1), 0)
         1-qubit circuit with 1 instruction:
-        └── GeneralizedAmplitudeDamping((0.1, 1)) @ q[0]
+        └── GeneralizedAmplitudeDamping((1, 0.1)) @ q[0]
         <BLANKLINE>
-        
     """
 
     _num_qubits = 1
@@ -171,6 +195,18 @@ class GeneralizedAmplitudeDamping(krauschannel):
         self._parnames = ("p", "gamma")
 
     def evaluate(self, d={}):
+        """Return a copy with symbols in ``p`` and ``gamma`` substituted by values.
+
+        Args:
+            d (dict): Map from symbols to the values to substitute.
+
+        Returns:
+            GeneralizedAmplitudeDamping: A new channel; each parameter becomes
+            a float when it is fully numeric.
+
+        Raises:
+            ValueError: If a substituted parameter is outside :math:`[0, 1]`.
+        """
         # Helper function to evaluate a parameter
         def evaluate_param(param):
             if hasattr(param, "subs"):
@@ -200,10 +236,10 @@ class GeneralizedAmplitudeDamping(krauschannel):
     def krausoperators(self):
         p = self.p
         gamma = self.gamma
-        E1 = mc.DiagonalOp(np.sqrt(p), np.sqrt(p) * np.sqrt(1 - gamma))
-        E2 = mc.DiagonalOp(np.sqrt(1 - p) * np.sqrt(1 - gamma), np.sqrt(1 - p))
-        E3 = mc.SigmaMinus(np.sqrt(p) * np.sqrt(gamma))
-        E4 = mc.SigmaPlus(np.sqrt(1 - p) * np.sqrt(gamma))
+        E1 = DiagonalOp(se.sqrt(p), se.sqrt(p) * se.sqrt(1 - gamma))
+        E2 = DiagonalOp(se.sqrt(1 - p) * se.sqrt(1 - gamma), se.sqrt(1 - p))
+        E3 = SigmaMinus(se.sqrt(p) * se.sqrt(gamma))
+        E4 = SigmaPlus(se.sqrt(1 - p) * se.sqrt(gamma))
         return [E1, E2, E3, E4]
 
     def krausmatrices(self):

@@ -14,7 +14,11 @@
 # limitations under the License.
 #
 
-import mimiqcircuits as mc
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.instruction import Instruction
+from mimiqcircuits.operations.gates.gate import Gate
+from mimiqcircuits.operations.krauschannel import krauschannel
+from mimiqcircuits.operations.operation import Operation
 from mimiqcircuits.circuit import _build_instruction
 from typing import Callable, Union, Any
 
@@ -32,7 +36,7 @@ def _generated_insert_args(generated: Any) -> tuple:
         TypeError: If `generated` is neither an `mc.Instruction` nor a
             non-empty tuple.
     """
-    if isinstance(generated, mc.Instruction):
+    if isinstance(generated, Instruction):
         return (generated,)
 
     # allow (operation, targets)
@@ -82,7 +86,7 @@ def _generated_instructions(generated: Any) -> list:
             non-empty tuple.
     """
     op, *targets = _generated_insert_args(generated)
-    if isinstance(op, mc.Circuit):
+    if isinstance(op, Circuit):
         # Circuit.insert splices a circuit in whole and ignores any targets.
         return list(op.instructions)
     return [_build_instruction(op, targets)]
@@ -90,17 +94,53 @@ def _generated_instructions(generated: Any) -> list:
 
 def decorate_on_match_single_inplace(
     circuit,
-    matcher: Callable[[mc.Instruction], bool],
-    generator: Callable[[mc.Instruction], Any],
+    matcher: Callable[[Instruction], bool],
+    generator: Callable[[Instruction], Any],
     before: bool = False,
 ):
-    """
-    In-place: add a generated instruction before/after each matched instruction.
+    """Add generated instructions next to every matching instruction, in place.
 
-    matcher(inst) -> bool
-    generator(inst) -> either:
-        - mc.Instruction
-        - (operation, targets)  e.g. (noise_op, inst.qubits)
+    For each instruction ``inst`` of ``circuit`` with ``matcher(inst)`` true,
+    the output of ``generator(inst)`` is inserted right after ``inst`` (or
+    right before it). The generator returns one of:
+
+    - an :class:`Instruction`;
+    - a tuple ``(operation, targets)``, such as ``(noise, inst.qubits)``, or
+      ``(operation, qubits, bits, zvars)``;
+    - a tuple ``(circuit,)``, whose instructions are inserted as they are.
+
+    This is the engine behind :meth:`Circuit.decorate_on_match_single`.
+
+    Args:
+        circuit (Circuit): Circuit to change.
+        matcher: Function ``inst -> bool`` selecting the instructions.
+        generator: Function ``inst -> instruction or tuple`` giving what to
+            insert.
+        before: Insert before each match instead of after it.
+
+    Returns:
+        Circuit: ``circuit`` itself, changed.
+
+    Raises:
+        TypeError: If the generator returns an unsupported value.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.addnoise import decorate_on_match_single_inplace
+        >>> c = Circuit()
+        >>> _ = c.push(GateH(), 0)
+        >>> _ = c.push(GateCX(), 0, 1)
+        >>> # add bit-flip noise after every one-qubit gate
+        >>> decorate_on_match_single_inplace(
+        ...     c,
+        ...     lambda inst: inst.operation.num_qubits == 1,
+        ...     lambda inst: (PauliX(0.01), inst.qubits),
+        ... )
+        2-qubit circuit with 3 instructions:
+        ├── H @ q[0]
+        ├── PauliX(0.01) @ q[0]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
     """
     # Build the decorated list in one pass. Inserting into the circuit at
     # each match would shift the whole tail every time, which is quadratic.
@@ -121,11 +161,18 @@ def decorate_on_match_single_inplace(
 
 def decorate_on_match_single(
     circuit,
-    matcher: Callable[[mc.Instruction], bool],
-    generator: Callable[[mc.Instruction], Any],
+    matcher: Callable[[Instruction], bool],
+    generator: Callable[[Instruction], Any],
     before: bool = False,
 ):
-    """Non-mutating wrapper for decorate_on_match_single_inplace."""
+    """Return a decorated copy of ``circuit``.
+
+    Same as :func:`decorate_on_match_single_inplace`, applied to a deep copy;
+    ``circuit`` is not changed.
+
+    Returns:
+        Circuit: The decorated copy.
+    """
     newc = circuit.deepcopy()
     return decorate_on_match_single_inplace(newc, matcher, generator, before=before)
 
@@ -214,13 +261,53 @@ def _find_transversal_block(
 
 def decorate_on_match_parallel_inplace(
     circuit,
-    matcher: Callable[[mc.Instruction], bool],
-    generator: Callable[[mc.Instruction], Any],
+    matcher: Callable[[Instruction], bool],
+    generator: Callable[[Instruction], Any],
     before: bool = False,
 ):
-    """
-    In-place: add blocks of generated instructions next to transversal blocks
-    of matched instructions.
+    """Add generated instructions next to blocks of parallel matches, in place.
+
+    A block is a run of consecutive matching instructions that act on disjoint
+    qubits, bits and z-variables, such as the instructions produced by one
+    broadcast :meth:`Circuit.push`. The generated instructions of a whole
+    block are inserted together, after the block (or before it). The
+    ``matcher`` and ``generator`` follow the same rules as in
+    :func:`decorate_on_match_single_inplace`.
+
+    This is the engine behind :meth:`Circuit.decorate_on_match_parallel`.
+
+    Args:
+        circuit (Circuit): Circuit to change.
+        matcher: Function ``inst -> bool`` selecting the instructions.
+        generator: Function ``inst -> instruction or tuple`` giving what to
+            insert.
+        before: Insert before each block instead of after it.
+
+    Returns:
+        Circuit: ``circuit`` itself, changed.
+
+    Raises:
+        TypeError: If the generator returns an unsupported value.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.addnoise import decorate_on_match_parallel_inplace
+        >>> c = Circuit()
+        >>> _ = c.push(GateH(), range(3))
+        >>> # the three H gates form one block: the noise comes after all of them
+        >>> decorate_on_match_parallel_inplace(
+        ...     c,
+        ...     lambda inst: inst.operation == GateH(),
+        ...     lambda inst: (AmplitudeDamping(0.1), inst.qubits),
+        ... )
+        3-qubit circuit with 6 instructions:
+        ├── H @ q[0]
+        ├── H @ q[1]
+        ├── H @ q[2]
+        ├── AmplitudeDamping(0.1) @ q[0]
+        ├── AmplitudeDamping(0.1) @ q[1]
+        └── AmplitudeDamping(0.1) @ q[2]
+        <BLANKLINE>
     """
     # Blocks are found on the untouched circuit and the result is built in a
     # new list, so each instruction is copied once rather than shifted at
@@ -254,24 +341,38 @@ def decorate_on_match_parallel_inplace(
 
 def decorate_on_match_parallel(
     circuit,
-    matcher: Callable[[mc.Instruction], bool],
-    generator: Callable[[mc.Instruction], Any],
+    matcher: Callable[[Instruction], bool],
+    generator: Callable[[Instruction], Any],
     *,
     before: bool = False,
 ):
-    """Non-mutating wrapper for decorate_on_match_parallel_inplace."""
+    """Return a copy of ``circuit`` decorated block by block.
+
+    Same as :func:`decorate_on_match_parallel_inplace`, applied to a deep
+    copy; ``circuit`` is not changed. ``before`` is keyword-only.
+
+    Returns:
+        Circuit: The decorated copy.
+    """
     newc = circuit.deepcopy()
     return decorate_on_match_parallel_inplace(newc, matcher, generator, before=before)
 
 
 def decorate_inplace(
     circuit,
-    matcher: Callable[[mc.Instruction], bool],
-    generator: Callable[[mc.Instruction], Any],
+    matcher: Callable[[Instruction], bool],
+    generator: Callable[[Instruction], Any],
     before: bool = False,
     parallel: bool = False,
 ):
-    """In-place unified decoration (single vs parallel)."""
+    """Decorate matching instructions in place, one by one or by blocks.
+
+    Calls :func:`decorate_on_match_parallel_inplace` when ``parallel`` is
+    ``True`` and :func:`decorate_on_match_single_inplace` otherwise.
+
+    Returns:
+        Circuit: ``circuit`` itself, changed.
+    """
     if parallel:
         return decorate_on_match_parallel_inplace(
             circuit, matcher, generator, before=before
@@ -281,13 +382,21 @@ def decorate_inplace(
 
 def decorate(
     circuit,
-    matcher: Callable[[mc.Instruction], bool],
-    generator: Callable[[mc.Instruction], Any],
+    matcher: Callable[[Instruction], bool],
+    generator: Callable[[Instruction], Any],
     *,
     before: bool = False,
     parallel: bool = False,
 ):
-    """Non-mutating unified decoration (single vs parallel)."""
+    """Return a decorated copy, decorating one by one or by blocks.
+
+    Calls :func:`decorate_on_match_parallel` when ``parallel`` is ``True``
+    and :func:`decorate_on_match_single` otherwise. ``circuit`` is not
+    changed.
+
+    Returns:
+        Circuit: The decorated copy.
+    """
     if parallel:
         return decorate_on_match_parallel(circuit, matcher, generator, before=before)
     return decorate_on_match_single(circuit, matcher, generator, before=before)
@@ -296,23 +405,56 @@ def decorate(
 # inplace noise addition helpers
 def add_noise_inplace(
     circuit,
-    g: Union[mc.Operation, type],
-    noise: Union[mc.krauschannel, mc.Gate],
+    g: Union[Operation, type],
+    noise: Union[krauschannel, Gate],
     before: bool = False,
     parallel: bool = False,
 ):
-    """
-    In-place: add `noise` next to every instance (or type) of operation `g`.
+    """Add ``noise`` next to every instance of ``g``, in place.
 
-    - `g` can be an Operation instance or an Operation subclass (type).
-    - `noise` must be a Gate or Kraus channel.
+    ``noise`` acts on the same qubits as each matched instruction, so it must
+    act on as many qubits as ``g``. This is the engine behind
+    :meth:`Circuit.add_noise`.
+
+    Args:
+        circuit (Circuit): Circuit to change.
+        g: Operation to match. An instance matches equal operations; an
+            :class:`Operation` subclass, such as ``GateH``, matches all its
+            instances.
+        noise: Gate or Kraus channel to add.
+        before: Add the noise before each match instead of after it.
+        parallel: Add the noise after (or before) each block of parallel
+            matches, as in :func:`decorate_on_match_parallel_inplace`.
+
+    Returns:
+        Circuit: ``circuit`` itself, changed.
+
+    Raises:
+        TypeError: If ``noise`` is not a gate or Kraus channel, or ``g`` is
+            neither an operation nor an operation class.
+        ValueError: If ``noise`` acts on a different number of qubits than a
+            matched instruction.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.addnoise import add_noise_inplace
+        >>> c = Circuit()
+        >>> _ = c.push(GateH(), 0)
+        >>> _ = c.push(GateX(), 1)
+        >>> # match every Pauli X gate by its class
+        >>> add_noise_inplace(c, GateX, PauliZ(0.05))
+        2-qubit circuit with 3 instructions:
+        ├── H @ q[0]
+        ├── X @ q[1]
+        └── PauliZ(0.05) @ q[1]
+        <BLANKLINE>
     """
-    if not isinstance(noise, (mc.krauschannel, mc.Gate)):
+    if not isinstance(noise, (krauschannel, Gate)):
         raise TypeError(f"{noise} must be a Gate or Kraus channel")
 
-    if isinstance(g, mc.Operation):
+    if isinstance(g, Operation):
         matcher = lambda inst: inst.operation == g
-    elif isinstance(g, type) and issubclass(g, mc.Operation):
+    elif isinstance(g, type) and issubclass(g, Operation):
         matcher = lambda inst: isinstance(inst.operation, g)
     else:
         raise TypeError(f"{g} must be an Operation instance or Operation subclass")
@@ -328,12 +470,19 @@ def add_noise_inplace(
 # Non-mutating wrapper for add_noise_inplace.
 def add_noise(
     circuit,
-    g: Union[mc.Operation, type],
-    noise: Union[mc.krauschannel, mc.Gate],
+    g: Union[Operation, type],
+    noise: Union[krauschannel, Gate],
     before: bool = False,
     parallel: bool = False,
 ):
-    """Non-mutating wrapper for add_noise_inplace."""
+    """Return a copy of ``circuit`` with ``noise`` added next to every ``g``.
+
+    Same as :func:`add_noise_inplace`, applied to a deep copy; ``circuit`` is
+    not changed.
+
+    Returns:
+        Circuit: The noisy copy.
+    """
     newc = circuit.deepcopy()
     return add_noise_inplace(newc, g, noise, before=before, parallel=parallel)
 

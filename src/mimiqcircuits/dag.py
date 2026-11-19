@@ -42,8 +42,31 @@ class CircuitDAG:
     rather than a dense reachability graph.
 
     The graph is normally obtained from :meth:`Circuit.dag`, which builds it
-    lazily and caches it; construct one directly only when working with the
-    graph in isolation.
+    on first use and caches it. ``CircuitDAG(n)`` creates a graph with ``n``
+    vertices and no edges.
+
+    Args:
+        n (int): The number of vertices.
+
+    Raises:
+        TypeError: If ``n`` is not an integer, for example a circuit.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> _ = c.push(GateH(), 0)
+        >>> _ = c.push(GateH(), 1)
+        >>> _ = c.push(GateCX(), 0, 1)
+        >>> _ = c.push(GateX(), 0)
+        >>> dag = c.dag()
+        >>> dag
+        CircuitDAG(vertices=4, edges=3)
+        >>> # the CX (instruction 2) waits for both H gates
+        >>> dag.in_neighbors(2)
+        [0, 1]
+        >>> # the X on qubit 0 only depends on the CX
+        >>> dag.in_neighbors(3)
+        [2]
     """
 
     def __init__(self, n):
@@ -64,41 +87,43 @@ class CircuitDAG:
         return f"CircuitDAG(vertices={self._n}, edges={self.num_edges()})"
 
     def num_vertices(self):
-        """Number of vertices, i.e. instructions in the circuit."""
+        """Return the number of vertices, that is the number of instructions."""
         return self._n
 
     def num_edges(self):
-        """Number of dependency edges."""
+        """Return the number of dependency edges."""
         return sum(len(o) for o in self._out)
 
     def vertices(self):
-        """Range over all vertex indices."""
+        """Return the vertex indices, as ``range(num_vertices())``."""
         return range(self._n)
 
     def edges(self):
-        """List of ``(u, v)`` dependency edges with ``u`` before ``v``."""
+        """Return the list of edges ``(u, v)``, with ``u`` before ``v`` in the circuit."""
         return [(u, v) for u in range(self._n) for v in self._out[u]]
 
     def out_neighbors(self, v):
-        """Instructions that depend directly on ``v`` (its successors)."""
+        """Return the vertices that depend directly on ``v`` (its successors), sorted."""
         return self._out[v]
 
     def in_neighbors(self, v):
-        """Instructions that ``v`` depends on directly (its predecessors)."""
+        """Return the vertices that ``v`` depends on directly (its predecessors), sorted."""
         return self._in[v]
 
     def in_degree(self, v):
-        """Number of direct predecessors of ``v``."""
+        """Return the number of direct predecessors of ``v``."""
         return len(self._in[v])
 
     def out_degree(self, v):
-        """Number of direct successors of ``v``."""
+        """Return the number of direct successors of ``v``."""
         return len(self._out[v])
 
     def has_vertex(self, v):
+        """Return ``True`` if ``v`` is a vertex index of the graph."""
         return 0 <= v < self._n
 
     def has_edge(self, u, v):
+        """Return ``True`` if the graph has the edge ``u -> v``."""
         return v in self._out[u]
 
     def _add_edge(self, u, v):
@@ -146,11 +171,17 @@ def _dag_qubits(inst, nq):
 def build_dag(circuit):
     """Build the :class:`CircuitDAG` of ``circuit``.
 
-    Walks the instructions in order, remembering the last instruction seen on
-    each qubit, bit, and z-variable, and links every instruction to those last
-    writers. The result encodes exactly the orderings that must be preserved
-    for the circuit to remain equivalent. The global state observables depend
-    on every qubit (see :func:`_dag_qubits`).
+    Each instruction is linked to the last earlier instruction on each of its
+    qubits, bits and z-variables. The result holds exactly the orderings that
+    must be kept for the circuit to stay equivalent. :class:`Amplitude`,
+    :class:`BondDim`, :class:`SchmidtRank` and :class:`VonNeumannEntropy`
+    depend on the whole state, so they are linked as if they acted on every
+    qubit.
+
+    :meth:`Circuit.dag` calls this and caches the result; use that instead.
+
+    Returns:
+        CircuitDAG: The dependency graph.
     """
     n = len(circuit)
     nq = circuit.num_qubits()
@@ -194,12 +225,32 @@ def _require_dag(dag):
 
 
 def topological_sort_by_bfs(dag):
-    """Topological order via Kahn's algorithm (breadth-first, layer by layer).
+    """Return the vertices of ``dag`` in breadth-first topological order.
 
-    Independent instructions — those at the same dependency depth — come out
-    grouped together, which is the order the MPS simulator uses to fuse gates.
-    Vertices with no remaining predecessor are visited in ascending index
-    order, making the result deterministic.
+    The order is built layer by layer with Kahn's algorithm: first every
+    vertex with no predecessor, then every vertex whose predecessors are all
+    in the first layer, and so on. The first layer comes in increasing index
+    order, and each later vertex is added when its last predecessor is
+    visited, so the result is deterministic.
+
+    Args:
+        dag (CircuitDAG): The graph, usually from :meth:`Circuit.dag`.
+
+    Returns:
+        list of int: Every vertex once, each after all its predecessors.
+
+    Raises:
+        TypeError: If ``dag`` is not a :class:`CircuitDAG`.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> _ = c.push(GateH(), 0)
+        >>> _ = c.push(GateX(), 0)
+        >>> _ = c.push(GateH(), 1)
+        >>> # the two H gates form the first layer, the X the second
+        >>> topological_sort_by_bfs(c.dag())
+        [0, 2, 1]
     """
     _require_dag(dag)
     n = dag.num_vertices()
@@ -222,12 +273,31 @@ def topological_sort_by_bfs(dag):
 
 
 def topological_sort_by_dfs(dag):
-    """Topological order via depth-first search (reverse post-order).
+    """Return the vertices of ``dag`` in depth-first topological order.
 
-    Follows one dependency chain as deep as possible before backtracking, so a
-    gate and its downstream cone tend to stay close together in the output.
-    Raises :class:`ValueError` if the graph contains a cycle, which for a
-    well-formed circuit should never happen.
+    The order is the reverse post-order of a depth-first search. It follows
+    one chain of dependencies as far as possible before moving on, so an
+    instruction and the ones that depend on it tend to stay close together.
+
+    Args:
+        dag (CircuitDAG): The graph, usually from :meth:`Circuit.dag`.
+
+    Returns:
+        list of int: Every vertex once, each after all its predecessors.
+
+    Raises:
+        TypeError: If ``dag`` is not a :class:`CircuitDAG`.
+        ValueError: If the graph has a cycle. A graph built from a circuit
+            never has one.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> _ = c.push(GateH(), 0)
+        >>> _ = c.push(GateX(), 0)
+        >>> _ = c.push(GateH(), 1)
+        >>> topological_sort_by_dfs(c.dag())
+        [2, 0, 1]
     """
     _require_dag(dag)
     n = dag.num_vertices()
@@ -264,9 +334,25 @@ def topological_sort_by_dfs(dag):
 def traverse_by_bfs(circuit):
     """Yield the instructions of ``circuit`` in breadth-first topological order.
 
-    Equivalent gates that can run in parallel are emitted as consecutive
-    layers. Use this when the relative order of independent gates does not
-    matter but layering does (e.g. tensor-network compression).
+    Instructions come out layer by layer, as in
+    :func:`topological_sort_by_bfs`: all instructions that can run at the
+    same time are yielded one after the other. Pushing them in this order
+    gives an equivalent circuit.
+
+    Args:
+        circuit (Circuit): The circuit to traverse.
+
+    Yields:
+        Instruction: The instructions of the circuit, each once.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> _ = c.push(GateH(), 0)
+        >>> _ = c.push(GateX(), 0)
+        >>> _ = c.push(GateH(), 1)
+        >>> list(traverse_by_bfs(c))
+        [H @ q[0], H @ q[1], X @ q[0]]
     """
     dag = circuit.dag()
     instructions = circuit.instructions
@@ -275,7 +361,26 @@ def traverse_by_bfs(circuit):
 
 
 def traverse_by_dfs(circuit):
-    """Yield the instructions of ``circuit`` in depth-first topological order."""
+    """Yield the instructions of ``circuit`` in depth-first topological order.
+
+    The order is that of :func:`topological_sort_by_dfs`. Pushing the
+    instructions in this order gives an equivalent circuit.
+
+    Args:
+        circuit (Circuit): The circuit to traverse.
+
+    Yields:
+        Instruction: The instructions of the circuit, each once.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> c = Circuit()
+        >>> _ = c.push(GateH(), 0)
+        >>> _ = c.push(GateX(), 0)
+        >>> _ = c.push(GateH(), 1)
+        >>> list(traverse_by_dfs(c))
+        [H @ q[1], H @ q[0], X @ q[0]]
+    """
     dag = circuit.dag()
     instructions = circuit.instructions
     for i in topological_sort_by_dfs(dag):
@@ -285,10 +390,26 @@ def traverse_by_dfs(circuit):
 def to_networkx(circuit):
     """Return the circuit's dependency graph as a ``networkx.DiGraph``.
 
-    Each node carries its :class:`Instruction` under the ``instruction``
-    attribute, so the returned graph plugs straight into networkx algorithms
-    and drawing. Requires the optional ``networkx`` dependency, installable
-    with ``pip install mimiqcircuits[graph]``.
+    Node ``i`` is instruction ``i`` of the circuit and carries it in its
+    ``instruction`` attribute; edges are those of :meth:`Circuit.dag`. The
+    graph can be passed to any networkx algorithm or drawing function.
+
+    Args:
+        circuit (Circuit): The circuit.
+
+    Returns:
+        networkx.DiGraph: The dependency graph.
+
+    Raises:
+        ImportError: If ``networkx`` is not installed. It is an optional
+            dependency, installed with ``pip install mimiqcircuits[graph]``.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> c = Circuit().push(GateH(), 0).push(GateCX(), 0, 1)
+        >>> g = to_networkx(c)  # doctest: +SKIP
+        >>> g.nodes[1]["instruction"]  # doctest: +SKIP
+        CX @ q[0], q[1]
     """
     try:
         import networkx as nx

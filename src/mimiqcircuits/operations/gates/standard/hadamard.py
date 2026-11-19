@@ -16,23 +16,24 @@
 #
 """Hadamard (H) and related gates (HXY, HYZ, HXZ)."""
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.gates.gate import Gate
+from mimiqcircuits.operations.power import Power
 from mimiqcircuits.operations.utils import power_idempotent
 from mimiqcircuits.operations.utils import control_one_defined
 from symengine import pi, sqrt, Matrix, I
 from mimiqcircuits.operations.gates.standard._angles import PI_2, NEG_PI_4
 
 
-class GateH(mc.Gate):
-    r"""Single qubit Hadamard gate.
+class GateH(Gate):
+    r"""Single qubit Hadamard gate, :math:`(X + Z)/\sqrt{2}`.
 
-    **Matrix representation:**
-
-    .. math::
-        \operatorname{H} = \frac{1}{\sqrt{2}} \begin{pmatrix}
-            1 & 1 \\
-            1 & -1
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{H} = \frac{1}{\sqrt{2}} \begin{pmatrix}
+                1 & 1 \\
+                1 & -1
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -69,27 +70,30 @@ class GateH(mc.Gate):
         return power_idempotent(self, p)
 
     def _control(self, n):
-        return control_one_defined(n, self, mc.GateCH(), mc.Control(2, GateH()))
+        from mimiqcircuits.operations.gates.standard.chadamard import GateCH
+        return control_one_defined(n, self, GateCH(), Control(2, GateH()))
 
     def _matrix(self):
         return Matrix([[1, 1], [1, -1]]) / sqrt(2)
 
     def _decompose(self, circ, qubits, bits, zvars):
+        from mimiqcircuits.operations.gates.standard.u import GateU
         q = qubits[0]
-        circ.push(mc.GateU(PI_2, 0, pi), q)
+        circ.push(GateU(PI_2, 0, pi), q)
         return circ
 
 
-class GateHXY(mc.Gate):
-    r"""Single qubit HXY gate.
+class GateHXY(Gate):
+    r"""Single qubit HXY gate, :math:`(X + Y)/\sqrt{2}`.
 
-    **Matrix representation:**
+    A Hadamard-like gate that exchanges the :math:`X` and :math:`Y` axes.
 
-    .. math::
-        \operatorname{HXY} = \frac{1}{\sqrt{2}} \begin{pmatrix}
-            0 & 1 - i \\
-            1 + i & 0
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{HXY} = \frac{1}{\sqrt{2}} \begin{pmatrix}
+                0 & 1 - i \\
+                1 + i & 0
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -125,34 +129,38 @@ class GateHXY(mc.Gate):
         return self
 
     def _power(self, p):
-        return mc.Power(GateHXY(), p)
+        return Power(GateHXY(), p)
 
     def _control(self, n):
-        return control_one_defined(n, self, mc.Control(1, GateHXY()))
+        return control_one_defined(n, self, Control(1, GateHXY()))
 
     def _matrix(self):
         return Matrix([[0, 1 - I], [1 + I, 0]]) / sqrt(2)
 
     def _decompose(self, circ, qubits, bits, zvars):
+        from mimiqcircuits.operations.gates.standard.u import GateU
+        from mimiqcircuits.operations.gates.standard.s import GateS
+        from mimiqcircuits.operations.gates.standard.pauli import GateZ
         q = qubits[0]
-        circ.push(mc.GateH(), q)
-        circ.push(mc.GateZ(), q)
-        circ.push(mc.GateH(), q)
-        circ.push(mc.GateS(), q)
-        circ.push(mc.GateU(0, 0, 0, NEG_PI_4), q)
+        circ.push(GateH(), q)
+        circ.push(GateZ(), q)
+        circ.push(GateH(), q)
+        circ.push(GateS(), q)
+        circ.push(GateU(0, 0, 0, NEG_PI_4), q)
         return circ
 
 
-class GateHYZ(mc.Gate):
-    r"""Single qubit HYZ gate.
+class GateHYZ(Gate):
+    r"""Single qubit HYZ gate, :math:`(Y + Z)/\sqrt{2}`.
 
-    **Matrix representation:**
+    A Hadamard-like gate that exchanges the :math:`Y` and :math:`Z` axes.
 
-    .. math::
-        \operatorname{HYZ} = \frac{1}{\sqrt{2}} \begin{pmatrix}
-            1 & -i \\
-            i & -1
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{HYZ} = \frac{1}{\sqrt{2}} \begin{pmatrix}
+                1 & -i \\
+                i & -1
+            \end{pmatrix}
 
     Examples:
         >>> from mimiqcircuits import *
@@ -188,41 +196,42 @@ class GateHYZ(mc.Gate):
         return self
 
     def _power(self, p):
-        return mc.Power(GateHYZ(), p)
+        return Power(GateHYZ(), p)
 
     def _control(self, n):
         return control_one_defined(
-            n, self, mc.Control(1, GateHYZ()), mc.Control(2, GateHYZ())
+            n, self, Control(1, GateHYZ()), Control(2, GateHYZ())
         )
 
     def _matrix(self):
         return Matrix([[1, -I], [I, -1]]) / sqrt(2)
 
     def _decompose(self, circ, qubits, bits, zvars):
+        from mimiqcircuits.operations.gates.standard.u import GateU
+        from mimiqcircuits.operations.gates.standard.s import GateS
+        from mimiqcircuits.operations.gates.standard.pauli import GateZ
         q = qubits[0]
-        circ.push(mc.GateH(), q)
-        circ.push(mc.GateS(), q)
-        circ.push(mc.GateH(), q)
-        circ.push(mc.GateZ(), q)
-        circ.push(mc.GateU(0, 0, 0, NEG_PI_4), q)
+        circ.push(GateH(), q)
+        circ.push(GateS(), q)
+        circ.push(GateH(), q)
+        circ.push(GateZ(), q)
+        circ.push(GateU(0, 0, 0, NEG_PI_4), q)
         return circ
 
 
-class GateHXZ(mc.Gate):
-    r"""Single qubit HXZ gate (alias for :class:`GateH`).
+class GateHXZ(Gate):
+    r"""Single qubit HXZ gate, :math:`(X + Z)/\sqrt{2}`, the same as :class:`GateH`.
 
-    **Matrix representation:**
+    ``GateHXZ()`` returns a :class:`GateH` instance.
 
-    .. math::
-        \operatorname{H} = \frac{1}{\sqrt{2}} \begin{pmatrix}
-            1 & 1 \\
-            1 & -1
-        \end{pmatrix}
+    Matrix Representation:
+        .. math::
+            \operatorname{HXZ} = \frac{1}{\sqrt{2}} \begin{pmatrix}
+                1 & 1 \\
+                1 & -1
+            \end{pmatrix}
 
     Examples:
-
-        The HXZ gate behaves exactly like the Hadamard gate:
-
         >>> from mimiqcircuits import *
         >>> GateHXZ()
         H
@@ -230,18 +239,13 @@ class GateHXZ(mc.Gate):
         [0.707106781186548, 0.707106781186548]
         [0.707106781186548, -0.707106781186548]
         <BLANKLINE>
-
-        Adding GateHXZ to a circuit:
-
         >>> c = Circuit().push(GateHXZ(), 0)
-
-        Power and inverse of the gate:
-
+        >>> c
+        1-qubit circuit with 1 instruction:
+        └── H @ q[0]
+        <BLANKLINE>
         >>> GateHXZ().power(2), GateHXZ().inverse()
         (ID, H)
-
-        Decomposition of the gate:
-
         >>> GateHXZ().decompose()
         1-qubit circuit with 1 instruction:
         └── U((1/2)*pi, 0, pi, 0.0) @ q[0]

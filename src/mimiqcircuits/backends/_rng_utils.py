@@ -18,18 +18,13 @@
 
 Two helpers live here:
 
-- :func:`normalize_seed` reconciles a caller's ``seed=`` and
-  ``rngs=`` arguments into a single ``int`` (or ``None``) suitable
-  for forwarding to a downstream simulator that accepts only one
-  seed value.
-- :func:`derive_grid_seeds` deterministically produces ``n``
-  distinct seeds from one base seed, used by parameter-grid loops
-  so each grid point gets an independent RNG stream.
+- :func:`normalize_seed` turns a caller's ``seed`` or ``rngs`` into a
+  single ``int`` (or ``None``) for a simulator that takes one seed.
+- :func:`derive_grid_seeds` produces ``n`` distinct seeds from one base
+  seed, so each point of a parameter grid gets its own random stream.
 
-The XOR-fold of an :class:`RNGs` bundle into one int is a
-compromise: the underlying simulator PRNGs take a single seed, so the four logical
-streams collapse to one PRNG until per-stream seeding is plumbed
-end-to-end.
+Folding an :class:`RNGs` bundle into one integer merges its four streams
+into one, because those simulators take a single seed.
 """
 
 from __future__ import annotations
@@ -46,11 +41,28 @@ _MASK63 = (1 << 63) - 1
 def normalize_seed(
     seed: Optional[int], rngs: Union[RNGs, int, None]
 ) -> Optional[int]:
-    """Reconcile the legacy ``seed=`` and the new ``rngs=`` kwargs.
+    """Turn ``seed`` or ``rngs`` into a single integer seed.
 
-    Either may be provided, never both. ``rngs`` may be an ``int``
-    (passed through), an :class:`RNGs` bundle (xor-folded to one
-    seed), or ``None`` (returns the ``seed`` argument).
+    Args:
+        seed: An integer seed, or ``None``.
+        rngs: An integer, returned as it is; an :class:`RNGs` bundle, folded
+            into one seed by XOR-ing one 63-bit draw from each of its four
+            streams (which advances them); or ``None``, in which case
+            ``seed`` is returned.
+
+    Returns:
+        The seed, or ``None`` when both arguments are ``None``.
+
+    Raises:
+        TypeError: If both are given, or ``rngs`` has another type.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import RNGs, normalize_seed
+        >>> normalize_seed(7, None)
+        7
+        >>> normalize_seed(None, RNGs.from_seed(7)) == normalize_seed(None, RNGs.from_seed(7))
+        True
     """
     if seed is not None and rngs is not None:
         raise TypeError("pass either seed= or rngs=, not both")
@@ -80,16 +92,53 @@ def _splitmix64(x: int) -> int:
     return (x ^ (x >> 31)) & _MASK63
 
 
+# Seeds derived from one master are `_splitmix64(scrambled + k)`. Scrambling
+# the master first keeps nearby masters from sharing seeds, which adding `k`
+# to the master itself would not. `k` is 1 to 4 for the four `RNGs` streams
+# and starts at 5 for grid points, so the two never meet.
+_NUM_STREAMS = 4
+
+
+def _stream_seeds(master: int) -> tuple[int, int, int, int]:
+    """The seeds of the four :class:`RNGs` streams under ``master``, in
+    field order."""
+    scrambled = _splitmix64(master)
+    return tuple(
+        _splitmix64(scrambled + k) for k in range(1, _NUM_STREAMS + 1)
+    )
+
+
 def derive_grid_seeds(
     base_seed: Optional[int], n: int
 ) -> list[Optional[int]]:
-    """Deterministically derive ``n`` distinct seeds from ``base_seed``.
+    """Derive ``n`` distinct seeds from ``base_seed``.
 
-    The ``param_grid`` loop calls this so each parameter point gets a
-    different RNG stream; reusing ``base_seed`` directly would tie
-    measurement outcomes across grid points. A ``None`` ``base_seed``
-    propagates as ``[None] * n`` (caller wants nondeterminism).
+    The ``param_grid`` loop of :meth:`LocalBackend.execute` uses it so that
+    each point gets its own random stream; reusing ``base_seed`` for every
+    point would correlate their outcomes. The result depends only on
+    ``base_seed`` and the position, and two different base seeds, however
+    close, have no seed in common.
+
+    Args:
+        base_seed: The base seed, or ``None``.
+        n: Number of seeds.
+
+    Returns:
+        A list of ``n`` 63-bit seeds, or ``[None] * n`` when ``base_seed``
+        is ``None``.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import derive_grid_seeds
+        >>> seeds = derive_grid_seeds(42, 3)
+        >>> len(set(seeds)), seeds == derive_grid_seeds(42, 3)
+        (3, True)
+        >>> derive_grid_seeds(None, 2)
+        [None, None]
     """
     if base_seed is None:
         return [None] * n
-    return [_splitmix64(base_seed + i) for i in range(n)]
+    scrambled = _splitmix64(base_seed)
+    return [
+        _splitmix64(scrambled + _NUM_STREAMS + 1 + i) for i in range(n)
+    ]

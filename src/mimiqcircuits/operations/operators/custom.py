@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-import mimiqcircuits as mc
+from mimiqcircuits.operations.operator import AbstractOperator
 import symengine as se
 from mimiqcircuits._sympycheck import _is_sympy_matrix
 import numpy as np
@@ -23,21 +23,24 @@ import numpy as np
 from mimiqcircuits.operations.operator import _matrix_to_ndarray
 
 
-class Operator(mc.AbstractOperator):
-    r"""N-qubit operator specified by a :math:`2^N \times 2^N` matrix.
+class Operator(AbstractOperator):
+    r"""N-qubit operator given by a :math:`2^N \times 2^N` matrix.
 
-    .. note::
-        Only one and two qubit operators are supported.
+    The matrix does not have to be unitary. Only one- and two-qubit
+    operators are supported. The matrix is stored as a SymEngine matrix in
+    the ``mat`` attribute.
 
-    This operator does not have to be unitary.
+    Args:
+        mat (symengine.Matrix | sympy.Matrix | numpy.ndarray): The square
+            matrix of the operator, of size 2 or 4.
+
+    Raises:
+        TypeError: If ``mat`` is not a SymEngine, SymPy or NumPy matrix.
+        ValueError: If ``mat`` is not square, its size is not a power of 2,
+            or it acts on more than two qubits.
 
     See Also:
-        :class:`AbstractOperator`, :class:`ExpectationValue`,
-        :class:`KrausChannel`
-
-    Parameters:
-        mat (symengine.Matrix | sympy.Matrix | np.ndarray): The
-            :math:`2^N \times 2^N` matrix representing the operator.
+        :class:`AbstractOperator`, :class:`ExpectationValue`, :class:`Kraus`
 
     Examples:
         >>> from mimiqcircuits import *
@@ -55,7 +58,7 @@ class Operator(mc.AbstractOperator):
         ├── 0 0 0 0
         └── 1 0 0 1
 
-    Operators can be used for expectation values:
+        Operators can be used for expectation values:
 
         >>> c = Circuit()
         >>> c.push(ExpectationValue(Operator(Matrix([[0, 1], [0, 0]]))), 1, 1)
@@ -103,7 +106,7 @@ class Operator(mc.AbstractOperator):
 
     @staticmethod
     def is_valid_power_of_2(n):
-        """Check if a number is a power of 2."""
+        """Return whether ``n`` is a positive power of 2."""
         return n > 0 and (n & (n - 1)) == 0
 
     def _convert_to_symengine_matrix(self, matrix):
@@ -113,7 +116,7 @@ class Operator(mc.AbstractOperator):
         return matrix
 
     def opname(self):
-        """Return the operator name."""
+        """Return ``"Operator"``."""
         return "Operator"
 
     def _matrix(self):
@@ -121,11 +124,11 @@ class Operator(mc.AbstractOperator):
 
     @property
     def parnames(self):
-        """Return the parameter names."""
+        """Names of the parameters: ``("mat",)``."""
         return self._parnames
 
     def iswrapper(self):
-        """Placeholder method."""
+        """Operators do not wrap another operation. Returns ``None``."""
         pass
 
     def unwrappedmatrix(self):
@@ -136,14 +139,14 @@ class Operator(mc.AbstractOperator):
         return self.pretty_print()
 
     def __str__(self):
-        """String representation for printing."""
+        """Return ``Operator(<matrix>)`` for one qubit and ``Operator(...)`` for two."""
         if self.N < 2:
             return f"{self.opname()}({se.Matrix(self.mat).tolist()})"
         else:
             return f"{self.opname()}(...)"
 
     def pretty_print(self):
-        """Return a detailed string representation of the operator."""
+        """Return the matrix as a multi-line string, one row per line."""
         U = np.array(self.mat.tolist(), dtype=object)
         result = f"{self.N}-qubit Operator:\n"
 
@@ -159,7 +162,7 @@ class Operator(mc.AbstractOperator):
         return result
 
     def opsquared(self):
-        """Return the operator squared (O' * O)."""
+        r"""Return :math:`O^\dagger O` as a new :class:`Operator`."""
         O_dagger = self.mat.T.conjugate()
         squared_matrix = O_dagger * self.mat
         return Operator(squared_matrix)

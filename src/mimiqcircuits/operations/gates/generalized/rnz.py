@@ -17,47 +17,68 @@
 """RNZ (Multi-qubit Z-rotation) gate."""
 
 import mimiqcircuits.operations.gates.gate as mcg
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.cpauli import GateCX
+from mimiqcircuits.operations.gates.standard.rotations import GateRZ
 from mimiqcircuits.lazy import LazyArg, LazyExpr
 from symengine import eye
 from mimiqcircuits.circuit import Circuit
 
 
 class GateRNZ(mcg.Gate):
-    r"""
-    Multi-qubit parity-phase rotation gate along the Z-axis.
+    r"""Multi-qubit Z-parity rotation.
 
-    Applies a phase of ``e^{±i θ/2}`` depending on the parity (number of 1s) in the computational basis state.
+    Applies :math:`e^{-i\frac{\theta}{2} Z^{\otimes n}}`: each computational
+    basis state gets the phase :math:`e^{-i\theta/2}` if it has an even
+    number of ones and :math:`e^{i\theta/2}` if odd.
+
+    Matrix Representation:
+        .. math::
+            \operatorname{RNZ}(\theta) = \operatorname{diag}\left(
+                e^{-i(-1)^{|k|}\theta/2}\right)_{k=0}^{2^n-1}
+
+        where :math:`|k|` is the number of ones in the binary form of
+        :math:`k`.
+
+    With fewer than two arguments the constructor returns a lazy expression
+    that takes the missing arguments later.
 
     Args:
-        n (int): Number of qubits
-        theta (float or symbolic): Rotation angle
+        n (int): Number of qubits, a positive integer.
+        theta: Rotation angle in radians, numeric or symbolic.
+
+    Raises:
+        ValueError: If ``n`` is not a positive integer or more than two
+            arguments are given.
 
     Examples:
-
-    >>> from mimiqcircuits import *
-    >>> from symengine import pi
-    >>> GateRNZ(2, pi/2)
-    RNZ((1/2)*pi)
-
-    >>> GateRNZ()
-    lazy GateRNZ(?, ?)
-
-    >>> GateRNZ(2)
-    lazy GateRNZ(2, ?)
-
-    >>> GateRNZ(2, pi/2).decompose()
-    2-qubit circuit with 3 instructions:
-    ├── CX @ q[0], q[1]
-    ├── RZ((1/2)*pi) @ q[1]
-    └── CX @ q[0], q[1]
-    <BLANKLINE>
-
-    >>> c = Circuit()
-    >>> c.push(GateRNZ(3, pi/2), 1, 2, 3)
-    4-qubit circuit with 1 instruction:
-    └── RNZ((1/2)*pi) @ q[1:3]
-    <BLANKLINE>
+        >>> from mimiqcircuits import *
+        >>> from symengine import pi, Symbol
+        >>> GateRNZ(2, pi/2)
+        RNZ((1/2)*pi)
+        >>> GateRNZ(2, Symbol('theta')).matrix()
+        [exp(-1/2*I*theta), 0, 0, 0]
+        [0, exp(1/2*I*theta), 0, 0]
+        [0, 0, exp(1/2*I*theta), 0]
+        [0, 0, 0, exp(-1/2*I*theta)]
+        <BLANKLINE>
+        >>> c = Circuit()
+        >>> c.push(GateRNZ(3, pi/2), 1, 2, 3)
+        4-qubit circuit with 1 instruction:
+        └── RNZ((1/2)*pi) @ q[1:3]
+        <BLANKLINE>
+        >>> GateRNZ(2, pi/2).power(2), GateRNZ(2, pi/2).inverse()
+        (RNZ(pi), RNZ((-1/2)*pi))
+        >>> GateRNZ(2, pi/2).decompose()
+        2-qubit circuit with 3 instructions:
+        ├── CX @ q[0], q[1]
+        ├── RZ((1/2)*pi) @ q[1]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
+        >>> # lazy forms
+        >>> GateRNZ()
+        lazy GateRNZ(?, ?)
+        >>> GateRNZ(2)
+        lazy GateRNZ(2, ?)
     """
 
     _name = "RNZ"
@@ -97,6 +118,7 @@ class GateRNZ(mcg.Gate):
         return type(self)(self.num_qubits, -self.theta)
 
     def power(self, pwr):
+        """Return ``GateRNZ(n, theta * pwr)``."""
         return type(self)(self.num_qubits, self.theta * pwr)
 
     def _matrix(self):
@@ -116,24 +138,23 @@ class GateRNZ(mcg.Gate):
         data = qtargets[:-1]
 
         for q in data:
-            circ.push(mc.GateCX(), q, ancilla)
+            circ.push(GateCX(), q, ancilla)
 
-        circ.push(mc.GateRZ(self.theta), ancilla)
+        circ.push(GateRZ(self.theta), ancilla)
 
         for q in reversed(data):
-            circ.push(mc.GateCX(), q, ancilla)
+            circ.push(GateCX(), q, ancilla)
 
         return circ
 
     def evaluate(self, d):
-        """
-        Evaluate symbolic parameters with substitution dictionary d.
+        """Substitute symbols in ``theta`` and return a new gate.
 
         Args:
-            d (dict): Mapping of symbolic variables to values.
+            d (dict): Map from symbols to the values to substitute.
 
         Returns:
-            GateRNZ: A new evaluated GateRNZ instance.
+            GateRNZ: A new gate with the substituted angle.
         """
         theta = self.theta
         if hasattr(theta, "subs"):

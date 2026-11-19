@@ -17,26 +17,36 @@
 
 import symengine as se
 from mimiqcircuits.operations.krauschannel import krauschannel
-import mimiqcircuits as mc
+from mimiqcircuits.operations.operators.projectors import (
+    Projector0,
+    Projector1,
+    ProjectorX0,
+    ProjectorX1,
+    ProjectorY0,
+    ProjectorY1,
+)
 
 
 class ProjectiveNoiseX(krauschannel):
-    r"""
-    ProjectiveNoiseX()
+    r"""One-qubit projective noise in the X basis.
 
-    Single qubit projection noise onto an X Pauli basis.
-
-    This channel is defined by the Kraus operators:
+    The Kraus operators are
 
     .. math::
-        E_1 = |-\rangle \langle-|, \quad E_2 = |+\rangle \langle+|,
+        E_1 = |+\rangle\langle+|, \quad E_2 = |-\rangle\langle-|,
 
-    where :math:`\ket{+}` and :math:`\ket{-}` are the eigenstates of Pauli `X`.
+    the projectors onto the eigenstates :math:`|+\rangle` and :math:`|-\rangle` of Pauli X. The channel removes the coherences between
+    the two basis states, like a measurement in the X basis whose outcome is
+    discarded. ``ProjectiveNoise("X")`` returns an instance of this class.
 
-    See also:
-        - :class:`ProjectiveNoise`
-        - :class:`ProjectiveNoiseY`
-        - :class:`ProjectiveNoiseZ`
+    See Also:
+        :class:`ProjectiveNoise`, :class:`ProjectiveNoiseY`,
+        :class:`ProjectiveNoiseZ`
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> ProjectiveNoiseX().krausoperators()
+        [PX₀(1), PX₁(1)]
     """
 
     _name = "ProjectiveNoiseX"
@@ -49,29 +59,32 @@ class ProjectiveNoiseX(krauschannel):
         return "ProjectiveNoiseX"
 
     def krausoperators(self):
-        return [mc.ProjectorX0(), mc.ProjectorX1()]
+        return [ProjectorX0(), ProjectorX1()]
 
     def __str__(self):
         return f"{self._name}"
 
 
 class ProjectiveNoiseY(krauschannel):
-    r"""
-    ProjectiveNoiseY()
+    r"""One-qubit projective noise in the Y basis.
 
-    Single qubit projection noise onto a Y Pauli basis.
-
-    This channel is defined by the Kraus operators:
+    The Kraus operators are
 
     .. math::
-        E_1 = |Y0\rangle \langle Y0|, \quad E_2 = |Y1\rangle \langle Y1|,
+        E_1 = |y+\rangle\langle y+|, \quad E_2 = |y-\rangle\langle y-|,
 
-    where :math:`\ket{Y0}` and :math:`\ket{Y1}` are the eigenstates of Pauli `Y`.
+    the projectors onto the eigenstates :math:`|y+\rangle` and :math:`|y-\rangle` of Pauli Y. The channel removes the coherences between
+    the two basis states, like a measurement in the Y basis whose outcome is
+    discarded. ``ProjectiveNoise("Y")`` returns an instance of this class.
 
-    See also:
-        - :class:`ProjectiveNoise`
-        - :class:`ProjectiveNoiseX`
-        - :class:`ProjectiveNoiseZ`
+    See Also:
+        :class:`ProjectiveNoise`, :class:`ProjectiveNoiseX`,
+        :class:`ProjectiveNoiseZ`
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> ProjectiveNoiseY().krausoperators()
+        [PY₀(1), PY₁(1)]
     """
 
     _name = "ProjectiveNoiseY"
@@ -84,29 +97,32 @@ class ProjectiveNoiseY(krauschannel):
         return "ProjectiveNoiseY"
 
     def krausoperators(self):
-        return [mc.ProjectorY0(), mc.ProjectorY1()]
+        return [ProjectorY0(), ProjectorY1()]
 
     def __str__(self):
         return f"{self._name}"
 
 
 class ProjectiveNoiseZ(krauschannel):
-    r"""
-    ProjectiveNoiseZ()
+    r"""One-qubit projective noise in the Z basis.
 
-    Single qubit projection noise onto a Z Pauli basis.
-
-    This channel is defined by the Kraus operators:
+    The Kraus operators are
 
     .. math::
-        E_1 = |0\rangle \langle Z0|, \quad E_2 = |1\rangle \langle Z1|,
+        E_1 = |0\rangle\langle 0|, \quad E_2 = |1\rangle\langle 1|,
 
-    where :math:`\ket{0}` and :math:`\ket{1}` are the eigenstates of Pauli `Z`.
+    the projectors onto the computational basis states, the eigenstates of Pauli Z. The channel removes the coherences between
+    the two basis states, like a measurement in the Z basis whose outcome is
+    discarded. ``ProjectiveNoise("Z")`` returns an instance of this class.
 
-    See also:
-        - :class:`ProjectiveNoise`
-        - :class:`ProjectiveNoiseX`
-        - :class:`ProjectiveNoiseY`
+    See Also:
+        :class:`ProjectiveNoise`, :class:`ProjectiveNoiseX`,
+        :class:`ProjectiveNoiseY`
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> ProjectiveNoiseZ().krausoperators()
+        [P₀(1), P₁(1)]
     """
 
     _name = "ProjectiveNoiseZ"
@@ -122,42 +138,45 @@ class ProjectiveNoiseZ(krauschannel):
         return f"{self._name}"
 
     def krausoperators(self):
-        return [mc.Projector0(), mc.Projector1()]
+        return [Projector0(), Projector1()]
 
 
 class ProjectiveNoise(krauschannel):
-    r"""
-    ProjectiveNoise(basis)
+    r"""One-qubit projective noise in a Pauli basis.
 
-    Single qubit projection noise onto a Pauli basis.
-
-    This channel is defined by the Kraus operators:
+    The Kraus operators are
 
     .. math::
         E_1 = |\alpha\rangle \langle\alpha|, \quad E_2 = |\beta\rangle \langle\beta|,
 
-    where the states :math:`|\alpha\rangle` and :math:`|\beta\rangle` are the +1 and -1
-    eigenstates of a Pauli operator. Specifically, they correspond to
-    :math:`\{ |0\rangle, |1\rangle \}` (Z basis),
-    :math:`\{ |+\rangle, |-\rangle \}` (X basis),
-    or :math:`\{ |y+\rangle, |y-\rangle \}` (Y basis).
+    where :math:`|\alpha\rangle` and :math:`|\beta\rangle` are the +1 and -1
+    eigenstates of a Pauli operator: :math:`\{ |0\rangle, |1\rangle \}` for Z,
+    :math:`\{ |+\rangle, |-\rangle \}` for X and
+    :math:`\{ |y+\rangle, |y-\rangle \}` for Y.
 
-    This operation is similar to measuring in the corresponding basis (X, Y, or Z),
-    except that the outcome of the measurement is not stored, i.e., there is a loss of information.
+    The channel acts like a measurement in that basis whose outcome is not
+    stored: the coherences between the two basis states are lost.
 
-    Parameters:
-        basis (str): String or character that selects the Pauli basis, `"X"`, `"Y"`, or `"Z"`.
+    Calling ``ProjectiveNoise(basis)`` returns an instance of
+    :class:`ProjectiveNoiseX`, :class:`ProjectiveNoiseY` or
+    :class:`ProjectiveNoiseZ`, not of ``ProjectiveNoise``.
+
+    Args:
+        basis (str): ``"X"``, ``"Y"`` or ``"Z"`` (default ``"Z"``).
+
+    Raises:
+        ValueError: If ``basis`` is not one of ``"X"``, ``"Y"``, ``"Z"``.
 
     Examples:
         >>> from mimiqcircuits import *
+        >>> # dephase qubit 1 in the computational basis
         >>> c = Circuit()
         >>> c.push(ProjectiveNoise("Z"), 1)
         2-qubit circuit with 1 instruction:
         └── ProjectiveNoiseZ @ q[1]
         <BLANKLINE>
 
-    The Kraus matrices are given by:
-
+        >>> # the Kraus matrices are the projectors onto the basis states
         >>> ProjectiveNoise("X").krausmatrices()
         [[0.5, 0.5]
         [0.5, 0.5]

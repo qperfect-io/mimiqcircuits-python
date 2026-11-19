@@ -163,3 +163,32 @@ def test_push_suzuki_order_and_qubit_errors():
 
     with pytest.raises(ValueError):
         mc.Circuit().push_suzukitrotter(h, (0,), t=1.0, steps=2, order=2)
+
+
+@pytest.mark.parametrize("push", ["push_suzukitrotter", "push_yoshidatrotter"])
+def test_higher_order_trotter_targets(push):
+    h = mc.Hamiltonian()
+    h.push(1.0, mc.PauliString("XX"), 0, 1)
+    h.push(0.5, mc.PauliString("Z"), 0)
+
+    c = getattr(mc.Circuit(), push)(h, (1, 2), 1.0, 2, order=4)
+    assert c.num_qubits() == 3
+
+    # The time steps of any order add up to t, so the total Z-rotation angle
+    # on each circuit qubit matches order 2. With swapped targets this fails
+    # if the qubit mapping is applied twice.
+    def zangles(order):
+        c = getattr(mc.Circuit(), push)(h, (1, 0), 1.0, 1, order=order)
+        total = {}
+        for inst in c.decompose():
+            if not isinstance(inst.operation, mc.GateU):
+                continue
+            theta, _, lmbda, _ = inst.operation.getparams()
+            if theta == 0:
+                q = inst.get_qubits()
+                total[q] = total.get(q, 0) + float(lmbda)
+        return total
+
+    o2, o4 = zangles(2), zangles(4)
+    assert o2.keys() == o4.keys()
+    assert all(abs(o2[q] - o4[q]) < 1e-12 for q in o2)

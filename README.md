@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="logo.svg" alt="MIMIQ" width="380">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logo-dark.svg">
+    <img src="logo.svg" alt="MIMIQ Circuits" height="88">
+  </picture>
 </p>
 
 # MIMIQ Circuits Python

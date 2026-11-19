@@ -38,7 +38,9 @@ from mimiqcircuits.decomposition.abstract import DecompositionError, RewriteRule
 
 if TYPE_CHECKING:
     from scipy.spatial import KDTree
-    from mimiqcircuits import Circuit, Gate, Operation
+    from mimiqcircuits.circuit import Circuit
+    from mimiqcircuits.operations.gates.gate import Gate
+    from mimiqcircuits.operations.operation import Operation
 
 # =============================================================================
 # Constants
@@ -171,7 +173,7 @@ def find_orthogonal_axes(n: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         n: A unit vector.
 
     Returns:
-        Two unit vectors (v, w) such that v×w = n (right-handed).
+        Two unit vectors (v, w) such that v×w = -n.
     """
     # Choose initial vector not parallel to n
     if abs(n[0]) < 0.9:
@@ -196,17 +198,20 @@ def find_orthogonal_axes(n: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 def get_basic_gates() -> tuple:
     """Get the basic Clifford+T gates for the epsilon-net."""
-    import mimiqcircuits as mc
+    from mimiqcircuits.operations.gates.standard.hadamard import GateH
+    from mimiqcircuits.operations.gates.standard.pauli import GateX, GateY, GateZ
+    from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
+    from mimiqcircuits.operations.gates.standard.t import GateT, GateTDG
 
     return (
-        mc.GateH(),
-        mc.GateT(),
-        mc.GateTDG(),
-        mc.GateS(),
-        mc.GateSDG(),
-        mc.GateX(),
-        mc.GateY(),
-        mc.GateZ(),
+        GateH(),
+        GateT(),
+        GateTDG(),
+        GateS(),
+        GateSDG(),
+        GateX(),
+        GateY(),
+        GateZ(),
     )
 
 
@@ -259,21 +264,22 @@ def _gates_cancel(g: Gate, h: Gate) -> bool:
 
 def _try_combine_gates(g: Gate, h: Gate) -> Gate | None:
     """Try to combine two gates into one."""
-    import mimiqcircuits as mc
+    from mimiqcircuits.operations.gates.standard.pauli import GateZ
+    from mimiqcircuits.operations.gates.standard.s import GateS, GateSDG
 
     g_str = str(g)
     h_str = str(h)
 
     # T * T = S
     if g_str == "T" and h_str == "T":
-        return mc.GateS()
+        return GateS()
     if g_str == "T†" and h_str == "T†":
-        return mc.GateSDG()
+        return GateSDG()
     # S * S = Z
     if g_str == "S" and h_str == "S":
-        return mc.GateZ()
+        return GateZ()
     if g_str == "S†" and h_str == "S†":
-        return mc.GateZ()
+        return GateZ()
 
     return None
 
@@ -492,7 +498,7 @@ def gc_decompose(delta: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     arg = math.sqrt(np.clip(sin_half_theta / 2, 0.0, 1.0))
     phi = 2 * math.asin(arg)
 
-    # Choose v and w perpendicular to each other, with v×w = n
+    # Choose v and w perpendicular to each other and to n
     v, w = find_orthogonal_axes(n)
 
     V = axis_angle_to_su2(v, phi)
@@ -607,7 +613,7 @@ def sk_approximate(
     W_inv_gates = invert_sequence(W_gates)
 
     # Commutator: [V, W] = V W V† W†
-    # Full approximation: U_prev * [V, W] ≈ U_prev * Δ = U
+    # Full approximation: [V, W] * U_prev ≈ Δ * U_prev = U
     result = U_prev_gates + W_inv_gates + V_inv_gates + W_gates + V_gates
     memo[memo_key] = result
     return list(result)
@@ -620,36 +626,47 @@ def sk_approximate(
 
 @dataclass(frozen=True)
 class SolovayKitaevRewrite(RewriteRule):
-    """Rewrite rule using the Solovay-Kitaev algorithm.
+    """Rewrite rule that approximates single-qubit gates with Clifford+T by Solovay-Kitaev.
 
-    Approximates arbitrary single-qubit unitaries using a sequence of
-    Clifford+T gates. The algorithm recursively refines an initial approximation
-    using group commutators, achieving ε-approximation with O(log^c(1/ε)) gates.
+    The rule starts from the closest entry of a precomputed table (an
+    epsilon-net) of short sequences of ``H``, ``T``, ``T†``, ``S``, ``S†``,
+    ``X``, ``Y`` and ``Z``, and refines it ``depth`` times with group
+    commutators. Refinements lower the error on average, not at every step,
+    and each multiplies the length of the sequence by about 5. The approximation holds up to a global phase.
+    For Z-rotations, :class:`GridSynthRewrite` gives much shorter sequences
+    for the same error.
 
     Args:
-        depth: Recursion depth (default: 3). Higher = better precision, more gates.
-        simplify: Whether to simplify the resulting sequence (default: True).
-        net_max_depth: Maximum depth for epsilon-net generation (default: 15).
-        net_max_points: Maximum points in epsilon-net (default: 100,000).
-        net_min_dist: Minimum distance between epsilon-net points (default: 0.01).
+        depth: Number of refinements, at least 0 (default ``3``). With
+            ``0`` the closest table entry is used as it is.
+        simplify: Cancel and merge adjacent gates of the result, such as
+            ``T`` followed by ``T†`` or two ``S`` (default ``True``).
+        net_max_depth: Longest sequence in the table (default ``10``).
+        net_max_points: Largest number of table entries (default ``50000``).
+        net_min_dist: Smallest distance between two table entries (default
+            ``0.02``).
 
-    Supported operations:
-        - GateRZ(λ): Z-rotation by angle λ
-        - GateRY(θ): Y-rotation by angle θ
-        - GateRX(θ): X-rotation by angle θ
-        - GateU(θ, φ, λ, γ): General single-qubit unitary
+    Raises:
+        ValueError: If ``depth`` is negative.
 
-    Symbolic parameters are NOT supported.
+    Supported Operations:
+        - ``GateRZ(λ)``, ``GateRY(θ)`` and ``GateRX(θ)``
+        - ``GateU(θ, φ, λ, γ)``
 
-    Example:
-        >>> from mimiqcircuits import GateRZ
-        >>> from mimiqcircuits.decomposition import SolovayKitaevRewrite
-        >>> rule = SolovayKitaevRewrite(depth=0)
+    Only numeric parameters are matched; symbolic ones are not.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> # one refinement of the closest table entry
+        >>> rule = SolovayKitaevRewrite(depth=1)
         >>> circ = rule.decompose_step(GateRZ(0.123), [0], [], [])
+        >>> # the result only uses Clifford+T gates
+        >>> {type(inst.operation) for inst in circ} <= {GateH, GateT, GateTDG, GateS, GateSDG, GateX, GateY, GateZ}
+        True
 
     Note:
-        The first call may be slow due to epsilon-net generation.
-        Subsequent calls reuse the cached net.
+        The table is built on first use, which takes a few seconds, and is
+        then kept for later calls with the same ``net_*`` settings.
     """
 
     depth: int = 3
@@ -663,25 +680,29 @@ class SolovayKitaevRewrite(RewriteRule):
             raise ValueError("depth must be non-negative")
 
     def matches(self, op: Operation) -> bool:
-        """Check if this rule can decompose the operation.
-
-        Matches single-qubit rotations with concrete (non-symbolic) angles.
+        """Check whether an operation is a numeric single-qubit rotation.
 
         Args:
             op: The operation to check.
 
         Returns:
-            True if this rule can decompose the operation.
+            ``True`` for a ``GateRX``, ``GateRY``, ``GateRZ`` or ``GateU`` with
+            numeric parameters.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.operations.gates.standard.rotations import (
+            GateRX,
+            GateRY,
+            GateRZ,
+        )
+        from mimiqcircuits.operations.gates.standard.u import GateU
 
-        if isinstance(op, mc.GateRZ):
+        if isinstance(op, GateRZ):
             return not op.is_symbolic()
-        if isinstance(op, mc.GateRY):
+        if isinstance(op, GateRY):
             return not op.is_symbolic()
-        if isinstance(op, mc.GateRX):
+        if isinstance(op, GateRX):
             return not op.is_symbolic()
-        if isinstance(op, mc.GateU):
+        if isinstance(op, GateU):
             return not op.is_symbolic()
         return False
 
@@ -692,21 +713,23 @@ class SolovayKitaevRewrite(RewriteRule):
         bits: Sequence[int],
         zvars: Sequence[int],
     ) -> Circuit:
-        """Decompose the operation using Solovay-Kitaev.
+        """Approximate a single-qubit gate with Clifford+T gates.
 
         Args:
-            op: The operation to decompose.
-            qubits: Qubit indices for the operation.
+            op: The rotation or ``GateU`` to approximate.
+            qubits: Qubit index the gate acts on.
             bits: Classical bit indices (unused).
             zvars: Z-variable indices (unused).
 
         Returns:
-            A Circuit containing the Clifford+T approximation.
+            A new :class:`~mimiqcircuits.Circuit` with the Clifford+T
+            approximation. It can be empty when the gate is close to the
+            identity.
 
         Raises:
-            DecompositionError: If the operation cannot be decomposed.
+            DecompositionError: If :meth:`matches` rejects ``op``.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.circuit import Circuit
 
         if not self.matches(op):
             raise DecompositionError(
@@ -729,7 +752,7 @@ class SolovayKitaevRewrite(RewriteRule):
         )
 
         # Run Solovay-Kitaev
-        memo: dict[tuple[int, int], list[mc.Gate]] = {}
+        memo: dict[tuple[int, int], list[Gate]] = {}
         gates = sk_approximate(U_su2, self.depth, basis_gates, cache, memo)
 
         # Optionally simplify
@@ -737,7 +760,7 @@ class SolovayKitaevRewrite(RewriteRule):
             gates = simplify_sequence(gates)
 
         # Build circuit
-        circ = mc.Circuit()
+        circ = Circuit()
         q = qubits[0]
         for gate in gates:
             circ.push(gate, q)

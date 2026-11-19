@@ -99,3 +99,16 @@ def test_whilestatement_decompose_nonterminal_body_raises():
         match="Operation While is not supported by CanonicalBasis and cannot be decomposed.",
     ):
         c.decompose()
+
+
+def test_decompose_keeps_qubits_the_body_does_not_touch():
+    body = mc.Block(2, 0, 0)
+    body.push(mc.GateH(), 0)
+    body.push(mc.GateX(), 0)
+    w = mc.WhileStatement(body, mc.BitString("1"))
+
+    c = w._decompose(mc.Circuit(), [0, 1], [0], [])
+
+    assert len(c) == 1
+    assert c[0].qubits == (0, 1)
+    assert c[0].operation.op.num_qubits == 2

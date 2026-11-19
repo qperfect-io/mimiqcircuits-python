@@ -38,23 +38,54 @@ import abc
 
 
 class Stage(abc.ABC):
-    """A single progress bar opened by :meth:`Progress.stage`."""
+    """A single progress bar opened by :meth:`Progress.stage`.
+
+    Subclasses implement :meth:`step` and :meth:`finish`.
+    """
 
     @abc.abstractmethod
-    def step(self, n: int = 1) -> None: ...
+    def step(self, n: int = 1) -> None:
+        """Advance the bar by ``n`` steps."""
 
     @abc.abstractmethod
-    def finish(self) -> None: ...
+    def finish(self) -> None:
+        """Close the bar."""
 
 
 class Progress(abc.ABC):
-    """Sink for execution progress."""
+    """Destination for execution progress, given to
+    :meth:`LocalBackend.execute` as ``progress``.
+
+    Subclasses implement :meth:`stage`. :class:`NoProgress` draws nothing and
+    :class:`TqdmProgress` draws tqdm bars.
+
+    Examples:
+        A sink that prints every stage it is asked to open.
+
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import NoProgress, Progress
+        >>> class PrintProgress(Progress):
+        ...     def stage(self, name, *, total=None):
+        ...         print(f"{name}: {total} steps")
+        ...         return NoProgress().stage(name, total=total)
+        >>> bar = PrintProgress().stage("trajectories", total=100)
+        trajectories: 100 steps
+        >>> bar.step()
+        >>> bar.finish()
+    """
 
     @abc.abstractmethod
     def stage(self, name: str, *, total=None) -> Stage:
-        """Open a stage named ``name``. ``total=None`` means the length
-        is unknown and the bar shows an indeterminate count."""
-        ...
+        """Open a stage.
+
+        Args:
+            name: Name of the stage, such as ``"trajectories"``,
+                ``"execute"`` or ``"compression"``.
+            total: Number of steps, or ``None`` when unknown.
+
+        Returns:
+            The :class:`Stage` to advance and close.
+        """
 
 
 class _NoStage(Stage):
@@ -69,8 +100,10 @@ _NO_STAGE = _NoStage()
 
 
 class NoProgress(Progress):
-    """Default sink: every verb is a no-op, so threading ``progress``
-    through the pipeline costs nothing when reporting is disabled."""
+    """Sink that draws nothing; the default of :meth:`LocalBackend.execute`.
+
+    Its stages ignore :meth:`Stage.step` and :meth:`Stage.finish`.
+    """
 
     def stage(self, name: str, *, total=None) -> Stage:
         return _NO_STAGE
@@ -90,8 +123,14 @@ class _TqdmStage(Stage):
 
 
 class TqdmProgress(Progress):
-    """Render stages as tqdm bars. ``leave=False`` clears each bar once
-    its stage finishes so sequential stages do not pile up."""
+    """Sink that draws each stage as a tqdm bar.
+
+    ``execute(progress=True)`` uses it with the default arguments.
+
+    Args:
+        leave: Keep each bar on screen after its stage finishes. The default,
+            ``False``, clears it, so successive stages do not pile up.
+    """
 
     def __init__(self, *, leave: bool = False):
         self._leave = leave
@@ -101,9 +140,20 @@ class TqdmProgress(Progress):
 
 
 def to_progress(progress) -> Progress:
-    """Normalise the user-facing ``progress=`` argument: a :class:`Progress`
-    passes through, a ``bool`` selects between :class:`TqdmProgress` and
-    :class:`NoProgress`."""
+    """Turn the ``progress`` argument of :meth:`LocalBackend.execute` into a
+    :class:`Progress`.
+
+    Args:
+        progress: A :class:`Progress`, returned as it is, or a bool:
+            ``True`` gives :class:`TqdmProgress`, ``False`` gives
+            :class:`NoProgress`.
+
+    Returns:
+        The :class:`Progress` sink.
+
+    Raises:
+        TypeError: For any other type.
+    """
     if isinstance(progress, Progress):
         return progress
     if isinstance(progress, bool):

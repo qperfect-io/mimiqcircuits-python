@@ -456,10 +456,6 @@ def parse_include(ps: ParserState):
     ps.expectnext(TokenKind.SEMICOLON)
     fname = t.val
 
-    # Check cache
-    if fname in PARSED_INCLUDES:
-        return PARSED_INCLUDES[fname]
-
     # Resolve file
     found_path = None
     for d in ps.includedirs:
@@ -470,6 +466,10 @@ def parse_include(ps: ParserState):
 
     if not found_path:
         raise ParseError(f"Include file {fname} not found", t, ps)
+
+    found_path = os.path.realpath(found_path)
+    if found_path in PARSED_INCLUDES:
+        return PARSED_INCLUDES[found_path]
 
     # Parse include
     with open(found_path, "r") as f:
@@ -483,7 +483,7 @@ def parse_include(ps: ParserState):
         stmts.append(parse_statement(sub_ps))
 
     # Cache
-    PARSED_INCLUDES[fname] = stmts
+    PARSED_INCLUDES[found_path] = stmts
     return stmts
 
 

@@ -14,13 +14,13 @@
 # limitations under the License.
 #
 
-"""Final-block analysis. Reverse-scan a `Circuit`, absorb its trailing
-"projection block" (Measures, Resets, post-measure X gates) into a
-small `projection_circuit` of classical-bit instructions, and return
-the remaining `quantum_circuit` plus that projection.
+"""Final-block analysis.
 
-The two-circuit decomposition is the post-evolution analog of the
-old ``MeasureInfo`` enum:
+:func:`extract_projection` scans a circuit backwards, moves its trailing
+measurements, resets and classical logic into a small projection circuit
+of classical-bit instructions, and returns the remaining quantum circuit
+together with that projection. A backend then evolves the quantum circuit
+once and maps every sampled shot through the projection::
 
     quantum_circuit, projection_circuit = extract_projection(c)
     # evolve through quantum_circuit once
@@ -28,7 +28,7 @@ old ``MeasureInfo`` enum:
     #     sample = quantum_state.sample()
     #     cstate = evaluate_projection(projection_circuit, sample)
 
-`projection_circuit` only contains classical-bit operations:
+The projection circuit only contains classical-bit operations:
 
 - ``Measure(q, b)``               — ``cstate[b] = sample[q]``
 - ``SetBit0(b)`` / ``SetBit1(b)`` — bit is classically known
@@ -36,21 +36,35 @@ old ``MeasureInfo`` enum:
 - ``And`` / ``Or`` / ``Xor`` — ``bits[0]`` is the
   target, the rest are read
 
-Evaluate it one shot at a time with `evaluate_projection`, or a whole
-block at a time with `CompiledProjection`, which is the same semantics
-compiled once instead of interpreted per shot.
+Evaluate it one shot at a time with :func:`evaluate_projection`, or a
+whole block at a time with :class:`CompiledProjection`, which has the same
+semantics compiled once instead of interpreted per shot.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from itertools import compress
-from typing import List, Tuple
+from typing import TYPE_CHECKING, List, Tuple
 
 from bitarray import bitarray
 
-import mimiqcircuits as mc
+from mimiqcircuits.bitstrings import BitString
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.classical.and_operation import And
+from mimiqcircuits.classical.not_operation import Not
+from mimiqcircuits.classical.or_operation import Or
+from mimiqcircuits.classical.setbits import SetBit0, SetBit1
+from mimiqcircuits.classical.xor_operation import Xor
+from mimiqcircuits.operations.gates.standard.id import GateID
+from mimiqcircuits.operations.krauschannel import krauschannel
+from mimiqcircuits.operations.measure import Measure
+from mimiqcircuits.operations.measurereset import MeasureReset
+from mimiqcircuits.operations.reset import Reset
 from mimiqcircuits.dag import _dag_qubits
+
+if TYPE_CHECKING:
+    from mimiqcircuits.operations.operation import Operation
 
 
 __all__ = [
@@ -63,12 +77,21 @@ __all__ = [
 ]
 
 
-def needs_trajectories(circuit: "mc.Circuit") -> bool:
-    """Return True if `circuit` still contains any non-unitary op
-    that requires per-shot evolution. Operations that don't touch
-    qubits (Amplitude on a z-register, Tick, …) or that declare
-    themselves unitary (Gates, AbstractAnnotation, ExpectationValue, …)
-    are ignored.
+def needs_trajectories(circuit: "Circuit") -> bool:
+    """Return whether ``circuit`` must be evolved once per shot.
+
+    That is the case when it has an operation on qubits that is not
+    unitary (a measurement, a reset, a noise channel, …). Operations on no
+    qubits and operations that declare themselves unitary (gates,
+    annotations, ``ExpectationValue``, …) are ignored. Apply it to the
+    quantum circuit returned by :func:`extract_projection`, since trailing
+    measurements do not need per-shot evolution.
+
+    Args:
+        circuit: The circuit to check.
+
+    Returns:
+        ``True`` if a non-unitary operation acts on qubits.
     """
     for inst in circuit.instructions:
         op = inst.operation
@@ -80,10 +103,17 @@ def needs_trajectories(circuit: "mc.Circuit") -> bool:
     return False
 
 
-def needs_loss_sampling(circuit: "mc.Circuit") -> bool:
-    """Return True if `circuit` contains loss operations (`Loss`, `Reload`,
-    `Check`, `MeasureCheck`) that must be resolved into primitives before the
-    simulator runs."""
+def needs_loss_sampling(circuit: "Circuit") -> bool:
+    """Return whether ``circuit`` has loss operations to resolve before
+    simulation.
+
+    Args:
+        circuit: The circuit to check.
+
+    Returns:
+        ``True`` if it has a ``Loss``, ``Reload``, ``Check`` or
+        ``MeasureCheck`` instruction at the top level.
+    """
     try:
         from mimiqcircuits.operations.losschannel import (
             Loss,
@@ -99,35 +129,49 @@ def needs_loss_sampling(circuit: "mc.Circuit") -> bool:
     return False
 
 
-def any_mixed_unitary(circuit: "mc.Circuit") -> bool:
-    """Return True if `circuit` contains a mixed-unitary
-    :class:`krauschannel` whose `ismixedunitary()` is true. Used as
-    the default predicate for the per-trajectory recompile decision
-    in :meth:`LocalBackend.recompile_per_trajectory`.
+def any_mixed_unitary(circuit: "Circuit") -> bool:
+    """Return whether ``circuit`` has a mixed-unitary Kraus channel.
+
+    This is the default of :meth:`LocalBackend.recompile_per_trajectory`.
+
+    Args:
+        circuit: The circuit to check.
+
+    Returns:
+        ``True`` if a top-level Kraus channel has ``ismixedunitary()`` true.
     """
     for inst in circuit.instructions:
         op = inst.operation
-        if isinstance(op, mc.krauschannel) and op.ismixedunitary():
+        if isinstance(op, krauschannel) and op.ismixedunitary():
             return True
     return False
 
 
-def remap_projection_qubits(projection: "mc.Circuit",
+def remap_projection_qubits(projection: "Circuit",
                             qubit_order: list[int],
-                            do_remap: bool) -> "mc.Circuit":
-    """Rewrite every `Measure(q, b)` instruction in `projection` so
-    that ``q → qubit_order[q]``. Used by the driver when the pass
-    pipeline reordered the qubits and the projection was synthesised
-    in the reordered frame.
+                            do_remap: bool) -> "Circuit":
+    """Rename the qubits read by the ``Measure`` instructions of a
+    projection.
 
-    Returns a new `Circuit`; the input is not mutated.
+    Every ``Measure(q, b)`` becomes ``Measure(qubit_order[q], b)``; other
+    instructions are copied as they are.
+
+    Args:
+        projection: The projection circuit.
+        qubit_order: The new index of each qubit, 0-based.
+        do_remap: When ``False``, ``projection`` itself is returned
+            unchanged.
+
+    Returns:
+        A new circuit, or ``projection`` when ``do_remap`` is ``False``.
+        The input is never changed.
     """
     if not do_remap:
         return projection
-    out = mc.Circuit()
+    out = Circuit()
     for inst in projection.instructions:
         op = inst.operation
-        if isinstance(op, mc.Measure):
+        if isinstance(op, Measure):
             q_old = inst.qubits[0]
             b = inst.bits[0]
             out.push(op, qubit_order[q_old], b)
@@ -139,12 +183,13 @@ def remap_projection_qubits(projection: "mc.Circuit",
 # ── public API ──────────────────────────────────────────────────────────────
 
 
-def extract_projection(circuit: "mc.Circuit") -> Tuple["mc.Circuit", "mc.Circuit"]:
-    """Reverse-scan `circuit`, absorbing every trailing operation that
-    does not affect the qubit observables of the post-evolution state
-    into a `projection_circuit` of classical-bit instructions. The
-    remaining operations are returned as `quantum_circuit` — the part
-    the simulator must evolve.
+def extract_projection(circuit: "Circuit") -> Tuple["Circuit", "Circuit"]:
+    """Split ``circuit`` into the part to evolve and a classical projection.
+
+    The circuit is scanned backwards. Trailing operations that do not change
+    the final quantum state seen by the remaining operations move into a
+    projection circuit of classical-bit instructions; the rest is the
+    quantum circuit the simulator evolves.
 
     Absorbed operations:
 
@@ -181,6 +226,43 @@ def extract_projection(circuit: "mc.Circuit") -> Tuple["mc.Circuit", "mc.Circuit
     overwrites without reading is dropped from the projection, so
     reusing a classical bit does not cost a per-shot write that nothing
     observes.
+
+    Args:
+        circuit: The circuit to split. It is not changed.
+
+    Returns:
+        A tuple ``(quantum_circuit, projection_circuit)``.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import evaluate_projection, extract_projection
+        >>> c = Circuit().push(GateH(), 0).push(GateCX(), 0, 1)
+        >>> c.push(Measure(), range(2), range(2))
+        2-qubit, 2-bit circuit with 4 instructions:
+        ├── H @ q[0]
+        ├── CX @ q[0], q[1]
+        ├── M @ q[0], c[0]
+        └── M @ q[1], c[1]
+        <BLANKLINE>
+        >>> quantum, projection = extract_projection(c)
+
+        The measurements leave the quantum circuit ...
+
+        >>> quantum
+        2-qubit circuit with 2 instructions:
+        ├── H @ q[0]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
+
+        ... and become the projection, applied to each sampled shot.
+
+        >>> projection
+        2-qubit, 2-bit circuit with 2 instructions:
+        ├── M @ q[0], c[0]
+        └── M @ q[1], c[1]
+        <BLANKLINE>
+        >>> evaluate_projection(projection, BitString("11")) == BitString("11")
+        True
     """
     nq = circuit.num_qubits()
     nm = circuit.num_bits()
@@ -197,7 +279,7 @@ def extract_projection(circuit: "mc.Circuit") -> Tuple["mc.Circuit", "mc.Circuit
     # touches it. Nothing absorbed may then read or write it, because
     # the projection runs after everything that was kept.
     bit_blocked = [False] * nb_eff
-    classical: List[Tuple[int, "mc.Operation", tuple]] = []
+    classical: List[Tuple[int, "Operation", tuple]] = []
     insts = list(circuit.instructions)
     # A mask, not a prefix: an absorbed operation can sit before a kept one on
     # other wires (fusion and other reordering passes produce this), and it must
@@ -212,7 +294,7 @@ def extract_projection(circuit: "mc.Circuit") -> Tuple["mc.Circuit", "mc.Circuit
 
         # Case 1: writing op (Measure, MeasureReset, Not, Xor, IfStatement, ...).
         if _is_writing_op(op):
-            if isinstance(op, (mc.Measure, mc.MeasureReset)) and \
+            if isinstance(op, (Measure, MeasureReset)) and \
                _try_absorb_measurement(i, op, qs[0], bs[0], qstates, bit_blocked):
                 continue
 
@@ -235,7 +317,7 @@ def extract_projection(circuit: "mc.Circuit") -> Tuple["mc.Circuit", "mc.Circuit
             continue
 
         # Case 3: Reset on a qubit with captured pending bits → promote.
-        if isinstance(op, mc.Reset) and qs:
+        if isinstance(op, Reset) and qs:
             q = qs[0]
             if not qstates[q].blocked:
                 _const_promote(qstates[q])
@@ -263,7 +345,7 @@ def extract_projection(circuit: "mc.Circuit") -> Tuple["mc.Circuit", "mc.Circuit
     # These instructions came out of a valid circuit, so hand them to the
     # constructor instead of re-validating each one through `push`.
     kept = list(compress(insts, keep))
-    quantum_circuit = mc.Circuit(kept)
+    quantum_circuit = Circuit(kept)
 
     # Any captured measurement whose qubit never appears in
     # `quantum_circuit` is provably reading |0⟩ — const-promote.
@@ -281,7 +363,7 @@ def extract_projection(circuit: "mc.Circuit") -> Tuple["mc.Circuit", "mc.Circuit
     entries.sort(key=lambda e: e[0])
 
     live = _drop_dead_writes(entries)
-    projection_circuit = mc.Circuit()
+    projection_circuit = Circuit()
     # The projection's width comes from the bits its instructions touch, so
     # dropping a dead write can shrink it below the source register. A
     # leading SetBit0 on the top bit restores the width and changes nothing,
@@ -289,46 +371,43 @@ def extract_projection(circuit: "mc.Circuit") -> Tuple["mc.Circuit", "mc.Circuit
     # written by the evolved circuit, which then runs as trajectories.
     if nm > 1 + max((b for e in live for b in e[3]), default=-1) \
             and not bit_blocked[nm - 1]:
-        projection_circuit.push(mc.SetBit0(), nm - 1)
+        projection_circuit.push(SetBit0(), nm - 1)
     for _, op, qubits, bits in live:
         projection_circuit.push(op, *qubits, *bits)
 
     return quantum_circuit, projection_circuit
 
 
-def evaluate_projection(projection: "mc.Circuit",
-                        sample: "mc.BitString") -> "mc.BitString":
-    """Run the projection circuit for one shot.
+def evaluate_projection(projection: "Circuit",
+                        sample: "BitString") -> "BitString":
+    """Run a projection circuit on one shot.
 
-    Arguments:
-        projection (Circuit): the projection circuit returned by
+    The projection may hold ``Measure``, ``SetBit0``, ``SetBit1``,
+    ``Not``, ``And``, ``Or`` and ``Xor``. The logic operations take their
+    target as the first bit and read the rest, and the whole right-hand
+    side is evaluated before the target is written, so a target that is
+    also one of its own operands reads its old value. A ``Measure(q, b)``
+    whose qubit is outside ``sample`` leaves bit ``b`` untouched, so it
+    reads zero unless an earlier instruction set it.
+
+    This is the reference implementation; :class:`CompiledProjection` gives
+    the same results faster for many shots.
+
+    Args:
+        projection: The projection circuit returned by
             :func:`extract_projection`.
-        sample (BitString): one computational-basis outcome, one bit
-            per qubit of the evolved state. Not a quantum state: it is
-            a single shot already drawn from it.
+        sample: One computational-basis outcome, one bit per qubit of the
+            evolved state.
 
     Returns:
-        BitString: the classical register after the projection, of
-        length ``projection.num_bits()``.
+        The classical register after the projection, of length
+        ``projection.num_bits()``.
 
     Raises:
-        ValueError: if `projection` holds an instruction outside the
-            classical language listed below.
+        ValueError: If ``projection`` holds any other operation.
 
-    The classical language is ``Measure``, ``SetBit0``, ``SetBit1``,
-    ``Not``, ``And``, ``Or`` and ``Xor``. The logic
-    ops take their target as the first bit and read the rest, and the
-    whole right-hand side is evaluated before the target is written,
-    so a target that is also one of its own operands reads its old
-    value.
-
-    A ``Measure(q, b)`` whose qubit falls outside `sample` leaves bit
-    ``b`` untouched, which is how a projection that references a qubit
-    the state never spanned reads back as zero.
-
-    This is the single-shot reference implementation of the projection
-    semantics. :class:`~mimiqcircuits.backends.compiled_projection.CompiledProjection`
-    is the fast path, and is tested against this.
+    See Also:
+        :func:`extract_projection`, whose example uses it.
     """
     nb = projection.num_bits()
     # Accumulate in a mutable bitarray and freeze once: BitString is
@@ -339,32 +418,32 @@ def evaluate_projection(projection: "mc.Circuit",
     nq_sample = len(src)
     for inst in projection.instructions:
         op = inst.operation
-        if isinstance(op, mc.Measure):
+        if isinstance(op, Measure):
             q = inst.qubits[0]
             b = inst.bits[0]
             if 0 <= q < nq_sample:
                 cstate[b] = src[q]
-        elif isinstance(op, mc.Not):
+        elif isinstance(op, Not):
             b = inst.bits[0]
             cstate[b] = not cstate[b]
-        elif isinstance(op, mc.SetBit0):
+        elif isinstance(op, SetBit0):
             cstate[inst.bits[0]] = 0
-        elif isinstance(op, mc.SetBit1):
+        elif isinstance(op, SetBit1):
             cstate[inst.bits[0]] = 1
-        elif isinstance(op, mc.And):
+        elif isinstance(op, And):
             bits = inst.bits
             cstate[bits[0]] = int(all(cstate[b] for b in bits[1:]))
-        elif isinstance(op, mc.Or):
+        elif isinstance(op, Or):
             bits = inst.bits
             cstate[bits[0]] = int(any(cstate[b] for b in bits[1:]))
-        elif isinstance(op, mc.Xor):
+        elif isinstance(op, Xor):
             bits = inst.bits
             cstate[bits[0]] = sum(cstate[b] for b in bits[1:]) % 2
         else:
             raise ValueError(
                 f"evaluate_projection: unsupported instruction {type(op).__name__}"
             )
-    return mc.BitString(cstate)
+    return BitString(cstate)
 
 
 # ── internal types and helpers ───────────────────────────────────────────────
@@ -374,7 +453,7 @@ def evaluate_projection(projection: "mc.Circuit",
 # of each and the rest are read, which is what `_projection_deps` relies
 # on. `Measure` is absorbed by its own path, since it reads a qubit.
 _CLASSICAL_OPS = (
-    mc.SetBit0, mc.SetBit1, mc.Not, mc.And, mc.Or, mc.Xor,
+    SetBit0, SetBit1, Not, And, Or, Xor,
 )
 
 
@@ -385,11 +464,11 @@ class _PendingDone:
     direct_qubit: int          # -1 sentinel for "classical constant"
     const_value: int           # 0 / 1, only consulted when direct_qubit == -1
 
-    def entry(self) -> Tuple[int, "mc.Operation", tuple, tuple]:
+    def entry(self) -> Tuple[int, "Operation", tuple, tuple]:
         """This record as an ``(index, operation, qubits, bits)`` entry."""
         if self.direct_qubit >= 0:
-            return (self.index, mc.Measure(), (self.direct_qubit,), (self.bit,))
-        op = mc.SetBit1() if self.const_value else mc.SetBit0()
+            return (self.index, Measure(), (self.direct_qubit,), (self.bit,))
+        op = SetBit1() if self.const_value else SetBit0()
         return (self.index, op, (), (self.bit,))
 
 
@@ -407,7 +486,7 @@ def _try_absorb_measurement(i: int, op, q: int, b: int,
                             bit_blocked: List[bool]) -> bool:
     qs = qstates[q]
     if not bit_blocked[b] and not qs.blocked:
-        if isinstance(op, mc.MeasureReset):
+        if isinstance(op, MeasureReset):
             # Any bits captured *later* in forward time read a |0⟩
             # register; const-promote them.
             _const_promote(qs)
@@ -441,7 +520,7 @@ def _try_absorb_gate(op, q: int, qstates: List[_QubitTailState]) -> bool:
     qs = qstates[q]
     if qs.blocked:
         return False
-    if isinstance(op, mc.GateID):
+    if isinstance(op, GateID):
         return True
     return False
 
@@ -502,9 +581,9 @@ def _projection_deps(op, bits) -> Tuple[int, tuple]:
     ``Measure`` / ``SetBit0`` / ``SetBit1`` read no classical bit at
     all.
     """
-    if isinstance(op, mc.Not):
+    if isinstance(op, Not):
         return bits[0], (bits[0],)
-    if isinstance(op, (mc.And, mc.Or, mc.Xor)):
+    if isinstance(op, (And, Or, Xor)):
         return bits[0], tuple(bits[1:])
     return bits[0], ()
 

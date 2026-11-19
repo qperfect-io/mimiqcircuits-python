@@ -55,7 +55,7 @@ def _csd_decomposition(U, threshold=1e-6):
     # sines are column norms. Taking them as `sin(arccos(sigma_i))` instead
     # loses half the significant digits whenever `sigma_i ~ 1` —
     # `arccos(1 - eps) ~ sqrt(2 eps)` — and a block that is already unitary has
-    # every `sigma_i = 1`, so a diagonal `U` came out with `sin(theta) ~ 1.5e-8`
+    # every `sigma_i = 1`, so a diagonal `U` would give `sin(theta) ~ 1.5e-8`
     # where it should be 0.
     sin_theta = np.linalg.norm(X, axis=0)
     theta = np.arctan2(sin_theta, C_diag)

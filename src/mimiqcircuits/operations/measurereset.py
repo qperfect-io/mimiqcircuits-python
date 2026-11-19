@@ -16,30 +16,43 @@
 #
 """Measure and reset operations."""
 
-import mimiqcircuits as mc
+from mimiqcircuits.bitstrings import BitString
+from mimiqcircuits.operations.gates.standard.hadamard import GateH, GateHYZ
+from mimiqcircuits.operations.gates.standard.pauli import GateX
+from mimiqcircuits.operations.ifstatement import IfStatement
+from mimiqcircuits.operations.measure import Measure
 from mimiqcircuits.operations.measure import AbstractMeasurement
 
 
 class MeasureReset(AbstractMeasurement):
-    """MeasureReset operation.
+    r"""Measure a qubit in the Z basis, then reset it to :math:`|0⟩`.
 
-    Measures a qubit in the Z basis, stores the outcome in a classical bit,
-    then applies :class:`GateX` to the qubit if the outcome is 1, which leaves
-    it in the :math:`\\ket{0}` state. It decomposes into :class:`Measure`
-    followed by an :class:`IfStatement` of :class:`GateX` on that bit.
+    Writes the outcome to a classical bit and then applies :class:`GateX`
+    to the qubit if the outcome is 1, which leaves it in :math:`|0⟩`. It
+    decomposes into :class:`Measure` followed by an :class:`IfStatement` of
+    :class:`GateX` conditioned on that bit. The instruction takes one qubit
+    and one bit.
+
+    Warning:
+        Not reversible: ``inverse``, ``power`` and ``control`` raise
+        ``TypeError``.
+
+    See Also:
+        :class:`MeasureResetX`, :class:`MeasureResetY`, :class:`Reset`
 
     Examples:
-
         >>> from mimiqcircuits import *
+        >>> # measure qubit 1 into bit 0 and leave it in |0>
         >>> c = Circuit()
         >>> c.push(MeasureReset(), 1, 0)
         2-qubit, 1-bit circuit with 1 instruction:
         └── MR @ q[1], c[0]
         <BLANKLINE>
-        >>> c.decompose()
-        2-qubit, 1-bit circuit with 2 instructions:
-        ├── M @ q[1], c[0]
-        └── IF(c==1) U(pi, 0, pi, 0.0) @ q[1], condition[0]
+        >>> # the same as a measurement followed by a conditional X
+        >>> MeasureReset().decompose()
+        1-qubit, 1-bit circuit with 2 instructions:
+        ├── M @ q[0], c[0]
+        └── IF(c==1) X @ q[0], condition[0]
         <BLANKLINE>
     """
 
@@ -64,8 +77,8 @@ class MeasureReset(AbstractMeasurement):
         return False
 
     def _decompose(self, circ, qubits, bits, zvars):
-        circ.push(mc.Measure(), qubits, bits)
-        circ.push(mc.IfStatement(mc.GateX(), bitstring=mc.BitString("1")), qubits, bits)
+        circ.push(Measure(), qubits, bits)
+        circ.push(IfStatement(GateX(), bitstring=BitString("1")), qubits, bits)
 
         return circ
 
@@ -77,31 +90,33 @@ class MeasureReset(AbstractMeasurement):
 
 
 class MeasureResetX(AbstractMeasurement):
-    """MeasureResetX operation.
+    r"""Measure a qubit in the X basis, then reset it to :math:`|+⟩`.
 
-    The MeasureResetX operation first applies a Hadamard gate (H) to the qubit,
-    performs a measurement and reset operation similar to the MeasureReset operation,
-    and then applies another Hadamard gate. This sequence effectively measures the
-    qubit in the X-basis and resets it to the :math:`|+>` state.
+    Writes 0 for :math:`|+⟩` and 1 for :math:`|-⟩` to a classical bit and
+    leaves the qubit in :math:`|+⟩`. It decomposes into a Hadamard gate, a
+    :class:`MeasureReset` and a second Hadamard gate. The instruction takes
+    one qubit and one bit.
+
+    Warning:
+        Not reversible: ``inverse``, ``power`` and ``control`` raise
+        ``TypeError``.
 
     See Also:
-        :class:`MeasureReset`: The standard measurement and reset operation in the Z-basis.
-        :class:`MeasureResetY`: Similar operation that measures and resets the qubit in the Y-basis.
+        :class:`MeasureReset`, :class:`MeasureResetY`
 
     Examples:
-
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureResetX(), 1, 0)
         2-qubit, 1-bit circuit with 1 instruction:
         └── MRX @ q[1], c[0]
         <BLANKLINE>
-        >>> c.decompose()
-        2-qubit, 1-bit circuit with 4 instructions:
-        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
-        ├── M @ q[1], c[0]
-        ├── IF(c==1) U(pi, 0, pi, 0.0) @ q[1], condition[0]
-        └── U((1/2)*pi, 0, pi, 0.0) @ q[1]
+        >>> # rotate to the Z basis, measure and reset, rotate back
+        >>> MeasureResetX().decompose()
+        1-qubit, 1-bit circuit with 3 instructions:
+        ├── H @ q[0]
+        ├── MR @ q[0], c[0]
+        └── H @ q[0]
         <BLANKLINE>
     """
 
@@ -128,9 +143,9 @@ class MeasureResetX(AbstractMeasurement):
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         c = bits[0]
-        circ.push(mc.GateH(), q)
+        circ.push(GateH(), q)
         circ.push(MeasureReset(), q, c)
-        circ.push(mc.GateH(), q)
+        circ.push(GateH(), q)
         return circ
 
     def get_operation(self):
@@ -141,40 +156,33 @@ class MeasureResetX(AbstractMeasurement):
 
 
 class MeasureResetY(AbstractMeasurement):
-    """MeasureResetY operation.
+    r"""Measure a qubit in the Y basis, then reset it to :math:`|{+i}⟩`.
 
-    The MeasureResetY operation applies (HYZ) gate to
-    the qubit, performs a MeasureReset operation,
-    and then applies another HYZ gate.
-    This sequence effectively measures the qubit in
-    the Y-basis.
+    Writes 0 for :math:`|{+i}⟩` and 1 for :math:`|{-i}⟩` to a classical bit
+    and leaves the qubit in :math:`|{+i}⟩`. It decomposes into a
+    :class:`GateHYZ`, a :class:`MeasureReset` and a second
+    :class:`GateHYZ`. The instruction takes one qubit and one bit.
+
+    Warning:
+        Not reversible: ``inverse``, ``power`` and ``control`` raise
+        ``TypeError``.
 
     See Also:
-        :class:`MeasureReset`: The standard measurement and reset operation in the Z-basis.
-        :class:`MeasureResetX`: Similar operation that measures and resets the qubit in the X-basis.
+        :class:`MeasureReset`, :class:`MeasureResetX`
 
     Examples:
-
         >>> from mimiqcircuits import *
         >>> c = Circuit()
         >>> c.push(MeasureResetY(), 1, 0)
         2-qubit, 1-bit circuit with 1 instruction:
         └── MRY @ q[1], c[0]
         <BLANKLINE>
-        >>> c.decompose()
-        2-qubit, 1-bit circuit with 12 instructions:
-        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
-        ├── U(0, 0, (1/2)*pi, 0.0) @ q[1]
-        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
-        ├── U(0, 0, pi, 0.0) @ q[1]
-        ├── U(0, 0, 0, (-1/4)*pi) @ q[1]
-        ├── M @ q[1], c[0]
-        ├── IF(c==1) U(pi, 0, pi, 0.0) @ q[1], condition[0]
-        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
-        ├── U(0, 0, (1/2)*pi, 0.0) @ q[1]
-        ├── U((1/2)*pi, 0, pi, 0.0) @ q[1]
-        ├── U(0, 0, pi, 0.0) @ q[1]
-        └── U(0, 0, 0, (-1/4)*pi) @ q[1]
+        >>> # rotate to the Z basis, measure and reset, rotate back
+        >>> MeasureResetY().decompose()
+        1-qubit, 1-bit circuit with 3 instructions:
+        ├── HYZ @ q[0]
+        ├── MR @ q[0], c[0]
+        └── HYZ @ q[0]
         <BLANKLINE>
     """
 
@@ -201,9 +209,9 @@ class MeasureResetY(AbstractMeasurement):
     def _decompose(self, circ, qubits, bits, zvars):
         q = qubits[0]
         c = bits[0]
-        circ.push(mc.GateHYZ(), q)
+        circ.push(GateHYZ(), q)
         circ.push(MeasureReset(), q, c)
-        circ.push(mc.GateHYZ(), q)
+        circ.push(GateHYZ(), q)
         return circ
 
     def get_operation(self):
@@ -214,7 +222,15 @@ class MeasureResetY(AbstractMeasurement):
 
 
 class MeasureResetZ(AbstractMeasurement):
-    r"""This class  acting as an alias for :class:`MeasureReset`."""
+    r"""Alias of :class:`MeasureReset`.
+
+    ``MeasureResetZ()`` returns a :class:`MeasureReset` instance.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> MeasureResetZ()
+        MR
+    """
 
     def __new__(self):
         return MeasureReset()

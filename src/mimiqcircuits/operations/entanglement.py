@@ -16,16 +16,14 @@
 #
 """Entanglement measures (BondDim, VonNeumannEntropy, etc.)."""
 
-from mimiqcircuits import Operation
+from mimiqcircuits.operations.operation import Operation
 
 
 class BondDim(Operation):
-    r"""Operation to get the bond dimension between two halves of the system and store it in a z-register.
+    r"""Record the MPS bond dimension at a cut of the system in a z-variable.
 
-    The bond dimension is only defined for a matrix-product state (MPS), which
-    can be written as:
-
-    **State Representation**
+    The bond dimension is only defined for a matrix-product state (MPS), so
+    it is only meaningful with the MPS simulator. An MPS can be written as
 
     .. math::
         |\psi \rangle = \sum_{s_1,s_2,\ldots=1}^2
@@ -33,22 +31,22 @@ class BondDim(Operation):
         A^{(s_1)}_{i_0i_1} A^{(s_2)}_{i_1 i_2} A^{(s_3)}_{i_2 i_3} \ldots
         A^{(s_N)}_{i_{N-1}i_N} | s_1, s_2, s_3, \ldots, s_N \rangle .
 
-    Here, :math:`\chi_k` is the bond dimension, i.e., the dimension of the index :math:`i_k`.
-    The first and last bond dimensions are dummies, :math:`\chi_0=\chi_N=1`.
-    A bond dimension of 1 means there is no entanglement between the two halves
-    of the system.
+    where :math:`\chi_k` is the bond dimension, the dimension of the index
+    :math:`i_k`. The first and last bond dimensions are dummies,
+    :math:`\chi_0=\chi_N=1`. A bond dimension of 1 means there is no
+    entanglement between the two sides of the cut.
+
+    The instruction takes one qubit ``k`` and one z-variable. It records
+    the dimension of the bond between qubits ``k - 1`` and ``k``, that is
+    between qubits ``0, ..., k - 1`` and ``k, ..., N - 1``. For ``k = 0``
+    the result is always 1. The quantum state is not changed.
 
     See Also:
         :class:`VonNeumannEntropy`, :class:`SchmidtRank`
 
     Examples:
-
-        When pushing to a circuit, the qubit index `k` that we give will return
-        the bond dimension :math:`i_{k-1}` in the above notation. In other words, we
-        associate link `k` with qubit `k+1`. For `k=1`, the bond dimension
-        returned will always be 1.
-
         >>> from mimiqcircuits import *
+        >>> # bond dimension between qubits 4 and 5, stored in z-variable 1
         >>> k = 5
         >>> c = Circuit()
         >>> c.push(BondDim(), k, 1)
@@ -84,12 +82,23 @@ class BondDim(Operation):
         return False
 
     def inverse(self):
+        """Return a new ``BondDim``: it does not change the state."""
         return BondDim()
 
     def power(self, p):
+        """Not supported.
+
+        Raises:
+            TypeError: Always.
+        """
         raise TypeError("BondDim^p is not defined.")
 
     def control(self, num_qubits):
+        """Not supported.
+
+        Raises:
+            TypeError: Always.
+        """
         raise TypeError("Controlled BondDim is not defined.")
 
     @staticmethod
@@ -98,38 +107,35 @@ class BondDim(Operation):
 
 
 class VonNeumannEntropy(Operation):
-    r"""Operation to get the bipartite Von Neumann entanglement entropy and store it in a z-register.
+    r"""Record the bipartite von Neumann entanglement entropy in a z-variable.
 
-    The entanglement entropy for a bipartition into subsystems :math:`A` and :math:`B`
-    is defined for a pure state :math:`\rho = | \psi \rangle\langle \psi |` as:
-
-    **Entanglement Entropy**
+    For a pure state :math:`\rho = | \psi \rangle\langle \psi |` split
+    into subsystems :math:`A` and :math:`B`, the entanglement entropy is
 
     .. math::
         \mathcal{S}(\rho_A) = - \mathrm{Tr}(\rho_A \log_2 \rho_A)
         = - \mathrm{Tr}(\rho_B \log_2 \rho_B)
-        = \mathcal{S}(\rho_A)
+        = \mathcal{S}(\rho_B),
 
-    where :math:`\rho_A = \mathrm{Tr}_B(\rho)` is the reduced density matrix.
-    A product state has :math:`\mathcal{S}(\rho_A)=0` and a maximally entangled state
-    between :math:`A` and :math:`B` gives :math:`\mathcal{S}(\rho_A)=1`.
+    where :math:`\rho_A = \mathrm{Tr}_B(\rho)` is the reduced density
+    matrix. A product state has :math:`\mathcal{S}(\rho_A)=0` and a
+    maximally entangled pair of qubits gives :math:`\mathcal{S}(\rho_A)=1`.
 
-    We only consider bipartitions where :math:`A=\{1,\ldots,k-1\}` and :math:`B=\{k,\ldots,N\}`,
-    for some :math:`k` and where :math:`N` is the total number of qubits.
+    The instruction takes one qubit ``k`` and one z-variable. The
+    bipartition is :math:`A = \{0, \ldots, k-1\}` and
+    :math:`B = \{k, \ldots, N-1\}`, where :math:`N` is the number of
+    qubits. For ``k = 0``, :math:`A` is empty and the result is always 0.
+    The quantum state is not changed.
 
-    When the system is open (i.e., with noise) and we are using quantum trajectories,
-    the entanglement entropy of each trajectory is returned during execution.
+    With noise and quantum trajectories, the entropy of the pure state of
+    each trajectory is recorded.
 
     See Also:
         :class:`BondDim`, :class:`SchmidtRank`
 
     Examples:
-
-        When pushing to a circuit, the qubit index `k` takes the role of the above bipartition
-        into `A` and `B`. For `k=1`, `A` is empty and the entanglement entropy will
-        always return 0.
-
         >>> from mimiqcircuits import *
+        >>> # entropy between qubits 0-4 and qubits 5 onwards, in z-variable 1
         >>> k = 5
         >>> c = Circuit()
         >>> c.push(VonNeumannEntropy(), k, 1)
@@ -165,12 +171,23 @@ class VonNeumannEntropy(Operation):
         return False
 
     def inverse(self):
+        """Return a new ``VonNeumannEntropy``: it does not change the state."""
         return VonNeumannEntropy()
 
     def power(self, p):
+        """Not supported.
+
+        Raises:
+            TypeError: Always.
+        """
         raise TypeError("VonNeumannEntropy^p is not defined.")
 
     def control(self, num_qubits):
+        """Not supported.
+
+        Raises:
+            TypeError: Always.
+        """
         raise TypeError("Controlled VonNeumannEntropy is not defined.")
 
     @staticmethod
@@ -179,36 +196,34 @@ class VonNeumannEntropy(Operation):
 
 
 class SchmidtRank(Operation):
-    r"""Operation to get the Schmidt rank of a bipartition and store it in a z-register.
+    r"""Record the Schmidt rank of a bipartition in a z-variable.
 
-    A Schmidt decomposition for a bipartition into subsystems :math:`A` and :math:`B`
-    is defined for a pure state as:
-
-    **Schmidt Decomposition**
+    The Schmidt decomposition of a pure state split into subsystems
+    :math:`A` and :math:`B` is
 
     .. math::
         |\psi\rangle = \sum_{i=1}^{r} s_i |\alpha_i\rangle \otimes |\beta_i\rangle,
 
-    where :math:`|\alpha_i\rangle` (:math:`|\beta_i\rangle`) are orthonormal states acting
-    on :math:`A` (:math:`B`). The Schmidt rank is the number of terms :math:`r` in the sum.
-    A product state gives :math:`r=1`, and :math:`r>1` signals entanglement.
+    where :math:`|\alpha_i\rangle` (:math:`|\beta_i\rangle`) are
+    orthonormal states of :math:`A` (:math:`B`). The Schmidt rank is the
+    number of terms :math:`r`. A product state gives :math:`r=1`, and
+    :math:`r>1` signals entanglement.
 
-    We only consider bipartitions where :math:`A=\{1,\ldots,k-1\}` and :math:`B=\{k,\ldots,N\}`,
-    for some :math:`k` and where :math:`N` is the total number of qubits.
+    The instruction takes one qubit ``k`` and one z-variable. The
+    bipartition is :math:`A = \{0, \ldots, k-1\}` and
+    :math:`B = \{k, \ldots, N-1\}`, where :math:`N` is the number of
+    qubits. For ``k = 0``, :math:`A` is empty and the result is always 1.
+    The quantum state is not changed.
 
-    In MPS (Matrix Product States), when the state is optimally compressed, the Schmidt rank should
-    be equal to the bond dimension (see :class:`BondDim`).
+    For a matrix-product state that is optimally compressed, the Schmidt
+    rank equals the bond dimension (see :class:`BondDim`).
 
     See Also:
         :class:`VonNeumannEntropy`, :class:`BondDim`
 
     Examples:
-
-        When pushing to a circuit, the qubit index `k` takes the role of the above bipartition
-        into `A` and `B`. For `k=1`, `A` is empty and the Schmidt rank will
-        always return 1.
-
         >>> from mimiqcircuits import *
+        >>> # Schmidt rank between qubits 0-4 and qubits 5 onwards, in z-variable 1
         >>> k = 5
         >>> c = Circuit()
         >>> c.push(SchmidtRank(), k, 1)
@@ -244,12 +259,23 @@ class SchmidtRank(Operation):
         return False
 
     def inverse(self):
+        """Return a new ``SchmidtRank``: it does not change the state."""
         return SchmidtRank()
 
     def power(self, p):
+        """Not supported.
+
+        Raises:
+            TypeError: Always.
+        """
         raise TypeError("SchmidtRank^p is not defined.")
 
     def control(self, num_qubits):
+        """Not supported.
+
+        Raises:
+            TypeError: Always.
+        """
         raise TypeError("Controlled SchmidtRank is not defined.")
 
     @staticmethod

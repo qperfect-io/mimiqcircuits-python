@@ -17,7 +17,7 @@
 
 
 from collections import OrderedDict
-from mimiqcircuits import QCSResults
+from mimiqcircuits.qcsresults import QCSResults
 from symengine import Symbol
 from mimiqcircuits.proto import optim_pb2, circuit_pb2
 

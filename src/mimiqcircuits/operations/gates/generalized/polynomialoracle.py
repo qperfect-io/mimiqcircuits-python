@@ -16,34 +16,54 @@
 #
 """Polynomial Oracle gate."""
 
-import mimiqcircuits as mc
+from symengine import pi
+
+from mimiqcircuits.operations.control import Control
+from mimiqcircuits.operations.gates.gate import Gate
+from mimiqcircuits.operations.gates.standard.id import GateID
+from mimiqcircuits.operations.gates.standard.pauli import GateX, GateZ
+from mimiqcircuits.operations.gates.standard.u import GateU
 import mimiqcircuits.lazy as lz
 
 
-class PolynomialOracle(mc.Gate):
-    """
-    Polynomial Oracle.
+class PolynomialOracle(Gate):
+    r"""Quantum oracle for a polynomial of two registers.
+
+    Applies a :math:`\pi` phase to every basis state :math:`|x\rangle|y\rangle`
+    with :math:`a xy + b x + c y + d = 0`, where :math:`x` and :math:`y` are
+    the integer values of the two registers. Each register is little-endian:
+    its first qubit is the least significant bit. The gate is its own inverse.
+
+    ``PolynomialOracle(a, b, c, d)`` with four arguments returns a lazy
+    expression that takes the two register sizes later.
+
+    The oracle has no matrix representation. It decomposes into one
+    multi-controlled Z per solution, so the decomposition is only practical
+    when there are few solutions. A decomposition without solutions is a
+    single ``GateID`` on the last qubit, which keeps the oracle's width.
 
     Args:
-        a (Num): Coefficient a in the polynomial.
-        b (Num): Coefficient b in the polynomial.
-        c (Num): Coefficient c in the polynomial.
-        d (Num): Coefficient d in the polynomial.
+        nx (int): Number of qubits in the :math:`x` register.
+        ny (int): Number of qubits in the :math:`y` register.
+        a (int): Coefficient of :math:`xy`.
+        b (int): Coefficient of :math:`x`.
+        c (int): Coefficient of :math:`y`.
+        d (int): Constant term.
 
     Raises:
-        ValueError: If the input parameters do not satisfy the required conditions.
-
-    Returns:
-        PolynomialOracle: The Polynomial Oracle.
+        ValueError: If a coefficient is not an integer, or the number of
+            arguments is neither 4 nor 6.
 
     Examples:
-
         >>> from mimiqcircuits import *
         >>> c = Circuit()
-        >>> c.push(PolynomialOracle(5,5,1, 2, 3, 4), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        >>> c.push(PolynomialOracle(5, 5, 1, 2, 3, 4), *range(1, 11))
         11-qubit circuit with 1 instruction:
         └── PolynomialOracle(1, 2, 3, 4) @ q[1:5], q[6:10]
         <BLANKLINE>
+        >>> # lazy form: the register sizes are given later
+        >>> PolynomialOracle(1, 2, 3, 4)(5, 5)
+        PolynomialOracle(1, 2, 3, 4)
     """
 
     _name = "PolynomialOracle"
@@ -81,14 +101,45 @@ class PolynomialOracle(mc.Gate):
         )
 
     def supports_canonical_rewrite(self):
-        # An oracle for simulators: it has no decomposition into gates.
-        return False
+        """Return ``True``: the oracle decomposes into multi-controlled Z gates."""
+        return True
 
     def _decompose(self, circ, qubits, bits, _):
-        return circ.push(self, *qubits)
+        # For each value u of the smaller register the polynomial is s*v + t in
+        # the other one, so the solutions come without looping over all 2^n states.
+        nx, ny = self._qregsizes
+        small, large = list(qubits[:nx]), list(qubits[nx:])
+        a, b, c, d = self.a, self.b, self.c, self.d
+        if nx > ny:  # f is symmetric under swapping x <-> y together with b <-> c
+            small, large, b, c = large, small, c, b
+
+        for u in range(2 ** len(small)):
+            s, t = a * u + c, b * u + d
+            if s == 0:
+                if t == 0:  # every v is a solution
+                    _flipstate(circ, small, u, qubits)
+            elif t % s == 0 and 0 <= -t // s < 2 ** len(large):
+                v = -t // s
+                _flipstate(circ, small + large, u + (v << len(small)), qubits)
+        if circ.num_qubits() <= max(qubits):
+            circ.push(GateID(), max(qubits))
+        return circ
 
     def __str__(self):
         return f"PolynomialOracle{self.a, self.b, self.c, self.d}"
+
+
+def _flipstate(circ, qs, val, qubits):
+    """Phase -1 on the basis states where qubits ``qs`` hold the little-endian value ``val``."""
+    if not qs:  # every state flips
+        return circ.push(GateU(0, 0, 0, pi), qubits[0])
+    zeros = [q for i, q in enumerate(qs) if not (val >> i) & 1]
+    for q in zeros:
+        circ.push(GateX(), q)
+    circ.push(GateZ() if len(qs) == 1 else Control(len(qs) - 1, GateZ()), *qs)
+    for q in zeros:
+        circ.push(GateX(), q)
+    return circ
 
 
 __all__ = ["PolynomialOracle"]

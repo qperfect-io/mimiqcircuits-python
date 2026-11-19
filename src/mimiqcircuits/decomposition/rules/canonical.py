@@ -23,46 +23,52 @@ from typing import TYPE_CHECKING, Sequence
 from mimiqcircuits.decomposition.abstract import RewriteRule
 
 if TYPE_CHECKING:
-    from mimiqcircuits import Circuit, Operation
+    from mimiqcircuits.circuit import Circuit
+    from mimiqcircuits.operations.operation import Operation
 
 
 class CanonicalRewrite(RewriteRule):
-    """Rewrite rule that decomposes operations using their built-in decomposition.
+    """Rewrite rule that applies the built-in decomposition of each operation.
 
-    This rule delegates to each operation's ``_decompose`` method, which typically
-    reduces gates to a minimal set of primitives (GateU, GateCX, etc.).
+    Every operation class defines one decomposition step in terms of simpler
+    operations; this rule applies it. Repeated, the steps end at ``GateU``,
+    ``GateCX`` and the non-unitary primitives, which is what
+    :class:`CanonicalBasis` does. One step can stop earlier: ``GateCCX``, for
+    example, becomes ``GateH``, ``GateT``, ``GateTDG`` and ``GateCX``.
 
-    The canonical decomposition is the default decomposition defined by each gate
-    class. Most gates decompose down to GateU (arbitrary single-qubit) and GateCX
-    (two-qubit entangling gate).
+    It is the default rule of :func:`decompose_step` and the fallback of the
+    other bases.
 
-    Example:
-        >>> from mimiqcircuits import GateH
-        >>> from mimiqcircuits.decomposition import CanonicalRewrite
+    Examples:
+        >>> from mimiqcircuits import *
         >>> rule = CanonicalRewrite()
+        >>> # H has a built-in decomposition into GateU
         >>> rule.matches(GateH())
         True
-        >>> circ = rule.decompose_step(GateH(), [0], [], [])
-        >>> print(circ)
+        >>> rule.decompose_step(GateH(), [0], [], [])
         1-qubit circuit with 1 instruction:
         └── U((1/2)*pi, 0, pi, 0.0) @ q[0]
+        <BLANKLINE>
+        >>> # GateU is a primitive, so there is nothing to rewrite
+        >>> rule.matches(GateU(0.1, 0.2, 0.3))
+        False
     """
 
     def matches(self, op: Operation) -> bool:
-        """Check if this rule can decompose the operation.
+        """Check whether an operation has a built-in decomposition.
 
-        Matches every operation that has a canonical decomposition, that is
-        whose ``supports_canonical_rewrite()`` is true. The answer does not
-        depend on any basis: an operation that :class:`CanonicalBasis` keeps
-        terminal (such as ``ResetX``) still matches, so other bases can expand
-        it. Primitives without a decomposition (``GateU``, ``GateCX``,
-        ``Measure``, ``Reset``, ``Barrier``, ...) do not match.
+        Matches every operation whose ``supports_canonical_rewrite()`` is
+        true. The answer does not depend on any basis: an operation that
+        :class:`CanonicalBasis` keeps terminal (such as ``ResetX``) still
+        matches, so other bases can expand it. Primitives without a
+        decomposition (``GateU``, ``GateCX``, ``Measure``, ``Reset``,
+        ``Barrier``, ...) do not match.
 
         Args:
             op: The operation to check.
 
         Returns:
-            True if the operation should be rewritten by canonical decomposition.
+            ``True`` if ``op`` has a built-in decomposition.
         """
         return op.supports_canonical_rewrite()
 
@@ -73,21 +79,38 @@ class CanonicalRewrite(RewriteRule):
         bits: Sequence[int],
         zvars: Sequence[int],
     ) -> Circuit:
-        """Decompose the operation using its built-in decomposition.
+        """Apply one step of the built-in decomposition of an operation.
+
+        No check is made that :meth:`matches` accepts ``op``. A primitive
+        returns a circuit holding just itself.
 
         Args:
             op: The operation to decompose.
-            qubits: Qubit indices for the operation.
-            bits: Classical bit indices for the operation.
-            zvars: Z-variable indices for the operation.
+            qubits: Qubit indices the operation acts on.
+            bits: Classical bit indices the operation acts on.
+            zvars: Z-variable indices the operation acts on.
 
         Returns:
-            A Circuit containing the decomposed instructions.
+            A new :class:`~mimiqcircuits.Circuit` with the decomposition.
         """
-        import mimiqcircuits as mc
+        from mimiqcircuits.circuit import Circuit
 
-        circ = mc.Circuit()
+        circ = Circuit()
         op._decompose(circ, list(qubits), list(bits), list(zvars))
+        return circ
+
+    def decompose_step_ctx(
+        self,
+        op: Operation,
+        qubits: Sequence[int],
+        bits: Sequence[int],
+        zvars: Sequence[int],
+        ctx,
+    ) -> Circuit:
+        from mimiqcircuits.circuit import Circuit
+
+        circ = Circuit()
+        op._decompose_ctx(circ, list(qubits), list(bits), list(zvars), ctx)
         return circ
 
 

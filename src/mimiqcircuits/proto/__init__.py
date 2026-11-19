@@ -15,7 +15,14 @@
 # limitations under the License.
 #
 
-WIRE_FORMAT_VERSION = "1.3.0"
+"""Protobuf serialization of circuits, results and experiments.
+
+Use the ``saveproto`` and ``loadproto`` methods of the serializable classes,
+or the functions in :mod:`mimiqcircuits.proto.protoio`. The other modules
+convert between objects and generated protobuf messages and are internal.
+"""
+
+WIRE_FORMAT_VERSION = "1.4.0"
 """
 Version of the MIMIQ wire format (protobuf schemas + JSON
 request/response envelope) spoken by this build. Versioned independently

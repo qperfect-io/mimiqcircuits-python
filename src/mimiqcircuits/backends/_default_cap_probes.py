@@ -27,50 +27,60 @@ CAP_PROBES`.
 
 from __future__ import annotations
 
-import mimiqcircuits as mc
-from mimiqcircuits import BitString
+from mimiqcircuits.circuit import Circuit
+from mimiqcircuits.operations.gates.standard.hadamard import GateH
+from mimiqcircuits.operations.gates.standard.pauli import GateX
+from mimiqcircuits.operations.gates.standard.rotations import GateRX
+from mimiqcircuits.operations.ifstatement import IfStatement
+from mimiqcircuits.operations.measure import Measure
+from mimiqcircuits.operations.noisechannel.kraus import Kraus
+from mimiqcircuits.operations.noisechannel.standards.depolarizing import Depolarizing1
+from mimiqcircuits.operations.operators.custom import Operator
+from mimiqcircuits.operations.operators.lossyoperator import LossyOperator
+from mimiqcircuits.operations.reset import Reset
+from mimiqcircuits.bitstrings import BitString
 
 from mimiqcircuits.backends.capabilities import register_cap_probe
 
 
 def _probe_feed_forward():
     """A classically-controlled gate after a measurement."""
-    c = mc.Circuit()
-    c.push(mc.Measure(), 0, 0)
-    c.push(mc.IfStatement(mc.GateX(), BitString("1")), 0, 0)
+    c = Circuit()
+    c.push(Measure(), 0, 0)
+    c.push(IfStatement(GateX(), BitString("1")), 0, 0)
     return c
 
 
 def _probe_midcircuit_measure():
     """Measurement followed by a gate on the same qubit."""
-    c = mc.Circuit()
-    c.push(mc.Measure(), 0, 0)
-    c.push(mc.GateX(), 0)
+    c = Circuit()
+    c.push(Measure(), 0, 0)
+    c.push(GateX(), 0)
     return c
 
 
 def _probe_midcircuit_reset():
     """Reset surrounded by gates."""
-    c = mc.Circuit()
-    c.push(mc.GateH(), 0)
-    c.push(mc.Reset(), 0)
-    c.push(mc.GateH(), 0)
+    c = Circuit()
+    c.push(GateH(), 0)
+    c.push(Reset(), 0)
+    c.push(GateH(), 0)
     return c
 
 
 def _probe_reset_after_measure():
     """Reset immediately after a measurement on the same qubit."""
-    c = mc.Circuit()
-    c.push(mc.Measure(), 0, 0)
-    c.push(mc.Reset(), 0)
+    c = Circuit()
+    c.push(Measure(), 0, 0)
+    c.push(Reset(), 0)
     return c
 
 
 def _probe_noise():
     """A trace-preserving mixed-unitary Kraus channel."""
-    c = mc.Circuit()
-    c.push(mc.GateH(), 0)
-    c.push(mc.Depolarizing1(0.1), 0)
+    c = Circuit()
+    c.push(GateH(), 0)
+    c.push(Depolarizing1(0.1), 0)
     return c
 
 
@@ -83,10 +93,10 @@ def _probe_loss():
     """
     import numpy as np
 
-    survival = mc.Operator(np.array([[1, 0], [0, np.sqrt(0.9)]], dtype=np.complex128))
-    lossy = mc.LossyOperator(np.array([[0, np.sqrt(0.1)], [0, 0]], dtype=np.complex128))
-    c = mc.Circuit()
-    c.push(mc.Kraus([survival, lossy]), 0)
+    survival = Operator(np.array([[1, 0], [0, np.sqrt(0.9)]], dtype=np.complex128))
+    lossy = LossyOperator(np.array([[0, np.sqrt(0.1)], [0, 0]], dtype=np.complex128))
+    c = Circuit()
+    c.push(Kraus([survival, lossy]), 0)
     return c
 
 
@@ -98,8 +108,8 @@ def _probe_parametric():
     import sympy
 
     theta = sympy.Symbol("theta")
-    c = mc.Circuit()
-    c.push(mc.GateRX(theta), 0)
+    c = Circuit()
+    c.push(GateRX(theta), 0)
     return c
 
 

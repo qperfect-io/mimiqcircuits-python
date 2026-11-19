@@ -18,28 +18,41 @@
 
 import copy
 from mimiqcircuits.instruction import Instruction
-from mimiqcircuits.operations.operation import Operation
+from mimiqcircuits.operations.operation import Operation, _check_num_ancillas
 from mimiqcircuits.push import push_instruction_container
 
 
 class Block(Operation):
-    r"""Block operation: group and reuse a sequence of instructions.
+    r"""Reusable group of instructions, applied as a single operation.
 
-    The `Block` class represents a reusable subcircuit. It encapsulates a fixed number
-    of qubits, bits, and z-variables, along with a list of instructions. Blocks are
-    used to define logical units in a circuit that can be inserted as composite operations.
+    A block holds a list of instructions on its own local qubits, bits and
+    z-variables, numbered from 0. Pushing a block to a circuit maps those
+    local indices to the targets given to ``push``, in the order qubits,
+    bits, z-variables. Decomposing the circuit replaces the block with its
+    instructions.
 
-    You can construct a block in several ways:
+    The constructor accepts:
 
-    - `Block()`: Create an empty block with 0 qubits, bits, and zvars.
-    - `Block(circuit)`: Copy instructions from a circuit (or block) into a new block.
-    - `Block(instructions)`: Create a block from a list of `Instruction` objects.
-    - `Block(num_qubits, num_bits, num_zvars[, instructions])`: Fully specify a block.
+    - ``Block()``: an empty block with no qubits, bits or z-variables.
+    - ``Block(circuit)``: a copy of the instructions of a circuit or block.
+      The sizes are inferred from the highest index used.
+    - ``Block(instructions)``: a block from a list of :class:`Instruction`
+      objects, with sizes inferred the same way.
+    - ``Block(num_qubits, num_bits, num_zvars)``: an empty block of the
+      given sizes, to be filled with :meth:`push`.
+    - ``Block(num_qubits, num_bits, num_zvars, instructions)``: a block of
+      the given sizes holding ``instructions``.
 
-    Notes:
-        - Once created, a block has a fixed number of qubits, bits, and zvars.
-        - Adding an instruction that exceeds the declared dimensions will raise a `ValueError`.
-        - Blocks are deep-copied upon construction to avoid accidental mutations.
+    Every form takes a ``num_ancillas`` keyword (default 0): the number of its
+    last qubits that are clean ancillas, found and returned in ``|0>``.
+
+    The instructions are deep-copied, so later changes to the source circuit
+    do not affect the block. The sizes are fixed once the block is created.
+
+    Raises:
+        TypeError: If an argument has the wrong type, for example a list
+            holding something other than instructions.
+        ValueError: If the number of arguments is not 0, 1, 3 or 4.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -89,9 +102,18 @@ class Block(Operation):
         └── CX @ q[1], q[2]
         <BLANKLINE>
 
+        A block can also be built empty with fixed sizes and filled with
+        ``push``:
+
+        >>> bell = Block(2, 0, 0)
+        >>> _ = bell.push(GateH(), 0)
+        >>> bell.push(GateCX(), 0, 1)  # doctest: +ELLIPSIS
+        2-qubit block ... with 2 instructions:
+        ├── H @ q[0]
+        └── CX @ q[0], q[1]
+
     See Also:
-        - :class:`Instruction`
-        - :class:`Circuit`
+        :class:`Instruction`, :class:`Circuit`
     """
 
     _name = "Block"
@@ -100,7 +122,7 @@ class Block(Operation):
     _num_zregs = 1
     _parnames = ()
 
-    def __init__(self, *args):
+    def __init__(self, *args, num_ancillas=0):
         if len(args) == 0:
             self.instructions = []
             self._nq = 0
@@ -144,12 +166,19 @@ class Block(Operation):
             raise ValueError("Invalid arguments to Block constructor")
 
         super().__init__()
+        _check_num_ancillas(num_ancillas, self._nq)
+        self._num_ancillas = num_ancillas
         self._num_qubits = self._nq
         self._num_bits = self._nc
         self._num_zvars = self._nz
         self._qregsizes = [1] * self._num_qubits if self._num_qubits > 0 else []
         self._cregsizes = [1] * self._num_bits if self._num_bits > 0 else []
         self._zregsizes = [1] * self._num_zvars if self._num_zvars > 0 else []
+
+    @property
+    def num_ancillas(self):
+        """Number of clean ancillas, the last qubit targets of the block."""
+        return self._num_ancillas
 
     def _infer_qubits(self):
         return (
@@ -165,6 +194,22 @@ class Block(Operation):
         )
 
     def push(self, operation, *args):
+        """Add an operation to the end of the block.
+
+        Works like :meth:`Circuit.push`, but every target must fit inside
+        the block's fixed sizes.
+
+        Args:
+            operation: The operation, or an :class:`Instruction`.
+            *args: The targets: qubits, then bits, then z-variables.
+
+        Returns:
+            Block: The block itself, so calls can be chained.
+
+        Raises:
+            ValueError: If a target index is not smaller than the block's
+                number of qubits, bits or z-variables.
+        """
         return push_instruction_container(
             self, operation, *args, check_fn=self._check_instruction_block
         )
@@ -205,7 +250,9 @@ class Block(Operation):
         if not self.is_symbolic():
             return self
         new_insts = [inst.evaluate(d) for inst in self.instructions]
-        return Block(self._nq, self._nc, self._nz, new_insts)
+        return Block(
+            self._nq, self._nc, self._nz, new_insts, num_ancillas=self._num_ancillas
+        )
 
     def __iter__(self):
         return iter(self.instructions)
@@ -245,6 +292,21 @@ class Block(Operation):
         return "\n".join(lines)
 
     def __call__(self, circuit, *targets):
+        """Push the block's instructions, mapped to ``targets``, to ``circuit``.
+
+        Unlike pushing the block itself, this inlines its instructions.
+
+        Args:
+            circuit: The circuit to add the instructions to.
+            *targets: Qubits, then bits, then z-variables, one for each of
+                the block's own.
+
+        Returns:
+            The circuit.
+
+        Raises:
+            ValueError: If the number of targets does not match the block.
+        """
         nq, nc, nz = self._nq, self._nc, self._nz
         if len(targets) != nq + nc + nz:
             raise ValueError(
@@ -269,6 +331,7 @@ class Block(Operation):
         return False
 
     def blockid(self):
+        """Return the label that identifies this block when printed."""
         return f"block {hex(id(self))[2:]}"
 
     def format_with_targets(self, qubits, bits, zvars):

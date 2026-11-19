@@ -47,23 +47,23 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class StochasticKind(enum.IntEnum):
-    """Resolution-time taxonomy for operations.
+    """When a backend resolves the randomness of an operation.
 
-    Ordered so worst-case combines (``max``) compose across composite
-    ops: ``Deterministic < TrajectorySampleable < RuntimeOnly``.
+    The members are ordered, ``Deterministic < TrajectorySampleable <
+    RuntimeOnly``, so ``max`` gives the kind of a group of operations.
 
-    - ``Deterministic`` — no randomness; ``compile()`` can lower the
-      op into the backend's compiled form using only the
-      source-circuit information.
-    - ``TrajectorySampleable`` — non-deterministic but resolvable in
-      ``prepare_trajectory()`` using RNG draws alone. Classical sample
-      space and probabilities are state-independent *as far as this
-      backend is concerned*.
-    - ``RuntimeOnly`` — must be resolved during ``evolve()`` because
-      branch probabilities or control-flow truth values depend on the
+    - ``Deterministic``: no randomness; :meth:`LocalBackend.compile` can
+      lower the operation from the circuit alone.
+    - ``TrajectorySampleable``: random, but resolvable in
+      :meth:`LocalBackend.prepare_trajectory` from random draws alone,
+      because the outcomes and their probabilities do not depend on the
+      state, for this backend.
+    - ``RuntimeOnly``: must be resolved during :meth:`LocalBackend.evolve`,
+      because the probabilities or a control-flow condition depend on the
       live quantum or classical state.
 
-    **Backend-dependent.** See :meth:`Backend.stochastic_kind`.
+    The kind of an operation depends on the backend; see
+    :meth:`Backend.stochastic_kind`.
     """
 
     Deterministic = 0
@@ -79,19 +79,40 @@ def _resolve_op(x):
 
 
 def default_stochastic_kind(op) -> StochasticKind:
-    """Backend-agnostic default classification used by
-    :meth:`Backend.stochastic_kind`. Concrete backends override the
-    method on :class:`Backend` (not this function) when they handle a
-    specific op type differently.
+    """Classify an operation without reference to a backend.
 
-    Defaults:
+    This is the default of :meth:`Backend.stochastic_kind`. Backends that
+    classify an operation differently override that method, not this
+    function.
 
-    - ``IfStatement`` / similar wrappers: recurse on the inner op.
-    - ``krauschannel``: ``TrajectorySampleable`` if ``ismixedunitary``,
-      else ``RuntimeOnly``.
-    - ``Loss``: ``RuntimeOnly`` (resolved per trajectory by ``resolve_losses``).
-    - ``AbstractMeasurement``: ``RuntimeOnly``.
-    - everything else: ``Deterministic``.
+    - ``IfStatement``: the kind of the operation it wraps.
+    - Kraus channels: ``TrajectorySampleable`` if mixed-unitary, otherwise
+      ``RuntimeOnly``.
+    - ``Loss`` and every measurement: ``RuntimeOnly``.
+    - Everything else: ``Deterministic``.
+
+    Args:
+        op: An operation, or an instruction whose operation is classified.
+
+    Returns:
+        A :class:`StochasticKind`.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.backends import default_stochastic_kind
+        >>> default_stochastic_kind(GateH()).name
+        'Deterministic'
+
+        A depolarizing channel applies a random Pauli with fixed
+        probabilities, so its branch can be drawn ahead of time.
+
+        >>> default_stochastic_kind(Depolarizing(1, 0.1)).name
+        'TrajectorySampleable'
+
+        The branch probabilities of amplitude damping depend on the state.
+
+        >>> default_stochastic_kind(AmplitudeDamping(0.1)).name
+        'RuntimeOnly'
     """
     op = _resolve_op(op)
     if isinstance(op, IfStatement):
@@ -113,30 +134,43 @@ def default_stochastic_kind(op) -> StochasticKind:
 
 
 def stochastic_kind(backend: "Backend", x) -> StochasticKind:
-    """Free-function form: ``stochastic_kind(backend, x)``. Delegates
-    to ``backend.stochastic_kind(x)`` so subclasses' overrides bite."""
+    """Return ``backend.stochastic_kind(x)``.
+
+    Args:
+        backend: The backend that classifies ``x``.
+        x: An operation or an instruction.
+
+    Returns:
+        A :class:`StochasticKind`.
+    """
     return backend.stochastic_kind(x)
 
 
 def is_deterministic(backend: "Backend", x) -> bool:
+    """Return whether ``backend`` classifies ``x`` as ``Deterministic``."""
     return backend.stochastic_kind(x) == StochasticKind.Deterministic
 
 
 def is_trajectory_sampleable(backend: "Backend", x) -> bool:
+    """Return whether ``backend`` classifies ``x`` as
+    ``TrajectorySampleable``."""
     return backend.stochastic_kind(x) == StochasticKind.TrajectorySampleable
 
 
 def is_runtime_only(backend: "Backend", x) -> bool:
+    """Return whether ``backend`` classifies ``x`` as ``RuntimeOnly``."""
     return backend.stochastic_kind(x) == StochasticKind.RuntimeOnly
 
 
 def is_stochastic(backend: "Backend", x) -> bool:
+    """Return whether ``backend`` classifies ``x`` as anything but
+    ``Deterministic``."""
     return backend.stochastic_kind(x) != StochasticKind.Deterministic
 
 
 def first_stochastic(backend: "Backend", circuit: "Circuit"):
-    """Index of the first non-deterministic instruction in ``circuit``
-    as classified by ``backend``, or ``None`` if purely deterministic."""
+    """Return the index of the first instruction of ``circuit`` that
+    ``backend`` does not classify as ``Deterministic``, or ``None``."""
     for i, inst in enumerate(circuit):
         if is_stochastic(backend, inst):
             return i
@@ -144,8 +178,8 @@ def first_stochastic(backend: "Backend", circuit: "Circuit"):
 
 
 def last_stochastic(backend: "Backend", circuit: "Circuit"):
-    """Index of the last non-deterministic instruction in ``circuit``,
-    or ``None`` if purely deterministic."""
+    """Return the index of the last instruction of ``circuit`` that
+    ``backend`` does not classify as ``Deterministic``, or ``None``."""
     last = None
     for i, inst in enumerate(circuit):
         if is_stochastic(backend, inst):
@@ -154,10 +188,12 @@ def last_stochastic(backend: "Backend", circuit: "Circuit"):
 
 
 def first_runtime_only(backend: "Backend", circuit: "Circuit"):
-    """Index of the first ``RuntimeOnly`` instruction in ``circuit``,
-    or ``None`` if none exists. Distinct from
-    :func:`first_stochastic`: ``TrajectorySampleable`` ops do not
-    require barrier protection in MPS-style backends."""
+    """Return the index of the first instruction of ``circuit`` that
+    ``backend`` classifies as ``RuntimeOnly``, or ``None``.
+
+    Unlike :func:`first_stochastic`, it skips ``TrajectorySampleable``
+    instructions, which a backend can resolve before evolving.
+    """
     for i, inst in enumerate(circuit):
         if is_runtime_only(backend, inst):
             return i
@@ -165,6 +201,8 @@ def first_runtime_only(backend: "Backend", circuit: "Circuit"):
 
 
 def last_runtime_only(backend: "Backend", circuit: "Circuit"):
+    """Return the index of the last instruction of ``circuit`` that
+    ``backend`` classifies as ``RuntimeOnly``, or ``None``."""
     last = None
     for i, inst in enumerate(circuit):
         if is_runtime_only(backend, inst):

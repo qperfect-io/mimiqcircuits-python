@@ -19,19 +19,15 @@ from mimiqcircuits.classical.abstract_classical import AbstractClassical
 
 
 class Not(AbstractClassical):
-    r"""
-    Not operation.
+    r"""Flip a classical bit: ``0 → 1`` and ``1 → 0``.
 
-    Represents a NOT operation that can be added to quantum circuits.
-    Classical operation that flips a classical bit:
-    `0 → 1` and `1 → 0`.
+    Acts on one classical bit. It is its own inverse.
 
     Examples:
-
         >>> from mimiqcircuits import *
-        >>> not_op = Not()
-        >>> not_op.name
+        >>> Not().name
         '!'
+        >>> # flip bit 1
         >>> c = Circuit()
         >>> c.push(Not(), 1)
         2-bit circuit with 1 instruction:
@@ -48,6 +44,7 @@ class Not(AbstractClassical):
     _cregsizes = [1]
 
     def inverse(self):
+        """Return ``Not()``: flipping twice restores the bit."""
         return Not()
 
     def iswrapper(self):

@@ -16,7 +16,6 @@
 #
 from matplotlib import pyplot as plt
 from mimiqcircuits.qcsresults import QCSResults
-from mimiqcircuits.bitstrings import bitvec_to_int
 
 
 # define colors for plots
@@ -54,7 +53,7 @@ MIMIQ_COLORS = {
 
 
 def _plothist(outcomes, counts, title, nobitstrings=False):
-    labels = [hex(bitvec_to_int(bs.bits)) for bs in outcomes]
+    labels = [hex(bs.tointeger()) for bs in outcomes]
     nbars = len(counts)
     nsamples = sum(counts)
 
@@ -91,14 +90,47 @@ def _plothist(outcomes, counts, title, nobitstrings=False):
 
 
 def plothistogram(results, num_outcomes=15, mimiqstyle=True, nobitstrings=False):
-    """Plots the histogram of the obtained classical states' occurrences.
+    """Plot a bar chart of the most sampled classical states.
 
-    Arguments:
-        results: a QCSResults object.
-        num_states (int): the maximum number of bitstrings plotted (default 15)
+    Each bar is one sampled state, labelled with
+    :meth:`~mimiqcircuits.BitString.tointeger` in hexadecimal and, unless
+    ``nobitstrings`` is set, its bits written inside the bar. Bars are sorted
+    by count, highest first. The title shows the simulator and, if there are
+    any, the range of fidelity estimates.
+
+    Args:
+        results (QCSResults): The results to plot. They must contain
+            samples.
+        num_outcomes (int): The maximum number of states plotted. Defaults
+            to 15.
+        mimiqstyle (bool): If True, use the MIMIQ plot style and show the
+            figure with ``plt.show()``. If False, use the current matplotlib
+            style and do not show it. Defaults to True.
+        nobitstrings (bool): If True, do not write the bits inside the bars.
+            Defaults to False.
+
+    Returns:
+        matplotlib.figure.Figure: The figure.
 
     Raises:
-        TypeError: If a non QCSResults object is passed.
+        TypeError: If ``results`` is not a :class:`~mimiqcircuits.QCSResults`.
+        ValueError: If ``results`` has no samples, for example because the
+            circuit has no measurement.
+
+    Examples:
+        >>> from mimiqcircuits import *
+        >>> from mimiqcircuits.visualization import plothistogram
+        >>> res = QCSResults(
+        ...     simulator="MIMIQ-StateVector",
+        ...     version="1.0",
+        ...     fidelities=[1.0],
+        ...     cstates=[BitString("00"), BitString("11"), BitString("11")],
+        ... )
+
+        Plot without showing the window, then save the figure.
+
+        >>> fig = plothistogram(res, mimiqstyle=False)
+        >>> fig.savefig("histogram.png")  # doctest: +SKIP
     """
     if not isinstance(results, QCSResults):
         raise TypeError("First argument is not a valid QCSResults object")
@@ -113,13 +145,15 @@ def plothistogram(results, num_outcomes=15, mimiqstyle=True, nobitstrings=False)
     outcomes = sorted(hist, key=hist.get, reverse=True)[0:num_outcomes]
     counts = [hist[x] for x in outcomes]
 
-    title = f"{results.simulator} {results.version} fidelity(min:{min(results.fidelities):.3f}, max:{max(results.fidelities):.3f})"
+    title = f"{results.simulator} {results.version}"
+    if results.fidelities:
+        title += f" fidelity(min:{min(results.fidelities):.3f}, max:{max(results.fidelities):.3f})"
 
     if not mimiqstyle:
         return _plothist(outcomes, counts, title, nobitstrings=nobitstrings)
 
     with plt.style.context("mimiqcircuits.visualization.mimiq"):
-        fig = _plothist(outcomes, counts, title)
+        fig = _plothist(outcomes, counts, title, nobitstrings=nobitstrings)
 
     plt.show()
     return fig

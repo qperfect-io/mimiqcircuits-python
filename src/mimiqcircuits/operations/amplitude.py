@@ -16,22 +16,42 @@
 #
 """Amplitude operation."""
 
-from mimiqcircuits import Operation, BitString
+from mimiqcircuits.bitstrings import BitString
+from mimiqcircuits.operations.operation import Operation
 
 
 class Amplitude(Operation):
-    """Amplitude operation
+    """Record the amplitude of a computational basis state.
 
-    multi qubit Amplitude operation in the computational basis
+    ``Amplitude(bs)`` reads the complex amplitude of the basis state ``bs``
+    in the current quantum state and stores it in a z-variable. It does not
+    change the state. The instruction takes only the target z-variable.
 
-    The operation projects the quantum states complex variables and stores in a z-register.
+    Args:
+        bs (BitString): The basis state whose amplitude is recorded.
+
+    See Also:
+        :class:`BitString`, :class:`ExpectationValue`
 
     Examples:
         >>> from mimiqcircuits import *
         >>> c = Circuit()
-        >>> c.push(Amplitude(BitString(2)),0)
-        1-zvar circuit with 1 instruction:
-        └── Amplitude(bs"00") @ z[0]
+        >>> # prepare a Bell state
+        >>> c.push(GateH(), 0)
+        1-qubit circuit with 1 instruction:
+        └── H @ q[0]
+        <BLANKLINE>
+        >>> c.push(GateCX(), 0, 1)
+        2-qubit circuit with 2 instructions:
+        ├── H @ q[0]
+        └── CX @ q[0], q[1]
+        <BLANKLINE>
+        >>> # store the amplitude of |11> in z-variable 0
+        >>> c.push(Amplitude(BitString("11")), 0)
+        2-qubit, 1-zvar circuit with 3 instructions:
+        ├── H @ q[0]
+        ├── CX @ q[0], q[1]
+        └── Amplitude(bs"11") @ z[0]
         <BLANKLINE>
     """
 
@@ -60,6 +80,11 @@ class Amplitude(Operation):
         return circ.push(self, *qubits, *bits, *zvars)
 
     def inverse(self):
+        """Not supported.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError("Cannot inverse an Amplitude operation.")
 
     def _power(self, _):

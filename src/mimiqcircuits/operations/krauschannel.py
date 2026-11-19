@@ -18,34 +18,36 @@
 
 from mimiqcircuits.operations.operation import Operation
 import symengine as se
+from itertools import accumulate
 import numpy as np
 
 
 class krauschannel(Operation):
-    r"""Supertype for all N-qubit Kraus channels.
+    r"""Base class for all N-qubit Kraus channels.
 
-    A Kraus channel is a quantum operation on a density matrix :math:`\\rho` of the form:
+    A Kraus channel acts on a density matrix :math:`\rho` as
 
     .. math::
 
         \mathcal{E}(\rho) = \sum_k E_k \rho E_k^\dagger,
 
-    where :math:`E_k` are Kraus operators that need to fulfill :math:`\sum_k E_k^\dagger E_k \leq I`.
+    where the Kraus operators :math:`E_k` fulfill :math:`\sum_k E_k^\dagger E_k \leq I`.
+    The channel is completely positive and trace preserving (CPTP) when the
+    equality :math:`\sum_k E_k^\dagger E_k = I` holds.
 
-    **Special Properties:**
+    A Kraus channel is a mixed unitary channel when every :math:`E_k` is
+    proportional to a unitary :math:`U_k`, so that
+    :math:`\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger` with
+    probabilities :math:`p_k` that add up to 1. Mixed unitary channels can be
+    sampled as a random choice of unitary gate (see
+    :meth:`~mimiqcircuits.Circuit.sample_mixedunitaries`).
 
-    - :func:`isCPTP`: A Kraus channel is a completely positive and trace-preserving (CPTP)
-      operation when :math:`\\sum_k E_k^\dagger E_k = I`. Currently, all noise channels are CPTP.
-
-    - :func:`ismixedunitary`: A Kraus channel is called a mixed unitary channel when the
-      Kraus operators :math:`E_k` are each proportional to a unitary matrix :math:`U_k`, i.e., when
-      :math:`\\mathcal{E}(\\rho) = \\sum_k p_k U_k \\rho U_k^\dagger` with some probabilities
-      :math:`0 \leq p_k \leq 1` that add up to 1 and :math:`U_k^\dagger U_k = I`.
+    Kraus channels cannot be inverted or raised to a power: :meth:`inverse` and
+    :meth:`power` raise :class:`NotImplementedError`.
 
     See Also:
-        :func:`krausmatrices`
-        :func:`unitarymatrices`
-        :func:`probabilities`
+        :meth:`krausoperators`, :meth:`krausmatrices`, :meth:`ismixedunitary`,
+        :meth:`probabilities`, :meth:`unitarygates`
     """
 
     _name = None
@@ -56,35 +58,43 @@ class krauschannel(Operation):
     _num_zvars = 0
 
     def krausmatrices(self):
-        """
-        Returns the Kraus matrices associated with the given Kraus channel.
+        r"""Return the matrices of the Kraus operators :math:`E_k` of the channel.
 
-        A mixed unitary channel is written as:
-
-        .. math::
-
-            \\mathcal{E}(\\rho) = \\sum_k p_k U_k \\rho U_k^\\dagger,
-
-        where :math:`U_k` are the unitary matrices returned by this function.
-
-        If the Kraus channel is parametric, the matrix elements are wrapped in a
-        symengine or sympy object.
+        These are the matrices of :meth:`krausoperators`, in the same order. For
+        a parametric channel the entries are symbolic expressions.
 
         Returns:
-            list: A list of symengine matrices representing the Kraus operators.
+            list: One symengine matrix per Kraus operator.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> AmplitudeDamping(0.36).krausmatrices()
+            [[1.0, 0]
+            [0, 0.8]
+            , [0, 0.6]
+            [0, 0]
+            ]
         """
         return [se.Matrix(kraus.matrix().tolist()) for kraus in self.krausoperators()]
 
     def unwrappedkrausmatrices(self):
-        """
-        Returns the unitary Kraus matrices associated to the mixed unitary Kraus channel
-        without symbolic wrapper.
+        """Return the Kraus matrices of a channel whose parameters all have values.
+
+        Returns the same matrices as :meth:`krausmatrices`, after checking that
+        every parameter evaluates to a constant.
+
+        Returns:
+            list: One symengine matrix per Kraus operator.
+
+        Raises:
+            ValueError: If a parameter is still a free symbol.
 
         See Also:
-            :func:`unitarymatrices`
+            :meth:`krausmatrices`
 
-        Example:
+        Examples:
             >>> from mimiqcircuits import *
+            >>> # PauliX(p) has Kraus operators sqrt(1-p) I and sqrt(p) X
             >>> op = PauliX(0.2)
             >>> op.unwrappedkrausmatrices()
             [[0.894427190999916, 0]
@@ -113,85 +123,86 @@ class krauschannel(Operation):
 
     @classmethod
     def isCPTP(self):
-        r"""Determine whether the Kraus channel is Completely Positive and Trace Preserving (CPTP).
+        r"""Whether the channel is completely positive and trace preserving (CPTP).
 
-        A quantum operation is CPTP if the Kraus operators fulfill the condition:
-
-        .. math::
-            \sum_k E_k^\dagger E_k = I
-
-        If the condition is:
-
-        .. math::
-            \sum_k E_k^\dagger E_k < I
-
-        then the operation is not CPTP.
-
-        Note:
-            Currently, all noise channels are considered CPTP.
-
-        Parameters:
-            krauschannel: The Kraus channel to check.
+        A channel is CPTP when its Kraus operators fulfill
+        :math:`\sum_k E_k^\dagger E_k = I`, and only trace decreasing when
+        :math:`\sum_k E_k^\dagger E_k < I`. Every channel in the package is
+        CPTP.
 
         Returns:
-            bool: `True` if the channel is CPTP, `False` otherwise.
+            bool: ``True``.
         """
-        return issubclass(self, krauschannel) and False
+        return True
 
     @classmethod
     def ismixedunitary(self):
-        r"""Determine whether the quantum operation is a mixed unitary channel.
+        r"""Whether the channel is a mixed unitary channel.
 
-        A channel is considered mixed unitary if all the Kraus operators :math:`E_k` are proportional
-        to a unitary matrix :math:`U_k`, i.e.,
+        A channel is mixed unitary when every Kraus operator :math:`E_k` is
+        proportional to a unitary matrix :math:`U_k`, so that
 
         .. math::
 
             \mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger,
 
-        with some probabilities :math:`0 \leq p_k \leq 1` that add up to 1, and :math:`U_k^\dagger U_k = I`.
-
-        Parameters:
-            krauschannel: The Kraus channel to check.
+        with probabilities :math:`0 \leq p_k \leq 1` that add up to 1. The answer
+        depends only on the channel type, not on its parameters, so this is a
+        class method. Only mixed unitary channels support :meth:`probabilities`,
+        :meth:`cumprobabilities`, :meth:`unitarygates` and
+        :meth:`unitarymatrices`.
 
         Returns:
-            bool: `True` if the channel is a mixed unitary channel, `False` otherwise.
+            bool: ``True`` for mixed unitary channel types, ``False`` otherwise.
 
         Examples:
             >>> from mimiqcircuits import *
+            >>> # PauliX applies X with probability p: mixed unitary
             >>> PauliX(0.1).ismixedunitary()
             True
 
+            >>> # amplitude damping has a non-unitary Kraus operator
             >>> AmplitudeDamping(0.1).ismixedunitary()
             False
         """
         return issubclass(self, krauschannel) and False
 
     def inverse(self):
+        """Kraus channels have no inverse.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError("Cannot invert Kraus channels")
 
     def power(op, n):
+        """Kraus channels cannot be raised to a power.
+
+        Raises:
+            NotImplementedError: Always.
+        """
         raise NotImplementedError("Cannot take the power of Kraus channels")
 
     def iswrapper(self):
         return False
 
     def probabilities(self):
-        """
-        Returns the probabilities for each Kraus operator in a mixed unitary channel.
+        r"""Return the probabilities :math:`p_k` of a mixed unitary channel.
 
-        A mixed unitary channel is written as:
-
-        .. math::
-
-            \\mathcal{E}(\\rho) = \\sum_k p_k U_k \\rho U_k^\\dagger,
-
-        where :math:`p_k` are the probabilities.
-
-        This method is valid only for mixed unitary channels.
+        For :math:`\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger` this is
+        the list of :math:`p_k`, in the same order as :meth:`unitarygates`.
 
         Returns:
-            list: A list of probabilities for each Kraus operator.
+            list: One probability per unitary.
+
+        Raises:
+            ValueError: If the channel is not mixed unitary.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> # identity with probability 0.9, X with probability 0.1
+            >>> PauliX(0.1).probabilities()
+            [0.9, 0.1]
         """
         raise ValueError(
             "Probabilities can only be returned from a mixed unitary channel."
@@ -201,24 +212,22 @@ class krauschannel(Operation):
         return len(self._parnames)
 
     def cumprobabilities(self):
-        """
-        Returns the cumulative sum of probabilities for each Kraus operator in a mixed unitary channel.
+        """Return the cumulative sums of :meth:`probabilities`.
 
-        A mixed unitary channel is written as:
-
-        .. math::
-
-            \\mathcal{E}(\\rho) = \\sum_k p_k U_k \\rho U_k^\\dagger,
-
-        where :math:`p_k` are the probabilities.
-
-        This method is valid only for mixed unitary channels.
+        The last entry is 1. Drawing a uniform number ``r`` and picking the
+        first index whose cumulative probability exceeds ``r`` samples one of the
+        unitaries with the right probability.
 
         Returns:
-            list: Cumulative probabilities for the Kraus operators.
+            list: Cumulative probabilities as symengine values, symbolic
+            expressions when the probabilities are symbolic.
+
+        Raises:
+            ValueError: If the channel is not mixed unitary.
 
         Examples:
             >>> from mimiqcircuits import *
+            >>> # identity with probability 0.9, then X, Y, Z with 0.1/3 each
             >>> Depolarizing1(0.1).cumprobabilities()
             [0.9, 0.933333333333333, 0.966666666666667, 1.0]
         """
@@ -229,29 +238,41 @@ class krauschannel(Operation):
             raise ValueError(
                 "Cumulative probabilities only available for mixed unitary channels."
             )
-        return [se.RealDouble(cp) for cp in np.cumsum(self.probabilities())]
+        return [se.sympify(cp) for cp in accumulate(self.probabilities())]
 
     def unwrappedcumprobabilities(self):
-        """
-        Returns the cumulative sum of probabilities for the mixed unitary channel without
-        symbolic wrapping.
-
-        See Also:
-            :func:`cumprobabilities`
+        """Return :meth:`cumprobabilities` as plain Python floats.
 
         Returns:
-            list: A list of cumulative probabilities as float values.
+            list[float]: Cumulative probabilities.
+
+        Raises:
+            ValueError: If the channel is not mixed unitary.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> PauliX(0.1).unwrappedcumprobabilities()
+            [0.9, 1.0]
         """
         return [float(p) for p in self.cumprobabilities()]
 
     def krausoperators(self):
-        """
-        Returns the Kraus operators associated with the given Kraus channel.
+        """Return the Kraus operators :math:`E_k` of the channel as operator objects.
 
-        This should be implemented for each specific channel.
+        Every concrete channel implements this method; the base class raises.
 
         Returns:
-            list: A list of matrices representing the Kraus operators.
+            list: One operator (for example :class:`Operator`,
+            :class:`DiagonalOp` or :class:`RescaledGate`) per Kraus operator.
+
+        Raises:
+            NotImplementedError: When called on a class that does not define it.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> # projective noise in Z: project on |0> or on |1>
+            >>> ProjectiveNoise("Z").krausoperators()
+            [P₀(1), P₁(1)]
         """
         raise NotImplementedError(
             "This method should be implemented for the specific Kraus channel."
@@ -260,14 +281,17 @@ class krauschannel(Operation):
     def haslossybranch(self):
         """Whether any branch of the channel loses qubits when drawn.
 
-        That is whether any of its Kraus operators is a
-        :class:`~mimiqcircuits.LossyOperator`. It is ``False`` for channels
-        without loss branches, such as ``PauliX(0.1)``.
+        A branch is lossy when its Kraus operator is a
+        :class:`~mimiqcircuits.LossyOperator`.
+
+        Returns:
+            bool: ``True`` if at least one Kraus operator is lossy.
 
         Examples:
             >>> from mimiqcircuits import *
             >>> PauliX(0.1).haslossybranch()
             False
+            >>> # a Kraus channel where |1> is lost with probability 0.2
             >>> import numpy as np
             >>> survival = Operator(np.array([[1, 0], [0, np.sqrt(0.8)]]))
             >>> lossy = LossyOperator(np.array([[0, 0], [0, np.sqrt(0.2)]]))
@@ -279,41 +303,42 @@ class krauschannel(Operation):
         return any(isinstance(op, LossyOperator) for op in self.krausoperators())
 
     def squaredkrausoperators(self):
-        """
-        Returns the square of the Kraus operators (:math:`E_k^\\dagger E_k`).
-        This computes the Hermitian conjugate (dagger) of each Kraus operator and multiplies it by the operator itself.
+        r"""Return :math:`E_k^\dagger E_k` for every Kraus operator :math:`E_k`.
+
+        The sum of the returned operators is the identity for a trace
+        preserving channel.
 
         Returns:
-            list: A list of squared Kraus operators.
+            list: One operator per Kraus operator, in the same order.
+
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> # a projector P satisfies P^dagger P = P
+            >>> Kraus([Projector0(), Projector1()]).squaredkrausoperators()
+            [P₀(1), P₁(1)]
         """
         return [k.opsquared() for k in self.krausoperators()]
 
     def unitarymatrices(self):
-        """
-        Unitary matrices associated with the given mixed unitary Kraus channel.
+        r"""Return the matrices of the unitaries :math:`U_k` of a mixed unitary channel.
 
-        A mixed unitary channel is written as:
+        For :math:`\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger` these are
+        the matrices of :meth:`unitarygates`, in the same order as
+        :meth:`probabilities`. For a parametric channel the entries are symbolic
+        expressions.
 
-        .. math::
+        Returns:
+            list: One symengine matrix per unitary.
 
-            \\mathcal{E}(\\rho) = \\sum_k p_k U_k \\rho U_k^\\dagger,
-
-        where :math:`U_k` are the unitary matrices.
-
-        An error is raised if the channel is not mixed unitary (i.e., `ismixedunitary(self)==False`).
-
-        Note:
-            If the Kraus channel is parametric, the matrix elements are wrapped in a
-            symbolic object (e.g., from sympy or symengine). To manipulate expressions,
-            use the appropriate symbolic manipulation libraries.
+        Raises:
+            ValueError: If the channel is not mixed unitary.
 
         See Also:
-            :func:`ismixedunitary`
-            :func:`probabilities`
-            :func:`krausmatrices`
+            :meth:`ismixedunitary`, :meth:`probabilities`, :meth:`krausmatrices`
 
         Examples:
             >>> from mimiqcircuits import *
+            >>> # identity and Pauli X
             >>> PauliX(0.2).unitarymatrices()
             [[1.0, 0]
             [0, 1.0]
@@ -328,12 +353,15 @@ class krauschannel(Operation):
         return [se.Matrix(g.matrix().tolist()) for g in self.unitarygates()]
 
     def unwrappedunitarymatrices(self):
-        """
-        Returns the unitary matrices associated with the mixed unitary channel
-        without symbolic wrapping.
+        """Return :meth:`unitarymatrices` with every entry evaluated to a number.
+
+        Real entries become ``float`` and complex entries ``complex``.
 
         Returns:
-            list: A list of unitary matrices as numerical values.
+            list: One symengine matrix with numeric entries per unitary.
+
+        Raises:
+            ValueError: If the channel is not mixed unitary.
         """
         import sympy as sp
 
@@ -362,18 +390,21 @@ class krauschannel(Operation):
         return matrices
 
     def unitarygates(self):
-        """
-        Returns the unitary gates associated with the given mixed unitary Kraus channel.
+        r"""Return the unitaries :math:`U_k` of a mixed unitary channel as gates.
 
-        A mixed unitary channel is written as:
+        For :math:`\mathcal{E}(\rho) = \sum_k p_k U_k \rho U_k^\dagger` these are
+        the :math:`U_k`, in the same order as :meth:`probabilities`.
 
-        .. math::
+        Returns:
+            list: One gate per unitary.
 
-            \\sum_k p_k U_k \\rho U_k^\\dagger,
+        Raises:
+            ValueError: If the channel is not mixed unitary.
 
-        where :math:`U_k` are the unitary operators.
-
-        This method is valid only for mixed unitary channels.
+        Examples:
+            >>> from mimiqcircuits import *
+            >>> PauliX(0.1).unitarygates()
+            [ID, X]
         """
         if not self.ismixedunitary():
             raise ValueError("unitarygates only available for mixed unitary channels.")

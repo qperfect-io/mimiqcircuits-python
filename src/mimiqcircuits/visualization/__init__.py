@@ -14,7 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Visualization utilities for results and circuits."""
+"""Plotting of execution results.
+
+This module needs matplotlib, installed with the ``visualization`` extra
+(``pip install "mimiqcircuits[visualization]"``).
+"""
 
 from mimiqcircuits.visualization.results import plothistogram
 

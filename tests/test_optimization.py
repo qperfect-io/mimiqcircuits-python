@@ -153,3 +153,13 @@ def test_results_proto_roundtrip(tmp_path):
     loaded = OptimizationResults.loadproto(str(path))
     assert isinstance(loaded, OptimizationResults)
     assert loaded.get_best().get_cost() == 0.1
+
+
+def test_change_list_of_parameters_with_named_initparams():
+    x, y = symbols("x y")
+    c = Circuit().push(GateRX(x), 0).push(GateRY(y), 1)
+    exp = OptimizationExperiment(circuit=c, initparams={"x": 1.0, "y": 2.0})
+
+    updated = exp.change_list_of_parameters([3.0, 4.0])
+
+    assert updated.initparams == {"x": 3.0, "y": 4.0}

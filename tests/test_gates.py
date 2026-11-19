@@ -429,3 +429,36 @@ def test_custom_gate_parameters_are_one_based(gate):
     for i in (0, -1, n + 1):
         with pytest.raises(IndexError):
             gate.getparam(i)
+
+
+def test_gatecu_gamma_defaults_to_zero():
+    m3 = np.array(mc.GateCU(1, 2, 3).matrix().tolist(), dtype=complex)
+    m4 = np.array(mc.GateCU(1, 2, 3, 0).matrix().tolist(), dtype=complex)
+    assert np.allclose(m3, m4)
+
+
+def test_gatedcx_non_integer_power_is_a_power():
+    p = mc.GateDCX().power(0.5)
+    assert isinstance(p, mc.Power)
+    assert p.exponent == 0.5
+
+
+def test_gatecustom_accepts_symbolic_expressions():
+    x = se.Symbol("x")
+    g = mc.GateCustom(se.Matrix([[se.exp(se.I * x), 0], [0, 1]]))
+    assert g.num_qubits == 1
+
+
+def test_evaluate_keeps_complex_parameters():
+    assert mc.SigmaPlus(1j).evaluate({}).getparams() == [1j]
+
+
+def test_lazy_power_with_too_many_arguments_raises():
+    with pytest.raises(TypeError):
+        mc.GateX().control().power(1, 2)
+
+
+def test_detector_with_float_notes():
+    d = mc.Detector(0.1, 0.9)(2)
+    assert d.num_bits == 2
+    assert d.get_notes() == [0.1, 0.9]

@@ -20,7 +20,7 @@ import mimiqcircuits.operations.gates.gate as mcg
 from mimiqcircuits.matrices import umatrix
 from mimiqcircuits import numerics as _nm
 from mimiqcircuits.operations.utils import control_one_defined
-import mimiqcircuits as mc
+from mimiqcircuits.operations.power import Power
 import numpy as np
 import symengine as se
 from mimiqcircuits._sympycheck import _is_basic
@@ -33,24 +33,25 @@ def _negate(x):
 
 
 class GateU(mcg.Gate):
-    r"""Single qubit generic unitary phase gate.
+    r"""Single qubit generic unitary gate with a global phase.
 
+    Any single qubit unitary can be written as a ``GateU``. The fourth
+    angle ``gamma`` sets a global phase.
 
-    **Matrix representation:**
+    Matrix Representation:
+        .. math::
+            \operatorname{U}(\theta, \phi, \lambda, \gamma) =
+            \mathrm{e}^{i\gamma}
+            \begin{pmatrix}
+                \cos\left(\frac{\theta}{2}\right) & -\mathrm{e}^{i\lambda}\sin\left(\frac{\theta}{2}\right)\\
+                \mathrm{e}^{i\phi}\sin\left(\frac{\theta}{2}\right) & \mathrm{e}^{i(\phi+\lambda)}\cos\left (\frac{\theta}{2}\right)
+            \end{pmatrix}
 
-    .. math::
-        \operatorname{U}(\theta, \phi, \lambda, \gamma) =
-        \mathrm{e}^{i\gamma}
-        \begin{pmatrix}
-            \cos\left(\frac{\theta}{2}\right) & -\mathrm{e}^{i\lambda}\sin\left(\frac{\theta}{2}\right)\\
-            \mathrm{e}^{i\phi}\sin\left(\frac{\theta}{2}\right) & \mathrm{e}^{i(\phi+\lambda)}\cos\left (\frac{\theta}{2}\right)
-        \end{pmatrix}
-
-    Parameters:
-        theta (float): Euler angle 1 in radians.
-        phi (float): Euler angle 2 in radians.
-        lambda (float): Euler angle 3 in radians.
-        gamma (float, optional): Euler angle 4 in radians (default is 0).
+    Args:
+        theta: Euler angle :math:`\theta` in radians.
+        phi: Euler angle :math:`\phi` in radians.
+        lmbda: Euler angle :math:`\lambda` in radians.
+        gamma: Global phase :math:`\gamma` in radians. Defaults to ``0.0``.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -73,17 +74,11 @@ class GateU(mcg.Gate):
         1-qubit circuit with 1 instruction:
         └── U(theta, phi, lambda, gamma) @ q[0]
         <BLANKLINE>
-        >>> c = Circuit().push(GateU(theta, phi, lmbda, gamma), 0)
-        >>> c
-        1-qubit circuit with 1 instruction:
-        └── U(theta, phi, lambda, gamma) @ q[0]
-        <BLANKLINE>
-        >>> GateU(theta, phi, lmbda, gamma).power(2), GateU(theta, phi, lmbda, gamma).inverse()
-        (U(theta, phi, lambda, gamma)**2, U(-theta, -lambda, -phi, -gamma))
-        >>> GateU(theta, phi, lmbda, gamma).decompose()
-        1-qubit circuit with 1 instruction:
-        └── U(theta, phi, lambda, gamma) @ q[0]
-        <BLANKLINE>
+
+    Note:
+        A power of a ``GateU`` with symbolic angles is wrapped in
+        :class:`Power`. With numeric angles it is computed numerically and
+        returned as a new ``GateU``.
     """
 
     _name = "U"
@@ -111,13 +106,14 @@ class GateU(mcg.Gate):
         )
 
     def _control(self, n):
+        from mimiqcircuits.operations.gates.standard.cu import GateCU
         return control_one_defined(
-            n, self, mc.GateCU(self.theta, self.phi, self.lmbda, self.gamma)
+            n, self, GateCU(self.theta, self.phi, self.lmbda, self.gamma)
         )
 
     def _power(self, p):
         if self.is_symbolic():
-            return mc.Power(self, p)
+            return Power(self, p)
 
         def to_numeric(value):
             if (
@@ -159,7 +155,7 @@ class GateU(mcg.Gate):
         return GateU(theta_p, phi_p, lambda_p, gamma_p)
 
     def supports_canonical_rewrite(self):
-        # A primitive of the canonical gate set.
+        """Return ``False``: U is a primitive of the canonical gate set."""
         return False
 
     def _decompose(self, circ, qubits, bits, zvars):
@@ -168,8 +164,14 @@ class GateU(mcg.Gate):
         return circ
 
     def convert_to_numeric(self, matrix):
-        """
-        Convert a symbolic matrix to a numeric numpy array.
+        """Convert a nested list of SymEngine numbers to a ``complex128`` array.
+
+        Args:
+            matrix: Rows of numeric SymEngine expressions, as returned by
+                ``matrix().tolist()``.
+
+        Returns:
+            numpy.ndarray: The same entries as complex floats.
         """
         return np.array(
             [[complex(elem.evalf()) for elem in row] for row in matrix],

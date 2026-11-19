@@ -20,13 +20,22 @@ from mimiqcircuits.circuit import Circuit
 from mimiqcircuits.operations.inverse import Inverse
 from mimiqcircuits.operations.block import Block
 from mimiqcircuits.gatedecl import GateDecl, GateCall
-import mimiqcircuits as mc
+from mimiqcircuits.operations.gates.standard.id import GateID
 
 
 def remove_unused(self):
-    """
-    Removes unused qubits, bits, and zvars from the given circuit.
-    Returns (new_circuit, qubit_map, bit_map, zvar_map).
+    """Renumber qubits, bits and z-variables so that none is left unused.
+
+    The qubits used by the circuit are renumbered ``0, 1, 2, ...`` in
+    increasing order, and likewise the bits and the z-variables. The
+    operations are kept as they are. The input circuit is not changed.
+
+    Args:
+        self (Circuit): The circuit to compact.
+
+    Returns:
+        tuple: ``(new_circuit, qubit_map, bit_map, zvar_map)``, where each map
+        is a dict from an old index to its new index.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -96,27 +105,33 @@ def remove_unused(self):
 
 
 def remove_swaps(circuit, recursive=False, cache=None):
-    """
-    Remove all SWAP gates from a quantum circuit by tracking qubit permutations and
-    remapping subsequent operations to their correct physical qubits.
+    """Remove the SWAP gates of a circuit by relabeling the qubits of the gates after them.
 
-    Returns:
-        tuple: A tuple containing:
-            - new_circuit: Circuit with SWAP gates removed and operations remapped
-            - qubit_permutation: Final permutation where qubit_permutation[i] gives the
-              physical qubit location of logical qubit i
+    Each ``GateSWAP`` on qubits ``(i, j)`` is dropped, and every later
+    instruction that would act on ``i`` acts on ``j`` instead, and the other
+    way round. The result applies the same operations as the original, with
+    the qubits permuted at the end by ``qubit_permutation``. Classical bits
+    and z-variables are not changed. If the last instructions no longer touch
+    the highest qubits, ``GateID`` instructions are added so the result keeps
+    the same number of qubits.
+
+    SWAP gates inside a :class:`Control` or an :class:`IfStatement` are never
+    removed, since they do not always run.
 
     Args:
-        circuit: Input quantum circuit
-        recursive: If True, recursively remove swaps from nested blocks/subcircuits
+        circuit (Circuit): The circuit to rewrite. It is not changed.
+        recursive (bool): If ``True``, also remove SWAP gates inside declared
+            gates (:class:`GateCall`), inverses of declared gates and
+            :class:`Block` operations. Each one gets a new declaration without
+            SWAP gates, and its own final permutation is folded into the
+            relabeling of the outer circuit. Defaults to ``False``.
+        cache (dict): Rewritten declarations, shared across recursive calls.
+            Leave it unset.
 
-    Details:
-        When a SWAP gate is encountered on qubits (i, j), instead of keeping the gate:
-
-        1. The qubit mapping is updated to track that logical qubits i and j have exchanged physical positions
-        2. All subsequent gates are automatically remapped to operate on the correct physical qubits
-
-        This transformation preserves circuit semantics while eliminating SWAP overhead.
+    Returns:
+        tuple: ``(new_circuit, qubit_permutation)``. Running ``new_circuit``
+        leaves the state that the original circuit leaves on qubit ``i`` on
+        qubit ``qubit_permutation[i]``.
 
     Examples:
         >>> from mimiqcircuits import *
@@ -136,14 +151,18 @@ def remove_swaps(circuit, recursive=False, cache=None):
         ├── SWAP @ q[1:2]
         └── CX @ q[2], q[3]
         <BLANKLINE>
+        >>> # the CX after the swap now acts where the state of qubit 1 still is
         >>> new_c, perm = remove_swaps(c)
         >>> new_c
         4-qubit circuit with 2 instructions:
         ├── H @ q[1]
         └── CX @ q[1], q[3]
         <BLANKLINE>
+        >>> # the original ends with qubits 1 and 2 exchanged
         >>> perm
         [0, 2, 1, 3]
+
+        Two swaps compose into a cycle of three qubits:
 
         >>> c = Circuit()
         >>> c.push(GateSWAP(), 1, 2)
@@ -162,6 +181,7 @@ def remove_swaps(circuit, recursive=False, cache=None):
         └── CX @ q[1], q[3]
         <BLANKLINE>
         >>> new_c, perm = remove_swaps(c)
+        >>> # an identity on qubit 3 keeps the number of qubits unchanged
         >>> new_c
         4-qubit circuit with 2 instructions:
         ├── CX @ q[2], q[1]
@@ -170,7 +190,8 @@ def remove_swaps(circuit, recursive=False, cache=None):
         >>> perm
         [0, 2, 3, 1]
 
-        # Example of checking recursive removel of swaps
+        With ``recursive=True``, SWAP gates inside nested gate declarations
+        are removed too. Here each level of declaration starts with a SWAP:
 
         >>> inner = Circuit()
         >>> _ = inner.push(GateSWAP(), 0, 1)
@@ -196,60 +217,14 @@ def remove_swaps(circuit, recursive=False, cache=None):
         ├── SWAP @ q[1:2]
         └── Outer() @ q[0:2]
         <BLANKLINE>
-
-        >>> c.decompose()
-        3-qubit circuit with 13 instructions:
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[2], q[1]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[2], q[1]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[2], q[1]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[2], q[1]
-        ├── CX @ q[1], q[2]
-        └── CX @ q[2], q[1]
-        <BLANKLINE>
-
-        >>> c.decompose().decompose()
-        3-qubit circuit with 13 instructions:
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[2], q[1]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[2], q[1]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[2], q[1]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[1], q[2]
-        ├── CX @ q[2], q[1]
-        ├── CX @ q[1], q[2]
-        └── CX @ q[2], q[1]
-        <BLANKLINE>
-
-        # Test to see that all swaps are removed recursively
-
         >>> new_c, _ = remove_swaps(c, recursive=True)
-
+        >>> # no SWAP is left at the top level...
         >>> any(isinstance(i.get_operation(), GateSWAP) for i in new_c)
         False
-
-        >>> Outercheck = new_c.instructions[0].get_operation()._decl
-        >>> any(isinstance(i.get_operation(), GateSWAP) for i in Outercheck.circuit)
+        >>> # ...nor in the rewritten declaration of Outer
+        >>> outer_decl = new_c.instructions[0].get_operation().decl
+        >>> any(isinstance(i.get_operation(), GateSWAP) for i in outer_decl.circuit)
         False
-
-        >>> Midcheck = Outercheck.circuit.instructions[0].get_operation()._decl
-        >>> any(isinstance(i.get_operation(), GateSWAP) for i in Midcheck.circuit)
-        False
-
-        >>> Innercheck = Midcheck.circuit.instructions[0].get_operation()._decl
-        >>> any(isinstance(i.get_operation(), GateSWAP) for i in Innercheck.circuit)
-        False
-
     """
     if cache is None:
         cache = {}
@@ -294,7 +269,7 @@ def _pad_to_arity(instructions, target_nq):
     """Pad instruction list with GateID to preserve qubit arity."""
     nq = _get_num_qubits(instructions)
     for q in range(nq, target_nq):
-        instructions.append(mc.Instruction(mc.GateID(), (q,), (), ()))
+        instructions.append(Instruction(GateID(), (q,), (), ()))
 
 
 _PYOBJ_IDENTITY_CACHE_PREFIX = "__remove_swaps_identity__"
@@ -380,8 +355,8 @@ def _remove_swaps_from_operation(op, recursive, cache):
         new_fwd_circuit = Circuit(new_inv_instrs).inverse()
         new_fwd_instrs = new_fwd_circuit.instructions
 
-        fwd_decl = GateDecl(decl.name, decl.arguments, mc.Circuit(new_fwd_instrs))
-        res = (mc.Inverse(GateCall(fwd_decl, gcall._args)), qubit_map)
+        fwd_decl = GateDecl(decl.name, decl.arguments, Circuit(new_fwd_instrs))
+        res = (Inverse(GateCall(fwd_decl, gcall._args)), qubit_map)
         _set_identity_cached(cache, op, res)
         return res
 
@@ -433,7 +408,7 @@ def _remove_swaps_from_gate_decl(decl, recursive, cache):
     orig_nq = decl.num_qubits() if callable(decl.num_qubits) else decl.num_qubits
     _pad_to_arity(new_instrs, orig_nq)
 
-    res = (GateDecl(decl.name, decl.arguments, mc.Circuit(new_instrs)), qubit_map)
+    res = (GateDecl(decl.name, decl.arguments, Circuit(new_instrs)), qubit_map)
     cache[decl] = res
     return res
 

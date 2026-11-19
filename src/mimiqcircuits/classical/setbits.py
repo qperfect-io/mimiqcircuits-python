@@ -18,18 +18,15 @@ from mimiqcircuits.classical.abstract_classical import AbstractClassical
 
 
 class SetBit0(AbstractClassical):
-    r"""
-    SetBit0 operation.
+    r"""Set a classical bit to 0, whatever its value.
 
-    Classical operation that sets a classical bit to 0.
-    `0 → 0` and `1 → 0`.
+    Acts on one classical bit.
 
     Examples:
-
         >>> from mimiqcircuits import *
-        >>> not_op = SetBit0()
-        >>> not_op.name
+        >>> SetBit0().name
         'set0'
+        >>> # set bit 1 to 0
         >>> c = Circuit()
         >>> c.push(SetBit0(), 1)
         2-bit circuit with 1 instruction:
@@ -46,6 +43,11 @@ class SetBit0(AbstractClassical):
     _cregsizes = [1]
 
     def inverse(self):
+        """Return ``SetBit1()``.
+
+        Setting a bit is not invertible; this pairing only mirrors the
+        opposite operation.
+        """
         return SetBit1()
 
     def iswrapper(self):
@@ -62,18 +64,15 @@ class SetBit0(AbstractClassical):
 
 
 class SetBit1(AbstractClassical):
-    r"""
-    SetBit1 operation.
+    r"""Set a classical bit to 1, whatever its value.
 
-    Classical operation that sets a classical bit to 1.
-    `0 → 1` and `1 → 1`.
+    Acts on one classical bit.
 
     Examples:
-
         >>> from mimiqcircuits import *
-        >>> not_op = SetBit1()
-        >>> not_op.name
+        >>> SetBit1().name
         'set1'
+        >>> # set bit 1 to 1
         >>> c = Circuit()
         >>> c.push(SetBit1(), 1)
         2-bit circuit with 1 instruction:
@@ -90,6 +89,11 @@ class SetBit1(AbstractClassical):
     _cregsizes = [1]
 
     def inverse(self):
+        """Return ``SetBit0()``.
+
+        Setting a bit is not invertible; this pairing only mirrors the
+        opposite operation.
+        """
         return SetBit0()
 
     def iswrapper(self):
